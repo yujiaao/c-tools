@@ -36,7 +36,7 @@
 
 
 ## To run project
-To run the project your need runtime dependency, edit your project and add the follows as minimum:
+To run the project your need runtime dependency, edit your project `pom.xml` and add the follows as minimum:
 ```xml
 <dependency>
     <groupId>com.github.yujiaao</groupId>
