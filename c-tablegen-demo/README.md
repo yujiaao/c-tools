@@ -37,9 +37,10 @@
 
 ## To run project
 To run the project your need runtime dependency, edit your project and add the follows as minimum:
-
-                <dependency>
-                    <groupId>com.github.yujiaao</groupId>
-                    <artifactId>c-dbtools</artifactId>
-                    <version>1.6.4</version>
-                </dependency>
+```xml
+<dependency>
+    <groupId>com.github.yujiaao</groupId>
+    <artifactId>c-dbtools</artifactId>
+    <version>1.6.4</version>
+</dependency>
+```
