@@ -4,7 +4,7 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans spring-beans-2.5.xsd">
 
 
-    <bean id="oracleConfig" class="com.bixuebihui.dbcon.DatabaseConfig">
+    <bean id="oracleConfig" class="com.bixuebihui.r2dbc.dbcon.DatabaseConfig">
         <property name="alias">
             <value>verycard</value>
         </property>
@@ -26,7 +26,7 @@
     <alias name="oracleConfig" alias="dbConfig" />
  -->
 
-    <bean id="derbyConfig" class="com.bixuebihui.dbcon.DatabaseConfig">
+    <bean id="derbyConfig" class="com.bixuebihui.r2dbc.dbcon.DatabaseConfig">
         <property name="alias">
             <value>goldjetty</value>
         </property>

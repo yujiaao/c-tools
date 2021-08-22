@@ -7,7 +7,7 @@ import javax.sql.DataSource;
 /**
  * @author xwx
  */
-public abstract class AbstractViewBaseDao<T,V> extends BaseDao<T,V>{
+public abstract class AbstractViewBaseDao<T, ID> extends BaseDao<T, ID>{
 
     protected AbstractViewBaseDao(DataSource ds){
         super(ds);
@@ -35,7 +35,7 @@ public abstract class AbstractViewBaseDao<T,V> extends BaseDao<T,V>{
     }
 
     @Override
-    public void setId(T info, V id) {
+    public void setId(T info, ID id) {
         throw new DbException("no key to set, don't use this method!");
     }
 
@@ -50,7 +50,7 @@ public abstract class AbstractViewBaseDao<T,V> extends BaseDao<T,V>{
     }
 
     @Override
-    public boolean deleteByKey(V  key)  {
+    public boolean deleteByKey(ID key)  {
         throw new DbException("This operation is not supported, because table video_recommend_view not have a unique key!");
     }
 

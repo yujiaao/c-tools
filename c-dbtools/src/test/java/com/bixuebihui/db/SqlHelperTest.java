@@ -1,7 +1,5 @@
 package com.bixuebihui.db;
 
-import com.bixuebihui.jdbc.BaseDao;
-import com.bixuebihui.jdbc.SqlFilter;
 import junit.framework.TestCase;
 
 import java.sql.Date;
@@ -11,6 +9,9 @@ import java.util.Collection;
 import java.util.Hashtable;
 import java.util.Map;
 
+import static com.bixuebihui.db.Dialect.MYSQL;
+import static com.bixuebihui.db.Dialect.ORACLE;
+
 public class SqlHelperTest extends TestCase {
 
 	public void testSqlHelper() {
@@ -19,7 +20,7 @@ public class SqlHelperTest extends TestCase {
 		assertEquals(0,sp.filters.size());
 	}
 
-	public void testToCondition() throws SQLException {
+	public void testToCondition() {
 		SqlHelper sp = new SqlHelper();
 		SqlPocket res = sp.toCondition();
 		String cond = res.getCondition().toString();
@@ -27,20 +28,20 @@ public class SqlHelperTest extends TestCase {
 		assertEquals(0, res.getParams().size());
 	}
 
-	public void testToString() throws SQLException {
+	public void testToString() {
 		SqlHelper sp = new SqlHelper();
 		//System.out.println(sp.toString());
 		assertEquals("",sp.toCondition().getCondition().toString());
 	}
 
-	public void testBuild() throws SQLException {
+	public void testBuild() {
 		SqlHelper sp = new SqlHelper();
 		SqlPocket res = sp.build();
 		assertNotNull(res);
 	}
 
 
-	public void testEqualMapOfStringObjectBoolean() throws SQLException {
+	public void testEqualMapOfStringObjectBoolean() {
 		SqlHelper sp = new SqlHelper();
 		Map<String,Object> condition = new Hashtable<>();
 		condition.put("abc", 123);
@@ -51,7 +52,7 @@ public class SqlHelperTest extends TestCase {
 		assertEquals(" where abc = ? and abcd = ?", res.getCondition().toString());
 	}
 
-	public void testEqualMapOfStringObject() throws SQLException {
+	public void testEqualMapOfStringObject() {
 		SqlHelper sp = new SqlHelper();
 		String name = "old";
 		Object value = 1L;
@@ -63,10 +64,10 @@ public class SqlHelperTest extends TestCase {
 	public void testGetDatabaseType() {
 		SqlHelper sp = new SqlHelper();
 		int res = sp.getDatabaseType();
-		assertEquals(BaseDao.MYSQL, res);
+		assertEquals(MYSQL, res);
 	}
 
-	public void testOr() throws SQLException {
+	public void testOr() {
 		SqlHelper sp = new SqlHelper();
 		sp.eq("abc", 123);
 		SqlHelper cond= new SqlHelper();
@@ -79,7 +80,7 @@ public class SqlHelperTest extends TestCase {
 		assertEquals("1234", res.getParams().get(1));
 	}
 
-	public void testNot() throws SQLException {
+	public void testNot() {
 		SqlHelper sp = new SqlHelper();
 		sp.eq("abc", 123);
 		SqlHelper cond= new SqlHelper();
@@ -89,7 +90,7 @@ public class SqlHelperTest extends TestCase {
 		assertEquals(" where (abc = ?) and not (test = ?)", res.getCondition().toString());
 	}
 
-	public void testInStringCollectionOfObject() throws SQLException {
+	public void testInStringCollectionOfObject() {
 		SqlHelper sp = new SqlHelper();
 		String field="abc";
 		Collection<Object> value= Arrays.asList(new Object[]{1,2,3});
@@ -106,7 +107,7 @@ public class SqlHelperTest extends TestCase {
 		assertEquals(" where abc in (?,?,?) and abc1 in (?,?,?)", res.getCondition().toString());
 	}
 
-	public void testInStringObjectArray() throws SQLException {
+	public void testInStringObjectArray() {
 		SqlHelper sp = new SqlHelper();
 		String field="abc";
 
@@ -124,14 +125,14 @@ public class SqlHelperTest extends TestCase {
 		System.out.println(res.getParams());
 	}
 
-	public void testIsNull() throws SQLException {
+	public void testIsNull() {
 		SqlHelper sp = new SqlHelper();
 		sp.isNull("notfield");
 		SqlPocket res = sp.build();
 		assertEquals(" where notfield is null", res.getCondition().toString());
 	}
 
-	public void testAt() throws SQLException {
+	public void testAt() {
 //		SqlHelper sp = new SqlHelper();
 //		ISqlConditionType timespan =new Timespan();
 //		String time;
@@ -140,14 +141,14 @@ public class SqlHelperTest extends TestCase {
 //		assertEquals(" notfield is null", res.getCondition().toString());
 	}
 
-	public void testLike() throws SQLException {
+	public void testLike() {
 		SqlHelper sp = new SqlHelper();
 		sp.like("IK", "analyzer");
 		SqlPocket res = sp.build();
 		assertEquals(" where IK like concat('%',?,'%')", res.getCondition().toString());
 	}
 
-	public void testEqualStringObject() throws SQLException {
+	public void testEqualStringObject() {
 		SqlHelper sp = new SqlHelper();
 		sp.eq("what", "is");
 		SqlPocket res = sp.build();
@@ -169,7 +170,7 @@ public class SqlHelperTest extends TestCase {
 		assertEquals("not", res.getParams().get(2));
 	}
 
-	public void testGreaterThan() throws SQLException {
+	public void testGreaterThan() {
 		SqlHelper sp = new SqlHelper();
 		sp.greaterThan("abc", 123).smallerThan("abc", 456);
 		sp.eq("aq", "not");
@@ -180,7 +181,7 @@ public class SqlHelperTest extends TestCase {
 		assertEquals(456, res.getParams().get(1));
 	}
 
-	public void testSmallerThan() throws SQLException {
+	public void testSmallerThan() {
 		SqlHelper sp = new SqlHelper();
 		sp.smallerThan("abc", 456);
 		SqlPocket res = sp.build();
@@ -191,8 +192,8 @@ public class SqlHelperTest extends TestCase {
 
 	public void testSetDatabaseType() {
 		SqlHelper sp = new SqlHelper();
-		sp.setDatabaseType(BaseDao.ORACLE);
-		assertEquals(BaseDao.ORACLE, sp.getDatabaseType());
+		sp.setDatabaseType(ORACLE);
+		assertEquals(ORACLE, sp.getDatabaseType());
 	}
 
 	public void testIsUseNullAsCondition() {
@@ -233,7 +234,7 @@ public class SqlHelperTest extends TestCase {
 	}
 
 
-	public void testCopyConstructor() throws SQLException, CloneNotSupportedException {
+	public void testCopyConstructor() throws SQLException {
 		SqlHelper sp = new SqlHelper();
 		String[] field= new String[]{"bar","foo"};
 		String[] value= new String[]{"a123","b456"};

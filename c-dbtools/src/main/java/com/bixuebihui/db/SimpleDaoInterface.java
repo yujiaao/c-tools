@@ -10,7 +10,7 @@ import java.sql.SQLException;
  * @author luax
  * @version $Id: $Id
  */
-public interface  SimpleDaoInterface<T,V> {
+public interface  SimpleDaoInterface<T, ID> {
     /**
      * <p>getDbHelper.</p>
      *
@@ -46,10 +46,10 @@ public interface  SimpleDaoInterface<T,V> {
     /**
      * <p>deleteByKey.</p>
      *
-     * @param o a V object.
+     * @param o a ID object.
      * @return a boolean.
      * @throws java.sql.SQLException if any.
      */
-    boolean deleteByKey(V o) throws SQLException;
+    boolean deleteByKey(ID o) throws SQLException;
 
 }

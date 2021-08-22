@@ -1,0 +1,5 @@
+spring:
+  r2dbc:
+    url: r2dbcs:mysql://127.0.0.1:3306/test?useInformationSchema=true&ssl=false
+    username: root
+    password: minuta

@@ -3,6 +3,8 @@ package com.bixuebihui.jdbc;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import static com.bixuebihui.db.Dialect.ORACLE;
+
 /**
  * <p>AbstractBaseDao class.</p>
  *
@@ -77,9 +79,8 @@ public class AbstractBaseDao extends BaseDao<Object, Long> {
      * <p>getDummySql.</p>
      *
      * @return a {@link java.lang.String} object.
-     * @throws java.sql.SQLException if any.
      */
-    public String getDummySql() throws SQLException {
+    public String getDummySql()  {
         if(this.getDbType() == ORACLE) {
             return " from dual";
         }

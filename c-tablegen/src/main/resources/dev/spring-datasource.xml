@@ -4,7 +4,7 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans spring-beans-3.0.xsd">
 
 
-	<bean id="mssqlConfig0" class="com.bixuebihui.dbcon.DatabaseConfig">
+	<bean id="mssqlConfig0" class="com.bixuebihui.r2dbc.dbcon.DatabaseConfig">
 		<property name="alias" value="gdzc"/>
 		<property name="className" value="com.microsoft.sqlserver.jdbc.SQLServerDriver"/>
 		<property name="dburl" value="${dburl}"/>
@@ -12,7 +12,7 @@
 		<property name="password" value="${dbpassword}"/>
 	</bean>
 
-	<bean id="postgresqlconfig" class="com.bixuebihui.dbcon.DatabaseConfig">
+	<bean id="postgresqlconfig" class="com.bixuebihui.r2dbc.dbcon.DatabaseConfig">
 		<property name="alias" value="qsn"/>
 		<property name="className" value="org.postgresql.Driver"/>
 		<property name="dburl" value="jdbc:postgresql://qsn.com:5432/qsn"/>
@@ -21,7 +21,7 @@
 	</bean>
 
 
-	<bean id="mysqlConfig" class="com.bixuebihui.dbcon.DatabaseConfig">
+	<bean id="mysqlConfig" class="com.bixuebihui.r2dbc.dbcon.DatabaseConfig">
 		<property name="alias" value="ssll"/>
 		<property name="className" value="com.mysql.cj.jdbc.Driver"/>
 		<property name="dburl" value="${dburl}"/>

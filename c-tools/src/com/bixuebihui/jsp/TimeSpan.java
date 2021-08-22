@@ -1,7 +1,5 @@
 package com.bixuebihui.jsp;
 
-import com.bixuebihui.db.MaxByteLengthValidator;
-import com.bixuebihui.jdbc.BaseDao;
 import com.bixuebihui.jdbc.ISqlConditionType;
 import com.bixuebihui.util.ParameterUtils;
 import com.bixuebihui.util.Util;
@@ -10,12 +8,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.servlet.http.HttpServletRequest;
-import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+
+import static com.bixuebihui.db.Dialect.*;
 
 /**
  * 年月日时间段的HTML控件，前后端及数据库的支持
@@ -530,11 +529,11 @@ public class TimeSpan implements ISqlConditionType {
     @Override
     public String getConditionSql(String sqlFieldName, int databaseType) {
         switch (databaseType) {
-            case BaseDao.DERBY:
+            case DERBY:
                 return this.getDerbySqlCondition(sqlFieldName);
-            case BaseDao.MYSQL:
+            case MYSQL:
                 return this.getMysqlSqlCondition(sqlFieldName);
-            case BaseDao.ORACLE:
+            case ORACLE:
                 return this.getOracleSqlCondition(sqlFieldName);
             default: {
                 Logger LOG = LoggerFactory.getLogger(TimeSpan.class);

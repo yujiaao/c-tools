@@ -2,7 +2,7 @@ package com.bixuebihui.jdbc;
 
 import com.bixuebihui.DbException;
 import com.bixuebihui.db.*;
-import com.bixuebihui.db.Record.GroupFunction;
+import com.bixuebihui.db.GroupFunction;
 import com.bixuebihui.jdbc.aop.DbHelperAroundAdvice;
 import com.bixuebihui.jdbc.entity.CountObject;
 import com.bixuebihui.jdbc.entity.CountValue;
@@ -29,6 +29,7 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Map.Entry;
+import static com.bixuebihui.db.Dialect.*;
 
 /**
  * <p>Abstract BaseDao class.</p>
@@ -36,7 +37,7 @@ import java.util.Map.Entry;
  * @author xingwx
  * @version $Id: $Id
  */
-public abstract class BaseDao<T, V> implements RowMapper<T>, IBaseListService<T, V>, SimpleDaoInterface<T, V> {
+public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T, ID>, SimpleDaoInterface<T, ID> {
 
     private static final String SELECT_COUNT_FROM = "select count(*) from ";
     /**
@@ -49,26 +50,6 @@ public abstract class BaseDao<T, V> implements RowMapper<T>, IBaseListService<T,
     /** Constant <code>LOG</code> */
     protected static final Logger LOG = LoggerFactory.getLogger(BaseDao.class);
     protected final PojoValidator<T> pojoValidator = new PojoValidator<>();
-
-    /** Constant <code>UNKNOWN=0</code> */
-    public static final int UNKNOWN = 0;
-    /** Constant <code>ORACLE=1</code> */
-    public static final int ORACLE = 1;
-    /** Constant <code>DERBY=2</code> */
-    public static final int DERBY = 2;
-    /** Constant <code>MYSQL=3</code> */
-    public static final int MYSQL = 3;
-    /** Constant <code>SQLSERVER=4</code> */
-    public static final int SQLSERVER = 4;
-    /** Constant <code>SQLSERVER_2005_AND_UP=7</code> */
-    public static final int SQLSERVER_2005_AND_UP = 7;
-    /** Constant <code>POSTGRESQL=5</code> // POSTGRESQL NATIVE DRIVER*/
-    public static final int POSTGRESQL = 5;
-    /** Constant <code>ACCESS=6</code> */
-    public static final int ACCESS = 6;
-    /** Constant <code>H2=8</code> */
-    public static final int H2 = 8;
-
 
 
     static {
@@ -930,7 +911,7 @@ public abstract class BaseDao<T, V> implements RowMapper<T>, IBaseListService<T,
     protected @NotNull
     List<Map<String, Object>> select(String sql, String whereClause, String orderBy,
                                      Object[] params, int rowStart, int rowEnd) {
-        String selectSql = sql + " " + whereClause + " " + (this.getDbType() == BaseDao.DERBY ? "" : orderBy);
+        String selectSql = sql + " " + whereClause + " " + (this.getDbType() == DERBY ? "" : orderBy);
         return getDbHelper().executeQuery(this.getPagingSql(selectSql, rowStart, rowEnd), params);
     }
 
@@ -949,7 +930,7 @@ public abstract class BaseDao<T, V> implements RowMapper<T>, IBaseListService<T,
     List<T> select(String whereClause, Object[] params, String orderByClause, int beginNum, int endNum)
              {
         String query = getSelectAllFromTable() + whereClause;
-        if (this.getDbType() != BaseDao.DERBY) {
+        if (this.getDbType() != DERBY) {
             query += " "+orderByClause;
         }
         query = getPagingSql(query, beginNum, endNum);
@@ -970,13 +951,13 @@ public abstract class BaseDao<T, V> implements RowMapper<T>, IBaseListService<T,
     List<T> select2step(String whereClause, Object[] params, String orderByClause, int beginNum,
                         int endNum) {
         String query = "select " + getKeyName() + " from " + getTableName() + " " + whereClause;
-        if (this.getDbType() != BaseDao.DERBY) {
+        if (this.getDbType() != DERBY) {
             query += orderByClause;
         }
         query = getPagingSql(query, beginNum, endNum);
-        List<V> ids = getDbHelper().executeQuery(query, params, new RowMapperResultReader<>((rs, index) -> {
+        List<ID> ids = getDbHelper().executeQuery(query, params, new RowMapperResultReader<>((rs, index) -> {
             Object o = rs.getObject(1);
-            return (V) o;
+            return (ID) o;
         }));
         return selectByKeys(ids, orderByClause);
     }
@@ -998,7 +979,7 @@ public abstract class BaseDao<T, V> implements RowMapper<T>, IBaseListService<T,
     List<T> selectWithJoin(String fieldList, String whereClause, Object[] params, String orderByClause,
                            int beginNum, int endNum) {
         String query = "select " + fieldList + " from " + getTableName() + " " + whereClause;
-        if (this.getDbType() != BaseDao.DERBY) {
+        if (this.getDbType() != DERBY) {
             query += orderByClause;
         }
         query = getPagingSql(query, beginNum, endNum);
@@ -1017,7 +998,7 @@ public abstract class BaseDao<T, V> implements RowMapper<T>, IBaseListService<T,
      * @param id 主键ID
      * @return 数据对象pojo
      */
-    public T selectByKey(@NotNull V id) {
+    public T selectByKey(@NotNull ID id) {
         String query = SELECT_FROM + getTableName() + WHERE + getKeyName() + "=?";
         List<T> info = getDbHelper().executeQuery(query, new Object[]{id}, new RowMapperResultReader<>(this));
         if (!info.isEmpty()) {
@@ -1033,7 +1014,7 @@ public abstract class BaseDao<T, V> implements RowMapper<T>, IBaseListService<T,
      * @return List of pojo
      */
     public @NotNull
-    List<T> selectByKeys(V[] ids) {
+    List<T> selectByKeys(ID[] ids) {
         if (ids == null || ids.length <= 0) {
             return Collections.emptyList();
         }
@@ -1056,7 +1037,7 @@ public abstract class BaseDao<T, V> implements RowMapper<T>, IBaseListService<T,
      * @return a {@link java.util.List} object.
      */
     protected @NotNull
-    List<T> selectByKeys(List<V> ids, String orderbyClause) {
+    List<T> selectByKeys(List<ID> ids, String orderbyClause) {
         if (ids == null || ids.isEmpty()) {
             return Collections.emptyList();
         }
@@ -1074,7 +1055,7 @@ public abstract class BaseDao<T, V> implements RowMapper<T>, IBaseListService<T,
      * @return true成功删除
      *       Deletes from the database for table
      */
-    public boolean deleteByKey(V id, Connection cn) {
+    public boolean deleteByKey(ID id, Connection cn) {
         String query = getDeleteWhere() + getKeyName() + "=?";
         return 1 <= getDbHelper().executeNoQuery(query, new Object[]{id}, cn);
     }
@@ -1091,7 +1072,7 @@ public abstract class BaseDao<T, V> implements RowMapper<T>, IBaseListService<T,
      * Deletes from the database for table
      */
     @Override
-    public boolean deleteByKey(V id) {
+    public boolean deleteByKey(ID id) {
         String query = getDeleteWhere() + getKeyName() + "=?";
         return 1 <= getDbHelper().executeNoQuery(query, new Object[]{id});
     }
@@ -1102,7 +1083,7 @@ public abstract class BaseDao<T, V> implements RowMapper<T>, IBaseListService<T,
      * @param id an array of V[] objects.
      * @return a boolean.
      */
-    public boolean deleteByKeys(V[] id) {
+    public boolean deleteByKeys(ID[] id) {
         String query = getDeleteWhere() + makeInPlaceHolder(getKeyName(), id.length);
         return 1 <= getDbHelper().executeNoQuery(query, id);
     }
@@ -1126,7 +1107,7 @@ public abstract class BaseDao<T, V> implements RowMapper<T>, IBaseListService<T,
      *           Counts the number of entries for this table in the database.
      * @return 总数
      */
-    public int countByKey(V id) {
+    public int countByKey(ID id) {
         String query = SELECT_COUNT_FROM + getTableName() + WHERE + getKeyName() + "=?";
         Object o = getDbHelper().executeScalar(query, new Object[]{id});
         return o == null ? 0 : Integer.parseInt(o.toString());
@@ -1138,7 +1119,7 @@ public abstract class BaseDao<T, V> implements RowMapper<T>, IBaseListService<T,
      * @param id a V object.
      * @return a int.
      */
-    public int countLikeKey(V id) {
+    public int countLikeKey(ID id) {
         return countByKey(id);
     }
 
@@ -1604,8 +1585,8 @@ public abstract class BaseDao<T, V> implements RowMapper<T>, IBaseListService<T,
      * @return a {@link java.util.List} object.
      */
     public @NotNull
-    List<V> getIDs(List<T> infos) {
-        List<V> res = new ArrayList<>();
+    List<ID> getIDs(List<T> infos) {
+        List<ID> res = new ArrayList<>();
         for (T info : infos) {
             res.add(getId(info));
         }
@@ -1705,7 +1686,7 @@ public abstract class BaseDao<T, V> implements RowMapper<T>, IBaseListService<T,
      */
     public T getLast() {
         @SuppressWarnings("unchecked")
-        V id = (V) this.ar().get("max(" + this.getKeyName() + ")");
+        ID id = (ID) this.ar().get("max(" + this.getKeyName() + ")");
         if (id == null) {
             return null;
         }
@@ -1719,7 +1700,7 @@ public abstract class BaseDao<T, V> implements RowMapper<T>, IBaseListService<T,
      */
     public T getFirst() {
         @SuppressWarnings("unchecked")
-        V id = (V) this.ar().get("min(" + this.getKeyName() + ")");
+        ID id = (ID) this.ar().get("min(" + this.getKeyName() + ")");
         if (id == null) {
             return null;
         }
@@ -1729,8 +1710,8 @@ public abstract class BaseDao<T, V> implements RowMapper<T>, IBaseListService<T,
     /** {@inheritDoc} */
     @Override
     @SuppressWarnings("unchecked")
-    public V getNextKey() {
-        return (V) (Long.valueOf(SequenceUtils.getInstance()
+    public ID getNextKey() {
+        return (ID) (Long.valueOf(SequenceUtils.getInstance()
                 .getNextKeyValue(getSequenceKeyName(), this.getDbHelper())));
 
     }

@@ -312,10 +312,8 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
         java.util.Random rnd = new java.util.Random();
     {{#each fields ~}}
     {{#if this.nullable ~}}
-    {{#eq this.javaType "String" ~}}
-        {{#if @first ~}}java.util.Random rnd = new java.util.Random();
-        {{~else~}}info.set{{firstUp this.name}}(Integer.toString(Math.abs(rnd.nextInt(Integer.MAX_VALUE)), 36));
-        {{/if ~}}
+    {{#eq this.javaType "String" }}
+        info.set{{firstUp this.name}}(Integer.toString(Math.abs(rnd.nextInt(Integer.MAX_VALUE)), 36));
     {{/eq ~}}
     {{/if ~}}
     {{/each ~}}

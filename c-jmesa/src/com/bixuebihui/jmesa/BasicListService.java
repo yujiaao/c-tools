@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static com.bixuebihui.db.Dialect.DERBY;
+
 /**
  * @author xwx
  */
@@ -43,7 +45,7 @@ public class BasicListService extends AbstractBaseDao {
 
         boolean needOrderBy = true;
         String tableName = getTableName();
-        if (this.getDbType() == BaseDao.DERBY || tableName.toUpperCase().indexOf("ORDER BY") > 0) {
+        if (this.getDbType() == DERBY || tableName.toUpperCase().indexOf("ORDER BY") > 0) {
             needOrderBy = false;
         }
 

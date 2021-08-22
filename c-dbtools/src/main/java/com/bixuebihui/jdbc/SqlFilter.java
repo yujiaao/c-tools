@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
+import static com.bixuebihui.db.Dialect.MYSQL;
+
 
 /**
  * <p>SqlFilter class.</p>
@@ -28,7 +30,7 @@ public class SqlFilter {
 	protected List<SqlFilter> orCond = null;
 	protected List<SqlFilter> subGroups = new ArrayList<>();
 	protected Operator subGroupsJoinOperator;
-	private int databaseType = BaseDao.MYSQL;
+	private int databaseType = MYSQL;
 	private boolean useNullAsCondition = false;
 
 	/**

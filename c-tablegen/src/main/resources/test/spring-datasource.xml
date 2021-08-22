@@ -4,7 +4,7 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans spring-beans-2.5.xsd">
 
 
-	<bean id="mssqlConfig0" class="com.bixuebihui.dbcon.DatabaseConfig">
+	<bean id="mssqlConfig0" class="com.bixuebihui.r2dbc.dbcon.DatabaseConfig">
 		<property name="alias">
 			<value>gdzc</value>
 		</property>
@@ -22,7 +22,7 @@
 		</property>
 	</bean>
 
-<bean id="postgresqlconfig" class="com.bixuebihui.dbcon.DatabaseConfig">
+<bean id="postgresqlconfig" class="com.bixuebihui.r2dbc.dbcon.DatabaseConfig">
 		<property name="alias">
 			<value>qsn</value>
 		</property>
@@ -45,7 +45,7 @@
 
 
 
-	<bean id="mssqlConfig" class="com.bixuebihui.dbcon.DatabaseConfig">
+	<bean id="mssqlConfig" class="com.bixuebihui.r2dbc.dbcon.DatabaseConfig">
 		<property name="alias">
 			<value>gdzc</value>
 		</property>
@@ -64,7 +64,7 @@
 	</bean>
 
 
-	<bean id="mysqlConfig" class="com.bixuebihui.dbcon.DatabaseConfig">
+	<bean id="mysqlConfig" class="com.bixuebihui.r2dbc.dbcon.DatabaseConfig">
 		<property name="alias">
 			<value>ssll</value>
 		</property>
@@ -86,7 +86,7 @@
 	</bean>
 
 
-		<bean id="vol2008Config" class="com.bixuebihui.dbcon.DatabaseConfig">
+		<bean id="vol2008Config" class="com.bixuebihui.r2dbc.dbcon.DatabaseConfig">
 		<property name="alias">
 			<value>appraise</value>
 		</property>
@@ -105,7 +105,7 @@
 	</bean>
 
 
-	<bean id="oracleConfig" class="com.bixuebihui.dbcon.DatabaseConfig">
+	<bean id="oracleConfig" class="com.bixuebihui.r2dbc.dbcon.DatabaseConfig">
 		<property name="alias">
 			<value>appraise</value>
 		</property>
@@ -124,7 +124,7 @@
 	</bean>
 
 
-	<bean id="verycardConfig" class="com.bixuebihui.dbcon.DatabaseConfig">
+	<bean id="verycardConfig" class="com.bixuebihui.r2dbc.dbcon.DatabaseConfig">
 		<property name="alias">
 			<value>verycard</value>
 		</property>
@@ -141,7 +141,7 @@
 			<value>cyc123</value>
 		</property>
 	</bean>
-	<bean id="cheguanConfig" class="com.bixuebihui.dbcon.DatabaseConfig">
+	<bean id="cheguanConfig" class="com.bixuebihui.r2dbc.dbcon.DatabaseConfig">
 		<property name="alias">
 			<value>cheguan</value>
 		</property>
@@ -164,7 +164,7 @@
 	<alias name="oracleConfig" alias="dbConfig" />
  -->
 
-<bean id="derbyConfig" class="com.bixuebihui.dbcon.DatabaseConfig">
+<bean id="derbyConfig" class="com.bixuebihui.r2dbc.dbcon.DatabaseConfig">
 		<property name="alias">
 			<value>goldjetty</value>
 		</property>
@@ -185,7 +185,7 @@
 
 
 
-	<bean id="trsConfig" class="com.bixuebihui.dbcon.DatabaseConfig">
+	<bean id="trsConfig" class="com.bixuebihui.r2dbc.dbcon.DatabaseConfig">
 		<property name="alias">
 			<value>trs</value>
 		</property>

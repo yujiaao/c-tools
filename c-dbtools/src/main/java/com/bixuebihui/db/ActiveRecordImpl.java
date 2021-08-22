@@ -13,6 +13,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
 
+import static com.bixuebihui.db.Dialect.*;
+
 /**
  * Created with IntelliJ IDEA. User: Administrator Date: 13-4-18 Time: 下午5:57 To
  * change this template use File | Settings | File Templates.
@@ -186,7 +188,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	/** {@inheritDoc} */
 	@Override
 	public ActiveRecord<T> orderByIn(String field, Object[] order) {
-		if(operator.getDbType()!=BaseDao.DERBY) {
+		if(operator.getDbType()!=DERBY) {
 			orderStack.addSortByIn(field, order);
 		}
 		return this;
@@ -218,7 +220,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 
 	protected List<Object> getParams(){
 		List<Object> res = sqlPocket.getParams();
-		if(operator.getDbType()!= BaseDao.DERBY) {
+		if(operator.getDbType()!= DERBY) {
 			res.addAll(orderStack.getParams());
 		}
 		return res;
@@ -371,7 +373,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	}
 
 	private String parseLimitSql() throws DbException {
-		if (operator.getDbType() == BaseDao.MYSQL || operator.getDbType() == BaseDao.H2) {
+		if (operator.getDbType() == MYSQL || operator.getDbType() == H2) {
 
 			if (limit == null) {
 				limit = SqlLimit.LIMIT_ONE;
@@ -452,6 +454,8 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 		this.filterStack = new SqlHelper(src.filterStack);
 		this.limit = new SqlLimit(src.limit);
 		this.orderStack = new SqlSort(this.orderStack);
+		this.operator = src.operator;
+		this.resultFields = src.resultFields;
 	}
 
 	/** {@inheritDoc} */
@@ -589,7 +593,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 			for(String field:fields){
 				Object val = values[i];
 				if(val instanceof SqlString){
-					sb.append(field).append(" = ").append(val.toString());
+					sb.append(field).append(" = ").append(val);
 				}else{
 					sb.append(field).append(" = ? ");
 					params.add(val);
@@ -603,7 +607,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 			Collections.addAll(params, getParams().toArray());
 
 			String sql ="update "+operator.getTableName()+" set "+
-					sb.toString()+ whereClause;
+					sb + whereClause;
 			if(cn==null) {
 				return operator.getDbHelper().executeNoQuery(sql, params.toArray());
 			}

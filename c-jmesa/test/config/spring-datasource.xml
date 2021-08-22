@@ -5,7 +5,7 @@
 	http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
 
-    <bean id="mysqlConfig" class="com.bixuebihui.dbcon.DatabaseConfig">
+    <bean id="mysqlConfig" class="com.bixuebihui.r2dbc.dbcon.DatabaseConfig">
         <property name="alias">
             <value>test</value>
         </property>

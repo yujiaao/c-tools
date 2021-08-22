@@ -8,9 +8,7 @@ import com.bixuebihui.jdbc.DbHelper;
 import com.bixuebihui.jdbc.IDbHelper;
 import com.bixuebihui.jdbc.entity.CountObject;
 import com.bixuebihui.jdbc.entity.CountValue;
-import com.bixuebihui.db.Record.GroupFunction;
 import junit.framework.TestCase;
-import org.junit.Test;
 
 import java.sql.Connection;
 import java.sql.ResultSet;

@@ -1,7 +1,6 @@
 package com.bixuebihui.cache;
 
 
-import com.bixuebihui.jdbc.BaseDao;
 import com.bixuebihui.jdbc.RowMapperResultReader;
 import com.bixuebihui.sequence.SequenceUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -9,6 +8,8 @@ import org.apache.commons.lang3.StringUtils;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+
+import static com.bixuebihui.db.Dialect.DERBY;
 
 /**
  * DictionaryItem
@@ -67,7 +68,7 @@ public class DictionaryList extends BaseList<DictionaryItem, String> {
         }
 
         String query = getSelectSql() + getTableName() + " " + whereClause + " " + def.getSqlCondition();
-        if (this.getDbType() != BaseDao.DERBY) {
+        if (this.getDbType() != DERBY) {
             query += orderbyClause;
         }
         query = getPagingSql(query, beginNum, endNum);
@@ -96,7 +97,7 @@ public class DictionaryList extends BaseList<DictionaryItem, String> {
      * @param id 扩展表 id
      * @return DictionaryItem
      */
-    public DictionaryItem selectByKey(long id) throws SQLException {
+    public DictionaryItem selectByKey(long id) {
         String query = getSelectSql() + getTableName() + " where " + def.getIdFieldName() + "=?" + " " + def.getSqlCondition();
         List<DictionaryItem> info = dbHelper.executeQuery(query, new Object[]{id},
                 new RowMapperResultReader<>(this));
@@ -112,8 +113,7 @@ public class DictionaryList extends BaseList<DictionaryItem, String> {
      * @param id id
      * @return List of DictionaryItem
      */
-    public List<DictionaryItem> selectAllLikeKey(long id)
-            throws SQLException {
+    public List<DictionaryItem> selectAllLikeKey(long id) {
         String query = getSelectSql() + getTableName() + " where " + def.getIdFieldName() + "=?" + " " + def.getSqlCondition();
         return dbHelper.executeQuery(query, new Object[]{id},
                 new RowMapperResultReader<>(this));
@@ -163,7 +163,7 @@ public class DictionaryList extends BaseList<DictionaryItem, String> {
      * @param id id
      * @return count
      */
-    public int countByKey(long id) throws SQLException {
+    public int countByKey(long id) {
         String query = "select count(*) from " + getTableName()
                 + " where " + def.getIdFieldName() + "=?" + " " + def.getSqlCondition();
         Object o = dbHelper.executeScalar(query, new Object[]{id});
@@ -176,7 +176,7 @@ public class DictionaryList extends BaseList<DictionaryItem, String> {
      * @param id id
      * @return count
      */
-    public int countLikeKey(long id) throws SQLException {
+    public int countLikeKey(long id) {
         String query = "select count(*) from " + getTableName()
                 + " where " + def.getIdFieldName() + "=?" + " " + def.getSqlCondition();
         Object o = dbHelper.executeScalar(query, new Object[]{id});

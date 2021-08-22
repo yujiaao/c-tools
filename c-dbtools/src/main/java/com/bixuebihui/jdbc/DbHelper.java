@@ -3,6 +3,7 @@ package com.bixuebihui.jdbc;
 import com.bixuebihui.DbException;
 import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.StandardLineSeparator;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -111,19 +112,27 @@ public class DbHelper implements IDbHelper {
     }
 
     private static void dumpSql(SQLException ex, String sql, Object[] params) {
-        LOG.warn(ex.getMessage());
-        LOG.warn("===" + sql);
-        if (params != null) {
-            for (Object o : params) {
-                LOG.warn("===" + o);
+        if(LOG.isWarnEnabled()) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(ex.getMessage()).append("\n");
+            sb.append("===" + sql).append("\n");
+            if (params != null) {
+                for (Object o : params) {
+                    sb.append("===" + o).append("\n");
+                }
             }
+            LOG.warn(sb.toString());
         }
     }
 
     private static void dumpSql(Exception ex, String[] sql) {
-        LOG.warn(ex.getMessage());
+        if(LOG.isWarnEnabled()) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(ex.getMessage()).append("\n");
         for (String s : sql) {
-            LOG.warn("==" + s);
+            sb.append("==" + s).append("\n");
+        }
+            LOG.warn(sb.toString());
         }
     }
 
