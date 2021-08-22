@@ -1328,7 +1328,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @return a {@link Long} object.
      */
     public Long getLastInsertId(Connection cn) {
-        return Long.parseLong(this.getDbHelper().executeScalar(getLastInsertIdSql(), null, cn).toString());
+        return Long.parseLong(this.getDbHelper().executeScalar(getLastInsertIdSql(), null, Mono.just(cn)).block().toString());
     }
 
     private String getLastInsertIdSql() {

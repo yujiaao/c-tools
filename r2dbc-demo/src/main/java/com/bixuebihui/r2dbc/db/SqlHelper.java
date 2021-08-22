@@ -9,6 +9,8 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.Map.Entry;
 
+import static com.bixuebihui.db.Dialect.MYSQL;
+
 /**
  * <p>SqlHelper class.</p>
  *
@@ -20,7 +22,7 @@ public class SqlHelper {
 	List<BaseFilter> filters;
 	List<SqlHelper> orCond = null;
 	List<SqlHelper> notCond = null;
-	private int databaseType = BaseDao.MYSQL;
+	private int databaseType = MYSQL;
 	private boolean useNullAsCondition = false;
 	private boolean acceptEmptyStringAsNullObjectInCondition = false;
 

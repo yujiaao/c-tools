@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static java.sql.ResultSetMetaData.columnNullable;
+import static com.bixuebihui.db.Dialect.*;
 
 /**
  * Suitable to use when view is not available, for example the DBA not allowed to create view for some reasons.
@@ -50,7 +51,7 @@ public class OnFlyViewUtils {
 
                 //Access driver have not a column named IS_AUTOINCREMENT
                 // 23
-                isAutoIncrement = (dbType != BaseDao.ACCESS) && rs.isAutoIncrement(i);
+                isAutoIncrement = (dbType != ACCESS) && rs.isAutoIncrement(i);
 
                 //.getString("DECIMAL_DIGITS");
                 decimalDigits = rs.getPrecision(i);

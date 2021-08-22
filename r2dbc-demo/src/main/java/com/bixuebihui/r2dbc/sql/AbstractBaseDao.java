@@ -1,7 +1,12 @@
 package com.bixuebihui.r2dbc.sql;
 
+import com.bixuebihui.DbException;
+import io.r2dbc.spi.Row;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
+import static com.bixuebihui.db.Dialect.ORACLE;
 
 /**
  * <p>AbstractBaseDao class.</p>
@@ -22,8 +27,8 @@ public class AbstractBaseDao extends BaseDao<Object, Long> {
 
     /** {@inheritDoc} */
     @Override
-    public Object mapRow(ResultSet rs, int index) throws SQLException {
-        throw new SQLException("not implement!");
+    public Object mapRow(Row rs)  {
+        throw new DbException("not implement!");
     }
 
 
@@ -77,9 +82,8 @@ public class AbstractBaseDao extends BaseDao<Object, Long> {
      * <p>getDummySql.</p>
      *
      * @return a {@link String} object.
-     * @throws SQLException if any.
      */
-    public String getDummySql() throws SQLException {
+    public String getDummySql() {
         if(this.getDbType() == ORACLE) {
             return " from dual";
         }

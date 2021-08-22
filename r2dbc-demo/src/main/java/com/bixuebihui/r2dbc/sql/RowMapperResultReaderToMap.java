@@ -1,7 +1,8 @@
 package com.bixuebihui.r2dbc.sql;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import io.r2dbc.spi.Result;
+import reactor.core.publisher.Mono;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -45,21 +46,17 @@ public class RowMapperResultReaderToMap<K,T> {
     /**
      * <p>processResultSet.</p>
      *
-     * @param rs a {@link ResultSet} object.
+     * @param rs a {@link Result} object.
      * @return a {@link Map} object.
-     * @throws SQLException if any.
      */
     @SuppressWarnings("unchecked")
-    public Map<K,T> processResultSet(ResultSet rs) throws SQLException {
+    public Map<K,T> processResultSet(Result rs)  {
         if(res ==null) {
             res = new HashMap<>();
         }else{
             res.clear();
         }
-        int index=1;
-        while (rs.next()) {
-            res.put((K)rs.getObject(keyName), handle.mapRow(rs, index++));
-        }
+        Mono.from( rs.map((row, meta) -> res.put((K)row.get(keyName), handle.mapRow(row)))).block();
         return res;
     }
 }

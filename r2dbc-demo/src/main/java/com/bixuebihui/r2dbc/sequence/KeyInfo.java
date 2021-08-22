@@ -1,12 +1,11 @@
 package com.bixuebihui.r2dbc.sequence;
 
 import com.bixuebihui.r2dbc.sql.IDbHelper;
-import org.apache.commons.dbutils.DbUtils;
+import io.r2dbc.spi.Connection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Mono;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 
 /**
  * Created by IntelliJ IDEA.<br>
@@ -52,7 +51,7 @@ public class KeyInfo {
 
 	protected Logger LOG = LoggerFactory.getLogger(KeyInfo.class);
 
-    private void init(String keyName, int poolSize, IDbHelper dbHelper) throws SQLException{
+    private void init(String keyName, int poolSize, IDbHelper dbHelper) {
         this.dbHelper = dbHelper;
 
         this.poolSize = poolSize;
@@ -67,9 +66,8 @@ public class KeyInfo {
      * @param keyName a {@link String} object.
      * @param poolSize a int.
      * @param dbHelper a {@link IDbHelper} object.
-     * @throws SQLException if any.
      */
-    public KeyInfo(String keyName, int poolSize, IDbHelper dbHelper) throws SQLException {
+    public KeyInfo(String keyName, int poolSize, IDbHelper dbHelper)  {
         init(keyName, poolSize, dbHelper);
     }
 
@@ -114,9 +112,8 @@ public class KeyInfo {
 	 * 获取下一个Sequence值
      *
 	 * @return 下一个Sequence值
-     * @throws SQLException 数据库出错
      */
-	public long getNextKey() throws SQLException {
+	public long getNextKey()  {
 		if (nextKey > maxKey) {
 			int maxTries=10;
 			int i=0;
@@ -135,11 +132,10 @@ public class KeyInfo {
 	/**
 	 * 执行Sequence表信息初始化和更新工作
 	 *
-	 * @throws SQLException 数据库出错
 	 */
-    private int retrieveFromDB() throws SQLException {
+    private int retrieveFromDB()  {
 
-        Connection cn = dbHelper.getConnection();
+        Connection cn = dbHelper.getConnection().block();
         cn.setAutoCommit(false);
         try {
             // 查询数据库
@@ -148,7 +144,7 @@ public class KeyInfo {
             int i = 0;
             while (i < 100 && res <= 0) {
                 Object o = dbHelper.executeScalar(SQL_QUERY,
-                        new Object[] { keyName }, cn);
+                        new Object[] { keyName }, Mono.just(cn));
 
                 if (o != null) {
                     Long value = Long.valueOf(o.toString());
@@ -160,30 +156,30 @@ public class KeyInfo {
 
                     LOG.debug("更新Sequence最大值！");
                     res = dbHelper.executeNoQuery(SQL_UPDATE, new Object[] {
-                            (long) poolSize, keyName, value }, cn);
+                            (long) poolSize, keyName, value },  Mono.just( cn)).block();
 
                 } else {
                     LOG.debug("执行Sequence数据库初始化工作！");
                     String initSql = "INSERT INTO " + SEQUENCE_TABLE
                             + "(KEYNAME,KEYVALUE) VALUES('" + keyName
                             + "',10000 + " + poolSize + ")";
-                    res = dbHelper.executeNoQuery(initSql, new Object[0], cn);
+                    res = dbHelper.executeNoQuery(initSql, new Object[0], Mono.just( cn)).block();
                     maxKey = 10000L + poolSize;
                     minKey = maxKey - poolSize + 1;
                     nextKey = minKey;
                 }
                 i++;
             }
-            cn.commit();
+            cn.commitTransaction();
 
             return res;
-        } catch (SQLException e) {
-            cn.rollback();
+        } catch (Exception e) {
+            cn.rollbackTransaction();
             dbHelper.executeNoQuery(INSTALL);
             throw e;
         } finally {
             cn.setAutoCommit(true);
-            DbUtils.closeQuietly(cn);
+            cn.close();
         }
 
     }
@@ -192,9 +188,8 @@ public class KeyInfo {
      * <p>moveTo.</p>
      *
      * @param max a {@link Long} object.
-     * @throws SQLException if any.
      */
-    public void moveTo(Long max) throws SQLException {
+    public void moveTo(Long max)  {
         dbHelper.executeNoQuery(MOVE_TO_MAX, new Object[] {
                 max, keyName });
         nextKey = max;

@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import static com.bixuebihui.db.Dialect.*;
 
 /**
  * @author xwx
@@ -678,7 +679,7 @@ public class TableUtils {
 
                 //Access driver have not a column named IS_AUTOINCREMENT
                 // 23
-                isAutoIncrement = (dbType != BaseDao.ACCESS) && NameUtils.isYes(rs.getString("IS_AUTOINCREMENT"));
+                isAutoIncrement = (dbType != ACCESS) && NameUtils.isYes(rs.getString("IS_AUTOINCREMENT"));
 
                 String digits = rs.getString("DECIMAL_DIGITS");
                 if (StringUtils.isNumeric(digits)) {

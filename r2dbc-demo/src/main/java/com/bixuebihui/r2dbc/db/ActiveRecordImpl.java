@@ -6,18 +6,20 @@ import com.bixuebihui.db.GroupFunction;
 import com.bixuebihui.jdbc.entity.CountObject;
 import com.bixuebihui.jdbc.entity.CountValue;
 import com.bixuebihui.r2dbc.sql.*;
+import io.r2dbc.spi.Connection;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Mono;
 
 import javax.validation.constraints.NotNull;
-import java.sql.Connection;
-import java.sql.SQLException;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+
+import static com.bixuebihui.db.Dialect.*;
 
 /**
  * Created with IntelliJ IDEA. User: Administrator Date: 13-4-18 Time: 下午5:57 To
@@ -136,8 +138,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	/** {@inheritDoc} */
 
 	@Override
-	public ActiveRecord<T> eq(String[] fields, Object[] value)
-			throws SQLException {
+	public ActiveRecord<T> eq(String[] fields, Object[] value) {
 		filterStack.eq(fields, value);
 		return this;
 	}
@@ -192,7 +193,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	/** {@inheritDoc} */
 	@Override
 	public ActiveRecord<T> orderByIn(String field, Object[] order) {
-		if(operator.getDbType()!= BaseDao.DERBY) {
+		if(operator.getDbType()!= DERBY) {
 			orderStack.addSortByIn(field, order);
 		}
 		return this;
@@ -224,7 +225,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 
 	protected List<Object> getParams(){
 		List<Object> res = sqlPocket.getParams();
-		if(operator.getDbType()!= BaseDao.DERBY) {
+		if(operator.getDbType()!= DERBY) {
 			res.addAll(orderStack.getParams());
 		}
 		return res;
@@ -335,7 +336,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 			if (cn == null) {
 				return operator.getDbHelper().executeScalar(sql, params);
 			}
-			return operator.getDbHelper().executeScalar(sql, params, cn);
+			return operator.getDbHelper().executeScalar(sql, params, cn).block();
 		} finally {
 			clear();
 		}
@@ -350,7 +351,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 			String sql = getVectorSql(field);
 			Object[] params = getParams().toArray();
 			final List<Object> res = new ArrayList<>();
-			RowCallbackHandler handle = resultSet -> res.add(resultSet.getObject(1));
+			RowCallbackHandler handle = resultSet -> res.add(resultSet.get(0));
 			operator.getDbHelper().executeQuery(sql, params, handle);
 
 			return res;
@@ -378,7 +379,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	}
 
 	private String parseLimitSql() throws DbException {
-		if (operator.getDbType() == BaseDao.MYSQL || operator.getDbType() == BaseDao.H2) {
+		if (operator.getDbType() == MYSQL || operator.getDbType() == H2) {
 
 			if (limit == null) {
 				limit = SqlLimit.LIMIT_ONE;
@@ -421,9 +422,10 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 
 	/**
 	 * {@inheritDoc}
+	 * @return
 	 */
 	@Override
-	public int count() throws DbException {
+	public Mono<Integer> count() throws DbException {
 		try {
 			sqlPocket = this.getSql();
 			String where = formWhereClause();
@@ -436,9 +438,10 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 
 	/**
 	 * {@inheritDoc}
+	 * @return
 	 */
 	@Override
-	public boolean exists() throws DbException {
+	public Mono<Boolean> exists() throws DbException {
 		try {
 			sqlPocket = this.getSql();
 			String where = formWhereClause();
@@ -493,7 +496,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 			String sql = getVectorSql(field);
 			Object[] params = getParams().toArray();
 			final List<String> res = new ArrayList<>();
-			RowCallbackHandler handle = resultSet -> res.add(resultSet.getString(1));
+			RowCallbackHandler handle = resultSet -> res.add(resultSet.get(0));
 			operator.getDbHelper().executeQuery(sql, params, handle );
 
 			return res;
@@ -581,7 +584,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public int update(@NotNull String[] fields, @NotNull Object[] values) throws DbException {
+	public Mono<Integer> update(@NotNull String[] fields, @NotNull Object[] values) throws DbException {
 		try {
 			if (fields.length != values.length) {
 				throw new IllegalArgumentException("fields and values must have some length");
@@ -622,7 +625,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 
 	/** {@inheritDoc} */
 	@Override
-	public int update(@NotNull  String fields, Object values)throws DbException {
+	public Mono<Integer> update(@NotNull  String fields, Object values)throws DbException {
 		return update(new String[]{fields}, new Object[]{values});
 	}
 

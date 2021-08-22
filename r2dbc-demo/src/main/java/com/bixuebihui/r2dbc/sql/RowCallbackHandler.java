@@ -1,7 +1,7 @@
 package com.bixuebihui.r2dbc.sql;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import io.r2dbc.spi.Result;
+
 
 /**
  * <p>RowCallbackHandler interface.</p>
@@ -14,8 +14,7 @@ public interface RowCallbackHandler
     /**
      * <p>processRow.</p>
      *
-     * @param resultset a {@link ResultSet} object.
-     * @throws SQLException if any.
+     * @param result a {@link Result} object.
      */
-    void processRow(ResultSet resultset) throws SQLException;
+    void processRow(Result result);
 }

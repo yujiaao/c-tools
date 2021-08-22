@@ -251,38 +251,23 @@ public class DbHelper implements IDbHelper {
             return new int[0];
         }
 
-
         Mono<Connection> cn = getConnection(false);
+        return cn.flatMapMany(connection -> {
 
-        int[] j = new int[sqls.length];
-        int step = -1;
-        try {
-            cn.setAutoCommit(false);
-            try (Statement oStmt = cn.createStatement()) {
-                for (int i = 0; i < sqls.length; i++) {
-                    j[i] = oStmt.executeUpdate(sqls[i]); //NOSONAR
-                    step = i;
-                }
-                cn.commit();
-            }
-        } catch (SQLException e) {
-            try {
-                cn.rollback();
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-            }
+            int[] j = new int[sqls.length];
+            int step = -1;
 
-            DbException ex = new DbException("执行SQL语句出错"
-                    + (step < 0 ? "" : ":" + sqls[step])
-                    + " DbHelper.ExecuteUpdate" + e.getMessage());
-            dumpSql(ex, sqls);
+            connection.setAutoCommit(false);
+                    for (int i = 0; i < sqls.length; i++) {
+                        Statement oStmt = cn.createStatement(sqls[i]);
+                        j[i] = oStmt.execute();
+                        step = i;
+                    }
+            connection.commit();
 
-            throw ex;
 
-        } finally {
-            close(cn);
-        }
-        return j;
+            return j;
+        })
     }
 
     /**
@@ -290,17 +275,13 @@ public class DbHelper implements IDbHelper {
      */
     @Override
     public @NotNull
-    List<Map<String, Object>> exeQuery(String sql) {
+    Flux<Map<String, Object>> exeQuery(String sql) {
         Mono<Connection> cn = getConnection(true);
-        try (Statement stmt = cn.createStatement();
-             Result rset = stmt.executeQuery(sql)) {
-            return resultSet2Vector(rset);
-        } catch (SQLException ex) {
-            dumpSql(ex, sql, null);
-            throw new DbException(ex);
-        } finally {
-            close(cn);
-        }
+        return cn.flatMapMany(connection -> {
+                         Statement stmt = connection.createStatement(sql);
+                        Result rset = stmt.execute()){
+                        return resultSet2Vector(rset);
+                    });
     }
 
     /**
@@ -332,11 +313,11 @@ public class DbHelper implements IDbHelper {
      */
     @Override
     public Mono<Integer> executeNoQuery(String sql, Object[] params, Mono<Connection> cn) {
-        return cn.flatMapMany(connection -> {
+        return Mono.from(cn.flatMapMany(connection -> {
             Statement p = connection.createStatement(sql);
             this.fillParameter(p, params, null);
             return Flux.from(p.execute()).map(result -> result.getRowsUpdated());
-        });
+        }));
     }
 
     /**
@@ -380,12 +361,13 @@ public class DbHelper implements IDbHelper {
     @Override
     public Mono<Void> executeQuery(String sql, RowCallbackHandler handle) {
         Mono<Connection> cn = this.getConnection(true);
-        Statement stmt = cn.createStatement(sql);
-        Result rs = stmt.execute();
-        rs.map((row, meta) -> {
-            handle.processRow(rs);
-        });
-
+        return Mono.from(cn.flatMapMany(connection -> {
+            Statement stmt = connection.createStatement(sql);
+            return Flux.from(stmt.execute()).map(result -> {
+                handle.processRow(result);
+                return Mono.empty();
+            });
+        })).then();
     }
 
     /**
@@ -556,18 +538,14 @@ public class DbHelper implements IDbHelper {
     @Override
     public Mono<List<Map<String, Object>>> executeQuery(String sql, Object[] params) {
         Mono<Connection> cn = getConnection(true);
-        Result rs;
-        Flux<Object> v = Flux.from(cn.flatMapMany(connection -> {
+        return Mono.from(cn.flatMapMany(connection -> {
             Statement p = connection.createStatement(sql);
             if (params != null && params.length > 0) {
                 fillParameter(p, params);
 
             }
             return p.execute();
-        }).map((row, meta) ->
-                this.resultSet2Vector(row);
-        );
-        return Mono.from(v);
+        }).map((row, meta) -> this.resultSet2Vector(row)));
     }
 
     /**
@@ -616,8 +594,8 @@ public class DbHelper implements IDbHelper {
     public long insertAndFetchLastId(String sql, Object[] params,
                                      Class[] targetSqlTypes, Mono<Connection> conn) {
         boolean localCn = conn == null;
-        Connection cn = localCn ? getConnection(false) : conn;
-        try (Statement p = cn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        Connection cn = localCn ? getConnection(false).block() : conn.block();
+        try (Statement p = cn.createStatement(sql) {
 
             if (ArrayUtils.isNotEmpty(params)) {
                 fillParameter(p, params, targetSqlTypes);
@@ -625,20 +603,9 @@ public class DbHelper implements IDbHelper {
 
             p.execute();
 
-            Result rs = p.getGeneratedKeys();
-            if (rs != null && rs.next()) {
-                return Long.parseLong(rs.getObject(1).toString());
-            }
-            return 0;
-
-
-        } catch (SQLException ex) {
-            dumpSql(ex, sql, params);
-            throw new DbException(ex);
-        } finally {
-            if (localCn) {
-                close(cn);
-            }
+            Flux.from(p.executeReturnGeneratedKeys()).map(rs -> {
+                    return Long.parseLong(rs.get(0).toString());
+            });
         }
     }
 
@@ -650,10 +617,8 @@ public class DbHelper implements IDbHelper {
      * @return a int.
      */
     @Override
-    public int executeNoQuery(String sql, Object[] params) {
-
+    public Mono<Integer> executeNoQuery(String sql, Object[] params) {
         return executeNoQuery(sql, params, new int[0]);
-
     }
 
     /**
@@ -664,24 +629,16 @@ public class DbHelper implements IDbHelper {
      * @param handle a {@link RowCallbackHandler} object.
      */
     @Override
-    public void executeQuery(String sql, Object[] params,
+    public Mono<Void> executeQuery(String sql, Object[] params,
                              RowCallbackHandler handle) {
-        Connection cn = getConnection(true);
-        try (Statement p = ArrayUtils.isNotEmpty(params) ? cn.prepareStatement(sql) : cn.createStatement()) {
-            if (p instanceof Statement) {
-                fillParameter((Statement) p, params, null);
+        Connection cn = getConnection(true).block();
+        Statement p = cn.createStatement(sql) ;
+            if(params!=null && params.length>0)P
+                fillParameter( p, params, null);
             }
-            try (Result rs = (p instanceof Statement) ? ((Statement) p).executeQuery() : p.executeQuery(sql)) {
-                while (rs.next()) {
-                    handle.processRow(rs);
-                }
-            }
-        } catch (SQLException ex) {
-            dumpSql(ex, sql, params);
-            throw new DbException(ex);
-        } finally {
-            DbUtils.closeQuietly(cn);
-        }
+            return Flux.from (p.execute()).map(rs ->
+                    handle.processRow(rs))).then();
+
 
     }
 
@@ -689,15 +646,15 @@ public class DbHelper implements IDbHelper {
      * {@inheritDoc}
      */
     @Override
-    public @NotNull <T> List<T> executeQuery(String sql, Object[] params,
+    public @NotNull <T> Flux<T> executeQuery(String sql, Object[] params,
                                              @NotNull RowMapperResultReader<T> handle) {
         Mono<Connection> cn = getConnection(true);
-        Statement p = ArrayUtils.isNotEmpty(params) ? cn.prepareStatement(sql) : cn.createStatement();
-        if (p instanceof Statement) {
-            fillParameter((Statement) p, params, null);
-        }
-        try (Result rs = (p instanceof Statement) ? ((Statement) p).executeQuery() : p.executeQuery(sql)) {
-            return handle.processResult(rs);
+        return cn.flatMapMany(connection -> {
+            Statement p = connection.create(sql);
+            if (params != null && params.length > 0) {
+                fillParameter((Statement) p, params, null);
+            }
+            return Flux.from(p.execute()).map(rs -> handle.processResult(rs));
         }
     }
 

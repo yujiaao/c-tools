@@ -1,5 +1,7 @@
 package com.bixuebihui.r2dbc.sql;
 
+import io.r2dbc.spi.Row;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -13,10 +15,8 @@ public interface RowMapper<T> {
    /**
     * <p>mapRow.</p>
     *
-    * @param rs    a {@link ResultSet} object.
-    * @param index a int.
+    * @param row    a {@link ResultSet} object.
     * @return a T object.
-    * @throws SQLException if any.
     */
-   T mapRow(ResultSet rs, int index) throws SQLException;
+   T mapRow(Row row) ;
 }

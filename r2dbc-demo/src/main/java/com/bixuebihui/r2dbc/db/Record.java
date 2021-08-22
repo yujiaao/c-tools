@@ -78,7 +78,7 @@ public interface Record<T> {
 	 * @return a int.
 	 * @throws DbException if any.
 	 */
-	int count() throws DbException;
+	Mono<Integer> count() throws DbException;
 
 	/**
 	 * <p>countValue.</p> 获得数量
@@ -126,7 +126,7 @@ public interface Record<T> {
 	 * @return true 存在
 	 * @throws DbException 数据库异常
 	 */
-	boolean exists() throws DbException;
+	Mono<Boolean> exists() throws DbException;
 
 	/**
 	 * <p>getStringVector.</p> 获得单个字段
@@ -153,7 +153,7 @@ public interface Record<T> {
 	 * @return 影响的行数
 	 * @throws DbException 数据库异常
 	 */
-	int inc(String field) throws DbException;
+	Mono<Integer> inc(String field) throws DbException;
 
 	/**
 	 * 更新字段fields为values指定值
@@ -163,7 +163,7 @@ public interface Record<T> {
 	 * @return 影响的行数
 	 * @throws DbException  数据库异常
 	 */
-	int update(String[] fields, Object[] values) throws DbException;
+	Mono<Integer> update(String[] fields, Object[] values) throws DbException;
 
 	/**
 	 * <p>update.</p>
@@ -173,6 +173,6 @@ public interface Record<T> {
 	 * @return a int.
 	 * @throws DbException if any.
 	 */
-	int update(String fields, Object values)throws DbException;
+	Mono<Integer> update(String fields, Object values)throws DbException;
 
 }

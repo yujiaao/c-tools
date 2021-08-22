@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.*;
 import java.util.*;
+import static com.bixuebihui.db.Dialect.*;
 
 /**
  * @author xwx
@@ -348,7 +349,7 @@ public class TableSetInfo {
                 SqlFileExecutor ex = new SqlFileExecutor();
                 String filename;
 
-                if (daoMetaTable.getDbType() == BaseDao.POSTGRESQL) {
+                if (daoMetaTable.getDbType() == POSTGRESQL) {
                     filename = "postgresql";
                 } else {
                     filename = "mysql";
