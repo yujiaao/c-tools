@@ -28,6 +28,6 @@ jobs:
     - name: Set up MySQL    
       run: |
         sudo /etc/init.d/mysql start
-        mysql -e 'CREATE DATABASE ${{ env.DB_DATABASE }};grant all on test.* to test@127.0.0.1 identified by test123;' -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }}
+        mysql -e "CREATE DATABASE ${{ env.DB_DATABASE }}; CREATE USER 'test'@'%' IDENTIFIED BY 'test123'; GRANT ALL PRIVILEGES ON *.* TO 'test'@'%';" -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }}
     - name: Build with Maven
       run: mvn -B package --file pom.xml

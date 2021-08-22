@@ -1,4 +1,6 @@
-# Database Code Generator and so 
+# Database Code Generator 
+
+Yet another ORM framework for java
 
 
 [![Maven Central](https://img.shields.io/maven-central/v/com.github.yujiaao/c-tools.svg)](http://search.maven.org/#search%7Cga%7C1%7Cc-tools)
