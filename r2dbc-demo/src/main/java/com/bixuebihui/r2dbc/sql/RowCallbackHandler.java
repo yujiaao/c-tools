@@ -1,6 +1,9 @@
 package com.bixuebihui.r2dbc.sql;
 
 import io.r2dbc.spi.Result;
+import reactor.core.publisher.Mono;
+
+import java.util.List;
 
 
 /**
@@ -9,12 +12,12 @@ import io.r2dbc.spi.Result;
  * @author xingwx
  * @version $Id: $Id
  */
-public interface RowCallbackHandler
+public interface RowCallbackHandler<T>
 {
     /**
      * <p>processRow.</p>
      *
      * @param result a {@link Result} object.
      */
-    void processRow(Result result);
+    Mono<List<T>> processRow(Result result);
 }

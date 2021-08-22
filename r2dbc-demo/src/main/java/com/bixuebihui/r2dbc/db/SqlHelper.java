@@ -347,9 +347,9 @@ public class SqlHelper {
 	 * @return a {@link SqlHelper} object.
 	 * @throws SQLException if any.
 	 */
-	public SqlHelper eq(String[] fields, Object[] value) throws SQLException {
+	public SqlHelper eq(String[] fields, Object[] value)  {
 		if (fields.length != value.length) {
-            throw new SQLException("fields.length must equals value.length:"
+            throw new DbException("fields.length must equals value.length:"
                     + StringUtils.join(fields,",") + "->" + StringUtils.join(value,","));
         }
 		int i = 0;

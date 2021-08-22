@@ -18,7 +18,6 @@ import io.r2dbc.spi.Connection;
 import io.r2dbc.spi.ConnectionFactory;
 import org.apache.commons.beanutils.*;
 import org.apache.commons.beanutils.converters.*;
-import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.CaseUtils;
 import org.slf4j.Logger;
@@ -34,6 +33,7 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Map.Entry;
+
 import static com.bixuebihui.db.Dialect.*;
 
 /**
@@ -536,8 +536,8 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @return a int.
      */
     public Mono<Integer> count(String sql, Object... params) {
-        Object o = this.getDbHelper().executeScalar(sql, params);
-        return o == null ? 0 : Integer.parseInt(o.toString());
+        Mono<Object> o = this.getDbHelper().executeScalar(sql, params);
+        return o.map(x -> Integer.parseInt(x.toString()));
     }
 
     /**
@@ -548,8 +548,8 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @return a boolean.
      */
     public Mono<Boolean> exists(String where, Object... params) {
-        Object o = this.getDbHelper().executeScalar("select 1 from " + getTableName() + " " + where, params);
-        return o != null && Integer.parseInt(o.toString()) == 1;
+        Mono<Object> o = this.getDbHelper().executeScalar("select 1 from " + getTableName() + " " + where, params);
+        return o.map(x -> Integer.parseInt(x.toString()) == 1);
     }
 
     /**
@@ -562,8 +562,8 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     @Override
     public Mono<Integer> countWhere(String where, Object... params) {
         String query = SELECT_COUNT_FROM + getTableName() + " " + where;
-        Object o = this.getDbHelper().executeScalar(query, params);
-        return o == null ? 0 : Integer.parseInt(o.toString());
+        Mono<Object> o = this.getDbHelper().executeScalar(query, params);
+        return o.map(x -> Integer.parseInt(x.toString()));
     }
 
     /**
@@ -634,14 +634,12 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @param receiver 要赋值的对象
      * @return receiver 承载查询结果的java bean
      */
-    public @NotNull <K> K getSingleObject(String sql, Object[] params, @NotNull K receiver) {
-
-        List<Map<String, Object>> v = this.getDbHelper().executeQuery(sql, params);
-        if (v.isEmpty()) {
-            return receiver;
-        }
-        Map<String, Object> s = v.get(0);
-        return map2object(s, receiver);
+    public @NotNull <K> Mono<K> getSingleObject(String sql, Object[] params, @NotNull K receiver) {
+        Mono<List<Map<String, Object>>> v = this.getDbHelper().executeQuery(sql, params);
+        return Mono.from(v.switchIfEmpty(Mono.just(Collections.emptyList()))
+                .map(list -> list.get(0)).map(
+                        x -> map2object(x, receiver)
+                ));
     }
 
     /**
@@ -651,15 +649,16 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @param params    an array of {@link Object} objects.
      * @param receivers an array of {@link Object} objects.
      */
-    public void selectToObjects(String sql, Object[] params, Object[] receivers) {
-        List<Map<String, Object>> v = this.getDbHelper().executeQuery(sql, params);
-        if (v.isEmpty()) {
-            return;
-        }
-        Map<String, Object> s = v.get(0);
-        for (Object target : receivers) {
-            map2object(s, target);
-        }
+    public Mono<Void> selectToObjects(String sql, Object[] params, Object[] receivers) {
+        Mono<List<Map<String, Object>>> v = this.getDbHelper().executeQuery(sql, params);
+        return v.switchIfEmpty(Mono.just(Collections.emptyList()))
+                .map(m -> {
+                    Map<String, Object> s = m.get(0);
+                    for (Object target : receivers) {
+                        map2object(s, target);
+                    }
+                    return receivers;
+                }).then();
     }
 
     /**
@@ -740,11 +739,9 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     private void detectDbType() {
         if (dbtype == UNKNOWN) {
             if (getDbHelper() != null) {
-                try (Mono<Connection> cn = getDbHelper().getConnection()) {
-                    dbtype = detectDbType(cn.getMetaData().getDriverName());
-                } catch (SQLException throwables) {
-                    throw new DbException(throwables);
-                }
+                Connection cn = getDbHelper().getConnection().block();
+                dbtype = cn == null ? MYSQL :
+                        detectDbType(cn.getMetadata().getDatabaseProductName());
             } else {
                 throw new DbException("DbHelper not initialized!");
             }
@@ -757,41 +754,19 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @param sqlObjs an array of {@link SqlObject} objects.
      * @return a boolean.
      */
-    public boolean executeTransaction(SqlObject[] sqlObjs) {
+    public Mono<Boolean> executeTransaction(SqlObject[] sqlObjs) {
 
-        Mono<Connection> cn = null;
-        try {
-            cn = getDbHelper().getConnection();
-            cn.setAutoCommit(false);
+        Mono<Connection> cn = getDbHelper().getConnection();
+        return Mono.from(cn.map(connection -> {
             for (SqlObject sqlObj : sqlObjs) {
-                int res = getDbHelper().executeNoQuery(sqlObj.getSqlString(), sqlObj.getParameters(), cn);
-
-                if (sqlObj.getExpectedResult() > 0 && sqlObj.getExpectedResult() != res) {
-                    cn.rollback();
+                Mono<Integer> res = getDbHelper().executeNoQuery(sqlObj.getSqlString(), sqlObj.getParameters(), connection);
+                if (sqlObj.getExpectedResult() > 0 && sqlObj.getExpectedResult() != res.block()) {
                     return false;
                 }
             }
-
-            cn.commit();
             return true;
-        } catch (SQLException sqlException) {
-            try {
-                cn.rollback();
-            } catch (Exception e) {
-                LOG.warn("rollback", e);
-            }
-            throw new DbException(sqlException);
-        } finally {
-            try {
-                if (cn != null) {
-                    cn.setAutoCommit(true);
-                }
-            } catch (Exception e) {
-                LOG.warn("setAutoCommit", e);
-            }
+        }));
 
-            DbUtils.closeQuietly(cn);
-        }
 
     }
 
@@ -877,30 +852,35 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @param <K> a K object.
      * @return a {@link List} object.
      */
-    public @NotNull <K> List<K> select(String select, String whereClause, String orderBy, Object[] params, int rowStart,
-                                       int rowEnd, Class<K> clz) {
+    public @NotNull <K> Mono<List<K>> select(String select, String whereClause, String orderBy, Object[] params, int rowStart,
+                                             int rowEnd, Class<K> clz) {
 
         String selectSql = select + " " + whereClause + " " + orderBy;
 
-        List<Map<String, Object>> v = getDbHelper().executeQuery(this.getPagingSql(selectSql, rowStart, rowEnd),
+        Mono<List<Map<String, Object>>> v = getDbHelper().executeQuery(this.getPagingSql(selectSql, rowStart, rowEnd),
                 params);
 
         List<K> v1 = new ArrayList<>();
         if (BUILT_IN_SET.contains(clz)) {
-            for (Map<String, Object> h : v) {
-                v1.add(clz.cast(h.values().toArray()[0]));
-            }
+            v.map(map -> map.stream().map(h ->
+                            v1.add(clz.cast(h.values().toArray()[0]))
+                    )
+            );
+            return Mono.just(v1);
         } else {
-            for (Map<String, Object> h : v) {
-                try {
-                    v1.add(convert(h, clz.getConstructor().newInstance()));
-                } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException | InstantiationException e) {
-                    throw new DbException(e);
-                }
-            }
+            v.map(map -> map.stream().map(h -> {
+                        try {
+                            v1.add(convert(h, clz.getConstructor().newInstance()));
+                        } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException | InstantiationException e) {
+                            throw new DbException(e);
+                        }
+                        return null;
+                    })
+            );
+
         }
 
-        return v1;
+        return Mono.just(v1);
     }
 
     /**
@@ -915,9 +895,9 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @return a {@link List} object.
      */
     protected @NotNull
-    List<Map<String, Object>> select(String sql, String whereClause, String orderBy,
-                                     Object[] params, int rowStart, int rowEnd) {
-        String selectSql = sql + " " + whereClause + " " + (this.getDbType() == BaseDao.DERBY ? "" : orderBy);
+    Mono<List<Map<String, Object>>> select(String sql, String whereClause, String orderBy,
+                                           Object[] params, int rowStart, int rowEnd) {
+        String selectSql = sql + " " + whereClause + " " + (this.getDbType() == DERBY ? "" : orderBy);
         return getDbHelper().executeQuery(this.getPagingSql(selectSql, rowStart, rowEnd), params);
     }
 
@@ -933,11 +913,10 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      */
     @Override
     public @NotNull
-    List<T> select(String whereClause, Object[] params, String orderByClause, int beginNum, int endNum)
-             {
+    Mono<List<T>> select(String whereClause, Object[] params, String orderByClause, int beginNum, int endNum) {
         String query = getSelectAllFromTable() + whereClause;
-        if (this.getDbType() != BaseDao.DERBY) {
-            query += " "+orderByClause;
+        if (this.getDbType() != DERBY) {
+            query += " " + orderByClause;
         }
         query = getPagingSql(query, beginNum, endNum);
         return getDbHelper().executeQuery(query, params, new RowMapperResultReader<>(this));
@@ -957,7 +936,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     List<T> select2step(String whereClause, Object[] params, String orderByClause, int beginNum,
                         int endNum) {
         String query = "select " + getKeyName() + " from " + getTableName() + " " + whereClause;
-        if (this.getDbType() != BaseDao.DERBY) {
+        if (this.getDbType() != DERBY) {
             query += orderByClause;
         }
         query = getPagingSql(query, beginNum, endNum);
@@ -982,10 +961,10 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @return 结果集
      */
     public @NotNull
-    List<T> selectWithJoin(String fieldList, String whereClause, Object[] params, String orderByClause,
-                           int beginNum, int endNum) {
+    Mono<List<T>> selectWithJoin(String fieldList, String whereClause, Object[] params, String orderByClause,
+                                 int beginNum, int endNum) {
         String query = "select " + fieldList + " from " + getTableName() + " " + whereClause;
-        if (this.getDbType() != BaseDao.DERBY) {
+        if (this.getDbType() != DERBY) {
             query += orderByClause;
         }
         query = getPagingSql(query, beginNum, endNum);
@@ -993,10 +972,9 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     }
 
     public @NotNull
-    List<T> select(String whereClause, String orderbyClause, int beginNum, int endNum)
-             {
+    Mono<List<T>> select(String whereClause, String orderbyClause, int beginNum, int endNum) {
         return select(whereClause, null, orderbyClause, beginNum, endNum);
-             }
+    }
 
     /**
      * Select from the database for table
@@ -1004,13 +982,10 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @param id 主键ID
      * @return 数据对象pojo
      */
-    public T selectByKey(@NotNull ID id) {
+    public Mono<T> selectByKey(@NotNull ID id) {
         String query = SELECT_FROM + getTableName() + WHERE + getKeyName() + "=?";
-        List<T> info = getDbHelper().executeQuery(query, new Object[]{id}, new RowMapperResultReader<>(this));
-        if (!info.isEmpty()) {
-            return info.get(0);
-        }
-        return null;
+        Mono<List<T>> info = getDbHelper().executeQuery(query, new Object[]{id}, new RowMapperResultReader<>(this));
+        return Mono.from(info.map(x -> x.get(0)));
     }
 
     /**
@@ -1020,9 +995,9 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @return List of pojo
      */
     public @NotNull
-    List<T> selectByKeys(ID[] ids) {
+    Mono<List<T>> selectByKeys(ID[] ids) {
         if (ids == null || ids.length <= 0) {
-            return Collections.emptyList();
+            return Mono.just(Collections.emptyList());
         }
 
         String query = getSelectAllWhere() + getKeyName() + " in ( "
@@ -1043,9 +1018,9 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @return a {@link List} object.
      */
     protected @NotNull
-    List<T> selectByKeys(List<ID> ids, String orderbyClause) {
+    Mono<List<T>> selectByKeys(List<ID> ids, String orderbyClause) {
         if (ids == null || ids.isEmpty()) {
-            return Collections.emptyList();
+            return Mono.just(Collections.emptyList());
         }
 
         String query = getSelectAllWhere() + getKeyName() + " in ( "
@@ -1759,7 +1734,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         }
     }
 
-    protected void setIdLong(T info, long id) {
+    protected void setIdLong(T info, Mono<Long> id) {
     }
 
     protected boolean insertAutoIncrement(T info) {

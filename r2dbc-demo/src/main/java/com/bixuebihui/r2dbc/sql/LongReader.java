@@ -12,12 +12,9 @@ public class LongReader extends RowMapperResultReader<Long> {
 
     /**
      * <p>Constructor for LongReader.</p>
-     *
-     * @param resultList a {@link List} object.
      */
-    public LongReader(List<Long> resultList) {
-
-        super((rs, index) -> rs.getLong(1),resultList);
+    public LongReader() {
+        super((rs) -> rs.get(0, Long.class));
     }
 
 

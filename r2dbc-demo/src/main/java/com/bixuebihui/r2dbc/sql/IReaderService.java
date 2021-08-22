@@ -1,5 +1,7 @@
 package com.bixuebihui.r2dbc.sql;
 
+import reactor.core.publisher.Mono;
+
 import java.sql.SQLException;
 import java.util.Collection;
 
@@ -21,19 +23,17 @@ public interface IReaderService<T> {
      * @param rowStart    a int.
      * @param rowEnd      a int.
      * @return a {@link Collection} object.
-     * @throws SQLException if any.
      */
-    Collection<T> select(String whereClause, Object[] params, String orderBy, int rowStart, int rowEnd) throws SQLException;
+    Collection<T> select(String whereClause, Object[] params, String orderBy, int rowStart, int rowEnd);
 
     /**
      * <p>count.</p>
      *
      * @param whereClause a {@link String} object.
      * @return a int.
-     * @throws SQLException if any.
      */
-    int count(String whereClause) throws SQLException;
-    int countWhere(String whereClause, Object[] params) throws SQLException;
+    Mono<Integer> count(String whereClause);
+    Mono<Integer> countWhere(String whereClause, Object[] params);
 
 
 }

@@ -10,14 +10,12 @@ import io.r2dbc.spi.Connection;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import javax.validation.constraints.NotNull;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 import static com.bixuebihui.db.Dialect.*;
 
@@ -235,7 +233,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public <K> List<K> findAll(Class<K> clz) throws DbException {
+	public <K> Mono<List<K>> findAll(Class<K> clz) throws DbException {
 		try {
 			sqlPocket = this.getSql();
 			String where = formWhereClause();
@@ -319,7 +317,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 			if(cn==null) {
 				return Mono.from(operator.getDbHelper().executeNoQuery(sql, params).map(x -> 0<x));
 			}
-			return Mono.from(operator.getDbHelper().executeNoQuery(sql, params, cn).map(x -> 0<x));
+			return Mono.from(operator.getDbHelper().executeNoQuery(sql, params, cn.block()).map(x -> 0<x));
 		} finally {
 			clear();
 		}
@@ -346,15 +344,12 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public List<Object> getVector(String field) throws DbException {
+	public Mono<List<Object>> getVector(String field) throws DbException {
 		try {
 			String sql = getVectorSql(field);
 			Object[] params = getParams().toArray();
-			final List<Object> res = new ArrayList<>();
-			RowCallbackHandler handle = resultSet -> res.add(resultSet.get(0));
-			operator.getDbHelper().executeQuery(sql, params, handle);
-
-			return res;
+			RowCallbackHandler<Object> handle = result -> Flux.from(result.map((row, meta) -> row.get(0))).collectList();
+			return operator.getDbHelper().executeQuery(sql, params, handle);
 		} finally {
 			clear();
 		}
@@ -364,15 +359,13 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public List<Long> getLongVector(String field) throws DbException {
+	public Mono<List<Long>> getLongVector(String field) throws DbException {
 		try {
 			String sql = getVectorSql(field);
 			Object[] params = getParams().toArray();
-			final List<Long> res = new ArrayList<>();
 
-			operator.getDbHelper().executeQuery(sql, params, new LongReader(res));
+			return operator.getDbHelper().executeQuery(sql, params, new LongReader());
 
-			return res;
 		} finally {
 			clear();
 		}
@@ -491,15 +484,12 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public List<String> getStringVector(String field) throws DbException {
+	public Mono<List<String>> getStringVector(String field) throws DbException {
 		try {
 			String sql = getVectorSql(field);
 			Object[] params = getParams().toArray();
-			final List<String> res = new ArrayList<>();
-			RowCallbackHandler handle = resultSet -> res.add(resultSet.get(0));
-			operator.getDbHelper().executeQuery(sql, params, handle );
-
-			return res;
+			RowCallbackHandler<String> handle = result -> Flux.from(result.map((row, meta) -> Objects.requireNonNull(row.get(0)).toString())).collectList();
+			return  operator.getDbHelper().executeQuery(sql, params, handle );
 		} finally {
 			clear();
 		}
@@ -573,7 +563,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 			if (cn==null) {
 				return operator.getDbHelper().executeNoQuery(sql, params);
 			}
-			return operator.getDbHelper().executeNoQuery(sql, params, cn);
+			return operator.getDbHelper().executeNoQuery(sql, params, cn.block());
 		} finally {
 			clear();
 		}
@@ -617,7 +607,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 			if(cn==null) {
 				return operator.getDbHelper().executeNoQuery(sql, params.toArray());
 			}
-			return operator.getDbHelper().executeNoQuery(sql, params.toArray(), cn);
+			return operator.getDbHelper().executeNoQuery(sql, params.toArray(), cn.block());
 		} finally {
 			clear();
 		}

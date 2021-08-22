@@ -1,6 +1,8 @@
 package jcwl;
 
+import org.junit.Test;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 
@@ -13,6 +15,17 @@ public class FlatMapTest {
                         Duration.of(100, MILLIS)).take(x))
                 .toStream()
                 .forEach(System.out::println);
+
+    }
+
+
+    @Test
+    public void map(){
+
+        Mono.just("1").map(a -> a + "1").subscribe(System.out::println);
+        Mono.just("1").flatMap(a -> Mono.just(a + "1")).subscribe(System.out::println);
+        Flux.just("1").map(a -> a + "1").subscribe(System.out::println);
+        Flux.just("1").flatMap(a -> Flux.just(a + "1")).subscribe(System.out::println);
 
     }
 }

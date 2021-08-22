@@ -35,7 +35,7 @@ public class RowMapperResultReader<T> {
      * @return a {@link List} object.
      * @throws SQLException if any.
      */
-    public @NotNull Flux<T> processResultSet(Result rs) {
+    public @NotNull Flux<T> processResult(Result rs) {
         return Flux.from(rs.map((row, meta) ->
             handle.mapRow(row)
         ));

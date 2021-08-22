@@ -3,6 +3,7 @@ package com.bixuebihui.r2dbc.sql;
 import io.r2dbc.spi.Connection;
 import io.r2dbc.spi.ConnectionFactory;
 import org.reactivestreams.Publisher;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import javax.validation.constraints.NotNull;
@@ -38,7 +39,7 @@ public interface IDbHelper {
      * @param params an array of {@link Object} objects.
      * @param handle a {@link RowCallbackHandler} object.
      */
-    Mono<Void> executeQuery(String sql, Object[] params, RowCallbackHandler handle);
+    <T> Mono<List<T>> executeQuery(String sql, Object[] params, RowCallbackHandler<T> handle);
 
     /**
      * must change the return value to {@code List<Map<String,Object>> }
@@ -47,7 +48,7 @@ public interface IDbHelper {
      * @param params SQL 参数
      * @return List of Map
      */
-    List<Map<String, Object>> executeQuery(String sql, Object[] params);
+    Mono<List<Map<String, Object>>>  executeQuery(String sql, Object[] params);
 
     /**
      * <p>executeScalar.</p>
@@ -82,7 +83,7 @@ public interface IDbHelper {
      * @param strSql SQL 语句
      * @return List of Map
      */
-    List<Map<String, Object>> exeQuery(String strSql);
+    Flux<Map<String, Object>> exeQuery(String strSql);
 
     /**
      * <p>getConnection.</p>
@@ -100,8 +101,8 @@ public interface IDbHelper {
      * @param <T>    a T object.
      * @return a {@link List} object.
      */
-    @NotNull <T> List<T> executeQuery(String sql, Object[] params, RowMapperResultReader<T> handle);
-    @NotNull <T> List<T> executeQuery(String sql, Object[] params, RowMapper<T> handle);
+    @NotNull <T> Mono<List<T>> executeQuery(String sql, Object[] params, RowMapperResultReader<T> handle);
+    @NotNull <T> Mono<List<T>> executeQuery(String sql, Object[] params, RowMapper<T> handle);
 
 
     /**
@@ -112,7 +113,7 @@ public interface IDbHelper {
      * @param cn a {@link Connection} object.
      * @return a int.
      */
-    Mono<Integer> executeNoQuery(String strSql, Object[] params, Mono<Connection> cn);
+    Mono<Integer> executeNoQuery(String strSql, Object[] params, Connection cn);
 
     /**
      * <p>executeNoQuery.</p>
@@ -122,7 +123,7 @@ public interface IDbHelper {
      * @param targetSqlTypes an array of int.
      * @return a int.
      */
-    Mono<Integer>  executeNoQuery(String sql, Object[] params, int[] targetSqlTypes);
+    Mono<Integer>  executeNoQuery(String sql, Object[] params, Class[] targetSqlTypes);
 
     /**
      * <p>executeNoQuery.</p>
@@ -133,7 +134,7 @@ public interface IDbHelper {
      * @param conn a {@link Connection} object.
      * @return a int.
      */
-    Mono<Integer> executeNoQuery(String sql, Object[] params, int[] targetSqlTypes, Mono<Connection> conn);
+    Mono<Integer> executeNoQuery(String sql, Object[] params, Class[] targetSqlTypes, Mono<Connection> conn);
 
     /**
      * <p>executeNoQuery.</p>
@@ -143,8 +144,16 @@ public interface IDbHelper {
      */
     Mono<Integer> executeNoQuery(String strSql);
 
+    /**
+     * return auto_increment id value
+     * @param sql insert sql
+     * @param params params
+     * @param targetSqlTypes parameter's types
+     * @param conn a {@link Connection }
+     * @return
+     */
     Mono<Long> insertAndFetchLastId(String sql, Object[] params,
-                              int[] targetSqlTypes, Mono<Connection> conn);
+                              Class[] targetSqlTypes, Mono<Connection> conn);
 
     /**
      * <p>executeNoQuery.</p>

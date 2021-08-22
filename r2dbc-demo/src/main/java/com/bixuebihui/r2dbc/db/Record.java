@@ -5,6 +5,7 @@ import com.bixuebihui.DbException;
 import com.bixuebihui.db.GroupFunction;
 import com.bixuebihui.jdbc.entity.CountObject;
 import com.bixuebihui.jdbc.entity.CountValue;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -23,7 +24,7 @@ public interface Record<T> {
 	 * @return a {@link List} object.
 	 * @throws DbException if any.
 	 */
-	List<Object> getVector(String field) throws DbException;
+	Mono<List<Object>>  getVector(String field) throws DbException;
 
 
 	/**
@@ -43,7 +44,7 @@ public interface Record<T> {
 	 * @return a {@link List} object.
 	 * @throws DbException if any.
 	 */
-	<K> List<K> findAll(Class<K> clz) throws DbException;
+	<K> Mono<List<K>> findAll(Class<K> clz) throws DbException;
 
 
 	/**
@@ -135,7 +136,7 @@ public interface Record<T> {
 	 * @return a {@link List} object.
 	 * @throws DbException if any.
 	 */
-	List<String> getStringVector(String field) throws DbException;
+	Mono<List<String>> getStringVector(String field) throws DbException;
 
 	/**
 	 * 获取字段field的长整型列表
