@@ -4,7 +4,7 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans
            http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 
-	<bean id="derbyConfig" class="com.bixuebihui.r2dbc.dbcon.DatabaseConfig">
+	<bean id="derbyConfig" class="com.bixuebihui.dbcon.DatabaseConfig">
 		<property name="alias">
 			<value>derby</value>
 		</property>
@@ -22,7 +22,7 @@
 		</property>
 	</bean>
 
-	<bean id="mysqlConfig" class="com.bixuebihui.r2dbc.dbcon.DatabaseConfig">
+	<bean id="mysqlConfig" class="com.bixuebihui.dbcon.DatabaseConfig">
 		<property name="alias">
 			<value>test</value>
 		</property>

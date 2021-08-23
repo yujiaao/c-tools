@@ -1,0 +1,28 @@
+package {{config.packageName}}{{viewModifier}}.business;
+
+{{> [header-comment.java]}}
+
+import io.r2dbc.spi.ConnectionFactory;
+import {{config.packageName}}{{viewModifier}}.dal.{{pojoClassName}}List;
+
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Repository;
+
+import javax.annotation.processing.Generated;
+
+@Generated("com.github.yujiaao:tablegen")
+@Repository
+public class {{className}}  extends {{pojoClassName}}List
+{
+    {{! writeDALConstructor(tableName); }}
+    /**
+     * @param ds datasource for injecting
+     */
+    public {{className}}(@Qualifier("{{config.alias}}") ConnectionFactory ds)
+    {
+        super(ds);
+    }
+
+    // please write your code here!
+
+}

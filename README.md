@@ -10,7 +10,7 @@ Yet another ORM framework for java
 
 
 ## Get Starting 
-To generate code please refer [`c-tablegen-demo`](c-tablegen-demo) project.
+To generate code please refer [`c-tablegen-jdbc-demo`](c-tablegen-jdbc-demo) for JDBC or  [`c-tablegen-r2dbc-demo`](c-tablegen-r2dbc-demo) R2DBC respectively.
 
 ### feature list
 

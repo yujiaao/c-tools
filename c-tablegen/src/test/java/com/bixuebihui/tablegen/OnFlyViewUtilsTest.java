@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import java.sql.SQLException;
 import java.util.List;
 
+import static com.bixuebihui.db.Dialect.MYSQL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class OnFlyViewUtilsTest {
@@ -26,7 +27,7 @@ class OnFlyViewUtilsTest {
     @Test
     void getColumnData() {
         String sql = "select test_gen.*, concat(t_edu.degree) degree_plus from test_gen left join t_edu on test_gen.edu_id=t_edu.id limit 1";
-        List<TableInfo> list = dbHelper.executeQuery(sql, null, new RowMapperResultReader<>((rs, index) -> OnFlyViewUtils.getColumnData(rs.getMetaData(), "test", BaseDao.MYSQL)));
+        List<TableInfo> list = dbHelper.executeQuery(sql, null, new RowMapperResultReader<>((rs, index) -> OnFlyViewUtils.getColumnData(rs.getMetaData(), "test", MYSQL)));
 
         TableInfo cols = list.get(0);
         assertEquals("Type : INT(11) Name : id", cols.getFields().get(0).toString());
@@ -43,7 +44,7 @@ class OnFlyViewUtilsTest {
         String sql = "select test_gen.*, degree AS degree_plus from test_gen left join t_edu on test_gen.edu_id=t_edu.id limit 1";
         List<TableInfo> list = dbHelper.executeQuery(sql, null,
                 new RowMapperResultReader<>((rs, index) ->
-                        OnFlyViewUtils.getColumnData(rs.getMetaData(), "test", BaseDao.MYSQL)));
+                        OnFlyViewUtils.getColumnData(rs.getMetaData(), "test", MYSQL)));
 
         TableInfo cols = list.get(0);
         assertEquals("Type : INT(11) Name : id", cols.getFields().get(0).toString());

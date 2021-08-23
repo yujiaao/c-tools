@@ -228,7 +228,7 @@ public abstract class BaseGenerator implements Generator {
 
     protected Handlebars getHandlebars() {
         TemplateLoader loader = new ClassPathTemplateLoader();
-        loader.setPrefix(TEMPLATE_ROOT);
+        loader.setPrefix(TEMPLATE_ROOT+"/"+(config.getR2dc()?"r2dbc":"jdbc"));
         loader.setSuffix(".hbs");
 
         Handlebars handlebars = new Handlebars(loader);

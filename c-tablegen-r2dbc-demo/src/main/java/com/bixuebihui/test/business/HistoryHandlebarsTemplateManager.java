@@ -1,0 +1,37 @@
+package com.bixuebihui.test.business;
+
+/*
+ *  HistoryHandlebarsTemplateManager
+ *
+ * Notice! Automatically generated file!
+ * Do not edit the pojo and dal packages,use `maven tablegen:gen`!
+ * Code Generator originally by J.A.Carter
+ * Modified by Xing Wanxiang 2008-2021
+ * email: www@qsn.so
+ */
+
+
+import io.r2dbc.spi.ConnectionFactory;
+import com.bixuebihui.test.dal.HistoryHandlebarsTemplateList;
+
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Repository;
+
+import javax.annotation.processing.Generated;
+
+@Generated("com.github.yujiaao:tablegen")
+@Repository
+public class HistoryHandlebarsTemplateManager  extends HistoryHandlebarsTemplateList
+{
+    
+    /**
+     * @param ds datasource for injecting
+     */
+    public HistoryHandlebarsTemplateManager(@Qualifier("test") ConnectionFactory ds)
+    {
+        super(ds);
+    }
+
+    // please write your code here!
+
+}

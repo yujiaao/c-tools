@@ -168,6 +168,83 @@ public class DalGenerator extends BaseGenerator {
         return sb.toString();
     }
 
+
+    /**
+     * Writes out the mapRow method. The mapRow method interprets the returned
+     * result set from a Select and update the object with those values.
+     */
+    public static String mapRowR2dbc(List<ColumnData> columnData, String pojoClassName) {
+        String col;
+        String colType;
+        List<String> gets = new ArrayList<>();
+        String get;
+
+        for (ColumnData cd : columnData) {
+            col = cd.getName();
+            colType = cd.getJavaType();
+
+            // work out which data type we are getting for each variable
+            String ucol = "F." + columnNameToConstantName(col);
+
+            if (colType.compareTo("String") == 0) {
+                get = "(r.get(" + ucol + ", String.class));";
+            } else if (colType.compareTo("byte") == 0 || colType.compareTo("Byte") == 0) {
+                get = "(r.get(" + ucol + ", Byte.class));";
+            } else if (colType.compareTo("long") == 0 || colType.compareTo("Long") == 0) {
+                get = "(r.get(" + ucol + ", Long.class));";
+            } else if (colType.compareTo("int") == 0 || colType.compareTo("Integer") == 0) {
+                get = "(r.get(" + ucol + ", Integer.class));";
+            } else if (colType.compareTo("short") == 0 || colType.compareTo("Short") == 0) {
+                get = "(r.get(" + ucol + ", Short.class));";
+            } else if (colType.compareTo("float") == 0 || colType.compareTo("Float") == 0) {
+                get = "(r.get(" + ucol + ", Float.class));";
+            } else if (colType.compareTo("double") == 0 || colType.compareTo("Double") == 0) {
+                get = "(r.get(" + ucol + ", Double.class));";
+            } else if (colType.compareTo("Date") == 0) {
+                get = "(r.get(" + ucol + ", Date.class));";
+            } else if (colType.compareTo("Timestamp") == 0) {
+                get = "(r.get(" + ucol + ", Timestamp.class));";
+            } else if (colType.compareTo("Time") == 0) {
+                get = "(r.get(" + ucol + ", Time.class));";
+            } else if (colType.compareTo("char") == 0 || colType.compareTo("Char") == 0) {
+                get = "(r.get(" + ucol + ", String.class).charAt(0);";
+            } else if (colType.compareTo("byte[]") == 0) {
+                get = "(r.get(" + ucol + ", byte[].class));";
+            } else if (colType.compareTo("Boolean") == 0) {
+                get = "(r.get(" + ucol + ", Boolean.class));";
+            } else if (colType.compareTo("Byte[]") == 0) {
+                get = "(org.apache.commons.lang.ArrayUtils.toObject(r.get(" + ucol + ")));";
+            } else if (colType.compareTo("com.bixuebihui.jdbc.ClobString") == 0) {
+                get = "(new com.bixuebihui.jdbc.ClobString(com.bixuebihui.jdbc.JDBCUtils.oracleClob2Str((Clob)r.get("
+                        + ucol + " ))));";
+            } else {
+
+                get = "(r.getObject(" + ucol + "));";
+                LOG.error("Warning! Unknown type : " + colType + " in write mapRow");
+            }
+
+            get = firstUp(cd.getName()) + get;
+            gets.add(get);
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(INDENT).append("/**\n")
+                .append(INDENT).append("  * Updates the object from a selected ResultSet.\n")
+                .append(INDENT).append("  */\n")
+                .append(INDENT).append("@Override\n")
+                .append(INDENT).append("public " + pojoClassName + " mapRow(Row r) \n")
+                .append(INDENT).append("{\n")
+                .append(INDENT).append(INDENT).append(pojoClassName + " res = new " + pojoClassName + "();\n");
+
+        for (String e : gets) {
+            sb.append(INDENT).append(INDENT).append("res.set" + e).append("\n");
+        }
+
+        sb.append(INDENT).append(INDENT).append("return res;\n");
+        sb.append(INDENT).append("}\n");
+        return sb.toString();
+    }
+
     @Override
     protected Map<String, Object> getContextMap(String tableName) {
         Map<String, Object> v = super.getContextMap(tableName);
@@ -193,6 +270,11 @@ public class DalGenerator extends BaseGenerator {
 
         v.put("isView", isView);
         v.put("mapRow", mapRow(cols, this.getPojoClassName(tableName)));
+        if(config.getR2dc()) {
+            v.put("mapRow", mapRowR2dbc(cols, this.getPojoClassName(tableName)));
+        }else {
+            v.put("mapRow", mapRow(cols, this.getPojoClassName(tableName)));
+        }
         return v;
     }
 

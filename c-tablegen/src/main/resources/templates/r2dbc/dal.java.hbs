@@ -1,0 +1,335 @@
+package {{config.packageName}}{{viewModifier}}.dal;
+
+{{> [header-comment.java]}}
+
+import java.sql.*;
+import java.util.List;
+import io.r2dbc.spi.ConnectionFactory;
+import io.r2dbc.spi.Row;
+import io.r2dbc.spi.Connection;
+
+
+import {{config.packageName}}{{viewModifier}}.business.*;
+import {{config.packageName}}{{viewModifier}}.pojo.*;
+import com.bixuebihui.DbException;
+{{#if tableInfo.isView}}
+import com.bixuebihui.r2dbc.sql.AbstractViewBaseDao;
+{{else}}
+import {{config.packageName}}.BaseList;
+{{/if}}
+import javax.annotation.processing.Generated;
+import reactor.core.publisher.Mono;
+
+@Generated("com.github.yujiaao:tablegen")
+public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{{else}}BaseList{{/if}}<{{pojoClassName}}, {{firstKeyType}}>
+{
+    {{! writeDALConstructor(tableName); }}
+    /**
+      * Don't direct use the {{className}}, use {{pojoClassName}}Manager instead.
+      */
+    protected {{className}}(ConnectionFactory ds)
+    {
+        super(ds);
+    }
+
+    {{! writeSql(colData, keyData); }}
+    @SuppressWarnings("AlibabaClassNamingShouldBeCamel")
+    public static final class F{
+        {{#each fields ~}}
+        public static final String {{constantName this.name}} = "{{this.name}}";
+        {{/each}}
+        public static String[] getAllFields() {
+            return new String[] { {{#each fields}}{{constantName this.name}}{{#unless @last}}, {{/unless}}{{/each}} };
+        }
+    }
+{{#unless tableInfo.isView}}
+    {{! TODO add to BaseDao @Override }}
+    protected String getDeleteSql(){
+        return "delete from "+this.getTableName()+" where {{#each keys}} {{this}}=?{{#unless @last}} and {{/unless}}{{/each}} ";
+    }
+
+   @Override
+   protected String getInsertSql(){
+       return "insert into "+this.getTableName()+" ( {{#each fields ~}}
+            {{#if (not (and config.isUseAutoincrement this.isAutoIncrement)) ~}} {{ name }} {{#unless @last}},{{/unless ~}} {{/if ~}}
+            {{/each ~}} ) values ( {{#each fields ~}}
+            {{#if (not (and config.isUseAutoincrement this.isAutoIncrement)) }} ? {{#unless @last}},{{/unless}} {{/if ~}}
+            {{/each ~}}
+            )";
+   }
+
+
+    @Override
+    protected String getUpdateSql(){ {{! TODO the logic below is buggy, update SQL must according with update OBJECTS }}
+        return "update "+this.getTableName()+" set {{#each fields ~}}
+            {{#eq config.versionColName name ~}} {{name}}= {{name}} +1  {{~#unless @last}},{{/unless~}} {{else}}  {{#if (not (and config.isUse_autoincrement this.isAutoIncrement)) ~}} {{ name }}=?{{~#unless @last}},{{/unless~}}{{/if ~}}
+            {{/eq ~}}
+            {{~/each}} {{{whereNoLike}}}";
+    }
+
+    {{! writeObjs(tableName, keyData, colData); }}
+   @Override
+   protected Object[] getInsertObjs({{pojoClassName}} info){
+        return new Object[]{ {{insertObjects}} };
+   }
+
+   @Override
+   protected Object[] getUpdateObjs({{pojoClassName}}  info){
+      return new Object[]{ {{updateObjects}} };
+   }
+{{/unless}}
+
+{{#if tableInfo.isView}}
+    /**
+    * Get table view sql.
+    */
+    protected String getCoreSql()
+    {
+    {{#if tableInfo.isView}}
+    {{!    tripple { for unescape equals sign '='  }}
+        return "{{{tableInfo.comment}}}";
+    {{~ else ~}}
+        return  "{{tableName}}";
+    {{/if}}
+    }
+{{/if}}
+    /**
+     * Get table name.
+     */
+    @Override
+    public String getTableName()
+    {
+{{#if tableInfo.isView}}
+      return "("+this.getCoreSql()+") as {{tableName}}";
+{{~ else ~}}
+      return  "{{tableName}}";
+{{/if}}
+    }
+
+    {{!    writeGetKeyName(getFirstKeyName(keyData)); }}
+    /**
+    * Get key name.
+    */
+    @Override
+    public String getKeyName()
+    {
+        return  F.{{constantName firstKeyName}};
+    }
+
+{{!    writeMapRow(tableName, colData); }}
+{{{mapRow}}}
+
+{{! writeGetSetId(tableName, keyData, colData);}}
+    @Override
+    public {{firstKeyType}} getId({{pojoClassName}} info) {
+        return info.get{{firstUp firstKeyName}}();
+    }
+{{#unless tableInfo.isView}}
+    @Override
+    public void setId({{pojoClassName}} info, {{firstKeyType}} id) {
+    {{#if hasKey}}
+        info.set{{firstUp firstKeyName}}(id);
+    {{else}}
+        //no key to set, don't use this method!
+    {{/if ~}}
+    }
+
+    @Override
+    public Mono<Void> setIdLong({{pojoClassName}} info, Mono<Long> id) {
+    {{#if hasKey}}
+            return id.flatMap(it ->{ info.set{{firstUp firstKeyName}}({{{unboxType firstKeyType}}}it.longValue()); return Mono.empty();});
+    {{else}}
+        //no key to set, don't use this method!
+    {{/if}}
+    }
+{{/unless}}
+{{! writeGetNextKey(keyData, colData); }}
+{{#if hasKey}}{{#unless tableInfo.isView}}
+      {{#eq firstKeyType "Timestamp"}}
+      public {{firstKeyType}} getNextKey(){
+        return new Timestamp(System.currentTimeMillis());
+      }
+      {{/eq}}
+      {{#eq firstKeyType "String"}}
+      public {{firstKeyType}} getNextKey(){
+          return java.util.UUID.randomUUID().toString();
+      }
+      {{/eq}}
+      {{#gt keys.size 1}}
+      public {{firstKeyType}} getNextKey(){
+          throw new IllegalStateException("no autokey for union keys");
+      }
+      {{/gt}}
+
+    {{#if hasVersionCol}}
+    {{! writeUpdate(tableName, keyData, "updateByKeyAndVersion", false, withVersion, colData); }}
+
+    /**
+     * Updates the current object values into the database with version condition as an optimistic database lock.
+     */
+    public Mono<Boolean> updateByKeyAndVersion({{pojoClassName}}  info, Connection cn)
+    {
+       return dbHelper.executeNoQuery(getUpdateSql()+" and {{config.versionColName}}=?", new Object[]{
+        {{#each fields}}
+            {{#eq name config.versionColName}}
+            {{~ else ~}}
+                info.get{{firstUp name}}(),
+            {{/eq ~}}
+        {{/each}}
+        {{keyObjects}},info.get{{firstUp config.versionColName}}()
+        }, cn ).map(x -> x==1);
+    }
+
+    public Mono<Boolean> updateByKeyAndVersion({{pojoClassName}}  info)
+    {
+        return dbHelper.executeNoQuery(getUpdateSql()+" and {{config.versionColName}}=?", new Object[]{
+        {{#each fields}}
+            {{#eq name config.versionColName}}
+            {{~ else ~}}
+                info.get{{firstUp name}}(),
+            {{/eq}}
+        {{/each}}
+        {{keyObjects}},info.get{{firstUp config.versionColName}}()
+        }).map(x -> x==1);
+    }
+    {{/if}}
+
+    {{! writeDelete(tableName, keyData, "deleteByKey", false, colData);}}
+    /**
+     * Deletes from the database for table {{tableName}} with connection
+     */
+    @Override
+    public Mono<Boolean> deleteByKey( {{#each keys}} {{colType tableName this}} {{this}}, {{/each}}  Connection cn )
+    {
+        return dbHelper.executeNoQuery(getDeleteSql(),
+          new Object[]{ {{#each keys}} {{this}} {{#unless @last}}, {{/unless}} {{/each}} },
+          cn).map(x -> x>=1);
+    }
+
+    /**
+    * Deletes from the database for table {{tableName}}
+    */
+    @Override
+    public Mono<Boolean> deleteByKey( {{#each keys}} {{colType tableName this}} {{this}} {{#unless @last}}, {{/unless}}{{/each}})
+    {
+        return dbHelper.executeNoQuery(getDeleteSql(),
+          new Object[]{ {{#each keys}} {{this}} {{#unless @last}}, {{/unless}} {{/each}} }).map(x -> x>=1);
+    }
+{{/unless}}
+{{~ else ~}}
+    {{#unless tableInfo.isView}}
+    {{! writeDummyUpdate(tableName, "updateByKey"); }}
+    @Override
+    public Mono<Boolean> updateByKey({{pojoClassName}} info)  {
+        throw new DbException("This operation is not supported, because table {{tableName}} not have a unique key!");
+    }
+
+    {{! writeDummyDelete(tableName, keyData, "deleteByKey", colData); }}
+    @Override
+    public Mono<Boolean> deleteByKey({{firstKeyType}}  key)  {
+        throw new DbException("This operation is not supported, because table {{ tableName }} not have a unique key!");
+    }
+    {{/unless}}
+{{/if}}
+{{#each foreignKeyData}}
+    /**
+     * Imported {{tableName}}  PK: {{this.pKTableName}}  FK:{{this.fKTableName}}
+     */"
+    public Mono<{{getPojoClassName this.pkTableName}}> get{{getPojoClassName this.pkTableName}}By{{this.fKColumnName}}(
+    {{#each this.fKFields as | field |}}{{colType tableName field.name}} {{field.name}}{{#unless @last}},{{/unless}}{{/each}})
+    {
+        {{getPojoClassName this.pkTableName}}Manager x = new {{getPojoClassName this.pkTableName}}Manager(this.getDbHelper().getDataSource());
+        return x.selectByKey({{this.fKColList}});
+    }
+
+    /**
+    * Select from the database for table {{tableName}} "
+    */
+    public Mono<List<{{pojoClassName}}>> selectBy{{firstUp this.fKTableName}}{{firstUp this.fKColumnName}}(  {{#each this.fKFields as | field |}}{{colType tableName field.name}} {{field.name}}{{#unless @last}},{{/unless}}{{/each}})
+    {
+        String query = "select * from {{tableName}}";
+        String where = " where {{#each this.fKFields}} {{this}}=?{{#unless @last}} and {{/unless}}{{/each}}";
+
+        String query = query + where ;
+        return dbHelper.executeQuery(query,
+            new Object[]{ {{#each this.fKFields }} {{name}} {{#unless @last}},{{/unless}} {{/each}} },
+            new RowMapperResultReader<{{pojoClassName}}>(this));
+    }
+{{/each}}
+{{#each exportedKeys}}
+    /**
+    * Get all related  {{this.fKTableName}} which have same {{this.fKColList}}
+    */
+    public Mono<List<{{getPojoClassName this.fkTableName}}>> getRelated{{firstUp this.fkTableName}}{{firstUp this.fKColumnName}}(
+    {{#each this.fKFields as | field |}}{{colType tableName field.name}} {{field.name}}{{#unless @last}},{{/unless}}{{/each}})
+    {
+        {{getPojoClassName this.fKTableName}}Manager x = new {{getPojoClassName this.fKTableName}}Manager(this.getDbHelper().getDataSource());
+        return x.selectBy{{this.fKTableName}}__{{this.fKColumnName}}({{#each this.pKColList}} {{name}} {{#unless @last}},{{/unless}} {{/each}});
+    }
+{{/each}}
+{{! foreign key }}
+{{#if config.indexes}}{{#if indexData.[0]}}
+
+    /**
+    * Select from the database for table {{tableName}} by index  {{#each indexData as | field |}}{{field.name}}{{#unless @last}},{{/unless}}{{/each}}
+    */
+    public Mono<List<{{pojoClassName}}>> selectByIndex({{#each indexData as | field |}}{{colType tableName field.name}} {{field.name}}{{#unless @last}},{{/unless}}{{/each}})
+    {
+        String query = "select * from {{tableName}}";
+        String where = " where {{#each this.indexData}} {{this}}=?{{#unless @last}} and {{/unless}}{{/each}}";
+        String query = query + where ;
+
+        Mono<List<{{pojoClassName}}>> info = dbHelper.executeQuery(query, Object[]{
+          {{#each indexData}} {{this}} {{#unless @last}}, {{/unless}} {{/each}} } , new RowMapperResultReader<" + getPojoClassName(tableName) + ">(this));");
+       return info.flatMapMany(list -> {
+            if(list!=null && list.size()>0) {
+              return  list.get(0);
+            }
+            return null;
+      }
+    }
+
+{{/if}}{{/if}}
+{{!
+            if (config.indexes) {
+            List<String> indexData = getTableIndexes(tableName); // updates the indexData
+                // variable
+                if (isNotEmpty(indexData)) {
+                writeSelect(tableName, indexData, "selectByIndex", colData);
+                writeSelectAll(tableName, indexData, false, "selectAllLikeIndex", true, colData);
+
+                writeUpdate(tableName, indexData, "updateByIndex", false, false, colData);
+                writeUpdate(tableName, indexData, "updateByIndex", true, false, colData);
+
+                writeDelete(tableName, indexData, "deleteByIndex", false, colData);
+                writeDelete(tableName, indexData, "deleteByIndex", true, colData);
+                writeCount(indexData, false, "countByIndex", colData);
+                writeCount(indexData, true, "countLikeIndex", colData);
+
+                }
+            }
+}}
+{{!  writeInsertDummy(tableName, keyData, "insertDummy", colData);  }}
+{{#unless tableInfo.isView}}
+    /**
+     * Inserts the dummy record of {{pojoClassName}} object values into the database.
+     */
+    @Override
+    public Mono<Boolean> insertDummy()
+    {
+        {{pojoClassName}}  info = new {{pojoClassName}}();
+        java.util.Random rnd = new java.util.Random();
+    {{#each fields ~}}
+    {{#if this.nullable ~}}
+    {{#eq this.javaType "String" }}
+        info.set{{firstUp this.name}}(Integer.toString(Math.abs(rnd.nextInt(Integer.MAX_VALUE)), 36));
+    {{/eq ~}}
+    {{/if ~}}
+    {{/each ~}}
+    {{#if hasKey}}
+        info.set{{firstUp keys.[0]}}(getNextKey());
+    {{/if}}
+        return this.insert(info);
+    }
+{{/unless}}
+}

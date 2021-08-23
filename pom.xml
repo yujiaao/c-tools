@@ -11,7 +11,7 @@
     <groupId>com.github.yujiaao</groupId>
     <artifactId>c-tools-parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.6.4</version>
+    <version>1.7.0</version>
 
     <modules>
         <module>c-tools-bom</module>
@@ -19,10 +19,11 @@
         <module>c-tools</module>
         <module>c-jmesa</module>
         <module>c-cache</module>
+        <module>c-r2dbc</module>
         <module>c-tablegen</module>
         <module>c-tablegen-mojo</module>
-        <module>c-tablegen-demo</module>
-        <module>r2dbc-demo</module>
+        <module>c-tablegen-jdbc-demo</module>
+        <module>c-tablegen-r2dbc-demo</module>
     </modules>
     <properties>
         <jackson-databind.version>2.10.4</jackson-databind.version>

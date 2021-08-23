@@ -967,7 +967,11 @@ public class TableGen implements DiffHandler {
             writeGetTableName(tableName, "getTableName", false);
             writeGetKeyName(getFirstKeyName(keyData));
 
-            out(mapRow(colData, getPojoClassName(tableName)));
+            if(config.r2dbc) {
+                out(mapRowR2dbc(colData, getPojoClassName(tableName)));
+            }else {
+                out(mapRow(colData, getPojoClassName(tableName)));
+            }
 
             writeGetSetId(tableName, keyData, colData);
             writeGetNextKey(keyData, colData);

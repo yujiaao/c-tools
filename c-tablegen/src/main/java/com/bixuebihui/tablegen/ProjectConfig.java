@@ -39,6 +39,7 @@ public class ProjectConfig {
 
     boolean generateProcedures = true;
     boolean generateAll=false;
+    boolean r2dbc=false;
     /**
      * additional settings, used for comments, data checking, interfaces, etc.
      */
@@ -94,6 +95,8 @@ public class ProjectConfig {
         LOG.debug("table_owner:" +  c.tableOwner);
 
         c.indexes = getBooleanCfg(props, "indexes");
+        c.r2dbc = getBooleanCfg(props, "r2dbc");
+
         c.useCustomMetaTable = getBooleanCfg(props, "use_custom_meta_table");
 
         c.generateProcedures = getBooleanCfg(props, "generate_procedures");
@@ -481,5 +484,9 @@ public class ProjectConfig {
 
     public String getRemovePrefix() {
         return removePrefix;
+    }
+
+    public boolean getR2dc() {
+        return this.r2dbc;
     }
 }

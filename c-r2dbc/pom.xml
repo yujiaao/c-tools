@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>c-tools-parent</artifactId>
+        <groupId>com.github.yujiaao</groupId>
+        <version>1.7.0</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>c-r2dbc</artifactId>
+
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+            <version>${springboot.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-r2dbc</artifactId>
+            <version>${springboot.version}</version>
+
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <version>${springboot.version}</version>
+
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+            <version>1.9</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>c-jmesa</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>log4j-slf4j-impl</artifactId>
+                    <groupId>org.apache.logging.log4j</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hibernate.validator</groupId>
+            <artifactId>hibernate-validator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-annotations</artifactId>
+            <version>2.1.10</version>
+        </dependency>
+        <!-- other dependency elements omitted -->
+
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-r2dbc</artifactId>
+            <version>1.3.3</version>
+        </dependency>
+
+        <!-- a R2DBC driver -->
+        <dependency>
+            <groupId>io.r2dbc</groupId>
+            <artifactId>r2dbc-h2</artifactId>
+            <version>0.8.4.RELEASE</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/dev.miku/r2dbc-mysql -->
+        <dependency>
+            <groupId>dev.miku</groupId>
+            <artifactId>r2dbc-mysql</artifactId>
+            <version>0.8.2.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-test</artifactId>
+            <version>3.4.9</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.assertj/assertj-core -->
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>3.20.2</version>
+            <scope>test</scope>
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-webflux</artifactId>
+            <version>${springboot.version}</version>
+        </dependency>
+
+
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.github.yujiaao</groupId>
+                <artifactId>tablegen-maven-plugin</artifactId>
+                <version>${project.version}</version>
+                <configuration>
+                    <propPath>${project.basedir}/tablegen.properties</propPath>
+
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>${springboot.version}</version>
+            </plugin>
+
+        </plugins>
+
+    </build>
+    <dependencyManagement>
+        <dependencies>
+
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>c-tools-bom</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+
+            <dependency>
+                <groupId>io.r2dbc</groupId>
+                <artifactId>r2dbc-bom</artifactId>
+                <version>Arabba-SR10</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-test</artifactId>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.projectreactor</groupId>
+                <artifactId>reactor-test</artifactId>
+                <scope>test</scope>
+            </dependency>
+
+        </dependencies>
+    </dependencyManagement>
+
+</project>
