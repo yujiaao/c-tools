@@ -814,8 +814,10 @@ public class DbHelper implements IDbHelper {
                     p.setTimestamp(i, (Timestamp) pa);
                 } else if (pa instanceof java.sql.Date) {
                     p.setDate(i, (Date) pa);
+                }else if (pa instanceof java.sql.Time) {
+                    p.setTime(i, (Time) pa);
                 } else if (pa instanceof java.util.Date) {
-                    p.setDate(i, new Date(((java.util.Date) pa).getTime()));
+                    p.setTimestamp(i, new java.sql.Timestamp(((java.util.Date) pa).getTime()));
                 } else if (pa instanceof Double) {
                     p.setDouble(i, (Double) pa);
                 } else if (pa instanceof String) {

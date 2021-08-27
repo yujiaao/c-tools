@@ -12,6 +12,7 @@ import reactor.core.publisher.Mono;
 
 import javax.validation.constraints.NotNull;
 import java.sql.Date;
+import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.*;
 
@@ -480,9 +481,11 @@ public class DbHelper implements IDbHelper {
                     p.bind(i, pa);
                 } else if (pa instanceof Date) {
                     p.bind(i, pa);
+                } else if (pa instanceof java.sql.Time) {
+                    p.bind(i, pa);
                 } else if (pa instanceof java.util.Date) {
-                    p.bind(i, new Date(((java.util.Date) pa).getTime()));
-                } else if (pa instanceof Double) {
+                    p.bind(i, new java.sql.Timestamp(((java.util.Date) pa).getTime()));
+                }  else if (pa instanceof Double) {
                     p.bind(i, pa);
                 } else if (pa instanceof String) {
                     p.bind(i, pa);
