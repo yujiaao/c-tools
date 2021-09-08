@@ -57,10 +57,10 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
 
     @Override
     protected String getUpdateSql(){ {{! TODO the logic below is buggy, update SQL must according with update OBJECTS }}
-        return "update "+this.getTableName()+" set {{#each fields ~}}
+        return "update "+this.getTableName()+" set {{#each fields ~}} {{#if (not (isKey tableName name)) ~}}
             {{#eq config.versionColName name ~}} {{name}}= {{name}} +1  {{~#unless @last}},{{/unless~}} {{else}}  {{#if (not (and config.isUse_autoincrement this.isAutoIncrement)) ~}} {{ name }}=?{{~#unless @last}},{{/unless~}}{{/if ~}}
-            {{/eq ~}}
-            {{~/each}} {{{whereNoLike}}}";
+            {{/eq ~}}{{/if}}
+    {{~/each}}{{{whereNoLike}}}";
     }
 
     {{! writeObjs(tableName, keyData, colData); }}

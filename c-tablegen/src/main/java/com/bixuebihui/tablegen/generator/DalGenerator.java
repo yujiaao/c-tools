@@ -12,6 +12,7 @@ import java.util.Map;
 import static com.bixuebihui.tablegen.NameUtils.columnNameToConstantName;
 import static com.bixuebihui.tablegen.NameUtils.firstUp;
 import static com.bixuebihui.tablegen.TableGen.INDENT;
+import static java.util.Collections.emptyList;
 
 /**
  * @author xwx
@@ -36,7 +37,7 @@ public class DalGenerator extends BaseGenerator {
     }
 
     public static String makeInsertObjects(boolean useAutoincrement, List<ColumnData> columnData, String versionColName) {
-        return makeInsertObjects(useAutoincrement, false, columnData, versionColName);
+        return makeInsertObjects( false, emptyList(), useAutoincrement, false, columnData, versionColName);
     }
 
     @Override
@@ -44,7 +45,7 @@ public class DalGenerator extends BaseGenerator {
         return "dal.java";
     }
 
-    private static String makeInsertObjects(boolean useAutoincrement, boolean skipVersionColumn, List<ColumnData> columnData, String versionColName) {
+    private static String makeInsertObjects(boolean skipKey,List<String>keys,  boolean useAutoincrement, boolean skipVersionColumn, List<ColumnData> columnData, String versionColName) {
         StringBuilder objs = new StringBuilder();
         boolean useVersion = skipVersionColumn && containsVersion(columnData, versionColName);
         Iterator<ColumnData> iterator = columnData.iterator();
@@ -52,6 +53,9 @@ public class DalGenerator extends BaseGenerator {
             ColumnData cd = iterator.next();
             if (useAutoincrement && cd.isAutoIncrement()
                     || (useVersion && cd.getName().equalsIgnoreCase(versionColName))) {
+                continue;
+            }
+            if(skipKey && keys.contains(cd.getName())){
                 continue;
             }
 
@@ -68,7 +72,8 @@ public class DalGenerator extends BaseGenerator {
     }
 
     public static String makeUpdateObjects(List<String> params, List<ColumnData> columnData, boolean use_autoincrement, String versionColName) {
-        return "" + makeInsertObjects(use_autoincrement, true, columnData, versionColName) + "," +
+        boolean  skipKey =true;
+        return "" + makeInsertObjects(skipKey, params, use_autoincrement, true, columnData, versionColName) + "," +
                 createKeyObjects(params);
     }
 
@@ -258,7 +263,7 @@ public class DalGenerator extends BaseGenerator {
         v.put("hasVersionCol", containsVersion(cols
                 , config.getVersionColName()));
 
-        v.put("insertObjects", makeInsertObjects(config.isUseAutoincrement(), cols, config.getVersionColName()));
+        v.put("insertObjects", makeInsertObjects( config.isUseAutoincrement(), cols, config.getVersionColName()));
         v.put("updateObjects", makeUpdateObjects(keys, cols, config.isUseAutoincrement(), config.getVersionColName()));
 
         v.put("firstKeyType", this.getFirstKeyType(tableName));
@@ -298,6 +303,8 @@ public class DalGenerator extends BaseGenerator {
         super.additionalSetting(handlebars);
         // usage: {{type tableName colName}}
         handlebars.registerHelper("colType", (tableName, options) -> getColType(options.param(0), this.setInfo.getTableCols((String) tableName)));
+        handlebars.registerHelper("isKey", (tableName, options) -> this.setInfo.getTableKeys((String) tableName).contains(options.param(0)));
+
         // usage: {{where tableName}}
         handlebars.registerHelper("where", (tableName, options) ->
         {

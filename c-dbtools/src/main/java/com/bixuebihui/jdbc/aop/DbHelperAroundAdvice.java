@@ -43,26 +43,30 @@ public class DbHelperAroundAdvice implements MethodInterceptor{
     }
 
     private void beforeCall(Method method, Object[] args) {
-        LOG.debug("[AOP] call " + method.getName());
+        StringBuilder sb = new StringBuilder();
+        sb.append("[AOP] call " + method.getName()).append("\n");
         for (Object arg : args) {
             if (arg != null && arg instanceof Object[]) {
                 Object[] s = (Object[]) arg;
-                for (int j = 0; j < s.length; j++) {
+                for (int j = 0; j < s.length && j<50; j++) {
                     if (s[j] == null) {
-                        LOG.debug("[AOP] [" + j + "] null");
+                        sb.append("\t [" + j + "] null").append("\n");
                     } else {
-                        LOG.debug("[AOP]  [" + j + "]" + s[j].getClass()
-                                + ": " + s[j].toString());
+                        sb.append("\t  [" + j + "]" + s[j].getClass()+ ": " + s[j].toString()).append("\n");
                     }
+                }
+                if(s.length>=50){
+                    sb.append("\t  " + (s.length-50) + "... omited ").append("\n");
                 }
             } else if (arg instanceof String
                     || arg instanceof Integer
                     || arg instanceof Long
                     || arg instanceof Date
                     || arg instanceof Byte) {
-                LOG.debug("[AOP] " + arg);
+                sb.append("\t " + arg);
             }
         }
+        LOG.debug(sb.toString());
         before = System.currentTimeMillis();
     }
 
