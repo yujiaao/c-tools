@@ -20,6 +20,7 @@ import java.util.Map;
  */
 public class DbHelperAroundAdvice implements MethodInterceptor{
     private static final Logger LOG = LoggerFactory.getLogger(DbHelperAroundAdvice.class);
+    private static final int MAX_SHOW =20;
 
     private long before;
     private long after;
@@ -48,22 +49,22 @@ public class DbHelperAroundAdvice implements MethodInterceptor{
         for (Object arg : args) {
             if (arg != null && arg instanceof Object[]) {
                 Object[] s = (Object[]) arg;
-                for (int j = 0; j < s.length && j<50; j++) {
+                for (int j = 0; j < s.length && j< MAX_SHOW; j++) {
                     if (s[j] == null) {
                         sb.append("\t [" + j + "] null").append("\n");
                     } else {
                         sb.append("\t  [" + j + "]" + s[j].getClass()+ ": " + s[j].toString()).append("\n");
                     }
                 }
-                if(s.length>=50){
-                    sb.append("\t  " + (s.length-50) + "... omited ").append("\n");
+                if(s.length>= MAX_SHOW){
+                    sb.append("\t  " + (s.length- MAX_SHOW) + "... omited ").append("\n");
                 }
             } else if (arg instanceof String
                     || arg instanceof Integer
                     || arg instanceof Long
                     || arg instanceof Date
                     || arg instanceof Byte) {
-                sb.append("\t " + arg);
+                sb.append("\t " + arg).append("\n");
             }
         }
         LOG.debug(sb.toString());
