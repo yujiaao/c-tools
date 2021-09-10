@@ -2,9 +2,7 @@ package com.bixuebihui.r2dbc.sql;
 
 
 import com.bixuebihui.DbException;
-import com.bixuebihui.db.GroupFunction;
-import com.bixuebihui.db.PojoValidator;
-import com.bixuebihui.db.SqlString;
+import com.bixuebihui.db.*;
 import com.bixuebihui.jdbc.SqlObject;
 import com.bixuebihui.jdbc.SqlServer2000PageHepler;
 import com.bixuebihui.jdbc.SqlServer2005PageHepler;
@@ -1771,6 +1769,28 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         return res;
     }
 
+
+    /**
+     * Select from the database for table "Agent_form"
+     *
+     * @return list of pojo
+     */
+    public @NotNull
+    Mono<List<T>> selectBy(com.bixuebihui.db.ActiveRecord<T> ar) {
+        SqlPocket build = ar.getCondStack().build();
+
+        String sql = this.getCoreSql()+build.getCondition();
+        if(ar instanceof ActiveRecordImpl){
+            ActiveRecordImpl arr =  (( ActiveRecordImpl) ar);
+            sql += arr.parseOrder() + arr.parseLimitSql();
+        }
+        return this.dbHelper.executeQuery(sql,
+                build.getParams().toArray(new Object[0]), this);
+    }
+
+    protected String getCoreSql(){
+        return SELECT_FROM+getTableName()+" ";
+    }
 
 
 

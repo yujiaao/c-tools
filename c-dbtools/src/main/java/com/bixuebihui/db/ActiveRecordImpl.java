@@ -30,6 +30,15 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	 */
 	SqlSort orderStack;
 	SqlHelper filterStack;
+
+	public SqlLimit getLimit() {
+		return limit;
+	}
+
+	public void setLimit(SqlLimit limit) {
+		this.limit = limit;
+	}
+
 	SqlLimit limit;
 	BaseDao<T, V> operator;
 	Connection cn;
@@ -372,7 +381,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 		}
 	}
 
-	private String parseLimitSql() throws DbException {
+	public String parseLimitSql() throws DbException {
 		if (operator.getDbType() == MYSQL || operator.getDbType() == H2) {
 
 			if (limit == null) {
@@ -410,7 +419,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 		return sqlPocket;
 	}
 
-	protected String parseOrder() {
+	public String parseOrder() {
 		return this.orderStack.toString();
 	}
 

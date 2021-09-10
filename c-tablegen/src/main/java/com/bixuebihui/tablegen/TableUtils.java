@@ -654,7 +654,11 @@ public class TableUtils {
 
                 String colName = rs.getString(4);
 
-                System.out.println("TABLE_SCHEM="+rs.getObject("TABLE_SCHEM")+" TABLE_CAT="+rs.getObject("TABLE_CAT")+" colName="+colName+"colName="+colName+" IS_GENERATEDCOLUMN="+ rs.getObject("IS_GENERATEDCOLUMN")+" ORDINAL_POSITION="+rs.getObject("ORDINAL_POSITION"));
+                System.out.println("TABLE_SCHEM="+rs.getObject("TABLE_SCHEM")
+                        +" TABLE_CAT="+rs.getObject("TABLE_CAT")
+                        +" colName="+colName
+                        +" IS_GENERATEDCOLUMN="+ rs.getObject("IS_GENERATEDCOLUMN")
+                        +" ORDINAL_POSITION="+rs.getObject("ORDINAL_POSITION"));
 
                // int curColumnPos = rs.getInt("ORDINAL_POSITION");
 

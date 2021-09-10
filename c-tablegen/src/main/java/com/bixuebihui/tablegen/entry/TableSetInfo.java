@@ -542,12 +542,21 @@ public class TableSetInfo {
                 for (String name : config.getViewList().keySet()) {
                     String sql = config.getViewList().get(name);
                     dbHelper.executeQuery(sql.contains("limit") ? sql :sql + " limit 1",
-                            new Object[0], new RowMapperResultReader((rs, index) -> {
-                                TableInfo info = OnFlyViewUtils.getColumnData(rs.getMetaData(), name, dbType);
-                                info.setComment(sql);
-                                viewInfos.put(name, info);
-                                return null;
-                            }));
+                            new Object[0], new RowMapperResultReader((rs, index) -> null){
+                                @Override
+                                public @NotNull List<Object> processResultSet(ResultSet rs){
+
+                                    try {
+                                        TableInfo info = OnFlyViewUtils.getColumnData(rs.getMetaData(), name, dbType);
+                                        info.setComment(sql);
+                                        viewInfos.put(name, info);
+                                    } catch (SQLException e) {
+                                        e.printStackTrace();
+                                    }
+
+                                    return Collections.emptyList();
+                                }
+                            });
 
                 }
 

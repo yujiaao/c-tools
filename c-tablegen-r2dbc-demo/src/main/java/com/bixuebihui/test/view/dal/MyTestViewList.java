@@ -30,7 +30,7 @@ import reactor.core.publisher.Mono;
 @Generated("com.github.yujiaao:tablegen")
 public class MyTestViewList  extends AbstractViewBaseDao<MyTestView, Integer>
 {
-    
+
     /**
       * Don't direct use the MyTestViewList, use MyTestViewManager instead.
       */
@@ -39,7 +39,7 @@ public class MyTestViewList  extends AbstractViewBaseDao<MyTestView, Integer>
         super(ds);
     }
 
-    
+
     @SuppressWarnings("AlibabaClassNamingShouldBeCamel")
     public static final class F{
         public static final String ID = "id";
@@ -48,7 +48,7 @@ public class MyTestViewList  extends AbstractViewBaseDao<MyTestView, Integer>
         public static final String BIRTH = "birth";
         public static final String EDU_ID = "edu_id";
         public static final String DEGREE = "degree";
-        
+
         public static String[] getAllFields() {
             return new String[] { ID, NAME, AGE, BIRTH, EDU_ID, DEGREE };
         }
@@ -59,10 +59,11 @@ public class MyTestViewList  extends AbstractViewBaseDao<MyTestView, Integer>
     /**
     * Get table view sql.
     */
+    @Override
     protected String getCoreSql()
     {
-    
-    
+
+
         return " select test_gen.*, degree from test_gen left join t_edu on test_gen.edu_id=t_edu.id";
     }
 
@@ -76,7 +77,7 @@ public class MyTestViewList  extends AbstractViewBaseDao<MyTestView, Integer>
       return "("+this.getCoreSql()+") as my_test_view";
     }
 
-    
+
     /**
     * Get key name.
     */
@@ -91,7 +92,7 @@ public class MyTestViewList  extends AbstractViewBaseDao<MyTestView, Integer>
         * Updates the object from a selected ResultSet.
         */
       @Override
-      public MyTestView mapRow(Row r) 
+      public MyTestView mapRow(Row r)
       {
             MyTestView res = new MyTestView();
             res.setId(r.get(F.ID, Integer.class));

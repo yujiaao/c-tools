@@ -1771,5 +1771,27 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
 
 
 
+    /**
+     * Select from the database for table "Agent_form"
+     *
+     * @return list of pojo
+     */
+    public @NotNull
+    List<T> selectBy(ActiveRecord<T> ar) {
+        SqlPocket build = ar.getCondStack().build();
+
+        String sql = this.getCoreSql()+build.getCondition();
+        if(ar instanceof ActiveRecordImpl){
+            ActiveRecordImpl arr =  (( ActiveRecordImpl) ar);
+            sql += arr.parseOrder() + arr.parseLimitSql();
+        }
+        return this.dbHelper.executeQuery(sql,
+                build.getParams().toArray(new Object[0]), this);
+    }
+
+    protected String getCoreSql(){
+        return SELECT_FROM+getTableName()+" ";
+    }
+
 
 }

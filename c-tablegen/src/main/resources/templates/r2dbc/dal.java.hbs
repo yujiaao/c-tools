@@ -83,6 +83,7 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
     /**
     * Get table view sql.
     */
+    @Override
     protected String getCoreSql()
     {
     {{#if tableInfo.isView}}
