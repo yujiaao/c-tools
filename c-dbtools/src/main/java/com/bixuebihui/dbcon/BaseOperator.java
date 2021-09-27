@@ -2,7 +2,7 @@ package com.bixuebihui.dbcon;
 
 
 import com.bixuebihui.jdbc.IDbHelper;
-import org.apache.commons.dbutils.DbUtils;
+import com.bixuebihui.util.DbUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,7 +51,9 @@ public class BaseOperator
      */
     protected void rollback() {
         try {
-            DbUtils.rollback(conn);
+           if( conn!=null){
+               conn.rollback();
+           }
         } catch(SQLException e) {
             LOG.error("", e);
         }

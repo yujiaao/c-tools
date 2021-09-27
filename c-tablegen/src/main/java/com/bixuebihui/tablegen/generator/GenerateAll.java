@@ -7,7 +7,7 @@ import com.bixuebihui.tablegen.TableGen;
 import com.bixuebihui.tablegen.diffhandler.DiffHandler;
 import com.bixuebihui.tablegen.entry.ColumnData;
 import com.bixuebihui.tablegen.entry.TableInfo;
-import org.apache.commons.dbutils.DbUtils;
+import com.bixuebihui.util.DbUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;

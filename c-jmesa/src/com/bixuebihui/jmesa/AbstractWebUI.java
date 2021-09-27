@@ -179,7 +179,7 @@ public abstract class AbstractWebUI<T, V> implements WorksheetSaver {
     protected abstract V[] getKeys(HttpServletRequest request);
 
     protected String render(HttpServletRequest request,
-                            HttpServletResponse response) throws SQLException {
+                            HttpServletResponse response) {
         TableModel tableModel = new TableModel(id, request, response);
 
         String ac = request.getParameter(actionParam);
@@ -199,7 +199,7 @@ public abstract class AbstractWebUI<T, V> implements WorksheetSaver {
     }
 
     protected String baseRender(TableModel tableModel, boolean editable,
-                                String action, V[] keys) throws SQLException {
+                                String action, V[] keys)  {
         tableModel.setEditable(editable);
         this.performAction(action, tableModel, keys);
 
@@ -334,7 +334,7 @@ public abstract class AbstractWebUI<T, V> implements WorksheetSaver {
     }
 
     protected void performAction(String action, TableModel tableModel, V[] keys)
-            throws SQLException {
+             {
 
         if (SAVE_WORKSHEET_ACTION.equals(action)) {
             tableModel.saveWorksheet(this);
@@ -352,7 +352,7 @@ public abstract class AbstractWebUI<T, V> implements WorksheetSaver {
         }
     }
 
-    protected void deleteSelected(V[] keys) throws SQLException {
+    protected void deleteSelected(V[] keys) {
         if (keys == null) {
             return;
         }
@@ -363,7 +363,7 @@ public abstract class AbstractWebUI<T, V> implements WorksheetSaver {
         }
     }
 
-    protected void copySelected(V[] parameterValues) throws SQLException {
+    protected void copySelected(V[] parameterValues) {
         if (parameterValues == null) {
             return;
         }
@@ -393,13 +393,8 @@ public abstract class AbstractWebUI<T, V> implements WorksheetSaver {
         List<String> uniquePropertyValues = WorksheetUtils
                 .getUniquePropertyValues(worksheet);
         final Map<String, T> infos;
-        try {
-            infos = service.selectByIds(uniquePropertyName,
-                    uniquePropertyValues);
-        } catch (SQLException e1) {
-            LOG.error("", e1);
-            return;
-        }
+        infos = service.selectByIds(uniquePropertyName,
+                uniquePropertyValues);
         worksheet.processRows(worksheetRow -> {
             Collection<WorksheetColumn> columns = worksheetRow.getColumns();
             for (WorksheetColumn worksheetColumn : columns) {
@@ -437,13 +432,9 @@ public abstract class AbstractWebUI<T, V> implements WorksheetSaver {
                             "Not able to set the property [" + property
                                     + "] when saving worksheet.");
                 }
-                try {
-                    boolean res = isNew ? service.insert(info) : service.updateByKey(info);
-                    if (!res) {
-                        LOG.warn("fail to update info=" + info.toString());
-                    }
-                } catch (SQLException e) {
-                    LOG.error("", e);
+                boolean res = isNew ? service.insert(info) : service.updateByKey(info);
+                if (!res) {
+                    LOG.warn("fail to update info=" + info.toString());
                 }
             }
         });
@@ -462,7 +453,6 @@ public abstract class AbstractWebUI<T, V> implements WorksheetSaver {
         this.colsTemplate = colsTemplate;
     }
 
-    @SuppressWarnings("unchecked")
     protected Map<String, Object> getContext(HttpServletRequest request) {
         if (request == null) {
             return Collections.emptyMap();
@@ -496,7 +486,7 @@ public abstract class AbstractWebUI<T, V> implements WorksheetSaver {
         }
 
         //replace %{abc} to ${abc}, to avoid spring xml escaping
-        template = template.replaceAll("\\%\\{(.+?)\\}", "\\$\\{$1\\}");
+        template = template.replaceAll("%\\{(.+?)}", "\\$\\{$1\\}");
 
         LOG.debug("after replace " + var + ":" + template);
         CellEditor cellEditor = getCellEditor(context, col, var, template);

@@ -3,6 +3,7 @@ package com.bixuebihui.db;
 import com.bixuebihui.DbException;
 import com.bixuebihui.jdbc.ISqlConditionType;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -327,6 +328,33 @@ public class SqlHelper {
 	}
 
 	/**
+	 * <p>between.</p>
+	 *
+	 * @param field a {@link java.lang.String} object.
+	 * @param leftValue a {@link java.lang.Object} object.
+	 * @param rightValue a {@link java.lang.Object} object.
+	 * @return a {@link SqlHelper} object.
+	 */
+	public SqlHelper between(String field, Object leftValue, Object rightValue) {
+		filters.add(new BetweenFilter(field, leftValue, rightValue));
+		return this;
+	}
+
+	/**
+	 * <p> not between.</p>
+	 *
+	 * @param field a {@link java.lang.String} object.
+	 * @param leftValue a {@link java.lang.Object} object.
+	 * @param rightValue a {@link java.lang.Object} object.
+	 * @return a {@link SqlHelper} object.
+	 */
+	public SqlHelper notBetween(String field, Object leftValue, Object rightValue) {
+		filters.add(new NotBetweenFilter(field, leftValue, rightValue));
+		return this;
+	}
+
+
+	/**
 	 * <p>ne.</p>
 	 *
 	 * @param field a {@link java.lang.String} object.
@@ -424,6 +452,8 @@ public class SqlHelper {
             this.notCond.clear();
         }
 	}
+
+
 
 	protected abstract static class BaseFilter {
 		protected final String property;
@@ -601,6 +631,46 @@ public class SqlHelper {
 		public String getConcat(){ return "concat(?,'%')";
 		}
 
+	}
+
+	protected static class BetweenFilter extends BaseFilter {
+		protected String operator = " between ";
+		public BetweenFilter(String property, Object valueLeft, Object valueRight) {
+			super(property, Pair.of(valueLeft, valueRight));
+		}
+
+		@Override
+		public SqlPocket build(SqlPocket sb) {
+			if(value instanceof Pair) {
+				Pair p = (Pair) value;
+				if (p.getLeft() instanceof SqlString) {
+					sb.getCondition().append(" and ").append(property).append(operator).append(p.getLeft());
+				} else{
+					sb.getCondition().append(" and ").append(property).append(operator).append("?");
+					sb.getParams().add(p.getLeft());
+				}
+
+				if (p.getRight() instanceof SqlString) {
+					sb.getCondition().append(" and ").append(p.getRight());
+				} else{
+					sb.getCondition().append(" and ").append("?");
+					sb.getParams().add(p.getRight());
+				}
+
+			} else {
+				throw new DbException(
+						"BetweenFilter constructor only accept value of type SqlString or Pair object:"
+								+ value + "->" + (value == null ? "null" : value.getClass()));
+			}
+			return sb;
+		}
+	}
+
+	protected static class NotBetweenFilter extends BetweenFilter {
+		public NotBetweenFilter(String property, Object valueLeft, Object valueRight) {
+			super(property, valueLeft, valueRight);
+			operator = " not between ";
+		}
 	}
 
 }

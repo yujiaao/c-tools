@@ -351,7 +351,7 @@ public class BaseDaoTest  {
 				return "test1";
 			}
 			@Override
-			public boolean insertDummy() throws SQLException {
+			public boolean insertDummy() {
 				return false;
 			}
 			@Override

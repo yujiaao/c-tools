@@ -18,44 +18,39 @@ public interface IBaseListService<T, V> extends IReaderService<T> {
      * @param uniquePropertyName   a {@link java.lang.String} object.
      * @param uniquePropertyValues a {@link java.util.List} object.
      * @return a {@link java.util.Map} object.
-     * @throws java.sql.SQLException if any.
      */
-    Map<String, T> selectByIds(String uniquePropertyName, List<String> uniquePropertyValues) throws SQLException;
+    Map<String, T> selectByIds(String uniquePropertyName, List<String> uniquePropertyValues);
 
     /**
      * <p>updateByKey.</p>
      *
      * @param info a T object.
      * @return a boolean.
-     * @throws java.sql.SQLException if any.
      */
-    boolean updateByKey(T info) throws SQLException;
+    boolean updateByKey(T info);
 
     /**
      * <p>insertDummy.</p>
      *
      * @return a boolean.
-     * @throws java.sql.SQLException if any.
      */
-    boolean insertDummy() throws SQLException;
+    boolean insertDummy();
 
     /**
      * <p>deleteByKey.</p>
      *
      * @param key a V object.
      * @return a boolean.
-     * @throws java.sql.SQLException if any.
      */
-    boolean deleteByKey(V key) throws SQLException;
+    boolean deleteByKey(V key);
 
     /**
      * <p>insertAutoNewKey.</p>
      *
      * @param info a T object.
      * @return a boolean.
-     * @throws java.sql.SQLException if any.
      */
-    boolean insertAutoNewKey(T info) throws SQLException;
+    boolean insertAutoNewKey(T info);
 
     /**
      * <p>getId.</p>
@@ -92,9 +87,8 @@ public interface IBaseListService<T, V> extends IReaderService<T> {
      *
      * @param o a T object.
      * @return a boolean.
-     * @throws java.sql.SQLException if any.
      */
-    boolean insert(T o) throws SQLException;
+    boolean insert(T o);
 
     /**
      * <p>create.</p>

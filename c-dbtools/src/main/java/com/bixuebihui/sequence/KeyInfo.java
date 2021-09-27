@@ -1,7 +1,7 @@
 package com.bixuebihui.sequence;
 
 import com.bixuebihui.jdbc.IDbHelper;
-import org.apache.commons.dbutils.DbUtils;
+import com.bixuebihui.util.DbUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

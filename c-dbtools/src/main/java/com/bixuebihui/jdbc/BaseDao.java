@@ -2,16 +2,15 @@ package com.bixuebihui.jdbc;
 
 import com.bixuebihui.DbException;
 import com.bixuebihui.db.*;
-import com.bixuebihui.db.GroupFunction;
 import com.bixuebihui.jdbc.aop.DbHelperAroundAdvice;
 import com.bixuebihui.jdbc.entity.CountObject;
 import com.bixuebihui.jdbc.entity.CountValue;
 import com.bixuebihui.sequence.SequenceUtils;
 import com.bixuebihui.shardingjdbc.core.api.HintManager;
 import com.bixuebihui.sql.SQLUtil;
+import com.bixuebihui.util.DbUtils;
 import org.apache.commons.beanutils.*;
 import org.apache.commons.beanutils.converters.*;
-import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.CaseUtils;
 import org.slf4j.Logger;
@@ -29,6 +28,7 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Map.Entry;
+
 import static com.bixuebihui.db.Dialect.*;
 
 /**
@@ -1200,8 +1200,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      */
     @Override
     public @NotNull
-    Map<String, T> selectByIds(String uniquePropertyName, List<String> uniquePropertyValues)
-             {
+    Map<String, T> selectByIds(String uniquePropertyName, List<String> uniquePropertyValues) {
 
         String ids = StringUtils.join(uniquePropertyValues, ",");
 
@@ -1211,8 +1210,8 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         for (T info : infos) {
             map.put("" + getId(info), info);
         }
-                 return map;
-             }
+        return map;
+    }
 
     /**
      * <p>selectAllWhere.</p>
@@ -1660,11 +1659,11 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         String keyName = StringUtils.isEmpty(this.getKeyName()) ? field : this.getKeyName();
         final boolean noGroup = (groupBy == null || groupBy.length == 0);
 
-        String groupKeys = noGroup ? "" : ", concat(" + StringUtils.join(groupBy, ",") + ") gv_key";
+        String groupKeys = noGroup ? "" : "concat(" + StringUtils.join(groupBy, ",") + ") gv_key";
 
-        String groupByClause = noGroup ? "" : " group by " + groupKeys;
+        String groupByClause = noGroup ? "" : " group by " + StringUtils.join(groupBy, ",");
 
-        String query = "select count(" + keyName + ") gv_cnt, " + groupFunction + "(" + field + ") gv_sm " + groupKeys
+        String query = "select count(" + keyName + ") gv_cnt, " + groupFunction + "(" + field + ") gv_sm " +(noGroup? "": ","+groupKeys)
                 + " from " + getTableName() + " " + where + groupByClause + (having == null ? "" : having);
         return getDbHelper().executeQuery(query, params,
                 new RowMapperResultReader<>((rs, index) -> {

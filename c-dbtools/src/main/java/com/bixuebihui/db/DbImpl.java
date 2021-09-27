@@ -80,6 +80,56 @@ public class DbImpl<T, V> extends BaseDao<T, V> implements ActiveRecord<T>,
 		return this;
 	}
 
+	/**
+	 * **重要事项**：不同的数据库对 BETWEEN...AND 操作符的处理方式是有差异的。
+	 * 某些数据库会列出介于 "Adams" 和 "Carter" 之间的人，
+	 * 但不包括 "Adams" 和 "Carter" ；某些数据库会列出介于 "Adams" 和 "Carter"
+	 * 之间并包括 "Adams" 和 "Carter" 的人；而另一些数据库会列出介于 "Adams" 和 "Carter" 之间的人，
+	 * 包括 "Adams" ，但不包括 "Carter" 。
+	 * In MySQL string values are not case-sensitive. The actual value in the
+	 * column doesn’t have to match the value you specify in the BETWEEN condition.
+	 * For example, if you specify the letter range D-G and there is a book whose name equals “dune”
+	 * (first letter is in lowercase), the name of this book will also be retrieved.
+	 *
+	 * General Guidelines
+	 * In a MySQL BETWEEN operator, the lower limit must be specified before the upper limit.
+	 * ```
+	 * SELECT bookName, bookPrice
+	 * FROM books
+	 * WHERE  bookPrice BETWEEN 80 AND 20
+	 * ```
+	 * -- No error will be generated and no rows will be returned either.
+	 *
+	 * The MySQL BETWEEN operator is inclusive. For example, when you use
+	 * the MySQL BETWEEN operator to retrieve the books whose price is in
+	 * the range between 50 and 90, the result retrieves all of these books,
+	 * including those whose price equals 50 or 90.
+	 *
+	 * SELECT bookID, bookName, bookPrice
+	 * FROM books
+	 * WHERE  bookPrice BETWEEN 50 AND 90
+	 * -- All books whose price is in the range of 50 and 90
+	 * -- Including those whose price equals 50 or 90
+	 *
+	 * 所以，请检查你的数据库是如何处理 BETWEEN....AND 操作符的！
+	 *
+	 * @param field a {@link java.lang.String} object.
+	 * @param leftValue a {@link java.lang.Object} object.
+	 * @param rightValue a {@link java.lang.Object} object.
+	 * @return
+	 */
+	@Override
+	public ActiveRecord<T> between(String field, Object leftValue, Object rightValue) {
+		filterStack.between(field, leftValue, rightValue);
+		return this;
+	}
+
+	@Override
+	public ActiveRecord<T> notBetween(String field, Object leftValue, Object rightValue) {
+		filterStack.notBetween(field, leftValue, rightValue);
+		return this;
+	}
+
 	/** {@inheritDoc} */
 	@Override
 	public ActiveRecord<T> ne(String field, Object value) {
@@ -332,7 +382,7 @@ public class DbImpl<T, V> extends BaseDao<T, V> implements ActiveRecord<T>,
 
 	/** {@inheritDoc} */
 	@Override
-	public boolean insertDummy() throws SQLException {
+	public boolean insertDummy() {
 		throw new NotImplementedException();
 	}
 
@@ -536,6 +586,10 @@ public class DbImpl<T, V> extends BaseDao<T, V> implements ActiveRecord<T>,
 		throw new NotImplementedException();
 	}
 
+	@Override
+	public <K> List<CountObject<K>> countList(String returnField, String[] groupByFields, String having, GroupFunction fun, Class<K> objectType) {
+		throw new NotImplementedException();
+	}
 
 
 }

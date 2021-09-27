@@ -1,9 +1,8 @@
 package com.bixuebihui.jdbc;
 
 import com.bixuebihui.DbException;
-import org.apache.commons.dbutils.DbUtils;
+import com.bixuebihui.util.DbUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.StandardLineSeparator;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;

@@ -205,7 +205,7 @@ public class DictionaryList extends BaseList<DictionaryItem, String> {
      * @return true if success
      */
     @Override
-    public boolean insertDummy() throws SQLException {
+    public boolean insertDummy() {
         DictionaryItem info = new DictionaryItem();
         java.util.Random rnd = new java.util.Random();
         info.setValue(Integer.toString(Math.abs(rnd.nextInt(Integer.MAX_VALUE)), 36));

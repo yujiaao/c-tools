@@ -129,6 +129,18 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 		return this;
 	}
 
+	@Override
+	public ActiveRecord<T> between(String field, Object leftValue, Object rightValue) {
+		filterStack.between(field, leftValue, rightValue);
+		return this;
+	}
+
+	@Override
+	public ActiveRecord<T> notBetween(String field, Object leftValue, Object rightValue) {
+		filterStack.notBetween(field, leftValue, rightValue);
+		return this;
+	}
+
 
 	/** {@inheritDoc} */
 	@Override
@@ -652,6 +664,22 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 		}
 	}
 
+
+	/** {@inheritDoc} */
+	@Override
+	public <K> List<CountObject<K>> countList(String returnField, String[] groupByFields, String having, GroupFunction fun, Class<K> objectType)
+	{
+		try {
+			sqlPocket = this.getSql();
+			String where = formWhereClause();
+			Object[] params = getParams().toArray();
+			List<CountObject<K>> res =  operator.countGroupObject(returnField, fun.toString(), where,
+					having, groupByFields, objectType, params);
+			return res;
+		} finally {
+			clear();
+		}
+	}
 
 
 }

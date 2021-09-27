@@ -73,6 +73,26 @@ public interface ActiveRecord<T> extends Record<T> {
     ActiveRecord<T> eq(String field, Object value);
 
     /**
+     * <p>between.</p>
+     *
+     * @param field a {@link java.lang.String} object.
+     * @param leftValue a {@link java.lang.Object} object.
+     * @param rightValue a {@link java.lang.Object} object.
+     * @return a {@link ActiveRecord} object.
+     */
+    ActiveRecord<T> between(String field, Object leftValue, Object rightValue);
+
+    /**
+     * <p>notBetween.</p>
+     *
+     * @param field a {@link java.lang.String} object.
+     * @param leftValue a {@link java.lang.Object} object.
+     * @param rightValue a {@link java.lang.Object} object.
+     * @return a {@link ActiveRecord} object.
+     */
+    ActiveRecord<T> notBetween(String field, Object leftValue, Object rightValue);
+
+    /**
      * <p>ne.</p>
      *
      * @param field a {@link java.lang.String} object.

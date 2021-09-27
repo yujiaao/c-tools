@@ -4,11 +4,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.commons.dbutils.DbUtils;
-
 import com.bixuebihui.datasource.DataSourceTest;
 import com.bixuebihui.dbcon.DatabaseConfig;
 
+import com.bixuebihui.util.DbUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.jupiter.api.condition.DisabledIf;

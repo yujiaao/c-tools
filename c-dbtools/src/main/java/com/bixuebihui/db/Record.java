@@ -99,6 +99,8 @@ public interface Record<T> {
 	 */
 	<K> CountObject<K> countObject(String field, GroupFunction fun, Class<K> objectType) throws DbException;
 
+	<K> List<CountObject<K>> countList(String returnField, String[] groupByFields, String having, GroupFunction fun, Class<K> objectType);
+
 	/**
 	 * <p>countSum.</p> 获得数量
 	 *

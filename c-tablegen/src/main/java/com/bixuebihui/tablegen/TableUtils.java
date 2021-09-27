@@ -9,7 +9,7 @@ import com.bixuebihui.jdbc.RowMapperResultReader;
 import com.bixuebihui.tablegen.entry.ColumnData;
 import com.bixuebihui.tablegen.entry.TableInfo;
 import com.bixuebihui.tablegen.entry.TableSetInfo;
-import org.apache.commons.dbutils.DbUtils;
+import com.bixuebihui.util.DbUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -713,7 +713,6 @@ public class TableUtils {
             throw e;
         } finally {
             end();
-
             DbUtils.close(rs);
         }
         TableInfo tableInfo = new TableInfo(tableName);

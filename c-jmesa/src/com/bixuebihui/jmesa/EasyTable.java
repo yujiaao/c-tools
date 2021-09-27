@@ -1,19 +1,18 @@
 package com.bixuebihui.jmesa;
 
+import com.bixuebihui.DbException;
 import com.bixuebihui.jdbc.IDbHelper;
 import com.bixuebihui.jmesa.mock.SimpleHttpServletRequest;
 import com.bixuebihui.jmesa.mock.SimpleHttpServletResponse;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import com.bixuebihui.util.DbUtils;
 import com.foundationdb.sql.StandardException;
 import com.foundationdb.sql.parser.*;
-import com.sun.istack.Nullable;
-import org.apache.commons.dbutils.DbUtils;
 import org.apache.commons.lang.StringUtils;
 
+import javax.annotation.Nullable;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.sql.*;
-import java.text.ParseException;
 import java.util.Map;
 
 /**
@@ -51,7 +50,6 @@ public class EasyTable extends BasicWebUI {
          * @param baseSql      核心sql语句
          * @param tableId      表名
          * @param pkName       主键名
-         * @throws SQLException
          */
     public EasyTable(IDbHelper dbhelper, String tableCaption, String baseSql, @Nullable String pkName, @Nullable String tableId, String colNames) {
         this.id = tableId;
@@ -260,7 +258,7 @@ public class EasyTable extends BasicWebUI {
         }
 
         public static MiniSqlParser getByDb(Connection cn, String sql)
-                throws SQLException {
+                throws DbException {
             MiniSqlParser sp = new MiniSqlParser();
             Statement stmt = null;
             ResultSet rs = null;
@@ -280,9 +278,13 @@ public class EasyTable extends BasicWebUI {
                     sp.colLabels[i - 1] = rsmd.getColumnLabel(i);
                     sp.colTypes[i-1] = rsmd.getColumnTypeName(i);
                 }
-            } finally {
-                DbUtils.close(rs);
-                DbUtils.close(stmt);
+            }catch (SQLException e){
+                throw new DbException(e);
+            }finally {
+                try {
+                    DbUtils.close(rs);
+                    DbUtils.close(stmt);
+                }catch (Exception e){}
             }
 
             return sp;

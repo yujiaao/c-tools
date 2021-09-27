@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.github.yujiaao</groupId>
         <artifactId>c-tools-parent</artifactId>
-        <version>1.7.2.2</version>
+        <version>1.7.4</version>
     </parent>
 
     <artifactId>c-dbtools</artifactId>
@@ -189,12 +189,6 @@
             <artifactId>druid</artifactId>
             <version>1.2.6</version>
             <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>commons-dbutils</groupId>
-            <artifactId>commons-dbutils</artifactId>
-            <version>1.7</version>
         </dependency>
 
         <dependency>

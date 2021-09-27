@@ -1,5 +1,7 @@
 package com.bixuebihui.jdbc;
 
+import com.bixuebihui.DbException;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -25,7 +27,7 @@ public class AbstractBaseDao extends BaseDao<Object, Long> {
     /** {@inheritDoc} */
     @Override
     public Object mapRow(ResultSet rs, int index) throws SQLException {
-        throw new SQLException("not implement!");
+        throw new DbException("not implement!");
     }
 
 
@@ -36,8 +38,8 @@ public class AbstractBaseDao extends BaseDao<Object, Long> {
      * @throws java.sql.SQLException if any.
      */
     @Override
-    public boolean insertDummy() throws SQLException {
-        throw new SQLException("not implement!");
+    public boolean insertDummy() {
+        throw new DbException("not implement!");
     }
 
     /** {@inheritDoc} */
