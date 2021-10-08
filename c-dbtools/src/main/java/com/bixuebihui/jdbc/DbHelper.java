@@ -737,6 +737,7 @@ public class DbHelper implements IDbHelper {
      *
      * @param p      a {@link java.sql.PreparedStatement} object.
      * @param params an array of {@link java.lang.Object} objects.
+     * @throws SQLException if any
      */
     public void fillParameter(PreparedStatement p, Object[] params) throws SQLException {
         fillParameter(p, params, null);
@@ -779,6 +780,7 @@ public class DbHelper implements IDbHelper {
      * @param p              a {@link java.sql.PreparedStatement} object.
      * @param params         an array of {@link java.lang.Object} objects.
      * @param targetSqlTypes an array of int objects.
+     * @throws SQLException 数据库出错
      */
     public void fillParameter(PreparedStatement p, Object[] params,
                               int[] targetSqlTypes) throws SQLException {

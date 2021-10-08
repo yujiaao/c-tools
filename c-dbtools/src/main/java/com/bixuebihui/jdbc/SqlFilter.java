@@ -331,7 +331,7 @@ public class SqlFilter {
 	 *
 	 * @param cond a {@link SqlFilter} object.
 	 * @return a {@link SqlFilter} object.
-	 * @deprecated since 1.4.1, use operator & subGroup is better choice
+	 * @deprecated since 1.4.1, use operator &amp; subGroup is better choice
 	 */
 	@Deprecated
 	public SqlFilter or(SqlFilter cond){

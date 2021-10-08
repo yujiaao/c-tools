@@ -918,7 +918,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     /**
      * 查询返回通用类型
      *
-     * @param whereClause   条件，如果是mysql数据库，会针对*优化, 如 "where id>?"
+     * @param whereClause   条件，如果是mysql数据库，会针对*优化, 如 "where id&gt;?"
      * @param params        参数，如 new Object[]{ 1000 }
      * @param orderByClause 排序条件, 如 "order by id desc"
      * @param beginNum      起始行,如 0

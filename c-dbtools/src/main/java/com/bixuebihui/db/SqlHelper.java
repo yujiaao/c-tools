@@ -372,7 +372,7 @@ public class SqlHelper {
 	 * @param fields an array of {@link java.lang.String} objects.
 	 * @param value an array of {@link java.lang.Object} objects.
 	 * @return a {@link SqlHelper} object.
-	 * @throws java.sql.SQLException if any.
+	 * @throws DbException if any.
 	 */
 	public SqlHelper eq(String[] fields, Object[] value) {
 		if (fields.length != value.length) {

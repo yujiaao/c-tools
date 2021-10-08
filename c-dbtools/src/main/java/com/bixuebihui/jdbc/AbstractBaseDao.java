@@ -35,7 +35,7 @@ public class AbstractBaseDao extends BaseDao<Object, Long> {
      * <p>insertDummy.</p>
      *
      * @return a boolean.
-     * @throws java.sql.SQLException if any.
+     * @throws DbException if any.
      */
     @Override
     public boolean insertDummy() {

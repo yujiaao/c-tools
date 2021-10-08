@@ -77,7 +77,6 @@ public class MSDbHelper extends DbHelper {
      * <p>getConnection.</p>
      *
      * @return a {@link java.sql.Connection} object.
-     * @throws java.sql.SQLException if any.
      */
     @Override
     public Connection getConnection() {
