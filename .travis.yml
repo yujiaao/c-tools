@@ -5,7 +5,8 @@ jdk:
 #script:
 #- mvn test
 #script: "mvn cobertura:cobertura"
-script: "mvn jacoco:check site"
+#script: "mvn jacoco:check site"  # maven-site-plugin not support java 11
+script: "mvn jacoco:check"
 after_success:
 - bash <(curl -s https://codecov.io/bash)
 cache:
