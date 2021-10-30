@@ -198,9 +198,12 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	/** {@inheritDoc} */
 	@Override
 	public ActiveRecord<T> orderByIn(String field, Object[] order) {
-		if(operator.getDbType()!= DERBY) {
-			orderStack.addSortByIn(field, order);
-		}
+		operator.getDbType().flatMap(type -> {
+			if( type != DERBY) {
+				orderStack.addSortByIn(field, order);
+			}
+			return null;
+		}).subscribe();
 		return this;
 	}
 
@@ -230,9 +233,14 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 
 	protected List<Object> getParams(){
 		List<Object> res = sqlPocket.getParams();
-		if(operator.getDbType()!= DERBY) {
-			res.addAll(orderStack.getParams());
-		}
+
+		operator.getDbType().flatMap(type -> {
+			if(type!= DERBY) {
+				res.addAll(orderStack.getParams());
+			}
+			return null;
+		}).subscribe();
+
 		return res;
 	}
 
@@ -377,18 +385,20 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 		}
 	}
 
-	public String parseLimitSql() throws DbException {
-		if (operator.getDbType() == MYSQL || operator.getDbType() == H2) {
+	public Mono<String> parseLimitSql() {
+		return operator.getDbType().flatMap(type  -> {
+			if (type == MYSQL || type == H2) {
 
-			if (limit == null) {
-				limit = SqlLimit.LIMIT_ONE;
+				if (limit == null) {
+					limit = SqlLimit.LIMIT_ONE;
+				}
+
+				return Mono.just(limit.toString());
+			} else {
+				LOG.warn("limit not implemented for this type of BaseDao.getDBTYPE()=" + operator.getDbType());
+				return Mono.just("");
 			}
-
-			return limit.toString();
-		} else {
-			LOG.warn("limit not implemented for this type of BaseDao.getDBTYPE()=" + operator.getDbType());
-			return "";
-		}
+		});
 	}
 
 
@@ -559,7 +569,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public Mono<Integer> inc(@NotNull String field) throws DbException {
+	public Mono<Integer> inc(@NotNull String field){
 		try {
 			sqlPocket = this.getSql();
 			String whereClause = formWhereClause();
@@ -569,7 +579,9 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 			if (cn==null) {
 				return operator.getDbHelper().executeNoQuery(sql, params);
 			}
-			return operator.getDbHelper().executeNoQuery(sql, params, cn.block());
+			return cn.flatMap(conn ->
+			  operator.getDbHelper().executeNoQuery(sql, params, conn)
+			);
 		} finally {
 			clear();
 		}
@@ -613,7 +625,9 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 			if(cn==null) {
 				return operator.getDbHelper().executeNoQuery(sql, params.toArray());
 			}
-			return operator.getDbHelper().executeNoQuery(sql, params.toArray(), cn.block());
+			return cn.flatMap(conn ->
+					operator.getDbHelper().executeNoQuery(sql, params.toArray(), conn)
+			);
 		} finally {
 			clear();
 		}

@@ -182,7 +182,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         return null;
     }
 
-    private int dbtype = UNKNOWN;
+    private Mono<Integer> dbtype = Mono.just(UNKNOWN);
 
     /**
      * MS SQL Server 2000
@@ -212,29 +212,31 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @param driverName a {@link String} object.
      * @return a int.
      */
-    public static int detectDbType(String driverName) {
-        int res = UNKNOWN;
-        String name = driverName.toUpperCase();
-        if (name.contains("ORACLE")) {
-            res = ORACLE;
-        } else if (name.contains("DERBY")) {
-            res = DERBY;
-        } else if (name.contains("MYSQL")) {
-            res = MYSQL;
-        } else if (name.contains("SQLSERVER")) {
-            // sqlserver 2000
-            res = SQLSERVER;
-        } else if (name.contains("SQL SERVER")) {
-            // sql server 2005
-            res = SQLSERVER_2005_AND_UP;
-        } else if (name.contains("POSTGRESQL")) {
-            res = POSTGRESQL;
-        } else if (name.contains("H2")) {
-            res = H2;
-        } else if (name.contains("ACCESS")) {
-            res = ACCESS;
-        }
-        return res;
+    public static Mono<Integer> detectDbType(Mono<String> driverName) {
+        return  driverName.flatMap(name -> {
+            int res = UNKNOWN;
+            name = name.toUpperCase();
+            if (name.contains("ORACLE")) {
+                res = ORACLE;
+            } else if (name.contains("DERBY")) {
+                res = DERBY;
+            } else if (name.contains("MYSQL")) {
+                res = MYSQL;
+            } else if (name.contains("SQLSERVER")) {
+                // sqlserver 2000
+                res = SQLSERVER;
+            } else if (name.contains("SQL SERVER")) {
+                // sql server 2005
+                res = SQLSERVER_2005_AND_UP;
+            } else if (name.contains("POSTGRESQL")) {
+                res = POSTGRESQL;
+            } else if (name.contains("H2")) {
+                res = H2;
+            } else if (name.contains("ACCESS")) {
+                res = ACCESS;
+            }
+            return Mono.just(res);
+        });
     }
 
     /**
@@ -291,13 +293,14 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @return a int.
      */
     public Mono<Integer> getCount(String tableName, String whereClause) {
-
-        String strSql = SELECT_COUNT_FROM + addAlias(tableName) + " " + whereClause;
-        if (this.getDbType() == ORACLE) {
-            return  getDbHelper().executeScalar(strSql).map(x -> ((BigDecimal)x).intValue());
-        } else {
-            return getDbHelper().executeScalar(strSql).map(x -> Integer.parseInt(x.toString()));
-        }
+       return addAlias(tableName).flatMap(alias -> this.getDbType().flatMap(type -> {
+           String strSql = SELECT_COUNT_FROM + alias + " " + whereClause;
+           if (type == ORACLE) {
+               return getDbHelper().executeScalar(strSql).map(x -> ((BigDecimal) x).intValue());
+           } else {
+               return getDbHelper().executeScalar(strSql).map(x -> Integer.parseInt(x.toString()));
+           }
+       }));
     }
 
     /**
@@ -308,27 +311,30 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @param endNum    a int.
      * @return a {@link String} object.
      */
-    public String getPagingSql(String selectSql, int startNum, int endNum) {
+    public Mono<String> getPagingSql(String selectSql, int startNum, int endNum) {
 
-        detectDbType();
+        dbtype = detectDbType();
 
-        if (dbtype == DERBY) {
-            return getPagingSqlDerby(selectSql, startNum, endNum);
-        } else if (dbtype == SQLSERVER) {
-            return getPagingSqlSqlServer(selectSql, startNum, endNum);
-        } else if (dbtype == SQLSERVER_2005_AND_UP) {
-            return getPagingSqlSqlServer2005(selectSql, startNum, endNum);
+        return dbtype.flatMap(type -> {
+            String sql;
+            if (type == DERBY) {
+                sql= getPagingSqlDerby(selectSql, startNum, endNum);
+            } else if (type == SQLSERVER) {
+                sql=  getPagingSqlSqlServer(selectSql, startNum, endNum);
+            } else if (type == SQLSERVER_2005_AND_UP) {
+                sql=  getPagingSqlSqlServer2005(selectSql, startNum, endNum);
+            } else if (type == MYSQL || type == H2) {
+                sql=  getPagingSqlMySql(selectSql, startNum, endNum);
+            } else if (type == POSTGRESQL) {
+                sql=  getPagingSqlPostgresql(selectSql, startNum, endNum);
+            } else if (type == ACCESS) {
+                sql=  getPagingSqlSqlServer(selectSql, startNum, endNum);
+            } else {
 
-        } else if (dbtype == MYSQL || dbtype == H2) {
-            return getPagingSqlMySql(selectSql, startNum, endNum);
-        } else if (dbtype == POSTGRESQL) {
-            return getPagingSqlPostgresql(selectSql, startNum, endNum);
-        } else if (dbtype == ACCESS) {
-            return getPagingSqlSqlServer(selectSql, startNum, endNum);
-        } else {
-
-            return getPagingSqlOracle(selectSql, startNum, endNum);
-        }
+                sql=  getPagingSqlOracle(selectSql, startNum, endNum);
+            }
+            return Mono.just(sql);
+        });
 
     }
 
@@ -385,20 +391,26 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
 
     }
 
-    private String getDateTimeSql(String dt, boolean isTimestamp) {
-        detectDbType();
-        if (dbtype == DERBY) {
-            if (isTimestamp) {
-                return getTimestampSqlDerby(dt);
+    private Mono<String> getDateTimeSql(String dt, boolean isTimestamp) {
+        dbtype = detectDbType();
+
+        return dbtype.flatMap(type -> {
+            String sql;
+            if (type == DERBY) {
+                if (isTimestamp) {
+                    sql = getTimestampSqlDerby(dt);
+                } else {
+                    sql = getDateSqlDerby(dt);
+                }
+            } else if (type == SQLSERVER || type == SQLSERVER_2005_AND_UP || type == ACCESS) {
+                sql = getDateSqlServer(dt);
+            } else if (type == MYSQL) {
+                sql = getDateSqlMySql(dt);
+            } else {
+                sql = getDateSqlOracle(dt);
             }
-            return getDateSqlDerby(dt);
-        } else if (dbtype == SQLSERVER || dbtype == SQLSERVER_2005_AND_UP || dbtype == ACCESS) {
-            return getDateSqlServer(dt);
-        } else if (dbtype == MYSQL) {
-            return getDateSqlMySql(dt);
-        } else {
-            return getDateSqlOracle(dt);
-        }
+            return Mono.just(sql);
+        });
     }
 
     /**
@@ -407,7 +419,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @param dt a {@link String} object.
      * @return a {@link String} object.
      */
-    public String getDateSql(String dt) {
+    public Mono<String> getDateSql(String dt) {
         return getDateTimeSql(dt, false);
     }
 
@@ -417,7 +429,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @param dt a {@link String} object.
      * @return a {@link String} object.
      */
-    public String getTimestampSql(String dt) {
+    public Mono<String> getTimestampSql(String dt) {
         return getDateTimeSql(dt, true);
     }
 
@@ -447,19 +459,23 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @param dt a {@link Date} object.
      * @return a {@link String} object.
      */
-    public String getDateSql(Date dt) {
-        detectDbType();
-        if (dbtype == DERBY) {
-            return getDateSqlDerby(dt);
-        } else if (dbtype == SQLSERVER || dbtype == SQLSERVER_2005_AND_UP || dbtype == ACCESS) {
-            return getDateSqlServer(dt);
-        } else if (dbtype == MYSQL) {
-            return getDateSqlMySql(dt);
-        } else if (dbtype == POSTGRESQL) {
-            return getDateSqlPostgresql(dt);
+    public Mono<String> getDateSql(Date dt) {
+        dbtype = detectDbType();
+        return dbtype.flatMap(type -> {
+            String sql;
+        if (type == DERBY) {
+            sql =  getDateSqlDerby(dt);
+        } else if (type == SQLSERVER || type == SQLSERVER_2005_AND_UP || type == ACCESS) {
+            sql =   getDateSqlServer(dt);
+        } else if (type == MYSQL) {
+            sql =   getDateSqlMySql(dt);
+        } else if (type == POSTGRESQL) {
+            sql =   getDateSqlPostgresql(dt);
         } else {
-            return getDateSqlOracle(dt);
+            sql =   getDateSqlOracle(dt);
         }
+        return Mono.just(sql);
+        });
 
     }
 
@@ -501,8 +517,8 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      *
      * @return a int.
      */
-    public int getDbType() {
-        detectDbType();
+    public Mono<Integer> getDbType() {
+        dbtype = detectDbType();
         return dbtype;
     }
 
@@ -731,26 +747,25 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @param tableName a {@link String} object.
      * @return a {@link String} object.
      */
-    protected String addAlias(String tableName) {
+    protected Mono<String> addAlias(String tableName) {
         // hack the
         // " com.mysql.jdbc.exceptions.jdbc4.MySQLSyntaxErrorException:
         // Every derived table must have its own alias]"
-        if (this.getDbType() == MYSQL && StringUtils.startsWithIgnoreCase(tableName.trim(), "select ")) {
-            tableName = "(" + tableName + ") table_alias_in_base_dao";
-        }
-        return tableName;
+        return this.getDbType().flatMap(type -> {
+            if (type == MYSQL && StringUtils.startsWithIgnoreCase(tableName.trim(), "select ")) {
+                return  Mono.just("(" + tableName + ") table_alias_in_base_dao");
+            }
+            return Mono.just(tableName);
+        });
     }
 
-    private void detectDbType() {
-        if (dbtype == UNKNOWN) {
-            if (getDbHelper() != null) {
-                Connection cn = getDbHelper().getConnection().block();
-                dbtype = cn == null ? MYSQL :
-                        detectDbType(cn.getMetadata().getDatabaseProductName());
-            } else {
-                throw new DbException("DbHelper not initialized!");
+    private Mono<Integer> detectDbType() {
+        return dbtype.flatMap( type -> {
+            if (type == UNKNOWN) {
+                   return getDbHelper().getConnection().flatMap(cn -> detectDbType(Mono.just(cn.getMetadata().getDatabaseProductName())));
             }
-        }
+            return Mono.just(type);
+        });
     }
 
     /**
@@ -826,9 +841,10 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
             }
 
             try {
-                if(dbtype==DERBY){
-                    key = key.toLowerCase(Locale.ROOT);
-                }
+                //TODO
+//                if(dbtype==DERBY){
+//                    key = key.toLowerCase(Locale.ROOT);
+//                }
                 b.copyProperty(receiver,  CaseUtils.toCamelCase(key, false, '_'), value);
             } catch (IllegalAccessException e) {
                 LOG.error("类型错误:key=" + key + ", value=" + value + " instanceof " + value.getClass()
@@ -862,30 +878,31 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
 
         String selectSql = select + " " + whereClause + " " + orderBy;
 
-        Mono<List<Map<String, Object>>> v = getDbHelper().executeQuery(this.getPagingSql(selectSql, rowStart, rowEnd),
-                params);
+        return this.getPagingSql(selectSql, rowStart, rowEnd).flatMap(sql -> {
+            Mono<List<Map<String, Object>>> v = getDbHelper().executeQuery(sql,
+                    params);
 
-        List<K> v1 = new ArrayList<>();
-        if (BUILT_IN_SET.contains(clz)) {
-            v.map(map -> map.stream().map(h ->
-                            v1.add(clz.cast(h.values().toArray()[0]))
-                    )
-            );
+            List<K> v1 = new ArrayList<>();
+            if (BUILT_IN_SET.contains(clz)) {
+                v.map(map -> map.stream().map(h ->
+                                v1.add(clz.cast(h.values().toArray()[0]))
+                        )
+                );
+                return Mono.just(v1);
+            } else {
+                v.map(map -> map.stream().map(h -> {
+                            try {
+                                v1.add(convert(h, clz.getConstructor().newInstance()));
+                            } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException | InstantiationException e) {
+                                throw new DbException(e);
+                            }
+                            return null;
+                        })
+                );
+            }
+
             return Mono.just(v1);
-        } else {
-            v.map(map -> map.stream().map(h -> {
-                        try {
-                            v1.add(convert(h, clz.getConstructor().newInstance()));
-                        } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException | InstantiationException e) {
-                            throw new DbException(e);
-                        }
-                        return null;
-                    })
-            );
-
-        }
-
-        return Mono.just(v1);
+        });
     }
 
     /**
@@ -902,8 +919,10 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     protected @NotNull
     Mono<List<Map<String, Object>>> select(String sql, String whereClause, String orderBy,
                                            Object[] params, int rowStart, int rowEnd) {
-        String selectSql = sql + " " + whereClause + " " + (this.getDbType() == DERBY ? "" : orderBy);
-        return getDbHelper().executeQuery(this.getPagingSql(selectSql, rowStart, rowEnd), params);
+        return this.getDbType().flatMap(type -> {
+        String selectSql = sql + " " + whereClause + " " + (type == DERBY ? "" : orderBy);
+        return this.getPagingSql(selectSql, rowStart, rowEnd).flatMap(sql1 -> getDbHelper().executeQuery(sql1, params));
+        });
     }
 
     /**
@@ -919,12 +938,15 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     @Override
     public @NotNull
     Mono<List<T>> select(String whereClause, Object[] params, String orderByClause, int beginNum, int endNum) {
-        String query = getSelectAllFromTable() + whereClause;
-        if (this.getDbType() != DERBY) {
+
+        return this.getDbType().flatMap(type ->{
+            String query = getSelectAllFromTable() + whereClause;
+        if (type != DERBY) {
             query += " " + orderByClause;
         }
-        query = getPagingSql(query, beginNum, endNum);
-        return getDbHelper().executeQuery(query, params, new RowMapperResultReader<>(this));
+        return getPagingSql(query, beginNum, endNum).flatMap(sql ->
+         getDbHelper().executeQuery(sql, params, new RowMapperResultReader<>(this)));
+        });
     }
 
     /**
@@ -940,16 +962,19 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     protected @NotNull
     Mono<List<T>> select2step(String whereClause, Object[] params, String orderByClause, int beginNum,
                         int endNum) {
+       return this.getDbType().flatMap(type -> {
         String query = "select " + getKeyName() + " from " + getTableName() + " " + whereClause;
-        if (this.getDbType() != DERBY) {
+        if (type != DERBY) {
             query += orderByClause;
         }
-        query = getPagingSql(query, beginNum, endNum);
-        Mono<List<ID>> ids = getDbHelper().executeQuery(query, params, new RowMapperResultReader<>((rs) -> {
-            Object o = rs.get(0);
-            return (ID) o;
-        }));
-        return ids.flatMap(idList -> selectByKeys(idList, orderByClause));
+       return   getPagingSql(query, beginNum, endNum).flatMap(sql -> {
+             Mono<List<ID>> ids = getDbHelper().executeQuery(sql, params, new RowMapperResultReader<>((rs) -> {
+                 Object o = rs.get(0);
+                 return (ID) o;
+             }));
+             return ids.flatMap(idList -> selectByKeys(idList, orderByClause));
+         });
+        });
     }
 
     /**
@@ -968,12 +993,14 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     public @NotNull
     Mono<List<T>> selectWithJoin(String fieldList, String whereClause, Object[] params, String orderByClause,
                                  int beginNum, int endNum) {
+        return this.getDbType().flatMap(type -> {
         String query = "select " + fieldList + " from " + getTableName() + " " + whereClause;
-        if (this.getDbType() != DERBY) {
+        if (type != DERBY) {
             query += orderByClause;
         }
-        query = getPagingSql(query, beginNum, endNum);
-        return getDbHelper().executeQuery(query, params, new RowMapperResultReader<>(this));
+        return getPagingSql(query, beginNum, endNum).flatMap(sql ->
+         getDbHelper().executeQuery(sql, params, new RowMapperResultReader<>(this)));
+        });
     }
 
     public @NotNull
@@ -1319,20 +1346,25 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @return a {@link Long} object.
      */
     public Mono<Long> getLastInsertId(Connection cn) {
-        return this.getDbHelper().executeScalar(getLastInsertIdSql(), null, Mono.just(cn)).map(x -> Long.parseLong(x.toString()));
+        return getLastInsertIdSql().flatMap(sql ->
+         this.getDbHelper().executeScalar(sql, null, Mono.just(cn)).map(x -> Long.parseLong(x.toString()))
+        );
     }
 
-    private String getLastInsertIdSql() {
-        detectDbType();
-        if (dbtype == DERBY) {
-            return "select last_insert_id()";
-        } else if (dbtype == SQLSERVER || dbtype == SQLSERVER_2005_AND_UP || dbtype == ACCESS) {
-            return "select scope_identity()";
-        } else if (dbtype == MYSQL) {
-            return "select last_insert_id()";
-        } else {
-            throw new DbException("getLastInsertId is not support for current dbtype=" + dbtype);
-        }
+    private Mono<String> getLastInsertIdSql() {
+        dbtype = detectDbType();
+
+        return dbtype.flatMap(type -> {
+            if (type == DERBY) {
+                return Mono.just("select last_insert_id()");
+            } else if (type == SQLSERVER || type == SQLSERVER_2005_AND_UP || type == ACCESS) {
+                return Mono.just("select scope_identity()");
+            } else if (type == MYSQL) {
+                return Mono.just("select last_insert_id()");
+            } else {
+                return Mono.error(new DbException("getLastInsertId is not support for current dbtype=" + type));
+            }
+        });
 
     }
 

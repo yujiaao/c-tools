@@ -83,11 +83,13 @@ public class AbstractBaseDao extends BaseDao<Object, Long> {
      *
      * @return a {@link String} object.
      */
-    public String getDummySql() {
-        if(this.getDbType() == ORACLE) {
-            return " from dual";
-        }
-        return "";
+    public Mono<String> getDummySql() {
+       return this.getDbType().flatMap(type -> {
+            if ( type == ORACLE){
+                return Mono.just(" from dual");
+            }
+            return Mono.just("");
+        });
     }
 
 }

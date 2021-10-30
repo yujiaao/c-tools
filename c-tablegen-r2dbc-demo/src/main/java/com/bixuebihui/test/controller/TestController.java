@@ -1,11 +1,14 @@
 package com.bixuebihui.test.controller;
 
+import com.bixuebihui.test.business.TestGenManager;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 
+import javax.annotation.Resource;
 import java.security.Permission;
 
 /**
@@ -26,5 +29,13 @@ public class TestController {
 //    public ResponseMessage<List<? extends DynamicDataSourceConfig>> getAllConfig() {
 //        return ResponseMessage.ok(repository.findAll());
 //    }
+
+    @Resource
+    TestGenManager manager;
+
+    @GetMapping("/test")
+    public Mono<String> test(){
+        return Mono.just("have records").zipWith(manager.count(),(s, x) -> s+x);
+    }
 
 }

@@ -12,9 +12,9 @@ import reactor.core.publisher.Mono;
 
 import javax.validation.constraints.NotNull;
 import java.sql.Date;
-import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
 /**
@@ -350,12 +350,14 @@ public class DbHelper implements IDbHelper {
      * @see IDbHelper#executeScalar(String)
      */
     public Mono<Object> executeScalarSession(String sql, Mono<Connection> cn) {
-        boolean localCn = cn.map(Objects::isNull).block();
-        cn = localCn ? this.getConnection(true) : cn;
-            Flux<Object> v = cn.flatMapMany(connection ->
-                    Flux.from(connection.createStatement(sql).execute())
-                            .doFinally(signalType -> { if (localCn) { connection.close(); }})
-                            .flatMap(result -> result.map((row, meta) -> row.get(0))));
+
+        AtomicBoolean localCn= new AtomicBoolean(true);
+        Mono<Connection>  conn = cn.flatMap(cn1 -> {localCn.set(false); return Mono.just(cn1);}).switchIfEmpty( getConnection(true));
+
+        Flux<Object> v = conn.flatMapMany(connection ->
+                Flux.from(connection.createStatement(sql).execute())
+                        .doFinally(signalType -> { if (localCn.get()) { connection.close(); }})
+                        .flatMap(result -> result.map((row, meta) -> row.get(0))));
 
         return Mono.from(v);
     }
@@ -421,14 +423,15 @@ public class DbHelper implements IDbHelper {
             return executeScalarSession(sql, cn);
         }
 
-        boolean localCn = cn == null;
-        cn = localCn ? this.getConnection(true) : cn;
+        AtomicBoolean localCn= new AtomicBoolean(true);
+        Mono<Connection>  conn = cn.flatMap(cn1 -> {localCn.set(false); return Mono.just(cn1);}).switchIfEmpty( getConnection(true));
+
         Flux<Object> v = cn.flatMapMany(connection -> {
             Statement p = connection.createStatement(sql);
             fillParameter(p, params, null);
             return Flux.from(p.execute())
                     .doFinally(signalType -> {
-                        if (localCn) {
+                        if (localCn.get()) {
                             connection.close();
                         }
                     });
