@@ -5,7 +5,6 @@ import com.bixuebihui.shardingjdbc.core.constant.SQLType;
 import com.bixuebihui.shardingjdbc.core.hint.HintManagerHolder;
 import io.r2dbc.spi.Connection;
 import io.r2dbc.spi.ConnectionFactory;
-import org.reactivestreams.Publisher;
 import reactor.core.publisher.Mono;
 
 
@@ -19,9 +18,6 @@ import reactor.core.publisher.Mono;
  */
 public class MSDbHelper extends DbHelper {
 
-    public MSDbHelper(Mono<Connection> cn) {
-        super(cn);
-    }
 
     public MSDbHelper() {
     }
@@ -33,7 +29,7 @@ public class MSDbHelper extends DbHelper {
     /**
      * reset DML flag.
      */
-    public static void resetDMLFlag() {
+    public static void resetDmlFlag() {
         DML_FLAG.remove();
     }
 
@@ -107,7 +103,7 @@ public class MSDbHelper extends DbHelper {
     @Override
     public void close() {
         HintManagerHolder.clear();
-        resetDMLFlag();
+        resetDmlFlag();
         super.close();
     }
 }

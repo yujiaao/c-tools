@@ -16,14 +16,16 @@ import com.bixuebihui.test.dal.TestGenList;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
+import reactor.core.publisher.Mono;
 
 import javax.annotation.processing.Generated;
+import java.util.List;
 
 @Generated("com.github.yujiaao:tablegen")
 @Repository
 public class TestGenManager  extends TestGenList
 {
-    
+
     /**
      * @param ds datasource for injecting
      */
@@ -32,6 +34,8 @@ public class TestGenManager  extends TestGenList
         super(ds);
     }
 
-    // please write your code here!
 
+    public Mono<List<Long>> getIds(){
+        return this.ar().greaterOrEqualThan(F.ID,2).limit(0,2).getLongVector(F.ID);
+    }
 }

@@ -5,7 +5,7 @@
     <parent>
         <artifactId>c-tools-parent</artifactId>
         <groupId>com.github.yujiaao</groupId>
-        <version>1.7.4</version>
+        <version>1.7.5</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -63,7 +63,11 @@
             <version>2.1.10</version>
         </dependency>
 
-
+        <dependency>
+            <groupId>org.mariadb</groupId>
+            <artifactId>r2dbc-mariadb</artifactId>
+            <version>1.0.3</version>
+        </dependency>
 
     </dependencies>
     <build>

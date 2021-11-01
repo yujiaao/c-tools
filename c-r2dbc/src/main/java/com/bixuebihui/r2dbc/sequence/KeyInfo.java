@@ -49,7 +49,7 @@ public class KeyInfo {
 
 	private IDbHelper dbHelper;
 
-	protected Logger LOG = LoggerFactory.getLogger(KeyInfo.class);
+	protected static Logger LOG = LoggerFactory.getLogger(KeyInfo.class);
 
     private void init(String keyName, int poolSize, IDbHelper dbHelper) {
         this.dbHelper = dbHelper;
@@ -57,7 +57,7 @@ public class KeyInfo {
         this.poolSize = poolSize;
         this.keyName = keyName;
 
-        retrieveFromDB();
+        retrieveFromDb();
     }
 
     /**
@@ -119,7 +119,7 @@ public class KeyInfo {
 			int i=0;
 			int res=0;
 			while(i<maxTries && res!=1){
-			 res = retrieveFromDB().block();
+			 res = retrieveFromDb().block();
 				if(res!=1){
 					LOG.error("数据库主键维护出错,更新时返回结果不对: res="+res+" keyName="+keyName+" nextKey="+nextKey);
 				}
@@ -133,55 +133,55 @@ public class KeyInfo {
 	 * 执行Sequence表信息初始化和更新工作
 	 *
 	 */
-    private Mono<Integer> retrieveFromDB()  {
+    private Mono<Integer> retrieveFromDb()  {
 
-        Connection cn = dbHelper.getConnection().block();
-        cn.setAutoCommit(false);
-        try {
-            // 查询数据库
-            // 更新数据库
-            Mono<Integer> res = Mono.just(0);
-            int i = 0;
-            while (i < 100 && res.block() <= 0) {
-                Object o = dbHelper.executeScalar(SQL_QUERY,
-                        new Object[] { keyName }, Mono.just(cn));
+        return  Mono.from(dbHelper.getConnection()).flatMap(cn -> {
+            cn.setAutoCommit(false);
+            try {
+                // 查询数据库
+                // 更新数据库
+                Mono<Integer> res = Mono.just(0);
+                int i = 0;
+                while (i < 100 && res.block() <= 0) {
+                    Object o = dbHelper.executeScalar(SQL_QUERY,
+                            new Object[]{keyName}, Mono.just(cn));
 
-                if (o != null) {
-                    Long value = Long.valueOf(o.toString());
-                    LOG.debug(keyName + "=" + value+"~"+(value+poolSize));
+                    if (o != null) {
+                        Long value = Long.valueOf(o.toString());
+                        LOG.debug(keyName + "=" + value + "~" + (value + poolSize));
 
-                    maxKey = value + poolSize;
-                    minKey = maxKey - poolSize + 1;
-                    nextKey = minKey;
+                        maxKey = value + poolSize;
+                        minKey = maxKey - poolSize + 1;
+                        nextKey = minKey;
 
-                    LOG.debug("更新Sequence最大值！");
-                    res= dbHelper.executeNoQuery(SQL_UPDATE, new Object[] {
-                            (long) poolSize, keyName, value }, cn);
+                        LOG.debug("更新Sequence最大值！");
+                        res = dbHelper.executeNoQuery(SQL_UPDATE, new Object[]{
+                                (long) poolSize, keyName, value}, cn);
 
-                } else {
-                    LOG.debug("执行Sequence数据库初始化工作！");
-                    String initSql = "INSERT INTO " + SEQUENCE_TABLE
-                            + "(KEYNAME,KEYVALUE) VALUES('" + keyName
-                            + "',10000 + " + poolSize + ")";
-                    res = dbHelper.executeNoQuery(initSql, new Object[0],cn);
-                    maxKey = 10000L + poolSize;
-                    minKey = maxKey - poolSize + 1;
-                    nextKey = minKey;
+                    } else {
+                        LOG.debug("执行Sequence数据库初始化工作！");
+                        String initSql = "INSERT INTO " + SEQUENCE_TABLE
+                                + "(KEYNAME,KEYVALUE) VALUES('" + keyName
+                                + "',10000 + " + poolSize + ")";
+                        res = dbHelper.executeNoQuery(initSql, new Object[0], cn);
+                        maxKey = 10000L + poolSize;
+                        minKey = maxKey - poolSize + 1;
+                        nextKey = minKey;
+                    }
+                    i++;
                 }
-                i++;
+                cn.commitTransaction();
+
+                return res;
+            } catch (Exception e) {
+                cn.rollbackTransaction();
+                dbHelper.executeNoQuery(INSTALL);
+               return Mono.error(e);
+            } finally {
+                cn.setAutoCommit(true);
+                cn.close();
             }
-            cn.commitTransaction();
-
-            return res;
-        } catch (Exception e) {
-            cn.rollbackTransaction();
-            dbHelper.executeNoQuery(INSTALL);
-            throw e;
-        } finally {
-            cn.setAutoCommit(true);
-            cn.close();
-        }
-
+        });
     }
 
     /**

@@ -44,7 +44,7 @@ public class BaseOperator
      */
     public Mono<Connection> getConnection() {
         return
-             dbHelper.getConnection();
+             Mono.from(dbHelper.getConnection());
     }
 
     /**
@@ -92,7 +92,7 @@ public class BaseOperator
         }
 
         if(conn==null) {
-            conn = dbHelper.getConnection().block();
+            conn = Mono.from(dbHelper.getConnection()).block();
         }
     }
 

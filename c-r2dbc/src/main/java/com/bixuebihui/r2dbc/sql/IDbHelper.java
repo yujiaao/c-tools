@@ -91,7 +91,7 @@ public interface IDbHelper {
      *
      * @return a {@link Connection} object.
      */
-    Mono<Connection> getConnection();
+    Publisher<? extends io.r2dbc.spi.Connection> getConnection();
 
     /**
      * <p>executeQuery.</p>

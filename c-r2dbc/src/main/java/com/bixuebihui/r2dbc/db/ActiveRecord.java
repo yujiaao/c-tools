@@ -173,6 +173,7 @@ public interface ActiveRecord<T> extends Record<T> {
     Record<T> last();
 
     /**
+     * 大于或等于
      * @param field db field
      * @param value value to compare
      * @return this
@@ -180,6 +181,7 @@ public interface ActiveRecord<T> extends Record<T> {
     ActiveRecord<T> greaterOrEqualThan(String field, Object value);
 
     /**
+     * 小于或等于
      * @param field db field
      * @param value value to compare
      * @return this

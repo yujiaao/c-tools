@@ -2,6 +2,7 @@ package com.bixuebihui.r2dbc.sql;
 
 import io.r2dbc.spi.Result;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import javax.validation.constraints.NotNull;
 import java.sql.ResultSet;
@@ -33,11 +34,8 @@ public class RowMapperResultReader<T> {
      *
      * @param rs a {@link ResultSet} object.
      * @return a {@link List} object.
-     * @throws SQLException if any.
      */
-    public @NotNull Flux<T> processResult(Result rs) {
-        return Flux.from(rs.map((row, meta) ->
-            handle.mapRow(row)
-        ));
+    public @NotNull Mono<List<T>> processResult(Result rs) {
+        return Mono.from(Flux.from(rs.map((row, meta) -> handle.mapRow(row))).collectList());
     }
 }

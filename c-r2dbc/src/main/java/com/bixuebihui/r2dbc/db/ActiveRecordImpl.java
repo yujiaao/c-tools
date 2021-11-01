@@ -202,7 +202,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 			if( type != DERBY) {
 				orderStack.addSortByIn(field, order);
 			}
-			return null;
+			return Mono.empty();
 		}).subscribe();
 		return this;
 	}
@@ -238,7 +238,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 			if(type!= DERBY) {
 				res.addAll(orderStack.getParams());
 			}
-			return null;
+			return Mono.empty();
 		}).subscribe();
 
 		return res;
@@ -249,16 +249,13 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	 */
 	@Override
 	public <K> Mono<List<K>> findAll(Class<K> clz) throws DbException {
-		try {
 			sqlPocket = this.getSql();
 			String where = formWhereClause();
 			Object[] params = getParams().toArray();
 			String select = "select " + resultFields + " from " + operator.getTableName() + " ";
 			return operator.select(select, where, parseOrder(), params, limit.getBegin(),
-					limit.getEnd(), clz);
-		} finally {
-			clear();
-		}
+					limit.getEnd(), clz).doFinally(c ->  clear());
+
 	}
 
 	/**
@@ -281,6 +278,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	}
 
 	private void clear() {
+		LOG.debug("do clear");
 		this.filterStack.clear();
 		this.orderStack.clear();
 		this.joins =null;
@@ -320,6 +318,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 			String where = formWhereClause();
 			Object[] params = getParams().toArray();
 			if (where.length() < " where ".length()) {
+				LOG.warn("因 where 条件没有设定，安全原因delete操作不被允许");
 				return Mono.just(false);
 			}
 			String sql = "delete from " + operator.getTableName() + " " + where;
@@ -341,17 +340,17 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public Mono<Object> get(String field) throws DbException {
-		try {
-			String sql = getVectorSql(field);
+	public Mono<Object> get(String field){
+		return Mono.usingWhen(getVectorSql(field), sql -> {
 			Object[] params = getParams().toArray();
 			if (cn == null) {
 				return operator.getDbHelper().executeScalar(sql, params);
 			}
 			return operator.getDbHelper().executeScalar(sql, params, cn);
-		} finally {
-			clear();
 		}
+		, sql -> {clear(); return Mono.empty();}
+		);
+
 	}
 
 	/**
@@ -359,58 +358,59 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	 */
 	@Override
 	public Mono<List<Object>> getVector(String field) throws DbException {
-		try {
-			String sql = getVectorSql(field);
-			Object[] params = getParams().toArray();
-			RowCallbackHandler<Object> handle = result -> Flux.from(result.map((row, meta) -> row.get(0))).collectList();
-			return operator.getDbHelper().executeQuery(sql, params, handle);
-		} finally {
-			clear();
-		}
+			return Mono.usingWhen(getVectorSql(field),
+					sql -> {
+						Object[] params = getParams().toArray();
+						RowCallbackHandler<Object> handle = result -> Flux.from(result.map((row, meta) -> row.get(0))).collectList();
+						return operator.getDbHelper().executeQuery(sql, params, handle);
+					},
+					sql -> {clear(); return Mono.empty();}
+			);
+
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public Mono<List<Long>> getLongVector(String field) throws DbException {
-		try {
-			String sql = getVectorSql(field);
-			Object[] params = getParams().toArray();
+	public Mono<List<Long>> getLongVector(String field) {
+			return getVectorSql(field).flatMap( sql -> {
+				Object[] params = getParams().toArray();
 
-			return operator.getDbHelper().executeQuery(sql, params, new LongReader());
+				IDbHelper dbhelper = operator.getDbHelper();
+				LongReader reader = new LongReader();
+				return dbhelper.executeQuery(sql, params, reader);
+			}).doFinally(c -> clear());
 
-		} finally {
-			clear();
-		}
 	}
 
 	public Mono<String> parseLimitSql() {
-		return operator.getDbType().flatMap(type  -> {
+		return operator.getDbType().map(type  -> {
 			if (type == MYSQL || type == H2) {
 
 				if (limit == null) {
 					limit = SqlLimit.LIMIT_ONE;
 				}
 
-				return Mono.just(limit.toString());
+				return limit.toString();
 			} else {
-				LOG.warn("limit not implemented for this type of BaseDao.getDBTYPE()=" + operator.getDbType());
-				return Mono.just("");
+				LOG.warn("limit not implemented for this type of BaseDao.getDBTYPE()=" + type);
+				return "";
 			}
 		});
 	}
 
 
-	private String getVectorSql(String field) throws DbException {
-		field = SqlFilter.transactSQLInjection(field);
+	private Mono<String> getVectorSql(String field) throws DbException {
+		String fieldFilter = SqlFilter.transactSQLInjection(field);
 		sqlPocket = this.getSql();
-		String where = formWhereClause();
-		where += " " + parseOrder();
-		where += " " + parseLimitSql();
+		String where = formWhereClause()+ " " + parseOrder();
 
-		return "select " + field + " from " + operator.getTableName()
-				+ " " + where;
+		return parseLimitSql().map( limit -> {
+			String whereCondition = where + " " +limit;
+			return "select " + fieldFilter + " from " + operator.getTableName()
+					+ " " + whereCondition;
+		});
 	}
 
 	/**
@@ -435,14 +435,11 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	 */
 	@Override
 	public Mono<Integer> count() throws DbException {
-		try {
 			sqlPocket = this.getSql();
 			String where = formWhereClause();
 			Object[] params = getParams().toArray();
-			return operator.countWhere(where, params);
-		} finally {
-			clear();
-		}
+			return operator.countWhere(where, params).doFinally(c -> clear());
+
 	}
 
 	/**
@@ -451,16 +448,12 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	 */
 	@Override
 	public Mono<Boolean> exists() throws DbException {
-		try {
-			sqlPocket = this.getSql();
-			String where = formWhereClause();
-			Object[] params = getParams().toArray();
-			return operator.exists(where, params);
-		} finally {
-			clear();
-		}
-	}
+		sqlPocket = this.getSql();
+		String where = formWhereClause();
+		Object[] params = getParams().toArray();
+		return operator.exists(where, params).doFinally(c -> clear());
 
+	}
 
 	/**
 	 * <p>Constructor for ActiveRecordImpl.</p>
@@ -501,14 +494,12 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	 */
 	@Override
 	public Mono<List<String>> getStringVector(String field) throws DbException {
-		try {
-			String sql = getVectorSql(field);
-			Object[] params = getParams().toArray();
-			RowCallbackHandler<String> handle = result -> Flux.from(result.map((row, meta) -> Objects.requireNonNull(row.get(0)).toString())).collectList();
-			return  operator.getDbHelper().executeQuery(sql, params, handle );
-		} finally {
-			clear();
-		}
+		return 	getVectorSql(field).flatMap( sql -> {
+				Object[] params = getParams().toArray();
+				RowCallbackHandler<String> handle = result -> Flux.from(result.map((row, meta) -> Objects.requireNonNull(row.get(0)).toString())).collectList();
+				return operator.getDbHelper().executeQuery(sql, params, handle).doFinally(c -> clear());
+			});
+
 	}
 
 	/** {@inheritDoc} */
@@ -549,7 +540,6 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	@Override
 	@Deprecated
 	public Mono<CountValue> countValue(String field, GroupFunction fun) {
-		try {
 			sqlPocket = this.getSql();
 
 			String where = formWhereClause();
@@ -559,10 +549,8 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 			Mono<List<CountValue>> res = operator.countGroupValue(field, fun.toString(), where,
 					null, null, params);
 
-			return res.map(list -> list.size() == 0 ? new CountValue() : list.get(0));
-		} finally {
-			clear();
-		}
+			return res.map(list -> list.size() == 0 ? new CountValue() : list.get(0)).doFinally((c) -> clear());
+
 	}
 
 	/**
@@ -570,7 +558,6 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	 */
 	@Override
 	public Mono<Integer> inc(@NotNull String field){
-		try {
 			sqlPocket = this.getSql();
 			String whereClause = formWhereClause();
 			Object[] params = getParams().toArray();
@@ -581,10 +568,8 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 			}
 			return cn.flatMap(conn ->
 			  operator.getDbHelper().executeNoQuery(sql, params, conn)
-			);
-		} finally {
-			clear();
-		}
+			).doFinally(c -> clear());
+
 
 	}
 
@@ -592,8 +577,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public Mono<Integer> update(@NotNull String[] fields, @NotNull Object[] values) throws DbException {
-		try {
+	public Mono<Integer> update(@NotNull String[] fields, @NotNull Object[] values) {
 			if (fields.length != values.length) {
 				throw new IllegalArgumentException("fields and values must have some length");
 			}
@@ -623,19 +607,17 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 			String sql ="update "+operator.getTableName()+" set "+
 					sb.toString()+ whereClause;
 			if(cn==null) {
-				return operator.getDbHelper().executeNoQuery(sql, params.toArray());
+				return operator.getDbHelper().executeNoQuery(sql, params.toArray()).doFinally(c -> clear());
 			}
 			return cn.flatMap(conn ->
 					operator.getDbHelper().executeNoQuery(sql, params.toArray(), conn)
-			);
-		} finally {
-			clear();
-		}
+			).doFinally(c -> clear());
+
 	}
 
 	/** {@inheritDoc} */
 	@Override
-	public Mono<Integer> update(@NotNull  String fields, Object values)throws DbException {
+	public Mono<Integer> update(@NotNull  String fields, Object values) {
 		return update(new String[]{fields}, new Object[]{values});
 	}
 
@@ -643,7 +625,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	@Override
 	public <K> Mono<CountObject<K>> countObject(String field, GroupFunction fun, Class<K> objectType)
 			 {
-		try {
+
 			sqlPocket = this.getSql();
 
 			String where = formWhereClause();
@@ -651,12 +633,10 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 			Object[] params = getParams().toArray();
 
 			Mono<List<CountObject<K>>> res =  operator.countGroupObject(field, fun.toString(), where,
-					null, null, objectType, params);
+					null, null, objectType, params).doFinally(c -> clear());
 
 			return res.map(list ->  list.size() == 0 ? new CountObject<>() : list.get(0));
-		} finally {
-			clear();
-		}
+
 	}
 
 

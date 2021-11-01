@@ -69,17 +69,15 @@ public interface Record<T> {
 	 * 获得单个字段
 	 * @param field a {@link String} object.
 	 * @return a {@link Object} object.
-	 * @throws DbException if any.
 	 */
-	Mono<Object> get(String field) throws DbException;
+	Mono<Object> get(String field) ;
 
 	/**
 	 * <p>count.</p> 获得数量
 	 *
 	 * @return a int.
-	 * @throws DbException if any.
 	 */
-	Mono<Integer> count() throws DbException;
+	Mono<Integer> count() ;
 
 	/**
 	 * <p>countValue.</p> 获得数量
@@ -87,9 +85,8 @@ public interface Record<T> {
 	 * @param field a {@link String} object.
 	 * @param fun   a {@link GroupFunction} object.
 	 * @return a {@link CountValue} object.
-	 * @throws DbException if any.
 	 */
-	Mono<CountValue> countValue(String field, GroupFunction fun) throws DbException;
+	Mono<CountValue> countValue(String field, GroupFunction fun);
 
 	/**
 	 * <p>countObject.</p>
@@ -99,9 +96,8 @@ public interface Record<T> {
 	 * @param objectType a {@link Class} object.
 	 * @param <K>        a K object.
 	 * @return a {@link CountObject} object.
-	 * @throws DbException if any.
 	 */
-	<K> Mono<CountObject<K>> countObject(String field, GroupFunction fun, Class<K> objectType) throws DbException;
+	<K> Mono<CountObject<K>> countObject(String field, GroupFunction fun, Class<K> objectType);
 
 	/**
 	 * <p>countSum.</p> 获得数量
@@ -143,18 +139,16 @@ public interface Record<T> {
 	 *
 	 * @param field 字段名
 	 * @return List&lt;Long&gt; 长整形列表
-	 * @throws DbException 数据库执行出错
 	 */
-	Mono<List<Long>>  getLongVector(String field) throws DbException;
+	Mono<List<Long>>  getLongVector(String field);
 
 	/**
 	 * field = field +1
 	 *
 	 * @param field 字段名
 	 * @return 影响的行数
-	 * @throws DbException 数据库异常
 	 */
-	Mono<Integer> inc(String field) throws DbException;
+	Mono<Integer> inc(String field);
 
 	/**
 	 * 更新字段fields为values指定值

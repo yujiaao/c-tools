@@ -64,13 +64,13 @@ public class AbstractBaseDao extends BaseDao<Object, Long> {
     /** {@inheritDoc} */
     @Override
     public String getTableName() {
-        return null;
+        throw new DbException("not provided a tableName");
     }
 
     /** {@inheritDoc} */
     @Override
     public String getKeyName() {
-        return null;
+        throw new DbException("not provided a keyName");
     }
 
     @Override
@@ -84,11 +84,11 @@ public class AbstractBaseDao extends BaseDao<Object, Long> {
      * @return a {@link String} object.
      */
     public Mono<String> getDummySql() {
-       return this.getDbType().flatMap(type -> {
+       return this.getDbType().map(type -> {
             if ( type == ORACLE){
-                return Mono.just(" from dual");
+                return " from dual";
             }
-            return Mono.just("");
+            return "";
         });
     }
 

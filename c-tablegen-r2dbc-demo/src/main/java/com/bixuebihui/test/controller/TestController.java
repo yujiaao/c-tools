@@ -2,14 +2,13 @@ package com.bixuebihui.test.controller;
 
 import com.bixuebihui.test.business.TestGenManager;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
-import java.security.Permission;
+import java.util.List;
 
 /**
  * @author xwx
@@ -33,9 +32,18 @@ public class TestController {
     @Resource
     TestGenManager manager;
 
+    @GetMapping("/count")
+    public Mono<String> count(){
+        return manager.count().flatMap( x -> Mono.just("have records="+x));
+    }
     @GetMapping("/test")
-    public Mono<String> test(){
-        return Mono.just("have records").zipWith(manager.count(),(s, x) -> s+x);
+    public Mono<String> scale(){
+        return manager.getFirst().flatMap( x -> Mono.just("first="+x.toXml()));
+    }
+
+    @GetMapping("/id")
+    public Mono<List<Long>> ids(){
+        return manager.getIds();
     }
 
 }

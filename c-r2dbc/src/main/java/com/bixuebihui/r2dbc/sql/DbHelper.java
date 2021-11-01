@@ -26,7 +26,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class DbHelper implements IDbHelper {
 
     private static final Logger LOG = LoggerFactory.getLogger(DbHelper.class);
-    private Mono<Connection> connection = null;
     private ConnectionFactory dataSource = null;
 
     /**
@@ -36,14 +35,6 @@ public class DbHelper implements IDbHelper {
         // use this constructor
     }
 
-    /**
-     * for test only, not use in real application
-     *
-     * @param cn db connection
-     */
-    public DbHelper(Mono<Connection> cn) {
-        connection = cn;
-    }
 
     /**
      * <p>freeConnection.</p>
@@ -112,8 +103,8 @@ public class DbHelper implements IDbHelper {
      * @return a {@link Connection} object.
      */
     @Override
-    public Mono<Connection> getConnection() throws DbException {
-        return connection != null ? connection : Mono.from(dataSource.create());
+    public Mono<Connection> getConnection() {
+        return Mono.from(dataSource.create());
     }
 
     // 用于事务处理
@@ -135,9 +126,7 @@ public class DbHelper implements IDbHelper {
      */
     @Override
     public void close() {
-        if (connection != null) {
-            freeConnection(connection);
-        }
+
     }
 
     /**
@@ -268,11 +257,10 @@ public class DbHelper implements IDbHelper {
     @Override
     public @NotNull
     Flux<Map<String, Object>> exeQuery(String sql) {
-        Mono<Connection> cn = getConnection(true);
-        return Flux.from(cn.flatMapMany(connection ->
-                connection.createStatement(sql).execute())
-                .flatMap(this::resultSet2Vector
-        ));
+        return Flux.usingWhen(getConnection(true), cn ->
+                        Flux.from(cn.createStatement(sql).execute())
+                                .flatMap(DbHelper::resultSet2Vector),
+                Connection::close);
     }
 
     /**
@@ -292,7 +280,7 @@ public class DbHelper implements IDbHelper {
                     batch.add(sqls[i]);
                 }
             }
-            return Flux.from(batch.execute()).flatMap(result -> result.getRowsUpdated()).reduceWith(() -> 0, Integer::sum);
+            return Flux.from(batch.execute()).flatMap(Result::getRowsUpdated).reduceWith(() -> 0, Integer::sum);
         }));
 
     }
@@ -350,16 +338,32 @@ public class DbHelper implements IDbHelper {
      * @see IDbHelper#executeScalar(String)
      */
     public Mono<Object> executeScalarSession(String sql, Mono<Connection> cn) {
+        AtomicBoolean localCn = new AtomicBoolean(true);
+        return Mono.usingWhen(
+                cn.flatMap(cn1 -> {
+                    localCn.set(false);
+                    return Mono.just(cn1);
+                })
+                        .switchIfEmpty(getConnection(true)),
 
-        AtomicBoolean localCn= new AtomicBoolean(true);
-        Mono<Connection>  conn = cn.flatMap(cn1 -> {localCn.set(false); return Mono.just(cn1);}).switchIfEmpty( getConnection(true));
+                c -> Mono.from(c.createStatement(sql).execute())
+                        .log()
+                        .flatMap(result ->
+                                Mono.just(result.map((row, meta) -> {
+                                            System.out.println("row.get(0)= " + row.get(0));
+                                            return row.get(0);
+                                        }
+                                ))
+                        ),
+                c -> {
+                    if (localCn.get()) {
+                        c.close();
+                    }
+                    return Mono.just(c);
+                }
+        );
 
-        Flux<Object> v = conn.flatMapMany(connection ->
-                Flux.from(connection.createStatement(sql).execute())
-                        .doFinally(signalType -> { if (localCn.get()) { connection.close(); }})
-                        .flatMap(result -> result.map((row, meta) -> row.get(0))));
 
-        return Mono.from(v);
     }
 
     /**
@@ -368,7 +372,7 @@ public class DbHelper implements IDbHelper {
      * @param rs a {@link Result} object.
      * @return a {@link List} object.
      */
-    public Flux<Map<String, Object>> resultSet2Vector(Result rs) {
+    public static Flux<Map<String, Object>> resultSet2Vector(Result rs) {
         return Flux.from(rs.map((row, rowMetadata) -> {
             int iColumnNumber = rowMetadata.getColumnNames().size();
 
@@ -401,7 +405,7 @@ public class DbHelper implements IDbHelper {
      */
     @Override
     public Mono<Object> executeScalar(String sql, Object[] params) {
-        return executeScalar(sql, params, null);
+        return executeScalar(sql, params, Mono.empty());
     }
 
     /**
@@ -510,14 +514,14 @@ public class DbHelper implements IDbHelper {
      */
     @Override
     public Mono<List<Map<String, Object>>> executeQuery(String sql, Object[] params) {
-        Mono<Connection> cn = getConnection(true);
-        return Mono.from(cn.flatMapMany(connection -> {
-            Statement p = connection.createStatement(sql);
+
+        return Mono.usingWhen(getConnection(true), cn -> {
+            Statement p = cn.createStatement(sql);
             if (params != null && params.length > 0) {
                 fillParameter(p, params);
             }
-            return p.execute();
-        }).flatMap(result -> this.resultSet2Vector(result)).collectList());
+            return Mono.from(p.execute()).map(DbHelper::resultSet2Vector).flatMap(Flux::collectList);
+        }, cn -> cn.close());
     }
 
     /**
@@ -592,16 +596,16 @@ public class DbHelper implements IDbHelper {
     @Override
     public <T> Mono<List<T>> executeQuery(String sql, Object[] params,
                              RowCallbackHandler<T> handle) {
-       return getConnection(true).flatMap(connection -> {
-            Statement p = connection.createStatement(sql) ;
-            if(params!=null && params.length>0){
-                fillParameter( p, params, null);
-            }
-            return Mono.from(p.execute())
-                    .flatMap(handle::processRow);
-
-        });
-
+        return Mono.usingWhen(getConnection(true),
+                cn -> {
+                    Statement p = cn.createStatement(sql);
+                    if (params != null && params.length > 0) {
+                        fillParameter(p, params, null);
+                    }
+                    return Mono.from(p.execute()).flatMap(handle::processRow);
+                },
+                c -> c.close()
+        );
     }
 
     /**
@@ -610,14 +614,20 @@ public class DbHelper implements IDbHelper {
     @Override
     public @NotNull <T> Mono<List<T>> executeQuery(String sql, Object[] params,
                                              @NotNull RowMapperResultReader<T> handle) {
-        Mono<Connection> cn = getConnection(true);
-        return Mono.from(cn.flatMapMany(connection -> {
-            Statement p = connection.createStatement(sql);
-            if (ArrayUtils.isNotEmpty(params)) {
-                fillParameter(p, params, null);
-            }
-            return Flux.from(p.execute()).flatMap(handle::processResult).collectList();
-        }));
+        Mono<Connection> conn =  getConnection(true);
+        return conn.flatMap( cn -> {
+
+                    Statement p = cn.createStatement(sql);
+                    if (ArrayUtils.isNotEmpty(params)) {
+                        fillParameter(p, params, null);
+                    }
+                    return Mono.from(p.execute())
+                            .flatMap(handle::processResult)
+                            .doFinally(c -> cn.close());
+
+                }
+        );
+
     }
 
     @Override
