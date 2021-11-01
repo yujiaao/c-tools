@@ -1022,7 +1022,8 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     public Mono<T> selectByKey(@NotNull ID id) {
         String query = SELECT_FROM + getTableName() + WHERE + getKeyName() + "=?";
         Mono<List<T>> info = getDbHelper().executeQuery(query, new Object[]{id}, new RowMapperResultReader<>(this));
-        return info.log().map(x -> x.isEmpty()? null : x.get(0));
+        return info.log()
+                .flatMap(x -> x.isEmpty()? Mono.empty() : Mono.just(x.get(0)));
     }
 
     /**

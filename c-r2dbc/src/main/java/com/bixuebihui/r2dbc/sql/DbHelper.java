@@ -343,23 +343,17 @@ public class DbHelper implements IDbHelper {
                 cn.flatMap(cn1 -> {
                     localCn.set(false);
                     return Mono.just(cn1);
-                })
-                        .switchIfEmpty(getConnection(true)),
+                }).switchIfEmpty(getConnection(true)),
 
-                c -> Mono.from(c.createStatement(sql).execute())
+                c -> Flux.from(c.createStatement(sql).execute())
                         .log()
-                        .flatMap(result ->
-                                Mono.just(result.map((row, meta) -> {
-                                            System.out.println("row.get(0)= " + row.get(0));
-                                            return row.get(0);
-                                        }
-                                ))
-                        ),
+                        .map(result -> result.map((row, meta) -> row.get(0))
+                        ).flatMap(f -> Mono.from(f)).next(), //.doOnNext(data -> LOG.info("value: {}", data)),
                 c -> {
                     if (localCn.get()) {
                         c.close();
                     }
-                    return Mono.just(c);
+                    return Mono.empty();
                 }
         );
 
