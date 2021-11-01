@@ -27,11 +27,15 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
     /**
       * Don't direct use the {{className}}, use {{pojoClassName}}Manager instead.
       */
+{{#if config.readWriteSeparate}}
+    protected {{className}}(ConnectionFactory readWrite, ConnectionFactory readOnly)
+    {
+        super(readWrite,readOnly);
+    }{{else}}
     protected {{className}}(ConnectionFactory ds)
     {
         super(ds);
-    }
-
+    }{{/if}}
     {{! writeSql(colData, keyData); }}
     @SuppressWarnings("AlibabaClassNamingShouldBeCamel")
     public static final class F{

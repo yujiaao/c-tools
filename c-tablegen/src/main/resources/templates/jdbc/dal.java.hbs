@@ -23,10 +23,16 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
     /**
       * Don't direct use the {{className}}, use {{pojoClassName}}Manager instead.
       */
+{{#if config.readWriteSeparate}}
+    protected {{className}}(DataSource readWrite, DataSource readOnly)
+    {
+        super(readWrite,readOnly);
+    }{{else}}
     protected {{className}}(DataSource ds)
     {
         super(ds);
-    }
+    }{{/if}}
+
 
     {{! writeSql(colData, keyData); }}
     @SuppressWarnings("AlibabaClassNamingShouldBeCamel")

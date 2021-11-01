@@ -18,11 +18,15 @@ public class {{className}}  extends {{pojoClassName}}List
     /**
      * @param ds datasource for injecting
      */
+{{#if config.readWriteSeparate}}
+    public {{className}}(@Qualifier("{{config.alias}}") DataSource readWrite, @Qualifier("{{config.alias}}_r") DataSource readOnly)
+    {
+        super(readWrite,readOnly);
+    }{{else}}
     public {{className}}(@Qualifier("{{config.alias}}") DataSource ds)
     {
         super(ds);
-    }
-
+    }{{/if}}
     // please write your code here!
 
 }

@@ -14,10 +14,12 @@ import javax.annotation.processing.Generated;
 @Generated("com.github.yujiaao:tablegen")
 @Service
 public abstract class BaseList<T, V> extends BaseDao<T, V> {
-
+{{#if config.readWriteSeparate}}
+    public BaseList(ConnectionFactory readWrite, ConnectionFactory readOnly) {
+    super(readWrite,readOnly);
+    }{{else}}
     public BaseList(ConnectionFactory ds) {
-        super(ds);
-    }
-
+    super(ds,ds);
+    }{{/if}}
 }
 

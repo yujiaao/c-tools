@@ -40,6 +40,9 @@ public class ProjectConfig {
     boolean generateProcedures = true;
     boolean generateAll=false;
     boolean r2dbc=false;
+
+    boolean readWriteSeparate=false;
+
     /**
      * additional settings, used for comments, data checking, interfaces, etc.
      */
@@ -96,6 +99,8 @@ public class ProjectConfig {
 
         c.indexes = getBooleanCfg(props, "indexes");
         c.r2dbc = getBooleanCfg(props, "r2dbc");
+        c.readWriteSeparate = getBooleanCfg(props, "read_write_separate");
+
 
         c.useCustomMetaTable = getBooleanCfg(props, "use_custom_meta_table");
 
