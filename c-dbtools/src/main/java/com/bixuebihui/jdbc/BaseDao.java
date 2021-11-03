@@ -1310,7 +1310,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         return getDbHelper().executeQuery(query, null, new RowMapperResultReader<>(this));
     }
 
-    private String getSelectAllFromTable() {
+    protected String getSelectAllFromTable() {
         return SELECT_FROM + getTableName() + " ";
     }
 

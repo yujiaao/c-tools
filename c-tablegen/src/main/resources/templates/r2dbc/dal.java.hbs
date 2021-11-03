@@ -97,6 +97,10 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
         return  "{{tableName}}";
     {{/if}}
     }
+
+    protected String getSelectAllFromTable() {
+         return getCoreSql();
+    }
 {{/if}}
     /**
      * Get table name.

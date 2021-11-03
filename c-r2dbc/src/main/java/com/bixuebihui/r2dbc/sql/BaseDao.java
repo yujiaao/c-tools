@@ -790,7 +790,22 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
             }
             return true;
         }));
-
+/**
+ *  return Mono.from(connectionFactory.create())
+ *                 .flatMap(c -> Mono.from(c.beginTransaction())
+ *                         .then(Mono.from(c.createStatement("insert into Users(firstname,lastname) values($1,$2)")
+ *                                 .bind("$1", account.getFirstname())
+ *                                 .bind("$2", account.getLastname())
+ *                                 .returnGeneratedValues("id")
+ *                                 .execute()))
+ *                         .map(result -> result.map((row, meta) ->
+ *                                 new Users(row.get("id", Long.class),
+ *                                         account.getFirstname(),
+ *                                         account.getLastname())))
+ *                         .flatMap(pub -> Mono.from(pub))
+ *                         .delayUntil(r -> c.commitTransaction())
+ *                         .doFinally((st) -> c.close()));
+ */
 
     }
 
@@ -1341,7 +1356,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         return getDbHelper().executeQuery(query, null, new RowMapperResultReader<>(this));
     }
 
-    private String getSelectAllFromTable() {
+    protected String getSelectAllFromTable() {
         return SELECT_FROM + getTableName() + " ";
     }
 
