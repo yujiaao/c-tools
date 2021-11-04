@@ -1,6 +1,7 @@
 package com.bixuebihui.jdbc;
 
 import com.bixuebihui.DbException;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import javax.sql.DataSource;
 
@@ -11,6 +12,10 @@ public abstract class AbstractViewBaseDao<T, ID> extends BaseDao<T, ID>{
 
     protected AbstractViewBaseDao(DataSource ds){
         super(ds);
+    }
+    protected AbstractViewBaseDao(@Qualifier("mobile_video") DataSource readWrite, @Qualifier("mobile_video_r") DataSource readOnly)
+    {
+        super(readWrite,readOnly);
     }
 
     @Override

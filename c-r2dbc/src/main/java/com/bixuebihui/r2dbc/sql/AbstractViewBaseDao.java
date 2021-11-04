@@ -13,7 +13,10 @@ public abstract class AbstractViewBaseDao<T, ID> extends BaseDao<T, ID> {
     protected AbstractViewBaseDao(ConnectionFactory ds){
         super(ds);
     }
-
+    protected AbstractViewBaseDao(ConnectionFactory readWrite, ConnectionFactory readOnly)
+    {
+        super(readWrite,readOnly);
+    }
     @Override
     protected String getInsertSql(){
         return "";
