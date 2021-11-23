@@ -8,6 +8,7 @@ import com.bixuebihui.jdbc.aop.DbHelperAroundAdvice;
 import org.junit.jupiter.api.Test;
 import org.springframework.aop.framework.ProxyFactory;
 
+import javax.validation.constraints.NotNull;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -117,6 +118,92 @@ public class BaseDaoTest  {
 				.getUpdateSql(new String[] { "files1", "fieldss2" }, "")));
 		assertTrue("update test set files1=? where 1=1".equals(bd.getUpdateSql(
 				new String[] { "files1" }, "where 1=1")));
+	}
+
+	@org.junit.Test
+	public void testUpdateBatch() {
+		DbcpDataSource ds = new DbcpDataSource();
+		ds.setDatabaseConfig(DataSourceTest.getConfigMaster());
+		IDbHelper db = new DbHelper();
+		db.setDataSource(ds);
+		try{
+			db.executeNoQuery("DROP TABLE if exists test");
+		}catch(DbException ex){
+			ex.printStackTrace();
+		}
+			db.executeNoQuery("create table test(id int, name varchar(100))");
+			db.executeNoQuery("insert into test(id, name) values(1,'abc')");
+			db.executeNoQuery("insert into test(id, name) values(2,'abc')");
+			db.executeNoQuery("insert into test(id, name) values(3,'abc')");
+
+
+		class T {
+			Long id;
+			String name;
+		}
+		class BD extends BaseDao<T, Long> {
+			BD(IDbHelper db) {
+				super(db);
+			}
+
+			@Override
+			public String getKeyName() {
+				return "id";
+			}
+
+			@Override
+			public T mapRow(ResultSet rs, int index) throws SQLException {
+				T t = new T();
+				t.id = rs.getLong("id");
+				t.name = rs.getString("name");
+				return t;
+			}
+
+			@Override
+			public boolean insertDummy() {
+				return false;
+			}
+
+			@Override
+			public Long getId(T info) {
+				return info.id;
+			}
+
+			@Override
+			public void setId(T info, Long id) {
+				info.id = id;
+			}
+
+			@Override
+			public String getTableName() {
+				return "test";
+			}
+
+			@Override
+			protected String getUpdateSql(){
+				return "update "+this.getTableName()+" set name=? where id=?";
+			}
+
+			@Override
+			protected Object[] getUpdateObjs(T  info){
+				return new Object[]{ info.name,info.id };
+			}
+
+		}
+
+		BD bd = new BD(db);
+		List<T> objs = bd.selectAll();
+		for(T o: objs){
+			o.name = o.name+o.id;
+		}
+
+		bd.updateBatch(objs.toArray(new T[0]));
+
+		List<T> news = bd.selectAll();
+		for(T n:news){
+			assertTrue(n.name.endsWith(n.id+""));
+		}
+
 	}
 
 	public void testAr() {

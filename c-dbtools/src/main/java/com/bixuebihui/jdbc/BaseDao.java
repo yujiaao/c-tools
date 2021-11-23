@@ -11,6 +11,7 @@ import com.bixuebihui.sql.SQLUtil;
 import com.bixuebihui.util.DbUtils;
 import org.apache.commons.beanutils.*;
 import org.apache.commons.beanutils.converters.*;
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.CaseUtils;
 import org.slf4j.Logger;
@@ -1408,7 +1409,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @return a {@link java.lang.String} object.
      */
     protected String getInsertSql() {
-        return null;
+        throw new NotImplementedException();
     }
 
     /**
@@ -1417,7 +1418,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @return a {@link java.lang.String} object.
      */
     protected String getUpdateSql() {
-        return null;
+        throw new NotImplementedException();
     }
 
     /**

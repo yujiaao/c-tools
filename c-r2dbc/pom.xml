@@ -5,14 +5,14 @@
     <parent>
         <artifactId>c-tools-parent</artifactId>
         <groupId>com.github.yujiaao</groupId>
-        <version>1.7.8.3</version>
+        <version>1.7.8.4</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>c-r2dbc</artifactId>
 
     <properties>
-        <maven.deploy.skip>true</maven.deploy.skip>
+<!--        <maven.deploy.skip>true</maven.deploy.skip>-->
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
     </properties>
