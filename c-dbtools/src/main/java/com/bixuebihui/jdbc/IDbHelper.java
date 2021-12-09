@@ -5,6 +5,7 @@ import javax.validation.constraints.NotNull;
 import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * <p>IDbHelper interface.</p>
@@ -98,7 +99,12 @@ public interface IDbHelper {
      * @return a {@link java.util.List} object.
      */
     @NotNull <T> List<T> executeQuery(String sql, Object[] params, RowMapperResultReader<T> handle);
+
+    @NotNull <T> List<T> executeQuery(String sql, Object[] params,
+                                      @NotNull RowMapperResultReader<T> handle, Set<String> returnFields);
+
     @NotNull <T> List<T> executeQuery(String sql, Object[] params, RowMapper<T> handle);
+    @NotNull <T> List<T> executeQuery(String sql, Object[] params, RowMapper<T> handle, Set<String> returnFields);
 
 
     /**

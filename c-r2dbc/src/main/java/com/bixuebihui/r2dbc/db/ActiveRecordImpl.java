@@ -464,6 +464,8 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 		this.filterStack = new SqlHelper(src.filterStack);
 		this.limit = new SqlLimit(src.limit);
 		this.orderStack = new SqlSort(this.orderStack);
+		this.resultFields = src.resultFields;
+
 	}
 
 	/** {@inheritDoc} */
@@ -605,7 +607,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 			Collections.addAll(params, getParams().toArray());
 
 			String sql ="update "+operator.getTableName()+" set "+
-					sb.toString()+ whereClause;
+					sb + whereClause;
 			if(cn==null) {
 				return operator.getDbHelper().executeNoQuery(sql, params.toArray()).doFinally(c -> clear());
 			}

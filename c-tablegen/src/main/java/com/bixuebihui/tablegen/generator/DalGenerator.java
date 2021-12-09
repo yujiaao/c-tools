@@ -105,8 +105,15 @@ public class DalGenerator extends BaseGenerator {
     public static String mapRow(List<ColumnData> columnData, String pojoClassName) {
         String col;
         String colType;
-        List<String> gets = new ArrayList<>();
-        String get;
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(INDENT).append("/**\n")
+                .append(INDENT).append("  * Updates the object from a selected ResultSet.\n")
+                .append(INDENT).append("  */\n")
+                .append(INDENT).append("@Override\n")
+                .append(INDENT).append("public " + pojoClassName + " mapRow (ResultSet r, int index, Set<String> fields) throws SQLException\n")
+                .append(INDENT).append("{\n")
+                .append(INDENT).append(INDENT).append(pojoClassName + " res = new " + pojoClassName + "();\n");
 
         for (ColumnData cd : columnData) {
             col = cd.getName();
@@ -115,6 +122,7 @@ public class DalGenerator extends BaseGenerator {
             // work out which data type we are getting for each variable
             String ucol = "F." + columnNameToConstantName(col);
 
+            String get;
             if (colType.compareTo("String") == 0) {
                 get = "(r.getString(" + ucol + "));";
             } else if (colType.compareTo("byte") == 0 || colType.compareTo("Byte") == 0) {
@@ -152,20 +160,11 @@ public class DalGenerator extends BaseGenerator {
             }
 
             get = firstUp(cd.getName()) + get;
-            gets.add(get);
-        }
 
-        StringBuilder sb = new StringBuilder();
-        sb.append(INDENT).append("/**\n")
-                .append(INDENT).append("  * Updates the object from a selected ResultSet.\n")
-                .append(INDENT).append("  */\n")
-                .append(INDENT).append("@Override\n")
-                .append(INDENT).append("public " + pojoClassName + " mapRow (ResultSet r, int index) throws SQLException\n")
-                .append(INDENT).append("{\n")
-                .append(INDENT).append(INDENT).append(pojoClassName + " res = new " + pojoClassName + "();\n");
+            sb.append(INDENT).append(INDENT).append("if (containsIgnoreCase("+ucol+", fields)){\n");
+            sb.append(INDENT).append(INDENT).append(INDENT).append("res.set" + get).append("\n");
+            sb.append(INDENT).append(INDENT).append("}\n");
 
-        for (String e : gets) {
-            sb.append(INDENT).append(INDENT).append("res.set" + e).append("\n");
         }
 
         sb.append(INDENT).append(INDENT).append("return res;\n");

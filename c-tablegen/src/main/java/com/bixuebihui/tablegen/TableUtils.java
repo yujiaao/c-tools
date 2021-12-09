@@ -397,7 +397,7 @@ public class TableUtils {
     }
 
     private static List<ForeignKeyDefinition> getFkDefinitions(IDbHelper dbHelper, String databaseName, String sql, Map<String, List<ForeignKeyDefinition>> map) {
-        return dbHelper.executeQuery(sql, new Object[]{databaseName}, new RowMapperResultReader<>((r, index) -> {
+        return dbHelper.executeQuery(sql, new Object[]{databaseName}, new RowMapperResultReader<>((r, index, set) -> {
 
             String sFKName = r.getString("FK_NAME"); //12
             String sFKTable = r.getString("FKTABLE_NAME"); //7

@@ -1,6 +1,12 @@
 package com.bixuebihui.db;
 
 import java.sql.SQLException;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import static java.util.Collections.emptySet;
 
 /**
  * Created with IntelliJ IDEA.
@@ -20,6 +26,8 @@ public interface ActiveRecord<T> extends Record<T> {
     int ORDER_ASC = 0;
     /** Constant <code>ORDER_DESC=1</code> */
     int ORDER_DESC=1;
+
+    Set<String> getResultFieldsSet();
 
     /**
      * <p>in.</p>
@@ -242,4 +250,12 @@ public interface ActiveRecord<T> extends Record<T> {
      * @return a {@link ActiveRecord} object.
      */
     ActiveRecord<T> join(String joinClause);
+
+
+    static Set<String> toFieldsSet(String commaSeparatedFields){
+        if(commaSeparatedFields==null || commaSeparatedFields.contains("*")){
+            return emptySet();
+        }
+        return List.of(commaSeparatedFields.split(",")).stream().map(x -> x.toLowerCase(Locale.ROOT)).collect(Collectors.toSet());
+    }
 }

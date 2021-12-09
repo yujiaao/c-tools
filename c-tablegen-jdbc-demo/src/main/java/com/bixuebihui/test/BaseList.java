@@ -13,8 +13,8 @@ package com.bixuebihui.test;
 
 import com.bixuebihui.jdbc.BaseDao;
 import org.springframework.stereotype.Service;
-
 import javax.annotation.processing.Generated;
+
 import javax.sql.DataSource;
 
 /**
@@ -25,8 +25,7 @@ import javax.sql.DataSource;
 @Service
 public abstract class BaseList<T, V> extends BaseDao<T, V> {
 
-    public BaseList(DataSource ds) {
-        super(ds);
+    public BaseList(DataSource readWrite, DataSource readOnly) {
+        super(readWrite,readOnly);
     }
-
 }

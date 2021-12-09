@@ -22,15 +22,16 @@ import javax.sql.DataSource;
 import javax.validation.constraints.NotNull;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.SQLIntegrityConstraintViolationException;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.Date;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import static com.bixuebihui.db.Dialect.*;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
 
 /**
  * <p>Abstract BaseDao class.</p>
@@ -111,7 +112,8 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
 
     /**
      * <p>fields.</p>
-     *
+     * Comma separated column names, used for select statement when you don't want return all fields,
+     * in case to optimize the index usage.
      * @param fields a {@link java.lang.String} object.
      * @return an array of {@link java.lang.String} objects.
      */
@@ -956,7 +958,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
             query += orderByClause;
         }
         query = getPagingSql(query, beginNum, endNum);
-        List<ID> ids = getDbHelper().executeQuery(query, params, new RowMapperResultReader<>((rs, index) -> {
+        List<ID> ids = getDbHelper().executeQuery(query, params, new RowMapperResultReader<>((rs, index, fieldsSet) -> {
             Object o = rs.getObject(1);
             return (ID) o;
         }));
@@ -984,7 +986,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
             query += orderByClause;
         }
         query = getPagingSql(query, beginNum, endNum);
-        return getDbHelper().executeQuery(query, params, new RowMapperResultReader<>(this));
+        return getDbHelper().executeQuery(query, params, new RowMapperResultReader<>(this), ActiveRecord.toFieldsSet(fieldList));
     }
 
     public @NotNull
@@ -1624,7 +1626,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         String query = "select count(" + keyName + ") gv_cnt, " + groupFunction + "(" + field + ") gv_sm " + groupKeys
                 + " from " + getTableName() + " " + where + groupByClause + (having == null ? "" : having);
         return  getDbHelper().executeQuery(query, params,
-                new RowMapperResultReader<>((rs, index) -> {
+                new RowMapperResultReader<>((rs, index, set) -> {
                     CountValue cs = new CountValue();
                     cs.setCount(rs.getLong(1));
                     cs.setValue(rs.getDouble(2));
@@ -1667,7 +1669,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         String query = "select count(" + keyName + ") gv_cnt, " + groupFunction + "(" + field + ") gv_sm " +(noGroup? "": ","+groupKeys)
                 + " from " + getTableName() + " " + where + groupByClause + (having == null ? "" : having);
         return getDbHelper().executeQuery(query, params,
-                new RowMapperResultReader<>((rs, index) -> {
+                new RowMapperResultReader<>((rs, index, set) -> {
                     CountObject<K> cs = new CountObject<>();
                     cs.setCount(rs.getLong(1));
                     cs.setValue(rs.getObject(2, type));
@@ -1784,9 +1786,10 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         if(ar instanceof ActiveRecordImpl){
             ActiveRecordImpl arr =  (( ActiveRecordImpl) ar);
             sql += arr.parseOrder() + arr.parseLimitSql();
+
         }
         return this.dbHelper.executeQuery(sql,
-                build.getParams().toArray(new Object[0]), this);
+                build.getParams().toArray(new Object[0]), this, ar.getResultFieldsSet());
     }
 
     protected String getCoreSql(){
@@ -1794,4 +1797,26 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     }
 
 
+    /**
+     * <p>mapRow.</p>
+     *
+     * @param rs    a {@link java.sql.ResultSet} object.
+     * @param index  row index from 1;
+     * @return a T object.
+     * @throws java.sql.SQLException if any.
+     */
+//    protected T mapRow(ResultSet rs, int index)  throws SQLException {
+//        return mapRow(rs, index, Collections.emptySet());
+//    };
+
+
+    /**
+     * contain field check
+     * @param field
+     * @param fields
+     * @return true if fields is empty or contains field, ignore
+     */
+    protected static boolean containsIgnoreCase(String field, Set<String> fields){
+        return fields==null ||  fields.isEmpty() || fields.contains(field.toLowerCase(Locale.ROOT));
+    }
 }

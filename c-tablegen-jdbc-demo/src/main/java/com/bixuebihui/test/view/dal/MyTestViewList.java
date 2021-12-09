@@ -12,7 +12,7 @@ package com.bixuebihui.test.view.dal;
 
 
 import java.sql.*;
-import java.util.List;
+import java.util.Set;
 import javax.sql.DataSource;
 import com.bixuebihui.test.view.business.*;
 import com.bixuebihui.test.view.pojo.*;
@@ -30,10 +30,12 @@ public class MyTestViewList  extends AbstractViewBaseDao<MyTestView, Integer>
     /**
       * Don't direct use the MyTestViewList, use MyTestViewManager instead.
       */
-    protected MyTestViewList(DataSource ds)
+
+    protected MyTestViewList(DataSource readWrite, DataSource readOnly)
     {
-        super(ds);
+        super(readWrite,readOnly);
     }
+
 
     
     @SuppressWarnings("AlibabaClassNamingShouldBeCamel")
@@ -50,7 +52,23 @@ public class MyTestViewList  extends AbstractViewBaseDao<MyTestView, Integer>
         }
     }
 
+
+
+    /**
+    * Get table view sql.
+    */
+    @Override
+    protected String getCoreSql()
+    {
     
+    
+        return " select test_gen.*, degree from test_gen left join t_edu on test_gen.edu_id=t_edu.id";
+    }
+
+    protected String getSelectAllFromTable() {
+        return getCoreSql();
+    }
+
     /**
      * Get table name.
      */
@@ -58,9 +76,7 @@ public class MyTestViewList  extends AbstractViewBaseDao<MyTestView, Integer>
     public String getTableName()
     {
 
-      return "( select test_gen.*, degree from test_gen left join t_edu on test_gen.edu_id=t_edu.id) as my_test_view";
-
-
+      return "("+this.getCoreSql()+") as my_test_view";
     }
 
     
@@ -78,15 +94,27 @@ public class MyTestViewList  extends AbstractViewBaseDao<MyTestView, Integer>
         * Updates the object from a selected ResultSet.
         */
       @Override
-      public MyTestView mapRow (ResultSet r, int index) throws SQLException
+      public MyTestView mapRow (ResultSet r, int index, Set<String> fields) throws SQLException
       {
             MyTestView res = new MyTestView();
-            res.setId(r.getInt(F.ID));
-            res.setName(r.getString(F.NAME));
-            res.setAge(r.getShort(F.AGE));
-            res.setBirth(r.getTimestamp(F.BIRTH));
-            res.setEduId(r.getInt(F.EDU_ID));
-            res.setDegree(r.getString(F.DEGREE));
+            if (containsIgnoreCase(F.ID, fields)){
+                  res.setId(r.getInt(F.ID));
+            }
+            if (containsIgnoreCase(F.NAME, fields)){
+                  res.setName(r.getString(F.NAME));
+            }
+            if (containsIgnoreCase(F.AGE, fields)){
+                  res.setAge(r.getShort(F.AGE));
+            }
+            if (containsIgnoreCase(F.BIRTH, fields)){
+                  res.setBirth(r.getTimestamp(F.BIRTH));
+            }
+            if (containsIgnoreCase(F.EDU_ID, fields)){
+                  res.setEduId(r.getInt(F.EDU_ID));
+            }
+            if (containsIgnoreCase(F.DEGREE, fields)){
+                  res.setDegree(r.getString(F.DEGREE));
+            }
             return res;
       }
 
@@ -97,18 +125,6 @@ public class MyTestViewList  extends AbstractViewBaseDao<MyTestView, Integer>
         return info.getId();
     }
 
-    @Override
-    public void setId(MyTestView info, Integer id) {
-    
-        //no key to set, don't use this method!
-    }
-
-    @Override
-    public void setIdLong(MyTestView info, long id) {
-    
-        //no key to set, don't use this method!
-    
-    }
 
 
 

@@ -16,8 +16,7 @@ public class LongReader extends RowMapperResultReader<Long> {
      * @param resultList a {@link java.util.List} object.
      */
     public LongReader(List<Long> resultList) {
-
-        super((rs, index) -> rs.getLong(1),resultList);
+        super((rs, index, set) -> rs.getLong(1),resultList);
     }
 
 

@@ -4,6 +4,7 @@ import com.bixuebihui.DbException;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Set;
 
 import static com.bixuebihui.db.Dialect.ORACLE;
 
@@ -26,7 +27,7 @@ public class AbstractBaseDao extends BaseDao<Object, Long> {
 
     /** {@inheritDoc} */
     @Override
-    public Object mapRow(ResultSet rs, int index) throws SQLException {
+    public Object mapRow(ResultSet rs, int index, Set<String> set) throws SQLException {
         throw new DbException("not implement!");
     }
 

@@ -58,7 +58,7 @@ public class RowMapperResultReaderToMap<K,T> {
         }
         int index=1;
         while (rs.next()) {
-            res.put((K)rs.getObject(keyName), handle.mapRow(rs, index++));
+            res.put((K)rs.getObject(keyName), handle.mapRow(rs, index++, null));
         }
         return res;
     }

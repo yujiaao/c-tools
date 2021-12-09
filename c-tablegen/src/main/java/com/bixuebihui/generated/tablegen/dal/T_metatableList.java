@@ -18,6 +18,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class T_metatableList  extends BaseList<T_metatable,Long>
@@ -52,7 +53,7 @@ public String getKeyName()
   * Updates the object from a selected ResultSet.
   */
 @Override
-public T_metatable mapRow (ResultSet r, int index) throws SQLException {
+public T_metatable mapRow (ResultSet r, int index, Set<String> set) throws SQLException {
       T_metatable res = new T_metatable();
       res.setTid(r.getLong("tid"));
       res.setTname(r.getString("tname"));

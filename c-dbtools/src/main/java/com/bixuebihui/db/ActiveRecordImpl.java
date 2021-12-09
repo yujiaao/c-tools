@@ -12,8 +12,10 @@ import javax.validation.constraints.NotNull;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.bixuebihui.db.Dialect.*;
+import static java.util.Collections.emptySet;
 
 /**
  * Created with IntelliJ IDEA. User: Administrator Date: 13-4-18 Time: 下午5:57 To
@@ -46,7 +48,22 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	private boolean useLast=false;
 
 	private String tableAlias;
+
 	private String resultFields =" * ";
+
+
+	public String getResultFields() {
+		return resultFields;
+	}
+
+	@Override
+	public Set<String> getResultFieldsSet(){
+		return ActiveRecord.toFieldsSet(resultFields);
+	}
+
+
+
+
 	private List<String> joins;
 
 

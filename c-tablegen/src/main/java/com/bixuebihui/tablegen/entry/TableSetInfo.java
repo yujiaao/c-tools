@@ -542,9 +542,9 @@ public class TableSetInfo {
                 for (String name : config.getViewList().keySet()) {
                     String sql = config.getViewList().get(name);
                     dbHelper.executeQuery(sql.contains("limit") ? sql :sql + " limit 1",
-                            new Object[0], new RowMapperResultReader((rs, index) -> null){
+                            new Object[0], new RowMapperResultReader<>((rs, index, set) -> null){
                                 @Override
-                                public @NotNull List<Object> processResultSet(ResultSet rs){
+                                public @NotNull List<Object> processResultSet(ResultSet rs, Set<String> set){
 
                                     try {
                                         TableInfo info = OnFlyViewUtils.getColumnData(rs.getMetaData(), name, dbType);

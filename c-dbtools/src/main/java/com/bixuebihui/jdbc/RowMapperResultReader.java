@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * <p>RowMapperResultReader class.</p>
@@ -44,7 +45,7 @@ public class RowMapperResultReader<T> {
      * @return a {@link java.util.List} object.
      * @throws java.sql.SQLException if any.
      */
-    public @NotNull List<T> processResultSet(ResultSet rs) throws SQLException {
+    public @NotNull List<T> processResultSet(ResultSet rs, Set<String> fields) throws SQLException {
         if(res==null){
             res = new ArrayList<T>();
         }else{
@@ -53,7 +54,7 @@ public class RowMapperResultReader<T> {
 
         int index=1;
         while (rs.next()) {
-            res.add( handle.mapRow(rs, index++));
+            res.add( handle.mapRow(rs, index++, fields));
         }
         return res;
     }

@@ -11,6 +11,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created with IntelliJ IDEA. User: Administrator Date: 13-4-18 Time: 下午5:59 To
@@ -30,6 +31,11 @@ public class DbImpl<T, V> extends BaseDao<T, V> implements ActiveRecord<T>,
 	SqlLimit limit;
 	String resultFields;
 
+
+	@Override
+	public Set<String> getResultFieldsSet() {
+		return ActiveRecord.toFieldsSet(resultFields);
+	}
 
 	/**
 	 * {@inheritDoc}
@@ -366,13 +372,6 @@ public class DbImpl<T, V> extends BaseDao<T, V> implements ActiveRecord<T>,
 
 	// from basedao
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public T mapRow(ResultSet rs, int index) {
-		throw new NotImplementedException();
-	}
 
 	/** {@inheritDoc} */
 	@Override
@@ -592,4 +591,8 @@ public class DbImpl<T, V> extends BaseDao<T, V> implements ActiveRecord<T>,
 	}
 
 
+	@Override
+	public T mapRow(ResultSet rs, int index, Set<String> fields) throws SQLException {
+		throw new NotImplementedException();
+	}
 }

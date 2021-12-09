@@ -2,6 +2,9 @@ package com.bixuebihui.jdbc;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collections;
+import java.util.Locale;
+import java.util.Set;
 
 /**
  * <p>RowMapper interface.</p>
@@ -10,13 +13,17 @@ import java.sql.SQLException;
  * @version $Id: $Id
  */
 public interface RowMapper<T> {
+
    /**
-    * <p>mapRow.</p>
+    * map fields in set <b>fields</b>, ignoring case.
     *
-    * @param rs    a {@link java.sql.ResultSet} object.
-    * @param index a int.
-    * @return a T object.
-    * @throws java.sql.SQLException if any.
+    * @param rs
+    * @param index row index from 1;
+    * @param fields if empty, then map all fields
+    * @return Data object
+    * @throws SQLException
     */
-   T mapRow(ResultSet rs, int index) throws SQLException;
+   T mapRow(ResultSet rs, int index, Set<String> fields) throws SQLException ;
+
+
 }

@@ -12,7 +12,7 @@ package com.bixuebihui.test.dal;
 
 
 import java.sql.*;
-import java.util.List;
+import java.util.Set;
 import javax.sql.DataSource;
 import com.bixuebihui.test.business.*;
 import com.bixuebihui.test.pojo.*;
@@ -30,10 +30,12 @@ public class TestGenList  extends BaseList<TestGen, Integer>
     /**
       * Don't direct use the TestGenList, use TestGenManager instead.
       */
-    protected TestGenList(DataSource ds)
+
+    protected TestGenList(DataSource readWrite, DataSource readOnly)
     {
-        super(ds);
+        super(readWrite,readOnly);
     }
+
 
     
     @SuppressWarnings("AlibabaClassNamingShouldBeCamel")
@@ -62,7 +64,7 @@ public class TestGenList  extends BaseList<TestGen, Integer>
 
     @Override
     protected String getUpdateSql(){ 
-        return "update "+this.getTableName()+" set   id=?,  name=?,  age=?,  birth=?,  edu_id=?  where id=?";
+        return "update "+this.getTableName()+" set   name=?,  age=?,  birth=?,  edu_id=? where id=?";
     }
 
     
@@ -76,15 +78,15 @@ public class TestGenList  extends BaseList<TestGen, Integer>
       return new Object[]{ info.getName(),info.getAge(),info.getBirth(),info.getEduId(),info.getId() };
    }
 
-    
+
+
     /**
      * Get table name.
      */
     @Override
     public String getTableName()
     {
-
-      return  "test_gen";
+return  "test_gen";
 
     }
 
@@ -103,14 +105,24 @@ public class TestGenList  extends BaseList<TestGen, Integer>
         * Updates the object from a selected ResultSet.
         */
       @Override
-      public TestGen mapRow (ResultSet r, int index) throws SQLException
+      public TestGen mapRow (ResultSet r, int index, Set<String> fields) throws SQLException
       {
             TestGen res = new TestGen();
-            res.setId(r.getInt(F.ID));
-            res.setName(r.getString(F.NAME));
-            res.setAge(r.getShort(F.AGE));
-            res.setBirth(r.getTimestamp(F.BIRTH));
-            res.setEduId(r.getInt(F.EDU_ID));
+            if (containsIgnoreCase(F.ID, fields)){
+                  res.setId(r.getInt(F.ID));
+            }
+            if (containsIgnoreCase(F.NAME, fields)){
+                  res.setName(r.getString(F.NAME));
+            }
+            if (containsIgnoreCase(F.AGE, fields)){
+                  res.setAge(r.getShort(F.AGE));
+            }
+            if (containsIgnoreCase(F.BIRTH, fields)){
+                  res.setBirth(r.getTimestamp(F.BIRTH));
+            }
+            if (containsIgnoreCase(F.EDU_ID, fields)){
+                  res.setEduId(r.getInt(F.EDU_ID));
+            }
             return res;
       }
 
@@ -133,6 +145,7 @@ public class TestGenList  extends BaseList<TestGen, Integer>
         info.setId((int)id);
     
     }
+
 
 
       
@@ -175,8 +188,9 @@ public class TestGenList  extends BaseList<TestGen, Integer>
     {
         TestGen  info = new TestGen();
         java.util.Random rnd = new java.util.Random();
-    info.setName(Integer.toString(Math.abs(rnd.nextInt(Integer.MAX_VALUE)), 36));
-        
+    
+        info.setName(Integer.toString(Math.abs(rnd.nextInt(Integer.MAX_VALUE)), 36));
+    
         info.setId(getNextKey());
     
         return this.insert(info);

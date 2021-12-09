@@ -14,6 +14,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -95,9 +96,10 @@ public class DbSessionManagerTest {
 		System.out.println(ss.toXml());
 	}
 
-	class SessionRowMapper implements RowMapper {
+	class SessionRowMapper implements RowMapper<Object> {
 
-		public Object mapRow(ResultSet rs, int index) throws SQLException {
+		@Override
+        public Object mapRow(ResultSet rs, int index, Set<String> set) throws SQLException {
 			SimpleSession ss = new SimpleSession();
 			ss.setS_id(rs.getString("s_id"));
 			ss.setS_expire(rs.getLong("s_expire"));

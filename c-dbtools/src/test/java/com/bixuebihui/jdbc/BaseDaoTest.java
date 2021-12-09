@@ -14,6 +14,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -152,10 +153,14 @@ public class BaseDaoTest  {
 			}
 
 			@Override
-			public T mapRow(ResultSet rs, int index) throws SQLException {
+			public T mapRow(ResultSet rs, int index, Set<String> set) throws SQLException {
 				T t = new T();
-				t.id = rs.getLong("id");
-				t.name = rs.getString("name");
+				if (containsIgnoreCase("id", set)) {
+					t.id = rs.getLong("id");
+				}
+				if (containsIgnoreCase("name", set)){
+					t.name = rs.getString("name");
+				}
 				return t;
 			}
 
@@ -231,7 +236,7 @@ public class BaseDaoTest  {
 			}
 
 			@Override
-			public T mapRow(ResultSet rs, int index) throws SQLException {
+			public T mapRow(ResultSet rs, int index, Set<String> set) throws SQLException {
 				T t = new T();
 				t.id = rs.getLong("id");
 				t.name = rs.getString("name");
@@ -421,7 +426,8 @@ public class BaseDaoTest  {
 			public BD(IDbHelper db) {
 				super(db);
 			}
-			public DbObj mapRow(ResultSet rs, int index) throws SQLException {
+			@Override
+			public DbObj mapRow(ResultSet rs, int index, Set<String> set) throws SQLException {
 				DbObj o= new DbObj();
 				 o.id = rs.getLong(1);
 				 o.name = rs.getString(2);
@@ -501,7 +507,8 @@ public class BaseDaoTest  {
 			public BD(IDbHelper db) {
 				super(db);
 			}
-			public DbObj2 mapRow(ResultSet rs, int index) throws SQLException {
+			@Override
+			public DbObj2 mapRow(ResultSet rs, int index, Set<String> set) throws SQLException {
 				DbObj2 o= new DbObj2();
 				o.id = rs.getLong(1);
 				o.nameSnake = rs.getString(2);

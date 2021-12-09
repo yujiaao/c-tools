@@ -12,7 +12,7 @@ package com.bixuebihui.test.dal;
 
 
 import java.sql.*;
-import java.util.List;
+import java.util.Set;
 import javax.sql.DataSource;
 import com.bixuebihui.test.business.*;
 import com.bixuebihui.test.pojo.*;
@@ -30,10 +30,12 @@ public class HistoryHandlebarsTemplateList  extends BaseList<HistoryHandlebarsTe
     /**
       * Don't direct use the HistoryHandlebarsTemplateList, use HistoryHandlebarsTemplateManager instead.
       */
-    protected HistoryHandlebarsTemplateList(DataSource ds)
+
+    protected HistoryHandlebarsTemplateList(DataSource readWrite, DataSource readOnly)
     {
-        super(ds);
+        super(readWrite,readOnly);
     }
+
 
     
     @SuppressWarnings("AlibabaClassNamingShouldBeCamel")
@@ -69,7 +71,7 @@ public class HistoryHandlebarsTemplateList  extends BaseList<HistoryHandlebarsTe
 
     @Override
     protected String getUpdateSql(){ 
-        return "update "+this.getTableName()+" set   history_id=?,  template_id=?,  template_code=?,  description=?,  datasource_id=?,  base_template_id=?,  template_body=?,  operator_id=?,version= version +1,  is_del=?,  created_stime=?,  modified_stime=?  where history_id=?";
+        return "update "+this.getTableName()+" set   template_id=?,  template_code=?,  description=?,  datasource_id=?,  base_template_id=?,  template_body=?,  operator_id=?,version= version +1,  is_del=?,  created_stime=?,  modified_stime=? where history_id=?";
     }
 
     
@@ -83,15 +85,15 @@ public class HistoryHandlebarsTemplateList  extends BaseList<HistoryHandlebarsTe
       return new Object[]{ info.getTemplateId(),info.getTemplateCode(),info.getDescription(),info.getDatasourceId(),info.getBaseTemplateId(),info.getTemplateBody(),info.getOperatorId(),info.getIsDel(),info.getCreatedStime(),info.getModifiedStime(),info.getHistoryId() };
    }
 
-    
+
+
     /**
      * Get table name.
      */
     @Override
     public String getTableName()
     {
-
-      return  "history_handlebars_template";
+return  "history_handlebars_template";
 
     }
 
@@ -110,21 +112,45 @@ public class HistoryHandlebarsTemplateList  extends BaseList<HistoryHandlebarsTe
         * Updates the object from a selected ResultSet.
         */
       @Override
-      public HistoryHandlebarsTemplate mapRow (ResultSet r, int index) throws SQLException
+      public HistoryHandlebarsTemplate mapRow (ResultSet r, int index, Set<String> fields) throws SQLException
       {
             HistoryHandlebarsTemplate res = new HistoryHandlebarsTemplate();
-            res.setHistoryId(r.getInt(F.HISTORY_ID));
-            res.setTemplateId(r.getInt(F.TEMPLATE_ID));
-            res.setTemplateCode(r.getString(F.TEMPLATE_CODE));
-            res.setDescription(r.getString(F.DESCRIPTION));
-            res.setDatasourceId(r.getInt(F.DATASOURCE_ID));
-            res.setBaseTemplateId(r.getInt(F.BASE_TEMPLATE_ID));
-            res.setTemplateBody(r.getString(F.TEMPLATE_BODY));
-            res.setOperatorId(r.getInt(F.OPERATOR_ID));
-            res.setVersion(r.getInt(F.VERSION));
-            res.setIsDel(r.getInt(F.IS_DEL));
-            res.setCreatedStime(r.getTimestamp(F.CREATED_STIME));
-            res.setModifiedStime(r.getTimestamp(F.MODIFIED_STIME));
+            if (containsIgnoreCase(F.HISTORY_ID, fields)){
+                  res.setHistoryId(r.getInt(F.HISTORY_ID));
+            }
+            if (containsIgnoreCase(F.TEMPLATE_ID, fields)){
+                  res.setTemplateId(r.getInt(F.TEMPLATE_ID));
+            }
+            if (containsIgnoreCase(F.TEMPLATE_CODE, fields)){
+                  res.setTemplateCode(r.getString(F.TEMPLATE_CODE));
+            }
+            if (containsIgnoreCase(F.DESCRIPTION, fields)){
+                  res.setDescription(r.getString(F.DESCRIPTION));
+            }
+            if (containsIgnoreCase(F.DATASOURCE_ID, fields)){
+                  res.setDatasourceId(r.getInt(F.DATASOURCE_ID));
+            }
+            if (containsIgnoreCase(F.BASE_TEMPLATE_ID, fields)){
+                  res.setBaseTemplateId(r.getInt(F.BASE_TEMPLATE_ID));
+            }
+            if (containsIgnoreCase(F.TEMPLATE_BODY, fields)){
+                  res.setTemplateBody(r.getString(F.TEMPLATE_BODY));
+            }
+            if (containsIgnoreCase(F.OPERATOR_ID, fields)){
+                  res.setOperatorId(r.getInt(F.OPERATOR_ID));
+            }
+            if (containsIgnoreCase(F.VERSION, fields)){
+                  res.setVersion(r.getInt(F.VERSION));
+            }
+            if (containsIgnoreCase(F.IS_DEL, fields)){
+                  res.setIsDel(r.getInt(F.IS_DEL));
+            }
+            if (containsIgnoreCase(F.CREATED_STIME, fields)){
+                  res.setCreatedStime(r.getTimestamp(F.CREATED_STIME));
+            }
+            if (containsIgnoreCase(F.MODIFIED_STIME, fields)){
+                  res.setModifiedStime(r.getTimestamp(F.MODIFIED_STIME));
+            }
             return res;
       }
 
@@ -147,6 +173,7 @@ public class HistoryHandlebarsTemplateList  extends BaseList<HistoryHandlebarsTe
         info.setHistoryId((int)id);
     
     }
+
 
 
       
@@ -268,10 +295,13 @@ public class HistoryHandlebarsTemplateList  extends BaseList<HistoryHandlebarsTe
     {
         HistoryHandlebarsTemplate  info = new HistoryHandlebarsTemplate();
         java.util.Random rnd = new java.util.Random();
-    info.setTemplateCode(Integer.toString(Math.abs(rnd.nextInt(Integer.MAX_VALUE)), 36));
+    
+        info.setTemplateCode(Integer.toString(Math.abs(rnd.nextInt(Integer.MAX_VALUE)), 36));
+    
         info.setDescription(Integer.toString(Math.abs(rnd.nextInt(Integer.MAX_VALUE)), 36));
+    
         info.setTemplateBody(Integer.toString(Math.abs(rnd.nextInt(Integer.MAX_VALUE)), 36));
-        
+    
         info.setHistoryId(getNextKey());
     
         return this.insert(info);

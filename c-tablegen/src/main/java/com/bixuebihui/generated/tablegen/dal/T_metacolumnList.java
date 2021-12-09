@@ -17,6 +17,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Set;
 
 public class T_metacolumnList  extends BaseList<T_metacolumn,Long>
 {
@@ -50,7 +51,7 @@ public String getKeyName()
   * Updates the object from a selected ResultSet.
   */
 @Override
-public T_metacolumn mapRow (ResultSet r, int index) throws SQLException
+public T_metacolumn mapRow (ResultSet r, int index, Set<String> set) throws SQLException
 {
       T_metacolumn res = new T_metacolumn();
       res.setCid(r.getLong("cid"));

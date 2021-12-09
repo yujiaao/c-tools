@@ -16,10 +16,8 @@ import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.sql.Date;
+import java.util.*;
 
 
 /**
@@ -988,13 +986,22 @@ public class DbHelper implements IDbHelper {
     @Override
     public @NotNull <T> List<T> executeQuery(String sql, Object[] params,
                                              @NotNull RowMapperResultReader<T> handle) {
+        return executeQuery(sql, params, handle, null);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public @NotNull <T> List<T> executeQuery(String sql, Object[] params,
+                                             @NotNull RowMapperResultReader<T> handle, Set<String> returnFields) {
         Connection cn = getConnection(true);
         try (Statement p = ArrayUtils.isNotEmpty(params) ? cn.prepareStatement(sql) : cn.createStatement()) {
             if (p instanceof PreparedStatement) {
                 fillParameter((PreparedStatement) p, params, null);
             }
             try (ResultSet rs = (p instanceof PreparedStatement) ? ((PreparedStatement) p).executeQuery() : p.executeQuery(sql)) {
-                return handle.processResultSet(rs);
+                return handle.processResultSet(rs, returnFields);
             }
         } catch (SQLException ex) {
             //可能超时，输出sql和参数
@@ -1013,4 +1020,10 @@ public class DbHelper implements IDbHelper {
                 new RowMapperResultReader<>(handle));
     }
 
+    @Override
+    public @NotNull <T> List<T> executeQuery(String sql, Object[] params,
+                                             @NotNull RowMapper<T> handle, Set<String> returnFields) {
+        return executeQuery( sql, params,
+                new RowMapperResultReader<>(handle), returnFields);
+    }
 }

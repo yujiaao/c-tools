@@ -15,6 +15,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Set;
 
 public class ActiveRecordImplTest extends TestCase {
 	class T {
@@ -31,7 +32,7 @@ public class ActiveRecordImplTest extends TestCase {
 		}
 
 		@Override
-		public T mapRow(ResultSet rs, int index) throws SQLException {
+		public T mapRow(ResultSet rs, int index, Set<String> set) throws SQLException {
 			T t = new T();
 			t.id = rs.getLong("id");
 			t.name = rs.getString("name");

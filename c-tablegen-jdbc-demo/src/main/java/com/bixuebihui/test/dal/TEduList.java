@@ -12,7 +12,7 @@ package com.bixuebihui.test.dal;
 
 
 import java.sql.*;
-import java.util.List;
+import java.util.Set;
 import javax.sql.DataSource;
 import com.bixuebihui.test.business.*;
 import com.bixuebihui.test.pojo.*;
@@ -30,10 +30,12 @@ public class TEduList  extends BaseList<TEdu, Integer>
     /**
       * Don't direct use the TEduList, use TEduManager instead.
       */
-    protected TEduList(DataSource ds)
+
+    protected TEduList(DataSource readWrite, DataSource readOnly)
     {
-        super(ds);
+        super(readWrite,readOnly);
     }
+
 
     
     @SuppressWarnings("AlibabaClassNamingShouldBeCamel")
@@ -59,7 +61,7 @@ public class TEduList  extends BaseList<TEdu, Integer>
 
     @Override
     protected String getUpdateSql(){ 
-        return "update "+this.getTableName()+" set   id=?,  degree=?  where id=?";
+        return "update "+this.getTableName()+" set   degree=? where id=?";
     }
 
     
@@ -73,15 +75,15 @@ public class TEduList  extends BaseList<TEdu, Integer>
       return new Object[]{ info.getDegree(),info.getId() };
    }
 
-    
+
+
     /**
      * Get table name.
      */
     @Override
     public String getTableName()
     {
-
-      return  "t_edu";
+return  "t_edu";
 
     }
 
@@ -100,11 +102,15 @@ public class TEduList  extends BaseList<TEdu, Integer>
         * Updates the object from a selected ResultSet.
         */
       @Override
-      public TEdu mapRow (ResultSet r, int index) throws SQLException
+      public TEdu mapRow (ResultSet r, int index, Set<String> fields) throws SQLException
       {
             TEdu res = new TEdu();
-            res.setId(r.getInt(F.ID));
-            res.setDegree(r.getString(F.DEGREE));
+            if (containsIgnoreCase(F.ID, fields)){
+                  res.setId(r.getInt(F.ID));
+            }
+            if (containsIgnoreCase(F.DEGREE, fields)){
+                  res.setDegree(r.getString(F.DEGREE));
+            }
             return res;
       }
 
@@ -127,6 +133,7 @@ public class TEduList  extends BaseList<TEdu, Integer>
         info.setId((int)id);
     
     }
+
 
 
       
@@ -169,8 +176,9 @@ public class TEduList  extends BaseList<TEdu, Integer>
     {
         TEdu  info = new TEdu();
         java.util.Random rnd = new java.util.Random();
-    info.setDegree(Integer.toString(Math.abs(rnd.nextInt(Integer.MAX_VALUE)), 36));
-        
+    
+        info.setDegree(Integer.toString(Math.abs(rnd.nextInt(Integer.MAX_VALUE)), 36));
+    
         info.setId(getNextKey());
     
         return this.insert(info);
