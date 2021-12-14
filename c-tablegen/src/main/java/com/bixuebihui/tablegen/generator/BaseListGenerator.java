@@ -9,11 +9,9 @@ public class BaseListGenerator extends BaseGenerator{
 
     @Override
     public String getTargetFileName(String tableName) {
-        String baseDir = config.getBaseSrcDir();
-
-        return baseDir + File.separator + "BaseList.java";
-
+        return getBaseDir() + File.separator + "BaseList.java";
     }
+
 
     @Override
     String getTemplateFileName() {

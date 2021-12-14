@@ -8,6 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Set;
 
 import static com.bixuebihui.db.Dialect.DERBY;
 
@@ -37,7 +38,7 @@ public class DictionaryList extends BaseList<DictionaryItem, String> {
      * Updates the object from a selected ResultSet.
      */
     @Override
-    public DictionaryItem mapRow(ResultSet r, int index) throws SQLException {
+    public DictionaryItem mapRow(ResultSet r, int index, Set<String> set) throws SQLException {
         DictionaryItem res = new DictionaryItem();
         res.setId(r.getString(def.getIdFieldName()));
         res.setValue(r.getString(def.getValueFieldName()));

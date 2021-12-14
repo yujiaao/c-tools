@@ -99,9 +99,19 @@ public abstract class BaseGenerator implements Generator {
 
     String getClassSuffix(){return "";}
 
+    protected String getBaseDir() {
+        String baseDir = config.getBaseSrcDir();
+        //相对路径则相对于配置文件所在目录，避免windows 与linux 的差异
+        if(!baseDir.startsWith("/") && !baseDir.contains(":")){
+            baseDir = config.getBaseDir() + baseDir;
+        }
+        return baseDir;
+    }
+
+
     String getTargetFileName(String subDir, String tableName) {
         return
-                config.getBaseSrcDir() + File.separator + subDir + File.separator + getPojoClassName(tableName)
+                getBaseDir() + File.separator + subDir + File.separator + getPojoClassName(tableName)
                         + getClassSuffix() + ".java";
     }
 

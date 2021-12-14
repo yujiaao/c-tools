@@ -33,7 +33,7 @@ public class TableGenMojo extends AbstractMojo {
         getLog().info("propPath " + propPath);
         try {
             for(String path: propPath.split(",")) {
-                gen.run(path);
+                gen.run(StringUtils.trim(path));
             }
         } catch (SQLException e) {
             e.printStackTrace();
