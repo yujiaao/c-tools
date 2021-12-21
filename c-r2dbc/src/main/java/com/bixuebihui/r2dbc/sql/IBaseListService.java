@@ -112,6 +112,6 @@ public interface IBaseListService<T, V> extends IReaderService<T> {
      *
      * @return a V object.
      */
-    V getNextKey();
+    Mono<V> getNextKey();
 
 }

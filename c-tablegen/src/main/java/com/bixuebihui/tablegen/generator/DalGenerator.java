@@ -204,12 +204,12 @@ public class DalGenerator extends BaseGenerator {
                 get = "(r.get(" + ucol + ", Float.class));";
             } else if (colType.compareTo("double") == 0 || colType.compareTo("Double") == 0) {
                 get = "(r.get(" + ucol + ", Double.class));";
-            } else if (colType.compareTo("Date") == 0) {
-                get = "(r.get(" + ucol + ", Date.class));";
-            } else if (colType.compareTo("Timestamp") == 0) {
-                get = "(r.get(" + ucol + ", Timestamp.class));";
-            } else if (colType.compareTo("Time") == 0) {
-                get = "(r.get(" + ucol + ", Time.class));";
+            } else if (colType.compareTo("LocalDate") == 0 || colType.compareTo("Date") == 0) {
+                get = "(r.get(" + ucol + ", LocalDate.class));";
+            } else if (colType.compareTo("Timestamp") == 0 || colType.compareTo("LocalDateTime") == 0) {
+                get = "(r.get(" + ucol + ", LocalDateTime.class));";
+            } else if (colType.compareTo("LocalTime") == 0 || colType.compareTo("Time") == 0) {
+                get = "(r.get(" + ucol + ", LocalTime.class));";
             } else if (colType.compareTo("char") == 0 || colType.compareTo("Char") == 0) {
                 get = "(r.get(" + ucol + ", String.class).charAt(0);";
             } else if (colType.compareTo("byte[]") == 0) {

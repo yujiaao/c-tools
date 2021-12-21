@@ -3,6 +3,7 @@ package {{config.packageName}}{{viewModifier}}.dal;
 {{> [header-comment.java]}}
 
 import java.sql.*;
+import java.time.*;
 import java.util.List;
 import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.Row;
@@ -64,11 +65,11 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
 
 
     @Override
-    protected String getUpdateSql(){ {{! TODO the logic below is buggy, update SQL must according with update OBJECTS }}
-        return "update "+this.getTableName()+" set {{#each fields ~}}
-            {{#eq config.versionColName name ~}} {{name}}= {{name}} +1  {{~#unless @last}},{{/unless~}} {{else}}  {{#if (not (and config.isUse_autoincrement this.isAutoIncrement)) ~}} {{ name }}=?{{~#unless @last}},{{/unless~}}{{/if ~}}
-            {{/eq ~}}
-            {{~/each}} {{{whereNoLike}}}";
+    protected String getUpdateSql(){
+    return "update "+this.getTableName()+" set {{#each fields ~}} {{#if (not (isKey tableName name)) ~}}
+        {{#eq config.versionColName name ~}} {{name}}= {{name}} +1  {{~#unless @last}},{{/unless~}} {{else}}  {{#if (not (and config.isUse_autoincrement this.isAutoIncrement)) ~}} {{ name }}=?{{~#unless @last}},{{/unless~}}{{/if ~}}
+        {{/eq ~}}{{/if}}
+    {{~/each}}{{{whereNoLike}}}";
     }
 
     {{! writeObjs(tableName, keyData, colData); }}
@@ -155,17 +156,17 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
 {{! writeGetNextKey(keyData, colData); }}
 {{#if hasKey}}{{#unless tableInfo.isView}}
       {{#eq firstKeyType "Timestamp"}}
-      public {{firstKeyType}} getNextKey(){
+      public Mono<{{firstKeyType}}> getNextKey(){
         return new Timestamp(System.currentTimeMillis());
       }
       {{/eq}}
       {{#eq firstKeyType "String"}}
-      public {{firstKeyType}} getNextKey(){
+      public Mono<{{firstKeyType}}> getNextKey(){
           return java.util.UUID.randomUUID().toString();
       }
       {{/eq}}
       {{#gt keys.size 1}}
-      public {{firstKeyType}} getNextKey(){
+      public Mono<{{firstKeyType}}> getNextKey(){
           throw new IllegalStateException("no autokey for union keys");
       }
       {{/gt}}
@@ -207,7 +208,7 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
     /**
      * Deletes from the database for table {{tableName}} with connection
      */
-    @Override
+    {{#lt keys.size 2}}@Override{{/lt}}
     public Mono<Boolean> deleteByKey( {{#each keys}} {{colType tableName this}} {{this}}, {{/each}}  Connection cn )
     {
         return dbHelper.executeNoQuery(getDeleteSql(),
@@ -218,7 +219,7 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
     /**
     * Deletes from the database for table {{tableName}}
     */
-    @Override
+    {{#lt keys.size 2}}@Override{{/lt}}
     public Mono<Boolean> deleteByKey( {{#each keys}} {{colType tableName this}} {{this}} {{#unless @last}}, {{/unless}}{{/each}})
     {
         return dbHelper.executeNoQuery(getDeleteSql(),
@@ -336,9 +337,14 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
     {{/if ~}}
     {{/each ~}}
     {{#if hasKey}}
-        info.set{{firstUp keys.[0]}}(getNextKey());
-    {{/if}}
+        return getNextKey().flatMap(id -> {
+        setId(info, id);
+        return Mono.just(info);
+        }).flatMap(dd ->  this.insert(dd));
+    {{else}}
         return this.insert(info);
+    {{/if}}
+
     }
 {{/unless}}
 }

@@ -16,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class OnFlyViewUtilsTest {
     static IDbHelper dbHelper;
+    boolean isR2dbc = false;
 
     @BeforeAll
     public static void setUp() {
@@ -27,7 +28,8 @@ class OnFlyViewUtilsTest {
     @Test
     void getColumnData() {
         String sql = "select test_gen.*, concat(t_edu.degree) degree_plus from test_gen left join t_edu on test_gen.edu_id=t_edu.id limit 1";
-        List<TableInfo> list = dbHelper.executeQuery(sql, null, new RowMapperResultReader<>((rs, index, set) -> OnFlyViewUtils.getColumnData(rs.getMetaData(), "test", MYSQL)));
+        List<TableInfo> list = dbHelper.executeQuery(sql, null, new RowMapperResultReader<>((rs, index, set) ->
+                OnFlyViewUtils.getColumnData(rs.getMetaData(), "test", MYSQL, isR2dbc)));
 
         TableInfo cols = list.get(0);
         assertEquals("Type : INT(11) Name : id", cols.getFields().get(0).toString());
@@ -44,7 +46,7 @@ class OnFlyViewUtilsTest {
         String sql = "select test_gen.*, degree AS degree_plus from test_gen left join t_edu on test_gen.edu_id=t_edu.id limit 1";
         List<TableInfo> list = dbHelper.executeQuery(sql, null,
                 new RowMapperResultReader<>((rs, index, set) ->
-                        OnFlyViewUtils.getColumnData(rs.getMetaData(), "test", MYSQL)));
+                        OnFlyViewUtils.getColumnData(rs.getMetaData(), "test", MYSQL, isR2dbc)));
 
         TableInfo cols = list.get(0);
         assertEquals("Type : INT(11) Name : id", cols.getFields().get(0).toString());

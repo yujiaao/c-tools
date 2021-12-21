@@ -13,14 +13,16 @@ import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
 
 
-
+/**
+ * to keep h2 table, use ;DB_CLOSE_DELAY=-1 parameter
+ *   @see {@link <a href="https://stackoverflow.com/a/5936988/1484621">DB_CLOSE_DELAY</a>}
+ */
 public class H2DataSource {
-
 	public final JdbcConnectionPool cp = JdbcConnectionPool.
-		    create("jdbc:h2:mem:test", "sa", "sa");
+		    create("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1", "sa", "sa");
 
 	public final JdbcConnectionPool cpRO = JdbcConnectionPool.
-		    create("jdbc:h2:mem:test1", "sa", "sa");
+		    create("jdbc:h2:mem:test1;DB_CLOSE_DELAY=-1", "sa", "sa");
 
 	public static void main(String[] args) throws SQLException {
 		new H2DataSource().init().close();

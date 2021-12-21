@@ -34,11 +34,11 @@ public class TestGenList  extends BaseList<TestGen, Integer>
     /**
       * Don't direct use the TestGenList, use TestGenManager instead.
       */
+
     protected TestGenList(ConnectionFactory ds)
     {
         super(ds);
     }
-
     
     @SuppressWarnings("AlibabaClassNamingShouldBeCamel")
     public static final class F{
@@ -186,9 +186,12 @@ return  "test_gen";
     
         info.setName(Integer.toString(Math.abs(rnd.nextInt(Integer.MAX_VALUE)), 36));
     
-        info.setId(getNextKey());
+        return getNextKey().flatMap(id -> {
+        setId(info, id);
+        return Mono.just(info);
+        }).flatMap(dd ->  this.insert(dd));
     
-        return this.insert(info);
+
     }
 
 }

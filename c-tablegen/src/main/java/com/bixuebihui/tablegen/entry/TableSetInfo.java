@@ -478,7 +478,7 @@ public class TableSetInfo {
                     TableInfo table = new TableInfo(name);
 
                     // Fill columns info
-                    TableInfo newInfo = TableUtils.getColumnData(metaData, config.getCatalog(), config.getSchema(), name);
+                    TableInfo newInfo = TableUtils.getColumnData(metaData, config.getCatalog(), config.getSchema(), name, config.getR2dc());
                     table.setFields(newInfo.getFields());
                     tables.put(name, table);
 
@@ -547,7 +547,7 @@ public class TableSetInfo {
                                 public @NotNull List<Object> processResultSet(ResultSet rs, Set<String> set){
 
                                     try {
-                                        TableInfo info = OnFlyViewUtils.getColumnData(rs.getMetaData(), name, dbType);
+                                        TableInfo info = OnFlyViewUtils.getColumnData(rs.getMetaData(), name, dbType, config.getR2dc());
                                         info.setComment(sql);
                                         viewInfos.put(name, info);
                                     } catch (SQLException e) {

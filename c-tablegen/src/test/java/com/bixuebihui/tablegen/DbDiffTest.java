@@ -90,7 +90,7 @@ public class DbDiffTest {
 		DbDiff dd = new DbDiff();
 		dd.db1 = new DbDiff.Database(dd.makeDataSource(config).getConnection().getMetaData());
 		dd.db2 = new DbDiff.Database(dd.makeDataSource(dstConfig).getConnection().getMetaData());
-		dd.compareTables();
+		dd.compareTables(false);
 
 
 	}

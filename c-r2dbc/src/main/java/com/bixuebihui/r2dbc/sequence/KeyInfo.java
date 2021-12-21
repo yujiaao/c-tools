@@ -2,9 +2,19 @@ package com.bixuebihui.r2dbc.sequence;
 
 import com.bixuebihui.r2dbc.sql.IDbHelper;
 import io.r2dbc.spi.Connection;
+import org.apache.commons.collections.Factory;
+import org.junit.platform.engine.support.hierarchical.OpenTest4JAwareThrowableCollector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.retry.Repeat;
+
+import java.time.Duration;
+import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
 
 
 /**
@@ -41,11 +51,10 @@ public class KeyInfo {
 			+ " SET KEYVALUE =  ? WHERE KEYNAME = ? ";
 	private static final String SQL_QUERY = "SELECT KEYVALUE FROM "
 			+ SEQUENCE_TABLE + " WHERE KEYNAME = ?";
-	static final String[] INSTALL ={
+	static final String INSTALL =
 			"CREATE TABLE  IF NOT EXISTS  t_sequence ( KEYNAME varchar(24) NOT NULL PRIMARY KEY ,"+
 							" KEYVALUE INT default 10000"+
-								"  );"
-	};
+								"  );";
 
 	private IDbHelper dbHelper;
 
@@ -113,75 +122,68 @@ public class KeyInfo {
      *
 	 * @return 下一个Sequence值
      */
-	public long getNextKey()  {
+	public Mono<Long> getNextKey()  {
 		if (nextKey > maxKey) {
-			int maxTries=10;
-			int i=0;
-			int res=0;
-			while(i<maxTries && res!=1){
-			 res = retrieveFromDb().block();
-				if(res!=1){
-					LOG.error("数据库主键维护出错,更新时返回结果不对: res="+res+" keyName="+keyName+" nextKey="+nextKey);
-				}
-				i++;
-			}
+			 return  retrieveFromDb();
 		}
-		return nextKey++;
+		return Mono.just(nextKey++);
 	}
+
+    Mono<Object> installAndGet(Connection cn){
+        LOG.info("install sequence table:" + INSTALL);
+
+        LOG.info("执行Sequence数据库初始化工作！");
+        String initSql = "INSERT INTO " + SEQUENCE_TABLE
+                + "(KEYNAME,KEYVALUE) VALUES('" + keyName
+                + "',10000 + " + poolSize + ")";
+        return dbHelper.executeNoQuery(new String[]{INSTALL, initSql}, Mono.just(cn)).flatMap(x -> {
+            LOG.info("batch res:"+x);
+
+            maxKey = 10000L + poolSize;
+            minKey = maxKey - poolSize + 1;
+            nextKey = minKey;
+            // 更新数据库
+
+           return Mono.empty();
+        }).then(getValue(cn));
+    }
+
+    Mono<Object> getValue(Connection cn){
+        return dbHelper.executeScalar(SQL_QUERY,
+                new Object[]{keyName}, Mono.just(cn));
+    }
+
 
 	/**
 	 * 执行Sequence表信息初始化和更新工作
 	 *
 	 */
-    private Mono<Integer> retrieveFromDb()  {
+    private Mono<Long> retrieveFromDb()  {
 
-        return  Mono.from(dbHelper.getConnection()).flatMap(cn -> {
-            cn.setAutoCommit(false);
-            try {
+        AtomicBoolean got = new AtomicBoolean(false);
+        AtomicLong value= new AtomicLong();
+
+            return Mono.from(dbHelper.getConnection()).flatMap(cn -> {
                 // 查询数据库
-                // 更新数据库
-                Mono<Integer> res = Mono.just(0);
-                int i = 0;
-                while (i < 100 && res.block() <= 0) {
-                    Object o = dbHelper.executeScalar(SQL_QUERY,
-                            new Object[]{keyName}, Mono.just(cn));
+                return getValue(cn)
+                        .switchIfEmpty(installAndGet(cn))
+                        .single().flatMap(x -> {
+                             value.set(Long.parseLong(x.toString()));
+                             LOG.debug(keyName + "=" + value.get() + "~" + (value.get() + poolSize));
 
-                    if (o != null) {
-                        Long value = Long.valueOf(o.toString());
-                        LOG.debug(keyName + "=" + value + "~" + (value + poolSize));
+                             maxKey = value.get() + poolSize;
+                             minKey = maxKey - poolSize + 1;
+                             nextKey = minKey;
+                             LOG.debug("更新Sequence最大值！");
+                             got.set(true);
+                             return dbHelper.executeNoQuery(SQL_UPDATE, new Object[]{(long) poolSize, keyName, value.get()}, cn);
+                         })//.repeatWhenEmpty(Repeat.onlyIf(r -> got.get())
+                     //   .fixedBackoff(Duration.ofSeconds(5))
+                     //   .timeout(Duration.ofSeconds(30)))
+                        .flatMap(x -> Mono.just(value.get()));
+            });
 
-                        maxKey = value + poolSize;
-                        minKey = maxKey - poolSize + 1;
-                        nextKey = minKey;
 
-                        LOG.debug("更新Sequence最大值！");
-                        res = dbHelper.executeNoQuery(SQL_UPDATE, new Object[]{
-                                (long) poolSize, keyName, value}, cn);
-
-                    } else {
-                        LOG.debug("执行Sequence数据库初始化工作！");
-                        String initSql = "INSERT INTO " + SEQUENCE_TABLE
-                                + "(KEYNAME,KEYVALUE) VALUES('" + keyName
-                                + "',10000 + " + poolSize + ")";
-                        res = dbHelper.executeNoQuery(initSql, new Object[0], cn);
-                        maxKey = 10000L + poolSize;
-                        minKey = maxKey - poolSize + 1;
-                        nextKey = minKey;
-                    }
-                    i++;
-                }
-                cn.commitTransaction();
-
-                return res;
-            } catch (Exception e) {
-                cn.rollbackTransaction();
-                dbHelper.executeNoQuery(INSTALL);
-               return Mono.error(e);
-            } finally {
-                cn.setAutoCommit(true);
-                cn.close();
-            }
-        });
     }
 
     /**

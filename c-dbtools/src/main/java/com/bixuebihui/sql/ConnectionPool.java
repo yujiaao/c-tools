@@ -15,6 +15,8 @@ import org.slf4j.LoggerFactory;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.Executor;
 
@@ -150,7 +152,7 @@ public class ConnectionPool {
         numRequests = 0;
         numWaits = 0;
         numCheckoutTimeout = 0;
-        connVector = new Vector<>(maxConn);
+        connVector = new ArrayList<>(maxConn);
 
         trace = false;
         cacheStatements = true;
@@ -182,7 +184,7 @@ public class ConnectionPool {
         long keepToTime = currentTimeInMillis - timeoutMilliSeconds; //空保持时间
         long checkoutTime = currentTimeInMillis - checkoutMilliSeconds; //单次租用期限
         for (int i = 0; i < connVector.size(); ) {
-            PooledConnection pooledconnection = connVector.elementAt(i);
+            PooledConnection pooledconnection = connVector.get(i);
             if (pooledconnection.isLocked() && pooledconnection.getLastAccess() < checkoutTime) {
                 numCheckoutTimeout++;
                 warn(" Warning: found timed-out connection\n"
@@ -228,7 +230,7 @@ public class ConnectionPool {
 
     private void removeConnection(PooledConnection pooledconnection) {
         try {
-            connVector.removeElement(pooledconnection);
+            connVector.remove(pooledconnection);
             new JavaAlarm(pooledconnection, timeoutMilliSeconds);
         } catch (TimeoutException e1) {
             debug(e1);
@@ -238,7 +240,7 @@ public class ConnectionPool {
                 pooledconnection.abort(executor);
                 pooledconnection.closeStatements();
                 pooledconnection.close();
-                connVector.removeElement(pooledconnection);
+                connVector.remove(pooledconnection);
             } catch (SQLException e) {
                 LOG.warn("force close", e);
             }
@@ -252,7 +254,7 @@ public class ConnectionPool {
         debug(" removeAllConnections() called");
         PooledConnection pooledconnection;
         for (; !connVector.isEmpty(); removeConnection(pooledconnection)) {
-            pooledconnection = connVector.firstElement();
+            pooledconnection = connVector.get(0);
         }
 
     }
@@ -287,7 +289,7 @@ public class ConnectionPool {
         do {
             do {
                 for (int i = 0; i < connVector.size(); i++) {
-                    PooledConnection pooledconnection = connVector.elementAt(i);
+                    PooledConnection pooledconnection = connVector.get(i);
                     if (pooledconnection.getLock()) {
                         return releaseConnection(pooledconnection);
                     }
@@ -316,7 +318,7 @@ public class ConnectionPool {
                         debug(" timeoutMiliSeconds = " + timeoutMilliSeconds + ", which is too small to set ");
                     }
 
-                    connVector.addElement(pooledconnection1);
+                    connVector.add(pooledconnection1);
                     return releaseConnection(pooledconnection1);
                 }
                 try {
@@ -425,16 +427,18 @@ public class ConnectionPool {
         s1 += "\tConnections reaped by timeout: " + getNumCheckoutTimeouts() + s;
         s1 += "\tConnections currently in pool: " + size() + s;
         StringBuilder sb = new StringBuilder(s1);
-        for (PooledConnection pooledConnection : connVector) {
-            if (pooledConnection != null) {
-                sb.append(pooledConnection.dumpInfo());
+        synchronized (connVector) {
+            for (PooledConnection pooledConnection : connVector) {
+                if (pooledConnection != null) {
+                    sb.append(pooledConnection.dumpInfo());
+                }
             }
         }
 
         return sb.toString();
     }
 
-    Vector<PooledConnection> connVector;
+    List<PooledConnection> connVector;
     String url;
     private String username;
     private String password;

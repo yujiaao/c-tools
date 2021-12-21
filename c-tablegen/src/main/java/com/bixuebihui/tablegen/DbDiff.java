@@ -85,7 +85,7 @@ public class DbDiff {
         return cachedTableData.get(tableName);
     }
 
-    public void compareTables() throws SQLException, IOException {
+    public void compareTables(boolean isR2dbc) throws SQLException, IOException {
 
 
         List<String> tab1;
@@ -101,19 +101,19 @@ public class DbDiff {
 
         List<String> tab2 = getTableData(db2);
 
-        storeTableData(tab2);
+        storeTableData(tab2, isR2dbc);
 
-        compareTableData(tab1, tab2);
+        compareTableData(tab1, tab2, isR2dbc);
         for (DiffHandler dh : diffHandlerList) {
             dh.processEnd(tableData);
         }
     }
 
-    private void storeTableData(List<String> tab2) throws SQLException {
+    private void storeTableData(List<String> tab2, boolean isR2dbc) throws SQLException {
 
         for (String t : tab2) {
 
-            List<ColumnData> c = getColumns(db2, t).getFields();
+            List<ColumnData> c = getColumns(db2, t, isR2dbc).getFields();
 
             addTableData(t, c);
         }
@@ -123,27 +123,27 @@ public class DbDiff {
     /**
      * 比对表数据
      */
-    public void compareTableData(List<String> tab1, List<String> tab2) throws SQLException, IOException {
+    public void compareTableData(List<String> tab1, List<String> tab2,   boolean isR2dbc) throws SQLException, IOException {
         dumpDiffTabs(tab1, tab2);
 
         Collection intersection = CollectionUtils.intersection(tab1, tab2);
-        compareTablesColumns(intersection);
+        compareTablesColumns(intersection, isR2dbc);
 
     }
 
-    public void compareTablesColumns(Collection<String> tabs)
+    public void compareTablesColumns(Collection<String> tabs,boolean isR2dbc)
             throws SQLException, IOException {
         for (String tableName : tabs) {
-            compareColumns(tableName);
+            compareColumns(tableName, isR2dbc);
         }
     }
 
-    protected TableInfo getColumns(Database database, String tableName)
+    protected TableInfo getColumns(Database database, String tableName, boolean isR2dbc)
             throws SQLException {
-        return  TableUtils.getColumnData(database.metaData, database.catalog, database.schema, tableName);
+        return  TableUtils.getColumnData(database.metaData, database.catalog, database.schema, tableName, isR2dbc);
     }
 
-    public void compareColumns(String tableName) throws SQLException, IOException {
+    public void compareColumns(String tableName, boolean isR2dbc) throws SQLException, IOException {
 
         List<ColumnData> cols1;
 
@@ -156,11 +156,11 @@ public class DbDiff {
             }
 
         } else {
-            cols1 = getColumns(db1, tableName).getFields();
+            cols1 = getColumns(db1, tableName, isR2dbc).getFields();
         }
 
 
-        List<ColumnData> cols2 = getColumns(db2, tableName).getFields();
+        List<ColumnData> cols2 = getColumns(db2, tableName,isR2dbc).getFields();
 
 
         if (dumpDiffCols(cols1, cols2)) {

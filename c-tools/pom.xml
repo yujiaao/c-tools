@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.github.yujiaao</groupId>
         <artifactId>c-tools-parent</artifactId>
-        <version>1.8.0.3</version>
+        <version>1.8.0.5</version>
     </parent>
 
     <artifactId>c-tools</artifactId>
@@ -241,6 +241,18 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-configuration2</artifactId>
             <version>2.7</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>${slf4j.version}</version>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>

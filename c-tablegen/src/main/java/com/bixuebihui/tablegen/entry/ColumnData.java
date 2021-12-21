@@ -3,6 +3,7 @@ package com.bixuebihui.tablegen.entry;
 import com.bixuebihui.generated.tablegen.pojo.T_metacolumn;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * Container for details about a table column.
@@ -23,6 +24,7 @@ public class ColumnData implements Serializable {
             "NTEXT", "DATETIME", "SYSNAME", "VARBINARY",
             "NCHAR"};
     boolean isAutoIncrement;
+    boolean isR2dbc=false;
     /**
      * 注释
      */
@@ -46,7 +48,9 @@ public class ColumnData implements Serializable {
      * @param remarks
      * @param defaultValue
      */
-    public ColumnData(String name, long origType, long columns, boolean isNullable, boolean isAutoIncrement, long decimalDigits, String defaultValue, String remarks) {
+    public ColumnData(String name, long origType, long columns,
+                      boolean isNullable, boolean isAutoIncrement,
+                      long decimalDigits, String defaultValue, String remarks, boolean isR2dbc) {
         this.name = name;
         this.type = (int) origType;
         this.columns = columns;
@@ -55,6 +59,7 @@ public class ColumnData implements Serializable {
         this.decimalDigits = decimalDigits;
         this.defaultValue = defaultValue;
         this.remarks = remarks;
+        this.isR2dbc = isR2dbc;
 
 // Uncomment this is you want to see the raw types used
 // for the columns. Usefully for debugging the inconsistent
@@ -205,7 +210,7 @@ public class ColumnData implements Serializable {
 
     public static ColumnData valueOf(T_metacolumn src) {
         ColumnData d = new ColumnData(src.getCname(), src.getType(), src.getColumns(), src.getIsnullable(), src.getIsauto_increment(), src.getDecimaldigits(),
-                null, src.getDescription());
+                null, src.getDescription(), false);
         d.cid = src.getCid();
         return d;
     }
@@ -274,54 +279,7 @@ public class ColumnData implements Serializable {
         this.comment = comment;
     }
 
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + (int) (columns ^ (columns >>> 32));
-        result = prime * result
-                + (int) (decimalDigits ^ (decimalDigits >>> 32));
-        result = prime * result + (isAutoIncrement ? 1231 : 1237);
-        result = prime * result + (isNullable ? 1231 : 1237);
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
-        result = prime * result + type;
-        return result;
-    }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        ColumnData other = (ColumnData) obj;
-        if (columns != other.columns) {
-            return false;
-        }
-        if (decimalDigits != other.decimalDigits) {
-            return false;
-        }
-        if (isAutoIncrement != other.isAutoIncrement) {
-            return false;
-        }
-        if (isNullable != other.isNullable) {
-            return false;
-        }
-        if (name == null) {
-            if (other.name != null) {
-                return false;
-            }
-        } else if (!name.equals(other.name)) {
-            return false;
-        }
-
-        return type == other.type;
-    }
 
     /**
      * Returns the name of the column.
@@ -334,29 +292,39 @@ public class ColumnData implements Serializable {
         this.name = name;
     }
 
-    /**
-     * Converts to entry to a readable form.
-     */
     @Override
-    public String toString() {
-        String res = "";
-        String digits = "";
-
-        if ((type == 1) || (type == 12) || (type == 22) || (type == 24) || (type == 25) || (type == 27) || (type == 29)) {
-            digits = "(" + columns + ")";
-        } else {
-            digits = decimalDigits > 0 ? "(" + decimalDigits + ")" : "";
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
         }
-
-        if ((type > sqlTypes.length) || (type < 0)) {
-            res = "Type : " + type + "  Name : " + name;
-        } else {
-            res = "Type : " + sqlTypes[type - 1] + digits + " Name : " + name;
+        if (o == null || getClass() != o.getClass()) {
+            return false;
         }
-
-        return res+(comment==null?"":": "+comment);
+        ColumnData that = (ColumnData) o;
+        return isAutoIncrement == that.isAutoIncrement && isR2dbc == that.isR2dbc && cid == that.cid && type == that.type && columns == that.columns && decimalDigits == that.decimalDigits && isNullable == that.isNullable && Objects.equals(remarks, that.remarks) && Objects.equals(name, that.name) && Objects.equals(defaultValue, that.defaultValue) && Objects.equals(comment, that.comment);
     }
 
+    @Override
+    public int hashCode() {
+        return Objects.hash(isAutoIncrement, isR2dbc, remarks, cid, type, columns, decimalDigits, name, isNullable, defaultValue, comment);
+    }
+
+    @Override
+    public String toString() {
+        return "ColumnData{" +
+                "isAutoIncrement=" + isAutoIncrement +
+                ", isR2dbc=" + isR2dbc +
+                ", remarks='" + remarks + '\'' +
+                ", cid=" + cid +
+                ", type=" + type +
+                ", columns=" + columns +
+                ", decimalDigits=" + decimalDigits +
+                ", name='" + name + '\'' +
+                ", isNullable=" + isNullable +
+                ", defaultValue='" + defaultValue + '\'' +
+                ", comment='" + comment + '\'' +
+                '}';
+    }
 
     /**
      * Writes out the equivalent java type of the column sql type.
@@ -413,16 +381,28 @@ public class ColumnData implements Serializable {
                 break;
 
             case 11:
-                jType = "Date";
+                if(isR2dbc) {
+                    jType = "LocalDate";
+                }else {
+                    jType = "Date";
+                }
                 break;
 
             case 14:
             case 26:
-                jType = "Timestamp";
+                if(isR2dbc) {
+                    jType = "LocalDateTime";
+                }else {
+                    jType = "Timestamp";
+                }
                 break;
 
             case 15:
-                jType = "Time";
+                if(isR2dbc) {
+                    jType = "LocalTime";
+                }else {
+                    jType = "Time";
+                }
                 break;
 
             case 16:

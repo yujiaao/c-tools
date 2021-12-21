@@ -54,6 +54,9 @@ import java.io.*;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 
 import static com.bixuebihui.tablegen.NameUtils.*;
@@ -136,6 +139,9 @@ public class TableGen implements DiffHandler {
         map.put("Boolean", "Boolean.FALSE");
         map.put("Double", "0.0");
         map.put("Float", "0.0F");
+        map.put("LocalDateTime", "LocalDateTime.now()");
+        map.put("LocalDate", "LocalDate.now()");
+        map.put("LocalTime", "LocalTime.now()");
         return map;
     }
 
@@ -701,7 +707,7 @@ public class TableGen implements DiffHandler {
 
             if (interfaces.contains("NodeInterface") && !findNode) {
                 ColumnData col = new ColumnData("relation_code", 12, 0, false, false, 0, "",
-                        "hack code for relation_code( to fit NodeInterface), not for use!");
+                        "hack code for relation_code( to fit NodeInterface), not for use!", config.getR2dc());
                 out("// " + col.getRemarks());
                 out("// " + col.getComment());
                 writeVariable(tableName, col);
@@ -867,7 +873,7 @@ public class TableGen implements DiffHandler {
                 try {
                     DbDiff dd = new DbDiff(getTableDataFromLocalCache(), conn, config.catalog, config.schema);
                     dd.addDiffHandler(this);
-                    dd.compareTables();
+                    dd.compareTables(config.getR2dc());
                 } finally {
                     DbUtils.close(conn);
                 }

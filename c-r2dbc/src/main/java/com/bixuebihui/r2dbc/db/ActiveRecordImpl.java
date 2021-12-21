@@ -293,17 +293,14 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	 */
 	@Override
 	public Mono<T> find() throws DbException {
-		try {
+
 			sqlPocket = this.getSql();
 			String where = formWhereClause();
 			Object[] params = getParams().toArray();
 			Mono<List<T>> res = operator.selectWithJoin(resultFields, where, params, parseOrder(),
 					SqlLimit.LIMIT_ONE.getBegin(), SqlLimit.LIMIT_ONE.getEnd());
 
-			return res.map(list -> list.isEmpty()?null: list.get(0));
-		} finally {
-			clear();
-		}
+			return res.map(list -> list.isEmpty()?null: list.get(0)).doFinally(c ->  clear());
 
 	}
 
@@ -313,12 +310,13 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	 */
 	@Override
 	public Mono<Boolean> delete() throws DbException {
-		try {
+
 			sqlPocket = this.getSql();
 			String where = formWhereClause();
 			Object[] params = getParams().toArray();
 			if (where.length() < " where ".length()) {
 				LOG.warn("因 where 条件没有设定，安全原因delete操作不被允许");
+				clear();
 				return Mono.just(false);
 			}
 			String sql = "delete from " + operator.getTableName() + " " + where;
@@ -327,13 +325,12 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 				sql +=" limit "+limit.getEnd();
 			}
 			if(cn==null) {
-				return operator.getDbHelper().executeNoQuery(sql, params).map(x -> x>0);
+				return operator.getDbHelper().executeNoQuery(sql, params).map(x -> x>0).doFinally(c ->  clear());
 			}
 			String finalSql = sql;
-			return cn.flatMap(connection -> operator.getDbHelper().executeNoQuery(finalSql, params, connection)).map(x -> x > 0 );
-		} finally {
-			clear();
-		}
+			return cn.flatMap(connection -> operator.getDbHelper().executeNoQuery(finalSql, params, connection))
+					.map(x -> x > 0 ).doFinally(c ->  clear());
+
 	}
 
 	/**

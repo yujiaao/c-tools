@@ -108,22 +108,26 @@ public class DataSourceTest extends TestCase {
 
 		assertEquals(v1 + 1, v2);
 	}
-
-	private static void  createT_LOG(DataSource ds){
-
-		try (Connection cn = ds.getConnection(); Statement stmt = cn.createStatement()){
-
-			stmt.execute("CREATE TABLE T_LOG(lid INT PRIMARY KEY, content VARCHAR(255))");
-			stmt.execute("CREATE TABLE t_log(lid INT PRIMARY KEY, content VARCHAR(255))");
-
-		}catch (Exception e){
-			LOG.error("create t_log",e);
-		}
-	}
+//
+//	private static void  createT_LOG(DataSource ds){
+//
+//		try (Connection cn = ds.getConnection(); Statement stmt = cn.createStatement()){
+//
+//			boolean res = stmt.execute("CREATE TABLE T_LOG(lid INT PRIMARY KEY, content VARCHAR(255))");
+//			LOG.info("create t_log:"+res);
+//
+//			res = stmt.execute("CREATE TABLE t_log(lid INT PRIMARY KEY, content VARCHAR(255))");
+//
+//			LOG.info("create t_log:"+res);
+//
+//		}catch (Exception e){
+//			LOG.error("create t_log",e);
+//		}
+//	}
 
 	public static void dataSourceTestCursor(DataSource ds) throws SQLException {
 		Date dtStart = new Date();
-		createT_LOG(ds);
+//		createT_LOG(ds);
 
 		for (int i = 1; i < 2000; i++) {
 			Connection cn = null;
@@ -156,7 +160,7 @@ public class DataSourceTest extends TestCase {
 
 	public static void dataSourceTestCursor1(DataSource ds) throws SQLException {
 		Date dtStart = new Date();
-		createT_LOG(ds);
+//		createT_LOG(ds);
 		for (int i = 1; i < 2000; i++) {
 			Connection cn = null;
 			ResultSet rs = null;
@@ -198,7 +202,7 @@ public class DataSourceTest extends TestCase {
 	public static void dataSourceTestCursor2(DataSource ds) throws SQLException {
 		Date dtStart = new Date();
 
-		createT_LOG(ds);
+//		createT_LOG(ds);
 		List<Long> ids = getIds(ds, 100);
 
 		for (int i = 1; i < ids.size(); i++) {
@@ -289,7 +293,7 @@ public class DataSourceTest extends TestCase {
 		cfg.setClassName("org.h2.Driver");
 		cfg.setUsername("sa");
 		cfg.setPassword("sa");
-		cfg.setDburl("jdbc:h2:mem:test");
+		cfg.setDburl("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
 
 		return cfg;
 

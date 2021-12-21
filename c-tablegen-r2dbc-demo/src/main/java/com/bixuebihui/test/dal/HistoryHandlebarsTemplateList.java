@@ -34,11 +34,11 @@ public class HistoryHandlebarsTemplateList  extends BaseList<HistoryHandlebarsTe
     /**
       * Don't direct use the HistoryHandlebarsTemplateList, use HistoryHandlebarsTemplateManager instead.
       */
+
     protected HistoryHandlebarsTemplateList(ConnectionFactory ds)
     {
         super(ds);
     }
-
     
     @SuppressWarnings("AlibabaClassNamingShouldBeCamel")
     public static final class F{
@@ -283,9 +283,12 @@ return  "history_handlebars_template";
     
         info.setTemplateBody(Integer.toString(Math.abs(rnd.nextInt(Integer.MAX_VALUE)), 36));
     
-        info.setHistoryId(getNextKey());
+        return getNextKey().flatMap(id -> {
+        setId(info, id);
+        return Mono.just(info);
+        }).flatMap(dd ->  this.insert(dd));
     
-        return this.insert(info);
+
     }
 
 }

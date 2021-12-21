@@ -630,7 +630,7 @@ public class TableUtils {
      * columnNamePattern - 列名称模式；它必须与存储在数据库中的列名称匹配
      */
     public static TableInfo getColumnData(DatabaseMetaData metaData,
-                                                 String catalog, String schema, String tableName) throws SQLException {
+                                                 String catalog, String schema, String tableName, boolean isR2dbc) throws SQLException {
         start("getColumnData");
         List<ColumnData> colData = new ArrayList<>();
 
@@ -701,7 +701,7 @@ public class TableUtils {
                 // size e.g. varchar(20)
                 colCols = rs.getInt(7);
                 cd = new ColumnData(colName, colType, colCols, isNullable,
-                        isAutoIncrement, decimalDigits, defaultValue, remarks);
+                        isAutoIncrement, decimalDigits, defaultValue, remarks, isR2dbc);
                 colData.add(cd);
             }
         } catch (SQLException e) {

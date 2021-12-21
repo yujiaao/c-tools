@@ -13,6 +13,7 @@ import reactor.core.publisher.Mono;
 import javax.validation.constraints.NotNull;
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -422,20 +423,25 @@ public class DbHelper implements IDbHelper {
         }
 
         AtomicBoolean localCn= new AtomicBoolean(true);
-        Mono<Connection>  conn = cn.flatMap(cn1 -> {localCn.set(false); return Mono.just(cn1);}).switchIfEmpty( getConnection(true));
+        Mono<Connection>  conn = cn.flatMap(cn1 -> {
+            localCn.set(false);
+            return Mono.just(cn1);
+        }).switchIfEmpty( getConnection(true));
 
-        Flux<Object> v = cn.flatMapMany(connection -> {
-            Statement p = connection.createStatement(sql);
-            fillParameter(p, params, null);
-            return Flux.from(p.execute())
-                    .doFinally(signalType -> {
-                        if (localCn.get()) {
-                            connection.close();
-                        }
-                    });
-        }).map(result -> result.map((row, meta) -> row.get(0)));
+        return Mono.from(conn.flatMapMany(connection -> {
+                    Statement p = connection.createStatement(sql);
+                    fillParameter(p, params, null);
+                    return p.execute()
+                            //                    .doFinally(signalType -> {
+                            //                        if (localCn.get()) {
+                            //                            connection.close();
+                            //                        }
+                            //                    })
+                            ;
+                }).map(result ->
+                        result.map((row, meta) -> row.get(0)))
+                .single());
 
-        return Mono.from(v);
     }
 
     /**
@@ -479,13 +485,15 @@ public class DbHelper implements IDbHelper {
                 } else if (pa instanceof Long) {
                     p.bind(i, pa);
                 } else if (pa instanceof Timestamp) {
+                    p.bind(i,  ((Timestamp) pa).toLocalDateTime());
+                } else if (pa instanceof LocalDateTime) {
                     p.bind(i, pa);
                 } else if (pa instanceof Date) {
                     p.bind(i, pa);
                 } else if (pa instanceof java.sql.Time) {
                     p.bind(i, pa);
                 } else if (pa instanceof java.util.Date) {
-                    p.bind(i, new java.sql.Timestamp(((java.util.Date) pa).getTime()));
+                    p.bind(i, pa);
                 }  else if (pa instanceof Double) {
                     p.bind(i, pa);
                 } else if (pa instanceof String) {

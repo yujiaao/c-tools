@@ -50,4 +50,15 @@ public class TestController {
         return manager.getIds();
     }
 
+
+    @GetMapping("/insert")
+    public Mono<Integer> insert(){
+        return manager.batchInsert();
+    }
+
+
+    @GetMapping("/insert-sequence")
+    public Mono<Integer> insertAutoNewKey(){
+        return manager.batchInsertAutoNewKey();
+    }
 }

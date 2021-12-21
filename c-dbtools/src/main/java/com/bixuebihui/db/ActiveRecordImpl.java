@@ -419,7 +419,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 
 			return limit.toString();
 		} else {
-			LOG.warn("limit not implemented for this type of BaseDao.getDBTYPE()=" + operator.getDbType());
+			LOG.warn("limit not implemented for this type DERBY and others, BaseDao.getDBTYPE()=" + operator.getDbType());
 			return "";
 		}
 	}

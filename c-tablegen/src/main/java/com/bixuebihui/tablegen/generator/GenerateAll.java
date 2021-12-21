@@ -90,7 +90,7 @@ public class GenerateAll implements DiffHandler {
                     DbDiff dd = new DbDiff(getTableDataFromLocalCache(), conn, generator.config.getCatalog(),
                             generator.config.getSchema());
                     dd.addDiffHandler(this);
-                    dd.compareTables();
+                    dd.compareTables(generator.config.getR2dc());
                 } finally {
                     DbUtils.close(conn);
                 }

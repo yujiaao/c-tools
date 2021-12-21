@@ -205,7 +205,7 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
     /**
      * Deletes from the database for table {{tableName}} with connection
      */
-    @Override
+    {{#lt keys.size 2}}@Override{{/lt}}
     public boolean deleteByKey( {{#each keys}} {{colType tableName this}} {{this}}, {{/each}}  Connection cn )
     {
         return 1 <= dbHelper.executeNoQuery(getDeleteSql(), new Object[]{ {{#each keys}} {{this}} {{#unless @last}}, {{/unless}} {{/each}} }, cn);
@@ -214,7 +214,7 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
     /**
     * Deletes from the database for table {{tableName}}
     */
-    @Override
+    {{#lt keys.size 2}}@Override{{/lt}}
     public boolean deleteByKey( {{#each keys}} {{colType tableName this}} {{this}} {{#unless @last}}, {{/unless}}{{/each}})
     {
         return 1 <= dbHelper.executeNoQuery(getDeleteSql(), new Object[]{ {{#each keys}} {{this}} {{#unless @last}}, {{/unless}} {{/each}} });

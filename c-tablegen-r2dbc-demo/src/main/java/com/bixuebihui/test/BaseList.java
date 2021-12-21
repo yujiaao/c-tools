@@ -25,8 +25,7 @@ import javax.annotation.processing.Generated;
 public abstract class BaseList<T, V> extends BaseDao<T, V> {
 
     public BaseList(ConnectionFactory ds) {
-        super(ds);
+    super(ds,ds);
     }
-
 }
 

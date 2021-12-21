@@ -3,10 +3,12 @@ package com.bixuebihui.r2dbc.sequence;
 import com.bixuebihui.r2dbc.sql.IDbHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import reactor.core.publisher.Mono;
 
 import java.sql.SQLException;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by IntelliJ IDEA.<br>
@@ -19,7 +21,7 @@ import java.util.Map;
  */
 public class SequenceUtils {
 	private static SequenceUtils INSTANCE = new SequenceUtils();
-	private Map<String, KeyInfo> keyMap = new Hashtable<>(20); // Sequence载体容器
+	private Map<String, KeyInfo> keyMap = new ConcurrentHashMap<>(20); // Sequence载体容器
 	private static final int POOL_SIZE = 10; // Sequence值缓存大小
 	private static final Logger LOG = LoggerFactory.getLogger(SequenceUtils.class);
 
@@ -47,13 +49,13 @@ public class SequenceUtils {
 	 * @param dbHelper 数据库连接
 	 * @return 下一个Sequence键值
 	 */
-	public synchronized long getNextKeyValue(String keyName, IDbHelper dbHelper) {
+	public synchronized Mono<Long> getNextKeyValue(String keyName, IDbHelper dbHelper) {
 		try {
 			return getOrCreateKeyInfo(keyName, dbHelper).getNextKey();
 		} catch (SQLException e) {
 			LOG.error("",e);
 		}
-		return 0;
+		return Mono.just(0L);
 	}
 
     /**

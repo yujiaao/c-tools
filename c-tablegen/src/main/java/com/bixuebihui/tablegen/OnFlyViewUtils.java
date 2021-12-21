@@ -19,7 +19,7 @@ import static com.bixuebihui.db.Dialect.*;
  */
 public class OnFlyViewUtils {
 
-    public static TableInfo getColumnData(ResultSetMetaData rs, String onFlyViewName, int dbType) throws SQLException {
+    public static TableInfo getColumnData(ResultSetMetaData rs, String onFlyViewName, int dbType, boolean isR2dbc) throws SQLException {
         List<ColumnData> colData = new ArrayList<>();
 
         ColumnData cd;
@@ -67,7 +67,7 @@ public class OnFlyViewUtils {
                 // size e.g. varchar(20)
                 colCols = rs.getColumnDisplaySize(i);
                 cd = new ColumnData(colName, colType, colCols, isNullable,
-                        isAutoIncrement, decimalDigits, null, remarks);
+                        isAutoIncrement, decimalDigits, null, remarks, isR2dbc);
                 colData.add(cd);
             }
         } catch (SQLException e) {
