@@ -12,10 +12,8 @@ import javax.validation.constraints.NotNull;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static com.bixuebihui.db.Dialect.*;
-import static java.util.Collections.emptySet;
 
 /**
  * Created with IntelliJ IDEA. User: Administrator Date: 13-4-18 Time: 下午5:57 To
@@ -42,6 +40,10 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	}
 
 	SqlLimit limit;
+
+	SqlGroup groupByClause;
+	SqlHelper havingStack;
+
 	BaseDao<T, V> operator;
 	Connection cn;
 	private SqlPocket sqlPocket;
@@ -71,6 +73,8 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 		this.operator = operator;
 		orderStack = new SqlSort();
 		filterStack = new SqlHelper();
+		groupByClause = new SqlGroup();
+		havingStack = new SqlHelper(true);
 		limit = SqlLimit.LIMIT_MAX;
 	}
 
@@ -246,10 +250,12 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	public List<T> findAll() throws DbException {
 		try {
 			sqlPocket = this.getSql();
-			String where = formWhereClause();
-			Object[] params = getParams().toArray();
+			SqlPocket having = havingStack.toCondition();
+			String where = formWhereClause()+parseGroupBy()+having.getCondition();
+			List<Object> list = Arrays.asList(getParams().toArray());
+			list.addAll(having.getParams());
 
-			return operator.selectWithJoin(resultFields, where, params, parseOrder(),
+			return operator.selectWithJoin(resultFields, where, list.toArray(), parseOrder(),
 					limit.getBegin(), limit.getEnd());
 		} finally {
 			clear();
@@ -271,10 +277,12 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	public <K> List<K> findAll(Class<K> clz) throws DbException {
 		try {
 			sqlPocket = this.getSql();
-			String where = formWhereClause();
-			Object[] params = getParams().toArray();
+			SqlPocket having = havingStack.toCondition();
+			String where = formWhereClause()+parseGroupBy()+having.getCondition();
+			List<Object> list = Arrays.asList(getParams().toArray());
+			list.addAll(having.getParams());
 			String select = "select " + resultFields + " from " + operator.getTableName() + " ";
-			return operator.select(select, where, parseOrder(), params, limit.getBegin(),
+			return operator.select(select, where, parseOrder(), list.toArray(), limit.getBegin(),
 					limit.getEnd(), clz);
 		} finally {
 			clear();
@@ -303,6 +311,8 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	private void clear() {
 		this.filterStack.clear();
 		this.orderStack.clear();
+		this.groupByClause.clear();
+		this.havingStack.clear();
 		this.joins =null;
 		this.limit = SqlLimit.LIMIT_MAX;
 		useLast = false;
@@ -317,9 +327,11 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	public T find() throws DbException {
 		try {
 			sqlPocket = this.getSql();
-			String where = formWhereClause();
-			Object[] params = getParams().toArray();
-			List<T> res = operator.selectWithJoin(resultFields, where, params, parseOrder(),
+			SqlPocket having = havingStack.toCondition();
+			String where = formWhereClause()+parseGroupBy()+having.getCondition();
+			List<Object> list = Arrays.asList(getParams().toArray());
+			list.addAll(having.getParams());
+			List<T> res = operator.selectWithJoin(resultFields, where, list.toArray(), parseOrder(),
 					SqlLimit.LIMIT_ONE.getBegin(), SqlLimit.LIMIT_ONE.getEnd());
 			if (res.size() > 0) {
 				return res.get(0);
@@ -338,8 +350,10 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	public boolean delete() throws DbException {
 		try {
 			sqlPocket = this.getSql();
-			String where = formWhereClause();
-			Object[] params = getParams().toArray();
+			SqlPocket having = havingStack.toCondition();
+			String where = formWhereClause()+parseGroupBy()+having.getCondition();
+			List<Object> list = Arrays.asList(getParams().toArray());
+			list.addAll(having.getParams());
 			if (where.length() < " where ".length()) {
 				return false;
 			}
@@ -349,9 +363,9 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 				sql +=" limit "+limit.getEnd();
 			}
 			if(cn==null) {
-				return 0 < operator.getDbHelper().executeNoQuery(sql, params);
+				return 0 < operator.getDbHelper().executeNoQuery(sql, list.toArray());
 			}
-			return 0 < operator.getDbHelper().executeNoQuery(sql, params, cn);
+			return 0 < operator.getDbHelper().executeNoQuery(sql, list.toArray(), cn);
 		} finally {
 			clear();
 		}
@@ -429,6 +443,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 		field = SqlFilter.transactSQLInjection(field);
 		sqlPocket = this.getSql();
 		String where = formWhereClause();
+		where += " " +groupByClause.toString();
 		where += " " + parseOrder();
 		where += " " + parseLimitSql();
 
@@ -452,6 +467,15 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 		return this.orderStack.toString();
 	}
 
+	public String parseGroupBy() {
+		return this.groupByClause.toString();
+	}
+
+	public SqlPocket parseHaving() {
+		return this.havingStack.toCondition();
+	}
+
+
 	/**
 	 * {@inheritDoc}
 	 */
@@ -474,9 +498,11 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	public boolean exists() throws DbException {
 		try {
 			sqlPocket = this.getSql();
-			String where = formWhereClause();
-			Object[] params = getParams().toArray();
-			return operator.exists(where, params);
+			SqlPocket having = havingStack.toCondition();
+			String where = formWhereClause()+parseGroupBy()+having.getCondition();
+			List<Object> list = Arrays.asList(getParams().toArray());
+			list.addAll(having.getParams());
+			return operator.exists(where, list.toArray());
 		} finally {
 			clear();
 		}
@@ -494,6 +520,8 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 		this.orderStack = new SqlSort(this.orderStack);
 		this.operator = src.operator;
 		this.resultFields = src.resultFields;
+		this.havingStack = new SqlHelper(src.havingStack);
+		this.groupByClause = new SqlGroup(src.groupByClause);
 	}
 
 	/** {@inheritDoc} */
@@ -561,6 +589,18 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 		return this;
 	}
 
+	@Override
+	public ActiveRecord<T> groupBy(String... fields) {
+		groupByClause.add(fields);
+		return this;
+	}
+
+	@Override
+	public ActiveRecord<T> having(HavingConditon fieldProcessor) {
+		 fieldProcessor.apply(havingStack);
+		 return this;
+	}
+
 	/**
 	 * {@inheritDoc}
 	 */
@@ -573,23 +613,26 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	/** {@inheritDoc} */
 	@Override
 	@Deprecated
-	public CountValue countValue(String field, GroupFunction fun)
-			 {
+	public CountValue countValue(String field, GroupFunction fun) {
 		try {
 			sqlPocket = this.getSql();
 
 			String where = formWhereClause();
 
-			Object[] params = getParams().toArray();
+			SqlPocket sqlPocket = havingStack.toCondition();
 
-			List<CountValue> res =  operator.countGroupValue(field, fun.toString(), where,
-					null, null, params);
+			List<Object> list = Arrays.asList(getParams().toArray());
+			list.addAll(sqlPocket.getParams());
+
+			Object[] params = list.toArray();
+			List<CountValue> res = operator.countGroupValue(field, fun.toString(), where,
+					sqlPocket.getCondition().toString(), groupByClause.toArray(), params);
 
 			return res.size() == 0 ? new CountValue() : res.get(0);
 		} finally {
 			clear();
 		}
-			 }
+	}
 
 	/**
 	 * {@inheritDoc}
@@ -667,13 +710,12 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 			 {
 		try {
 			sqlPocket = this.getSql();
-
+			SqlPocket having = havingStack.toCondition();
 			String where = formWhereClause();
-
-			Object[] params = getParams().toArray();
-
+			List<Object> list = Arrays.asList(getParams().toArray());
+			list.addAll(having.getParams());
 			List<CountObject<K>> res =  operator.countGroupObject(field, fun.toString(), where,
-					null, null, objectType, params);
+					having.getCondition().toString(), groupByClause.toArray(), objectType, list.toArray());
 
 			return res.size() == 0 ? new CountObject<>() : res.get(0);
 		} finally {
@@ -689,9 +731,9 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 		try {
 			sqlPocket = this.getSql();
 			String where = formWhereClause();
-			Object[] params = getParams().toArray();
+			List<Object> list = Arrays.asList(getParams().toArray());
 			List<CountObject<K>> res =  operator.countGroupObject(returnField, fun.toString(), where,
-					having, groupByFields, objectType, params);
+					having, groupByFields, objectType, list.toArray());
 			return res;
 		} finally {
 			clear();

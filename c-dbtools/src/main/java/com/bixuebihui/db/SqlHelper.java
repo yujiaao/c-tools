@@ -19,12 +19,16 @@ import static com.bixuebihui.db.Dialect.MYSQL;
  */
 public class SqlHelper {
 
+	public static final String WHERE = " where ";
+	public static final String HAVING = " having ";
+
 	List<BaseFilter> filters;
 	List<SqlHelper> orCond = null;
 	List<SqlHelper> notCond = null;
 	private int databaseType = MYSQL;
 	private boolean useNullAsCondition = false;
 	private boolean acceptEmptyStringAsNullObjectInCondition = false;
+	private boolean conditionTypeIsWhere = true;
 
 	/**
 	 * <p>Constructor for SqlHelper.</p>
@@ -52,6 +56,10 @@ public class SqlHelper {
 	 */
 	public SqlHelper() {
 		filters = new ArrayList<>();
+	}
+	public SqlHelper(boolean isHaving) {
+		filters = new ArrayList<>();
+		this.conditionTypeIsWhere = !isHaving;
 	}
 
 	public boolean isAcceptEmptyStringAsNullObjectInCondition() {
@@ -100,7 +108,7 @@ public class SqlHelper {
 		}
 		if (condition.length() > 0) {
 			removeLeadAnd(condition);
-			condition.insert(0, " where ");
+			condition.insert(0, conditionTypeIsWhere? WHERE: HAVING);
 		}
 		return criteria;
 	}
@@ -118,7 +126,7 @@ public class SqlHelper {
 	 * @return a {@link java.lang.StringBuffer} object.
 	 */
 	protected StringBuffer trimWhere(StringBuffer trimCond) {
-		if(trimCond.indexOf(" where ")==0) {
+		if(trimCond.indexOf(conditionTypeIsWhere? WHERE : HAVING)==0) {
             trimCond.delete(0, 7);
         }
 		return trimCond;

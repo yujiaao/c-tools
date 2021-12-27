@@ -35,3 +35,6 @@ over_write_all =yes
 
 #if use auto increment, then not insert key, nor update primary key
 use_autoincrement=yes
+
+modifydate_col=modified_stime
+pojo_modifydate_interface=com.bixuebihui.jdbc.IModifiedTime

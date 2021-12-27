@@ -69,11 +69,25 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      */
     protected void beforeChange(T info) {
         pojoValidator.asureValid(info);
+        if(info instanceof IModifiedTime){
+            ((IModifiedTime)info).setModifiedTime(new Timestamp(
+                    System.currentTimeMillis()
+            ));
+        }
+    }
+    private void beforeChange(T info, long time) {
+        pojoValidator.asureValid(info);
+        if(info instanceof IModifiedTime){
+            ((IModifiedTime)info).setModifiedTime(new Timestamp(
+                   time
+            ));
+        }
     }
 
     private void beforeChange(T[] infos) {
+        long time = System.currentTimeMillis();
         for (T info : infos) {
-            beforeChange(info);
+            beforeChange(info, time);
         }
     }
 
@@ -1454,6 +1468,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     @Override
     public boolean updateByKey(T info) {
         beforeChange(info);
+
         return 1 == getDbHelper().executeNoQuery(getUpdateSql(), getUpdateObjs(info));
     }
 

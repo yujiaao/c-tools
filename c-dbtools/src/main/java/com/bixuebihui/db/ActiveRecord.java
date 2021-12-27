@@ -1,10 +1,13 @@
 package com.bixuebihui.db;
 
+import com.bixuebihui.jdbc.SqlFilter;
+
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.Collections.emptySet;
 
@@ -251,11 +254,24 @@ public interface ActiveRecord<T> extends Record<T> {
      */
     ActiveRecord<T> join(String joinClause);
 
+    /**
+     * sql group by clause
+     * @param fields
+     * @return
+     */
+    ActiveRecord<T> groupBy(String... fields);
+
+    ActiveRecord<T> having(HavingConditon fieldProcessor);
+
 
     static Set<String> toFieldsSet(String commaSeparatedFields){
         if(commaSeparatedFields==null || commaSeparatedFields.contains("*")){
             return emptySet();
         }
-        return List.of(commaSeparatedFields.split(",")).stream().map(x -> x.toLowerCase(Locale.ROOT)).collect(Collectors.toSet());
+        return Stream.of(commaSeparatedFields.split(",")).map(x -> x.toLowerCase(Locale.ROOT)).collect(Collectors.toSet());
     }
+}
+
+interface HavingConditon {
+    void apply(SqlHelper filter);
 }

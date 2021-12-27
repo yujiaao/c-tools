@@ -17,7 +17,7 @@ import {{config.packageName}}.BaseList;
 import javax.annotation.processing.Generated;
 
 @Generated("com.github.yujiaao:tablegen")
-public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{{else}}BaseList{{/if}}<{{pojoClassName}}, {{firstKeyType}}>
+public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{{else}}BaseList{{/if}}<{{pojoClassName}}, {{firstKeyType}}> {{#if }}{{/if}}
 {
     {{! writeDALConstructor(tableName); }}
     /**

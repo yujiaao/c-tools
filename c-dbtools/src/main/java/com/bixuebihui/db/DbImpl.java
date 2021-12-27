@@ -523,6 +523,16 @@ public class DbImpl<T, V> extends BaseDao<T, V> implements ActiveRecord<T>,
 		return null;
 	}
 
+	@Override
+	public ActiveRecord<T> groupBy(String... fields) {
+		return null;
+	}
+
+	@Override
+	public ActiveRecord<T> having(HavingConditon fieldProcessor) {
+		return null;
+	}
+
 
 	/** {@inheritDoc} */
 	@Override
