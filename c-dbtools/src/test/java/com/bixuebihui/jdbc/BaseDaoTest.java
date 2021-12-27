@@ -8,7 +8,6 @@ import com.bixuebihui.jdbc.aop.DbHelperAroundAdvice;
 import org.junit.jupiter.api.Test;
 import org.springframework.aop.framework.ProxyFactory;
 
-import javax.validation.constraints.NotNull;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -21,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class BaseDaoTest  {
 
+	@Test
 	public void testGetCount() {
 		DbcpDataSource ds = new DbcpDataSource();
 		ds.setDatabaseConfig(DataSourceTest.getConfig());
@@ -58,12 +58,22 @@ public class BaseDaoTest  {
 		System.out.println(bd.getPagingSql("select * from test", 20, 40));
 	}
 
+	@Test
 	public void testGetPagingSql() {
-
 		derbySql();
 	}
 
+	@Test
+	public void testFieldContains() {
+		String fields = "author_id,video_id,sum(play_pv) play_pv";
+		boolean res = BaseDao.containsIgnoreCase("play_pv", ActiveRecord.toFieldsSet(fields));
+		assertTrue(res);
 
+	}
+
+
+
+	@Test
 	public void testGetLastInsertID() throws SQLException {
 		DbcpDataSource ds = new DbcpDataSource();
 		ds.setDatabaseConfig(DataSourceTest.getConfigMaster());
@@ -101,6 +111,7 @@ public class BaseDaoTest  {
 	}
 
 
+	@Test
 	public void testGetUpdateSql() {
 		DbcpDataSource ds = new DbcpDataSource();
 		ds.setDatabaseConfig(DataSourceTest.getConfigDerby());
@@ -121,7 +132,8 @@ public class BaseDaoTest  {
 				new String[] { "files1" }, "where 1=1")));
 	}
 
-	@org.junit.Test
+
+	@Test
 	public void testUpdateBatch() {
 		DbcpDataSource ds = new DbcpDataSource();
 		ds.setDatabaseConfig(DataSourceTest.getConfigMaster());
@@ -211,6 +223,8 @@ public class BaseDaoTest  {
 
 	}
 
+
+	@Test
 	public void testAr() {
 		DbcpDataSource ds = new DbcpDataSource();
 		ds.setDatabaseConfig(DataSourceTest.getConfigDerby());
@@ -268,6 +282,7 @@ public class BaseDaoTest  {
 	}
 
 
+	@Test
 	public void testSelectK() {
 		DbcpDataSource ds = new DbcpDataSource();
 		ds.setDatabaseConfig(DataSourceTest.getConfigDerby());
@@ -312,6 +327,7 @@ public class BaseDaoTest  {
 	}
 
 
+	@Test
 	public void testGetSingleObject() {
 		DbcpDataSource ds = new DbcpDataSource();
 		ds.setDatabaseConfig(DataSourceTest.getConfigDerby());
@@ -393,6 +409,7 @@ public class BaseDaoTest  {
 	}
 
 
+	@Test
 	public void testGetFirstLast() throws SQLException{
 		DbcpDataSource ds = new DbcpDataSource();
 		ds.setDatabaseConfig(DataSourceTest.getConfigDerby());

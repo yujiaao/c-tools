@@ -27,11 +27,8 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Date;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
 
 import static com.bixuebihui.db.Dialect.*;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.emptySet;
 
 /**
  * <p>Abstract BaseDao class.</p>
@@ -1832,6 +1829,25 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @return true if fields is empty or contains field, ignore
      */
     protected static boolean containsIgnoreCase(String field, Set<String> fields){
-        return fields==null ||  fields.isEmpty() || fields.contains(field.toLowerCase(Locale.ROOT));
+        return fields==null ||  fields.isEmpty() || fields.contains(getFieldAlias(field).toLowerCase(Locale.ROOT));
+    }
+
+    /**
+     * deal with alias and `` quotes
+     * @param field
+     * @return
+     */
+    public static String getFieldAlias(String field) {
+        field = field.strip();
+
+        if(!field.startsWith("`") && StringUtils.containsWhitespace(field)){
+            StringTokenizer tokenizer = new StringTokenizer(field);
+            while (tokenizer.hasMoreTokens()) {
+                field = tokenizer.nextToken();
+            }
+        }else if(field.startsWith("`")) {
+            field = StringUtils.strip("`");
+        }
+        return field;
     }
 }

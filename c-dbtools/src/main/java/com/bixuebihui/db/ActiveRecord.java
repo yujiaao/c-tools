@@ -1,5 +1,6 @@
 package com.bixuebihui.db;
 
+import com.bixuebihui.jdbc.BaseDao;
 import com.bixuebihui.jdbc.SqlFilter;
 
 import java.sql.SQLException;
@@ -268,7 +269,7 @@ public interface ActiveRecord<T> extends Record<T> {
         if(commaSeparatedFields==null || commaSeparatedFields.contains("*")){
             return emptySet();
         }
-        return Stream.of(commaSeparatedFields.split(",")).map(x -> x.toLowerCase(Locale.ROOT)).collect(Collectors.toSet());
+        return Stream.of(commaSeparatedFields.split(",")).map(x -> BaseDao.getFieldAlias(x.toLowerCase(Locale.ROOT))).collect(Collectors.toSet());
     }
 }
 
