@@ -12,6 +12,7 @@ package com.bixuebihui.test.pojo;
 
 
 import java.sql.*;
+import java.time.*;
 import java.io.Serializable;
 import javax.validation.constraints.*;
 import org.apache.commons.text.StringEscapeUtils;
@@ -53,7 +54,7 @@ public class TestGen  implements Serializable {
     * birth
     */
     @Schema(title = "这里是日期！")
-    protected Timestamp  birth;
+    protected LocalDateTime  birth;
 
     
     /**
@@ -92,11 +93,11 @@ public class TestGen  implements Serializable {
       return this.age;
     }
 
-    public void setBirth(Timestamp birth)
+    public void setBirth(LocalDateTime birth)
     {
       this.birth = birth;
     }
-    public Timestamp getBirth()
+    public LocalDateTime getBirth()
     {
       return this.birth;
     }
@@ -121,7 +122,7 @@ public class TestGen  implements Serializable {
              
             age=0;
              
-            birth=new Timestamp(System.currentTimeMillis());
+            birth=LocalDateTime.now();
              
             eduId=0;
             

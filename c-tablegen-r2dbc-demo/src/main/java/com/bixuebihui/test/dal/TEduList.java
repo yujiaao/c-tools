@@ -12,6 +12,7 @@ package com.bixuebihui.test.dal;
 
 
 import java.sql.*;
+import java.time.*;
 import java.util.List;
 import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.Row;
@@ -62,8 +63,8 @@ public class TEduList  extends BaseList<TEdu, Integer>
 
 
     @Override
-    protected String getUpdateSql(){ 
-        return "update "+this.getTableName()+" set   id=?,  degree=?  where id=?";
+    protected String getUpdateSql(){
+    return "update "+this.getTableName()+" set   degree=? where id=?";
     }
 
     

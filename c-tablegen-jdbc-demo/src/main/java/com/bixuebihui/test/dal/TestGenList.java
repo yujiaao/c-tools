@@ -24,7 +24,7 @@ import com.bixuebihui.test.BaseList;
 import javax.annotation.processing.Generated;
 
 @Generated("com.github.yujiaao:tablegen")
-public class TestGenList  extends BaseList<TestGen, Integer>
+public class TestGenList  extends BaseList<TestGen, Integer> 
 {
     
     /**

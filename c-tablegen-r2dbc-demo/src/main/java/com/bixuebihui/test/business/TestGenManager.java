@@ -22,6 +22,7 @@ import reactor.core.publisher.Mono;
 
 import javax.annotation.processing.Generated;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -51,7 +52,7 @@ public class TestGenManager  extends TestGenList
                     testGen.setAge(Short.parseShort(x));
                     testGen.setEduId(1);
                     testGen.setName("name"+x);
-                    testGen.setBirth(new Timestamp(System.currentTimeMillis()));
+                    testGen.setBirth(LocalDateTime.now());
                     return this.insertAutoIncrement(testGen);
 
                 }).map(x -> (x ? 1 : 0)).reduce((x, y) -> x + y);
@@ -64,7 +65,7 @@ public class TestGenManager  extends TestGenList
                     testGen.setAge(Short.parseShort(x));
                     testGen.setEduId(1);
                     testGen.setName("name"+x);
-                    testGen.setBirth(new Timestamp(System.currentTimeMillis()));
+                    testGen.setBirth(LocalDateTime.now());
                     return this.insertAutoNewKey(testGen);
 
                 }).map(x -> (x ? 1 : 0)).reduce((x, y) -> x + y);

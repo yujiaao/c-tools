@@ -12,6 +12,7 @@ package com.bixuebihui.test.dal;
 
 
 import java.sql.*;
+import java.time.*;
 import java.util.List;
 import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.Row;
@@ -72,8 +73,8 @@ public class HistoryHandlebarsTemplateList  extends BaseList<HistoryHandlebarsTe
 
 
     @Override
-    protected String getUpdateSql(){ 
-        return "update "+this.getTableName()+" set   history_id=?,  template_id=?,  template_code=?,  description=?,  datasource_id=?,  base_template_id=?,  template_body=?,  operator_id=?,version= version +1,  is_del=?,  created_stime=?,  modified_stime=?  where history_id=?";
+    protected String getUpdateSql(){
+    return "update "+this.getTableName()+" set   template_id=?,  template_code=?,  description=?,  datasource_id=?,  base_template_id=?,  template_body=?,  operator_id=?,version= version +1,  is_del=?,  created_stime=?,  modified_stime=? where history_id=?";
     }
 
     
@@ -127,8 +128,8 @@ return  "history_handlebars_template";
             res.setOperatorId(r.get(F.OPERATOR_ID, Integer.class));
             res.setVersion(r.get(F.VERSION, Integer.class));
             res.setIsDel(r.get(F.IS_DEL, Integer.class));
-            res.setCreatedStime(r.get(F.CREATED_STIME, Timestamp.class));
-            res.setModifiedStime(r.get(F.MODIFIED_STIME, Timestamp.class));
+            res.setCreatedStime(r.get(F.CREATED_STIME, LocalDateTime.class));
+            res.setModifiedStime(r.get(F.MODIFIED_STIME, LocalDateTime.class));
             return res;
       }
 

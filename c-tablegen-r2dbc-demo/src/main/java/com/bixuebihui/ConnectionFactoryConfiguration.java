@@ -26,12 +26,12 @@ public class ConnectionFactoryConfiguration {
                 .build();
         MariadbConnectionFactory connectionFactory = new MariadbConnectionFactory(conf);
 
-//        ConnectionPoolConfiguration configuration = ConnectionPoolConfiguration.builder(connectionFactory)
-//                .maxIdleTime(Duration.ofMillis(1000))
-//                .initialSize(10)
-//                .maxSize(100)
-//                .build();
-        //return new ConnectionPool(configuration);
-        return connectionFactory;
+        ConnectionPoolConfiguration configuration = ConnectionPoolConfiguration.builder(connectionFactory)
+                .maxIdleTime(Duration.ofMillis(1000))
+                .initialSize(10)
+                .maxSize(100)
+                .build();
+        return new ConnectionPool(configuration);
+        //return connectionFactory;
     }
 }

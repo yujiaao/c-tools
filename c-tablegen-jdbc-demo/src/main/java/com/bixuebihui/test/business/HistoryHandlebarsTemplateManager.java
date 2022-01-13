@@ -23,15 +23,15 @@ import javax.annotation.processing.Generated;
 @Repository
 public class HistoryHandlebarsTemplateManager  extends HistoryHandlebarsTemplateList
 {
-
+    
     /**
      * @param ds datasource for injecting
      */
-    public HistoryHandlebarsTemplateManager(@Qualifier("test") DataSource ds)
-    {
-        super(ds,ds);
-    }
 
+    public HistoryHandlebarsTemplateManager(@Qualifier("test") DataSource readWrite, @Qualifier("test_r") DataSource readOnly)
+    {
+        super(readWrite,readOnly);
+    }
     // please write your code here!
 
 }

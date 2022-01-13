@@ -8,10 +8,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.IntBinaryOperator;
 
 /**
  * @author xwx
@@ -61,4 +64,22 @@ public class TestController {
     public Mono<Integer> insertAutoNewKey(){
         return manager.batchInsertAutoNewKey();
     }
+
+    @GetMapping("/all")
+    public Mono<String> repeatRecords(){
+        AtomicInteger count = new AtomicInteger();
+        return Flux.range(0, 200).flatMap((it) -> {
+            System.out.println("step:" + it);
+            return manager.ar().findAll().flatMap(x -> Mono.just(x.size()));
+        }).flatMap(x -> {
+            count.accumulateAndGet(x, (left, right) -> left+right);
+            return Mono.empty();
+        }).then(
+                Mono.just("records:="+count.get())
+        );
+
+    }
+
+
+
 }

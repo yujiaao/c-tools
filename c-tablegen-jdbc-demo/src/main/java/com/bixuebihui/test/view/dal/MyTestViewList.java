@@ -24,7 +24,7 @@ import com.bixuebihui.jdbc.AbstractViewBaseDao;
 import javax.annotation.processing.Generated;
 
 @Generated("com.github.yujiaao:tablegen")
-public class MyTestViewList  extends AbstractViewBaseDao<MyTestView, Integer>
+public class MyTestViewList  extends AbstractViewBaseDao<MyTestView, Integer> 
 {
     
     /**

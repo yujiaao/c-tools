@@ -23,15 +23,15 @@ import javax.annotation.processing.Generated;
 @Repository
 public class TestGenManager  extends TestGenList
 {
-
+    
     /**
      * @param ds datasource for injecting
      */
-    public TestGenManager(@Qualifier("test") DataSource ds)
-    {
-        super(ds,ds);
-    }
 
+    public TestGenManager(@Qualifier("test") DataSource readWrite, @Qualifier("test_r") DataSource readOnly)
+    {
+        super(readWrite,readOnly);
+    }
     // please write your code here!
 
 }

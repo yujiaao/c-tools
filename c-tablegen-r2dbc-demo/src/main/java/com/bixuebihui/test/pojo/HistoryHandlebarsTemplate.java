@@ -12,6 +12,7 @@ package com.bixuebihui.test.pojo;
 
 
 import java.sql.*;
+import java.time.*;
 import java.io.Serializable;
 import javax.validation.constraints.*;
 import org.apache.commons.text.StringEscapeUtils;
@@ -109,7 +110,7 @@ public class HistoryHandlebarsTemplate  implements Serializable {
 
     */
     @Schema(title = "数据创建时间")
-    protected Timestamp  createdStime;
+    protected LocalDateTime  createdStime;
 
     
     /**
@@ -117,7 +118,7 @@ public class HistoryHandlebarsTemplate  implements Serializable {
 
     */
     @Schema(title = "数据更新时间")
-    protected Timestamp  modifiedStime;
+    protected LocalDateTime  modifiedStime;
 
 
 
@@ -212,20 +213,20 @@ public class HistoryHandlebarsTemplate  implements Serializable {
       return this.isDel;
     }
 
-    public void setCreatedStime(Timestamp createdStime)
+    public void setCreatedStime(LocalDateTime createdStime)
     {
       this.createdStime = createdStime;
     }
-    public Timestamp getCreatedStime()
+    public LocalDateTime getCreatedStime()
     {
       return this.createdStime;
     }
 
-    public void setModifiedStime(Timestamp modifiedStime)
+    public void setModifiedStime(LocalDateTime modifiedStime)
     {
       this.modifiedStime = modifiedStime;
     }
-    public Timestamp getModifiedStime()
+    public LocalDateTime getModifiedStime()
     {
       return this.modifiedStime;
     }
@@ -255,9 +256,9 @@ public class HistoryHandlebarsTemplate  implements Serializable {
              
             isDel=0;
              
-            createdStime=new Timestamp(System.currentTimeMillis());
+            createdStime=LocalDateTime.now();
              
-            modifiedStime=new Timestamp(System.currentTimeMillis());
+            modifiedStime=LocalDateTime.now();
             
     }
 

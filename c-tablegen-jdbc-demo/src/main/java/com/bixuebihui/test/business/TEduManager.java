@@ -23,15 +23,15 @@ import javax.annotation.processing.Generated;
 @Repository
 public class TEduManager  extends TEduList
 {
-
+    
     /**
      * @param ds datasource for injecting
      */
-    public TEduManager(@Qualifier("test") DataSource ds)
-    {
-        super(ds, ds);
-    }
 
+    public TEduManager(@Qualifier("test") DataSource readWrite, @Qualifier("test_r") DataSource readOnly)
+    {
+        super(readWrite,readOnly);
+    }
     // please write your code here!
 
 }

@@ -768,11 +768,14 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
 
     private Mono<Integer> detectDbType() {
         if (dbtype == UNKNOWN) {
-            return Mono.from(getDbHelper().getConnection(true)).map(cn ->
-                    detectDbType(
-                            cn.getMetadata().getDatabaseProductName() + " " + cn.getMetadata().getDatabaseVersion()
-                    )
-            );
+            return Mono.just(MYSQL);
+//            return Mono.from(getDbHelper().getConnection(true)).flatMap(cn -> {
+//                Integer res = detectDbType(
+//                        cn.getMetadata().getDatabaseProductName() + " " + cn.getMetadata().getDatabaseVersion()
+//                );
+//
+//                return Mono.from(cn.close()).flatMap(x -> Mono.just(res));
+//            });
         }
         return Mono.just(dbtype);
     }

@@ -12,6 +12,7 @@ package com.bixuebihui.test.pojo;
 
 
 import java.sql.*;
+import java.time.*;
 import java.io.Serializable;
 import javax.validation.constraints.*;
 import org.apache.commons.text.StringEscapeUtils;

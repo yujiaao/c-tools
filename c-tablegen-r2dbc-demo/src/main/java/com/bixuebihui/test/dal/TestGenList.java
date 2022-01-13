@@ -12,6 +12,7 @@ package com.bixuebihui.test.dal;
 
 
 import java.sql.*;
+import java.time.*;
 import java.util.List;
 import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.Row;
@@ -65,8 +66,8 @@ public class TestGenList  extends BaseList<TestGen, Integer>
 
 
     @Override
-    protected String getUpdateSql(){ 
-        return "update "+this.getTableName()+" set   id=?,  name=?,  age=?,  birth=?,  edu_id=?  where id=?";
+    protected String getUpdateSql(){
+    return "update "+this.getTableName()+" set   name=?,  age=?,  birth=?,  edu_id=? where id=?";
     }
 
     
@@ -113,7 +114,7 @@ return  "test_gen";
             res.setId(r.get(F.ID, Integer.class));
             res.setName(r.get(F.NAME, String.class));
             res.setAge(r.get(F.AGE, Short.class));
-            res.setBirth(r.get(F.BIRTH, Timestamp.class));
+            res.setBirth(r.get(F.BIRTH, LocalDateTime.class));
             res.setEduId(r.get(F.EDU_ID, Integer.class));
             return res;
       }

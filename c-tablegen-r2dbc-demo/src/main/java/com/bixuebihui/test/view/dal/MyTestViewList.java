@@ -12,6 +12,7 @@ package com.bixuebihui.test.view.dal;
 
 
 import java.sql.*;
+import java.time.*;
 import java.util.List;
 import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.Row;
@@ -30,7 +31,7 @@ import reactor.core.publisher.Mono;
 @Generated("com.github.yujiaao:tablegen")
 public class MyTestViewList  extends AbstractViewBaseDao<MyTestView, Integer>
 {
-
+    
     /**
       * Don't direct use the MyTestViewList, use MyTestViewManager instead.
       */
@@ -39,7 +40,7 @@ public class MyTestViewList  extends AbstractViewBaseDao<MyTestView, Integer>
     {
         super(ds);
     }
-
+    
     @SuppressWarnings("AlibabaClassNamingShouldBeCamel")
     public static final class F{
         public static final String ID = "id";
@@ -48,7 +49,7 @@ public class MyTestViewList  extends AbstractViewBaseDao<MyTestView, Integer>
         public static final String BIRTH = "birth";
         public static final String EDU_ID = "edu_id";
         public static final String DEGREE = "degree";
-
+        
         public static String[] getAllFields() {
             return new String[] { ID, NAME, AGE, BIRTH, EDU_ID, DEGREE };
         }
@@ -62,12 +63,11 @@ public class MyTestViewList  extends AbstractViewBaseDao<MyTestView, Integer>
     @Override
     protected String getCoreSql()
     {
-
-
+    
+    
         return " select test_gen.*, degree from test_gen left join t_edu on test_gen.edu_id=t_edu.id";
     }
 
-    @Override
     protected String getSelectAllFromTable() {
          return getCoreSql();
     }
@@ -82,7 +82,7 @@ public class MyTestViewList  extends AbstractViewBaseDao<MyTestView, Integer>
       return "("+this.getCoreSql()+") as my_test_view";
     }
 
-
+    
     /**
     * Get key name.
     */
@@ -97,13 +97,13 @@ public class MyTestViewList  extends AbstractViewBaseDao<MyTestView, Integer>
         * Updates the object from a selected ResultSet.
         */
       @Override
-      public MyTestView mapRow(Row r)
+      public MyTestView mapRow(Row r) 
       {
             MyTestView res = new MyTestView();
             res.setId(r.get(F.ID, Integer.class));
             res.setName(r.get(F.NAME, String.class));
             res.setAge(r.get(F.AGE, Short.class));
-            res.setBirth(r.get(F.BIRTH, Timestamp.class));
+            res.setBirth(r.get(F.BIRTH, LocalDateTime.class));
             res.setEduId(r.get(F.EDU_ID, Integer.class));
             res.setDegree(r.get(F.DEGREE, String.class));
             return res;
