@@ -167,6 +167,18 @@ public class DbImpl<T, V> extends BaseDao<T, V> implements ActiveRecord<T>,
 		return this;
 	}
 
+	@Override
+	public ActiveRecord<T> isNull(String field) {
+		filterStack.isNull(field);
+		return this;
+	}
+
+	@Override
+	public ActiveRecord<T> isNotNull(String field) {
+		filterStack.isNotNull(field);
+		return this;
+	}
+
 	protected ActiveRecord<T> order(String field, int order) {
 		orderStack.addSort(field, order == ORDER_DESC ? "desc" : "asc");
 		return this;

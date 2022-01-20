@@ -195,6 +195,18 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 		return this;
 	}
 
+	@Override
+	public ActiveRecord<T> isNull(String field) {
+		filterStack.isNull(field);
+		return this;
+	}
+
+	@Override
+	public ActiveRecord<T> isNotNull(String field) {
+		filterStack.isNotNull(field);
+		return this;
+	}
+
 	/** {@inheritDoc} */
 	@Override
 	public ActiveRecord<T> greaterOrEqualThan(String field, Object value) {

@@ -143,7 +143,7 @@ public class SqlHelper {
 	}
 
 
-	private boolean isNotNull(Object v){
+	public boolean isNotNull(Object v){
 		if(v==null){
 			return false;
 		}
