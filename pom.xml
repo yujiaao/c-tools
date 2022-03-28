@@ -24,6 +24,8 @@
         <module>c-tablegen-mojo</module>
         <module>c-tablegen-jdbc-demo</module>
         <module>c-tablegen-r2dbc-demo</module>
+        <module>c-jsongen</module>
+        <module>c-jsongen-es-demo</module>
     </modules>
     <properties>
         <jackson-databind.version>2.10.4</jackson-databind.version>
@@ -53,7 +55,6 @@
             <artifactId>mysql-connector-java</artifactId>
             <version>${mysql.version}</version>
         </dependency>
-
 
     </dependencies>
 
@@ -253,14 +254,13 @@
 
 
     <distributionManagement>
-        <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-        </snapshotRepository>
         <repository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+            <id>releases</id>
+            <url>http://repo.corpautohome.com/nexus/content/repositories/releases</url>
         </repository>
+        <snapshotRepository>
+            <id>snapshots</id>
+            <url>http://repo.corpautohome.com/nexus/content/repositories/snapshots/</url>
+        </snapshotRepository>
     </distributionManagement>
-
 </project>

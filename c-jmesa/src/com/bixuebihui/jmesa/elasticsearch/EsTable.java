@@ -31,9 +31,9 @@ public class EsTable extends EasyTable {
             getFilter(filter, limit, id);
             RowSelect rowSelect = limit.getRowSelect();
             LinkedHashMap<String,String> sort = toEsSort(limit.getSortSet());
-            String query = filter.toEsObject(rowSelect.getRowStart(),
-                    rowSelect.getRowEnd() - rowSelect.getRowStart(), sort);
-            return request.esJsonToTableJson(request.query(query), rowSelect );
+            String query = filter.toEsObject(filter.toQuery(), rowSelect.getRowStart(),
+                    rowSelect.getRowEnd() - rowSelect.getRowStart(), "", sort);
+            return request.esJsonToTableJson(request.search(query), rowSelect );
         }catch (Exception e){
             throw new SQLException(e);
         }

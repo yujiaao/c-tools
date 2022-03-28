@@ -1,0 +1,29 @@
+Configuration:
+  status: info
+  Properties:
+    Property:
+      - name: APP_NAME
+        value: 'r2dbc-demo'
+      - name: file.logroot
+        value: '${log4j_logfile_path}'
+  Appenders:
+    Console:
+      name: CONSOLE
+      target: SYSTEM_OUT
+      ThresholdFilter:
+        level: debug
+        onMatch: ACCEPT
+        onMismatch: DENY
+      PatternLayout:
+        pattern: "%d{yyyy-MM-dd HH:mm:ss,SSS}:%4p %t (%F:%L) - %m%n"
+  Loggers:
+    Root:
+      level: INFO
+      AppenderRef:
+        - ref: CONSOLE
+    Logger:
+      - name: com.bixuebihui
+        level: DEBUG
+        additivity: false
+        AppenderRef:
+          - ref: CONSOLE

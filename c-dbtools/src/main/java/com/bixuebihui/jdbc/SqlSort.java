@@ -17,7 +17,7 @@ import java.util.List;
  */
 public class SqlSort {
 
-	List<Sortable> sorts = new ArrayList<>();
+	protected List<Sortable> sorts = new ArrayList<>();
 
     /**
      * <p>addSort.</p>

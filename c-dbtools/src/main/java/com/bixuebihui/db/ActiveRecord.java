@@ -278,6 +278,3 @@ public interface ActiveRecord<T> extends Record<T> {
     }
 }
 
-interface HavingConditon {
-    void apply(SqlHelper filter);
-}

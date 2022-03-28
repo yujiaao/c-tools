@@ -75,7 +75,7 @@ public class SqlHelper {
 	 *
 	 * @return a {@link SqlPocket} object.
 	 */
-	protected SqlPocket toCondition() {
+    public SqlPocket toCondition() {
 		SqlPocket criteria = new SqlPocket();
 		if (filters == null || filters.size() <= 0) {
 			return criteria;

@@ -2,6 +2,7 @@ package com.bixuebihui.jmesa.elasticsearch;
 
 import com.bixuebihui.jmesa.elasticsearch.query.Query;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -39,6 +40,7 @@ import java.util.regex.Pattern;
 import static org.apache.http.entity.ContentType.APPLICATION_JSON;
 
 /**
+ * common operation with elasticsearch use http request at 'low' level
  * @author xwx
  */
 public class EsRequest {
@@ -50,7 +52,7 @@ public class EsRequest {
 
     // This you have to fill in yourself, you're probably using Jackson's ObjectMapper
     // to load JSON data, and that should fit right in here.
-    ObjectMapper mapper = new ObjectMapper();
+    static ObjectMapper mapper = new ObjectMapper();
 
     /**
      * index name to search
@@ -63,17 +65,27 @@ public class EsRequest {
     // For most purposes you want the Jackson runtime, it can search in JsonNode
     // structures created by Jackson.
      */
-    JmesPath<JsonNode> jmespath = new JacksonRuntime();
+    static JmesPath<JsonNode> jmespath = new JacksonRuntime();
     /**
     // Expressions need to be compiled before you can search. Compiled expressions
     // are reusable and thread safe. Compile your expressions once, just like database
     // prepared statements.
      */
-    Expression<JsonNode> exp = jmespath.compile("{caption:hits.hits[0]._index, " +
+    static Expression<JsonNode> exp = jmespath.compile(
+            //table/index name
+            "{caption:hits.hits[0]._index, " +
+            // field names
             "titles:keys(hits.hits[0]._source)," +
+                    // doc id
             "_id: hits.hits[*]._id," +
+                    // rows
             "data:hits.hits[*]._source," +
+                    // paging
             "paging:{totalRows:hits.total.value}}");
+
+    static Expression<JsonNode> expHits = jmespath.compile(
+            "hits.hits[*]._source");
+
 
     Pattern pattern = Pattern.compile("open\\s+[\\.\\w|\\-|\\:+|\\w|\\-|\\:+]+");
     Pattern p = Pattern.compile("\\s+[\\.\\w\\-|\\:+|\\w\\-|\\:+]+");
@@ -126,6 +138,11 @@ public class EsRequest {
         return httpJson(post);
     }
 
+    /**
+     * http request
+     * @param requestBase
+     * @return
+     */
     private String httpJson(HttpEntityEnclosingRequestBase requestBase) {
         logger.debug("====>>>>");
         logger.debug(requestBase.toString());
@@ -164,7 +181,7 @@ public class EsRequest {
             HttpGetWithJsonEntity getRequest =
                     HttpGetWithJsonEntity.builder()
                             .withUrl(host + "/" + indexName + "/" + EsQueryBuilder.ACTION_SEARCH)
-                            .withBodyEntry(EsQueryBuilder.build(query, from, size, sort))
+                            .withBodyEntry(EsQueryBuilder.build(query, from, size,"", sort))
                             .build();
 
             return httpJson(getRequest);
@@ -174,11 +191,29 @@ public class EsRequest {
         return EsQueryBuilder.EMPTY_JSON_STRING;
     }
 
-    public String query(String rawJson) {
+    public String search(String rawJson) {
+        return query(rawJson, EsQueryBuilder.ACTION_SEARCH);
+    }
+
+    public int count(String rawJson) {
+        String res = query(rawJson, EsQueryBuilder.ACTION_COUNT);
+
+        try {
+            Map<String, Object> map = mapper.readValue(res, new TypeReference<>() { });
+            return map.containsKey(EsQueryBuilder.COUNT)? Integer.parseInt(map.get(EsQueryBuilder.COUNT).toString()):0;
+
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            return 0;
+        }
+
+    }
+
+    public String query(String rawJson, String action) {
         try {
             HttpGetWithJsonEntity getRequest =
                     HttpGetWithJsonEntity.builder()
-                            .withUrl(host + "/" + indexName + "/" + EsQueryBuilder.ACTION_SEARCH)
+                            .withUrl(host + "/" + indexName + "/" + action)
                             .withBodyEntry(rawJson)
                             .build();
 
@@ -224,6 +259,7 @@ public class EsRequest {
     }
 
     /**
+     * the elasticsearch  response json:
      * {
      * "took" : 17,
      * "timed_out" : false,
@@ -265,6 +301,7 @@ public class EsRequest {
      * }
      * }
      * <p>
+     *     and translate to my table query format:
      * ==>
      * <p>
      * {
@@ -299,6 +336,14 @@ public class EsRequest {
 
         String res = resultTotal.toPrettyString();
         return res;
+    }
+
+    static public   JsonNode getSource(String esJson) throws JsonProcessingException {
+        JsonNode input = mapper.readTree(esJson);
+
+        JsonNode resultTotal = expHits.search(input);
+
+        return resultTotal;
     }
 
     static class Document {
