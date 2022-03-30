@@ -1,5 +1,8 @@
 package com.bixuebihui.jmesa.elasticsearch;
 
+
+import com.bixuebihui.elasticsearch.ElasticSearchFilter;
+import com.bixuebihui.elasticsearch.EsRequest;
 import com.bixuebihui.jmesa.EasyTable;
 import org.jmesa.limit.Limit;
 import org.jmesa.limit.LimitFactory;
@@ -17,8 +20,7 @@ public class EsTable extends EasyTable {
     EsRequest request;
     public EsTable(String  host,String username, String password,String tableCaption, String indexName) {
         super();
-        request =  new EsRequest(host, username, password);
-        request.indexName  = indexName;
+        request =  new EsRequest(host, username, password, indexName);
         this.id = tableCaption;
         this.tableCaption = tableCaption;
     }
@@ -33,7 +35,7 @@ public class EsTable extends EasyTable {
             LinkedHashMap<String,String> sort = toEsSort(limit.getSortSet());
             String query = filter.toEsObject(filter.toQuery(), rowSelect.getRowStart(),
                     rowSelect.getRowEnd() - rowSelect.getRowStart(), "", sort);
-            return request.esJsonToTableJson(request.search(query), rowSelect );
+            return EsRequest.esJsonToTableJson(request.search(query), rowSelect.getMaxRows(),rowSelect.getRowStart(), rowSelect.getRowEnd(), rowSelect.getTotalRows(), rowSelect.getPage() );
         }catch (Exception e){
             throw new SQLException(e);
         }

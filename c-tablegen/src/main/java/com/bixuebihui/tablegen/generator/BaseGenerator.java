@@ -49,6 +49,9 @@ public abstract class BaseGenerator implements Generator {
     ProjectConfig config;
     DatabaseConfig dbConfig;
     TableSetInfo setInfo;
+
+    Properties esConfig;
+
     protected boolean isView = false;
 
     public BaseGenerator() {
@@ -91,10 +94,11 @@ public abstract class BaseGenerator implements Generator {
      * @param setInfo
      */
     @Override
-    public void init(ProjectConfig config, DatabaseConfig dbConfig, TableSetInfo setInfo) {
+    public void init(ProjectConfig config, DatabaseConfig dbConfig, TableSetInfo setInfo, Properties prop) {
         this.config = config;
         this.dbConfig = dbConfig;
         this.setInfo = setInfo;
+        this.esConfig = prop;
     }
 
     String getClassSuffix(){return "";}
@@ -141,8 +145,7 @@ public abstract class BaseGenerator implements Generator {
     public String getPojoClassName(String tableName) {
         String classname = setInfo.tableName2ClassName(tableName);
         if (tableName.equals(classname)) {
-
-            return config.getAddPrefix() + firstUp(removePrefix(tableName, config.getRemovePrefix()));
+            return config.getAddPrefix() + removePrefix(tableName, config.getRemovePrefix());
         } else {
             return config.getAddPrefix() + classname;
         }
@@ -158,7 +161,7 @@ public abstract class BaseGenerator implements Generator {
      * read config from file
      * @param filename the configuration file name
      */
-    public synchronized void init(String filename) {
+    public synchronized boolean init(String filename) {
         String propertiesFilename = filename != null ? filename : PROPERTIES_FILENAME;
 
         try (FileInputStream fis = new FileInputStream(propertiesFilename)) {
@@ -166,15 +169,20 @@ public abstract class BaseGenerator implements Generator {
 
             props.load(fis);
 
-            dbConfig = DatabaseConfig.newInstance(props);
-
             config = ProjectConfig.readFrom(props, getConfigBaseDir(propertiesFilename));
 
+            if(props.getProperty("url")!=null){
+                esConfig = props;
+                return true;
+            }
+
+            dbConfig = DatabaseConfig.newInstance(props);
             readDbMetaData(dbConfig);
 
         } catch (IOException | SQLException | InstantiationException | IllegalAccessException e) {
             e.printStackTrace();
         }
+        return false;
     }
 
     protected String getInterface(String tableName) {
@@ -207,19 +215,28 @@ public abstract class BaseGenerator implements Generator {
         Map<String, Object> v = new HashMap<>(20);
         v.put("tableName", tableName);
 
-        if(setInfo.getTableInfos().get(tableName)!=null) {
-            v.put("tableInfo", setInfo.getTableInfos().get(tableName));
-            v.put("fields", setInfo.getTableCols(tableName));
-            v.put("keys", setInfo.getTableKeys(tableName));
-            v.put("importKeys", setInfo.getTableImportedKeys(tableName));
-            v.put("exportKeys", setInfo.getTableExportedKeys(tableName));
-            v.put("indexData", setInfo.getTableIndexes(tableName));
+        if(esConfig!=null) {
+            for (Map.Entry<Object, Object> entry : esConfig.entrySet()) {
+                if (entry.getKey() instanceof String) {
+                    v.put((String) entry.getKey(), entry.getValue());
+                }
+            }
+        }else{
+            if (setInfo.getTableInfos().get(tableName) != null) {
+                v.put("tableInfo", setInfo.getTableInfos().get(tableName));
+                v.put("fields", setInfo.getTableCols(tableName));
+                v.put("keys", setInfo.getTableKeys(tableName));
+                v.put("importKeys", setInfo.getTableImportedKeys(tableName));
+                v.put("exportKeys", setInfo.getTableExportedKeys(tableName));
+                v.put("indexData", setInfo.getTableIndexes(tableName));
+            }
+            v.put("hasKey", isNotEmpty(this.setInfo.getTableKeys(tableName)));
         }
+
         v.put("pojoClassName", this.getPojoClassName(tableName));
         v.put("className", this.getClassName(tableName));
         v.put("interface", this.getInterface(tableName));
         v.put("extends", this.getExtendsClasses(tableName));
-        v.put("hasKey", isNotEmpty(this.setInfo.getTableKeys(tableName)));
         v.put("setInfo", setInfo);
         v.put("config", config);
 
@@ -238,7 +255,7 @@ public abstract class BaseGenerator implements Generator {
 
     protected Handlebars getHandlebars() {
         TemplateLoader loader = new ClassPathTemplateLoader();
-        loader.setPrefix(TEMPLATE_ROOT+"/"+(config.getR2dc()?"r2dbc":"jdbc"));
+        loader.setPrefix(getTemplateDir());
         loader.setSuffix(".hbs");
 
         Handlebars handlebars = new Handlebars(loader);
@@ -261,6 +278,12 @@ public abstract class BaseGenerator implements Generator {
 
         additionalSetting(handlebars);
         return handlebars;
+    }
+
+    private String getTemplateDir() {
+        return TEMPLATE_ROOT+"/"+  (esConfig==null?
+                (config.getR2dc() ? "r2dbc" : "jdbc")
+                :"es");
     }
 
     String getFirstKeyType(String tableName) {

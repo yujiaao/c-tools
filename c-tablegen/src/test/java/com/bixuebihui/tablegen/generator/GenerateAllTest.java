@@ -10,9 +10,16 @@ import static org.junit.jupiter.api.Assertions.*;
 class GenerateAllTest {
 
     @Test
-    void run() throws SQLException {
+    void run() {
         GenerateAll gen = new GenerateAll();
 
         gen.run(Objects.requireNonNull(this.getClass().getResource("/tablegen.properties")).getPath());
+    }
+
+    @Test
+    void runJson() {
+        GenerateAll gen = new GenerateAll();
+
+        gen.run(Objects.requireNonNull(this.getClass().getResource("/es.properties")).getPath());
     }
 }

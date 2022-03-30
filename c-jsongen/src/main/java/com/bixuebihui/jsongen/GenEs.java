@@ -24,10 +24,14 @@ public class GenEs extends DefaultGenerationConfig {
     private String sourceDirectory;
     private String targetDirectory;
 
-    public GenEs(String sourceDirectory, String targetDirectory, boolean isSchema) {
+
+    private String targetPackage;
+
+    public GenEs(boolean isSchema, String sourceDirectory, String targetDirectory, String targetPackage) {
+        this.isSchema = isSchema;
         this.sourceDirectory = sourceDirectory;
         this.targetDirectory = targetDirectory;
-        this.isSchema = isSchema;
+        this.targetPackage = targetPackage;
     }
 
 
@@ -58,7 +62,7 @@ public class GenEs extends DefaultGenerationConfig {
 
     @Override
     public String getTargetPackage() {
-        return "com.bixuebihui.hit";
+        return targetPackage;
     }
 
     @Override

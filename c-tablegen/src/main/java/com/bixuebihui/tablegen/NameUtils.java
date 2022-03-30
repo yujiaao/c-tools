@@ -43,8 +43,16 @@ public class NameUtils {
 		if (JAVA_KEYWORD.contains(columnName) || (PROJECT_FIELD_KEYWORD.contains(columnName))) {
 			columnName = KEYWORD_APPEND_CHAR + columnName;
 		}
-		return CaseUtils.toCamelCase(columnName,false,'_');
+		return CaseUtils.toCamelCase(columnName,false,'_','-');
 	}
+
+	public static String tableNameToClassName(String tableName){
+		if (JAVA_KEYWORD.contains(tableName) || (PROJECT_FIELD_KEYWORD.contains(tableName))) {
+			tableName = KEYWORD_APPEND_CHAR + tableName;
+		}
+		return CaseUtils.toCamelCase(tableName,true,'_','-');
+	}
+
 
 	public static String columnNameToConstantName(String columnName){
 		if(columnName==null){
@@ -70,11 +78,11 @@ public class NameUtils {
 		// CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_HYPHEN, "CamelCase"); // returns camel-case
 
 
-		return CaseUtils.toCamelCase(p, true, '_');
+		return CaseUtils.toCamelCase(p, true, '_', '-');
 	}
 
 	public static String firstLow(String p) {
-		return CaseUtils.toCamelCase(p, false, '_');
+		return CaseUtils.toCamelCase(p, false, '_','-');
 
 	}
 

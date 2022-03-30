@@ -1,0 +1,37 @@
+package {{config.packageName}}{{viewModifier}}.business;
+
+{{> [../header-comment.java]}}
+
+import javax.sql.DataSource;
+import {{config.packageName}}{{viewModifier}}.pojo.{{pojoClassName}};
+import com.bixuebihui.jmesa.elasticsearch.EsActiveRecordImpl;
+
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Repository;
+
+import javax.annotation.processing.Generated;
+
+@Generated("com.github.yujiaao:jsongen")
+@Repository
+public class {{className}}  extends com.bixuebihui.jmesa.elasticsearch.EsActiveRecordImpl<{{pojoClassName}},Long>
+{
+
+    @Autowired
+    @Qualifier("{{config.alias}}")
+    EsProperties properties;
+
+    private EsActiveRecordImpl<{{pojoClassName}}, Long> repository = new EsActiveRecordImpl<>(
+        new EsOperator<>( new EsRequest(properties.getScheme()+ properties.getClusterNodes()[0], "","", EsConstant.CONTENT_DETAIL_INDEX)) {
+            @Override
+            protected Class<{{pojoClassName}}> getType() {
+                return {{pojoClassName}}.class;
+            }
+        });
+
+    public  EsActiveRecordImpl<{{pojoClassName}}, Long> ar(){
+        return repository;
+    }
+
+    // please write your code here!
+
+}

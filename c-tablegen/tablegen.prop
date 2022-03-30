@@ -28,6 +28,8 @@ view_list=my_test_view: select test_gen.*, degree from test_gen left join t_edu 
 #keep table name and field case
 keep_case=yes
 
+r2dbc=false
+
 generate_all=yes
 use_annotation=yes
 generate_baselist=yes

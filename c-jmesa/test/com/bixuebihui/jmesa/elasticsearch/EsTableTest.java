@@ -12,12 +12,16 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 //@RunWith(MockitoJUnitRunner.class)
 public class EsTableTest {
+    public static String host= "http://localhost:9200";
+    public static String username = "elastic";
+    public static String password = "changeme";
+
 
     @Test
     public void json() throws SQLException, JsonProcessingException {
         String tableName = "test";
-        EsTable et = new EsTable(EsRequestTest.host,
-                EsRequestTest.username, EsRequestTest.password,
+        EsTable et = new EsTable(host,
+                username, password,
                 tableName, tableName);
 
         // et.request = Mockito.mock(EsRequest);
@@ -40,8 +44,8 @@ public class EsTableTest {
     @Test
     public void jsonWithSort() throws SQLException, JsonProcessingException {
         String tableName = "test";
-        EsTable et = new EsTable(EsRequestTest.host,
-                EsRequestTest.username, EsRequestTest.password,
+        EsTable et = new EsTable(host,
+                username, password,
                 tableName, tableName);
 
         int size=2;

@@ -1,6 +1,7 @@
 package com.bixuebihui.tablegen.generator;
 
 import com.bixuebihui.dbcon.DatabaseConfig;
+import com.bixuebihui.tablegen.NameUtils;
 import com.bixuebihui.tablegen.ProjectConfig;
 import com.bixuebihui.tablegen.entry.TableSetInfo;
 import org.apache.commons.io.IOUtils;
@@ -9,12 +10,13 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.Properties;
 
 /**
  * @author xwx
  */
 public interface Generator {
-    void init(ProjectConfig config, DatabaseConfig dbConfig, TableSetInfo setInfo);
+    void init(ProjectConfig config, DatabaseConfig dbConfig, TableSetInfo setInfo, Properties prop);
 
     String generate(String tableName) throws IOException;
 

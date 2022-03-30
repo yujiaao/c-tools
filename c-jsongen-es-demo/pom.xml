@@ -5,7 +5,7 @@
     <parent>
         <artifactId>c-tools-parent</artifactId>
         <groupId>com.github.yujiaao</groupId>
-        <version>1.8.1.1</version>
+        <version>1.9.0.2</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>c-jsongen-es-demo</artifactId>
@@ -35,12 +35,12 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>c-jmesa</artifactId>
-            <version>1.8.1.1</version>
+            <version>1.9.0.2</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>c-jsongen</artifactId>
-            <version>1.8.1.1</version>
+            <version>1.9.0.2</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.hibernate.validator/hibernate-validator -->
@@ -60,7 +60,10 @@
             <version>2.17.2</version>
             <scope>test</scope>
         </dependency>
-
+        <dependency>
+            <groupId>com.github.yujiaao</groupId>
+            <artifactId>c-estools</artifactId>
+        </dependency>
 
 
     </dependencies>

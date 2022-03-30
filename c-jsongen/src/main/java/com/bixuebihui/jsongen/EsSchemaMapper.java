@@ -27,6 +27,9 @@ public class EsSchemaMapper {
     private final RuleFactory ruleFactory;
     private final SchemaGenerator schemaGenerator;
 
+
+
+
     /**
      * Create a schema mapper with the given {@link RuleFactory}.
      *
@@ -75,6 +78,7 @@ public class EsSchemaMapper {
         //ObjectNode schemaNode = readSchema(schemaUrl);
         try {
             JsonNode json = EsMapping2JsonschemaUtils.trans(objectMapper().readTree(schemaUrl));
+
             return generate( codeModel,  className,  packageName,  json);
 
         } catch (IOException e) {

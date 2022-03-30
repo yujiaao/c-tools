@@ -20,6 +20,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "author_id",
     "author_name",
     "brand_ids",
+    "content_label_ids",
+    "content_label_names",
     "cover_image",
     "cover_image_2_3",
     "created_stime",
@@ -39,6 +41,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "off_video",
     "play_url",
     "series_ids",
+    "style_label_ids",
+    "style_label_names",
     "stytle_score",
     "title",
     "title_score",
@@ -60,6 +64,10 @@ public class MobileVideoInfo {
     private String authorName;
     @JsonProperty("brand_ids")
     private List<Long> brandIds = new ArrayList<Long>();
+    @JsonProperty("content_label_ids")
+    private List<Long> contentLabelIds = new ArrayList<Long>();
+    @JsonProperty("content_label_names")
+    private List<String> contentLabelNames = new ArrayList<String>();
     @JsonProperty("cover_image")
     private String coverImage;
     @JsonProperty("cover_image_2_3")
@@ -98,6 +106,10 @@ public class MobileVideoInfo {
     private String playUrl;
     @JsonProperty("series_ids")
     private List<Long> seriesIds = new ArrayList<Long>();
+    @JsonProperty("style_label_ids")
+    private List<Long> styleLabelIds = new ArrayList<Long>();
+    @JsonProperty("style_label_names")
+    private List<String> styleLabelNames = new ArrayList<String>();
     @JsonProperty("stytle_score")
     private Double stytleScore;
     @JsonProperty("title")
@@ -163,6 +175,26 @@ public class MobileVideoInfo {
     @JsonProperty("brand_ids")
     public void setBrandIds(List<Long> brandIds) {
         this.brandIds = brandIds;
+    }
+
+    @JsonProperty("content_label_ids")
+    public List<Long> getContentLabelIds() {
+        return contentLabelIds;
+    }
+
+    @JsonProperty("content_label_ids")
+    public void setContentLabelIds(List<Long> contentLabelIds) {
+        this.contentLabelIds = contentLabelIds;
+    }
+
+    @JsonProperty("content_label_names")
+    public List<String> getContentLabelNames() {
+        return contentLabelNames;
+    }
+
+    @JsonProperty("content_label_names")
+    public void setContentLabelNames(List<String> contentLabelNames) {
+        this.contentLabelNames = contentLabelNames;
     }
 
     @JsonProperty("cover_image")
@@ -355,6 +387,26 @@ public class MobileVideoInfo {
         this.seriesIds = seriesIds;
     }
 
+    @JsonProperty("style_label_ids")
+    public List<Long> getStyleLabelIds() {
+        return styleLabelIds;
+    }
+
+    @JsonProperty("style_label_ids")
+    public void setStyleLabelIds(List<Long> styleLabelIds) {
+        this.styleLabelIds = styleLabelIds;
+    }
+
+    @JsonProperty("style_label_names")
+    public List<String> getStyleLabelNames() {
+        return styleLabelNames;
+    }
+
+    @JsonProperty("style_label_names")
+    public void setStyleLabelNames(List<String> styleLabelNames) {
+        this.styleLabelNames = styleLabelNames;
+    }
+
     @JsonProperty("stytle_score")
     public Double getStytleScore() {
         return stytleScore;
@@ -459,6 +511,14 @@ public class MobileVideoInfo {
         sb.append('=');
         sb.append(((this.brandIds == null)?"<null>":this.brandIds));
         sb.append(',');
+        sb.append("contentLabelIds");
+        sb.append('=');
+        sb.append(((this.contentLabelIds == null)?"<null>":this.contentLabelIds));
+        sb.append(',');
+        sb.append("contentLabelNames");
+        sb.append('=');
+        sb.append(((this.contentLabelNames == null)?"<null>":this.contentLabelNames));
+        sb.append(',');
         sb.append("coverImage");
         sb.append('=');
         sb.append(((this.coverImage == null)?"<null>":this.coverImage));
@@ -535,6 +595,14 @@ public class MobileVideoInfo {
         sb.append('=');
         sb.append(((this.seriesIds == null)?"<null>":this.seriesIds));
         sb.append(',');
+        sb.append("styleLabelIds");
+        sb.append('=');
+        sb.append(((this.styleLabelIds == null)?"<null>":this.styleLabelIds));
+        sb.append(',');
+        sb.append("styleLabelNames");
+        sb.append('=');
+        sb.append(((this.styleLabelNames == null)?"<null>":this.styleLabelNames));
+        sb.append(',');
         sb.append("stytleScore");
         sb.append('=');
         sb.append(((this.stytleScore == null)?"<null>":this.stytleScore));
@@ -594,6 +662,7 @@ public class MobileVideoInfo {
         result = ((result* 31)+((this.factoryIds == null)? 0 :this.factoryIds.hashCode()));
         result = ((result* 31)+((this.coverImage23 == null)? 0 :this.coverImage23 .hashCode()));
         result = ((result* 31)+((this.playUrl == null)? 0 :this.playUrl.hashCode()));
+        result = ((result* 31)+((this.contentLabelIds == null)? 0 :this.contentLabelIds.hashCode()));
         result = ((result* 31)+((this.videoSource == null)? 0 :this.videoSource.hashCode()));
         result = ((result* 31)+((this.attributeNames == null)? 0 :this.attributeNames.hashCode()));
         result = ((result* 31)+((this.labelIds == null)? 0 :this.labelIds.hashCode()));
@@ -605,9 +674,12 @@ public class MobileVideoInfo {
         result = ((result* 31)+((this.isPublic == null)? 0 :this.isPublic.hashCode()));
         result = ((result* 31)+((this.expireDate == null)? 0 :this.expireDate.hashCode()));
         result = ((result* 31)+((this.labeled == null)? 0 :this.labeled.hashCode()));
+        result = ((result* 31)+((this.contentLabelNames == null)? 0 :this.contentLabelNames.hashCode()));
         result = ((result* 31)+((this.authorId == null)? 0 :this.authorId.hashCode()));
         result = ((result* 31)+((this.totalScore == null)? 0 :this.totalScore.hashCode()));
+        result = ((result* 31)+((this.styleLabelIds == null)? 0 :this.styleLabelIds.hashCode()));
         result = ((result* 31)+((this.authorName == null)? 0 :this.authorName.hashCode()));
+        result = ((result* 31)+((this.styleLabelNames == null)? 0 :this.styleLabelNames.hashCode()));
         result = ((result* 31)+((this.additionalProperties == null)? 0 :this.additionalProperties.hashCode()));
         result = ((result* 31)+((this.isDel == null)? 0 :this.isDel.hashCode()));
         return result;
@@ -622,7 +694,7 @@ public class MobileVideoInfo {
             return false;
         }
         MobileVideoInfo rhs = ((MobileVideoInfo) other);
-        return (((((((((((((((((((((((((((((((((this.isRecommend == rhs.isRecommend)||((this.isRecommend!= null)&&this.isRecommend.equals(rhs.isRecommend)))&&((this.titleScore == rhs.titleScore)||((this.titleScore!= null)&&this.titleScore.equals(rhs.titleScore))))&&((this.labelNames == rhs.labelNames)||((this.labelNames!= null)&&this.labelNames.equals(rhs.labelNames))))&&((this.stytleScore == rhs.stytleScore)||((this.stytleScore!= null)&&this.stytleScore.equals(rhs.stytleScore))))&&((this.createdStime == rhs.createdStime)||((this.createdStime!= null)&&this.createdStime.equals(rhs.createdStime))))&&((this.duaration == rhs.duaration)||((this.duaration!= null)&&this.duaration.equals(rhs.duaration))))&&((this.videoId == rhs.videoId)||((this.videoId!= null)&&this.videoId.equals(rhs.videoId))))&&((this.isPrivacy == rhs.isPrivacy)||((this.isPrivacy!= null)&&this.isPrivacy.equals(rhs.isPrivacy))))&&((this.mediaId == rhs.mediaId)||((this.mediaId!= null)&&this.mediaId.equals(rhs.mediaId))))&&((this.title == rhs.title)||((this.title!= null)&&this.title.equals(rhs.title))))&&((this.brandIds == rhs.brandIds)||((this.brandIds!= null)&&this.brandIds.equals(rhs.brandIds))))&&((this.makeScore == rhs.makeScore)||((this.makeScore!= null)&&this.makeScore.equals(rhs.makeScore))))&&((this.seriesIds == rhs.seriesIds)||((this.seriesIds!= null)&&this.seriesIds.equals(rhs.seriesIds))))&&((this.factoryIds == rhs.factoryIds)||((this.factoryIds!= null)&&this.factoryIds.equals(rhs.factoryIds))))&&((this.coverImage23 == rhs.coverImage23)||((this.coverImage23 != null)&&this.coverImage23 .equals(rhs.coverImage23))))&&((this.playUrl == rhs.playUrl)||((this.playUrl!= null)&&this.playUrl.equals(rhs.playUrl))))&&((this.videoSource == rhs.videoSource)||((this.videoSource!= null)&&this.videoSource.equals(rhs.videoSource))))&&((this.attributeNames == rhs.attributeNames)||((this.attributeNames!= null)&&this.attributeNames.equals(rhs.attributeNames))))&&((this.labelIds == rhs.labelIds)||((this.labelIds!= null)&&this.labelIds.equals(rhs.labelIds))))&&((this.attributeIds == rhs.attributeIds)||((this.attributeIds!= null)&&this.attributeIds.equals(rhs.attributeIds))))&&((this.firstFrame == rhs.firstFrame)||((this.firstFrame!= null)&&this.firstFrame.equals(rhs.firstFrame))))&&((this.verifyStatus == rhs.verifyStatus)||((this.verifyStatus!= null)&&this.verifyStatus.equals(rhs.verifyStatus))))&&((this.offVideo == rhs.offVideo)||((this.offVideo!= null)&&this.offVideo.equals(rhs.offVideo))))&&((this.coverImage == rhs.coverImage)||((this.coverImage!= null)&&this.coverImage.equals(rhs.coverImage))))&&((this.isPublic == rhs.isPublic)||((this.isPublic!= null)&&this.isPublic.equals(rhs.isPublic))))&&((this.expireDate == rhs.expireDate)||((this.expireDate!= null)&&this.expireDate.equals(rhs.expireDate))))&&((this.labeled == rhs.labeled)||((this.labeled!= null)&&this.labeled.equals(rhs.labeled))))&&((this.authorId == rhs.authorId)||((this.authorId!= null)&&this.authorId.equals(rhs.authorId))))&&((this.totalScore == rhs.totalScore)||((this.totalScore!= null)&&this.totalScore.equals(rhs.totalScore))))&&((this.authorName == rhs.authorName)||((this.authorName!= null)&&this.authorName.equals(rhs.authorName))))&&((this.additionalProperties == rhs.additionalProperties)||((this.additionalProperties!= null)&&this.additionalProperties.equals(rhs.additionalProperties))))&&((this.isDel == rhs.isDel)||((this.isDel!= null)&&this.isDel.equals(rhs.isDel))));
+        return (((((((((((((((((((((((((((((((((((((this.isRecommend == rhs.isRecommend)||((this.isRecommend!= null)&&this.isRecommend.equals(rhs.isRecommend)))&&((this.titleScore == rhs.titleScore)||((this.titleScore!= null)&&this.titleScore.equals(rhs.titleScore))))&&((this.labelNames == rhs.labelNames)||((this.labelNames!= null)&&this.labelNames.equals(rhs.labelNames))))&&((this.stytleScore == rhs.stytleScore)||((this.stytleScore!= null)&&this.stytleScore.equals(rhs.stytleScore))))&&((this.createdStime == rhs.createdStime)||((this.createdStime!= null)&&this.createdStime.equals(rhs.createdStime))))&&((this.duaration == rhs.duaration)||((this.duaration!= null)&&this.duaration.equals(rhs.duaration))))&&((this.videoId == rhs.videoId)||((this.videoId!= null)&&this.videoId.equals(rhs.videoId))))&&((this.isPrivacy == rhs.isPrivacy)||((this.isPrivacy!= null)&&this.isPrivacy.equals(rhs.isPrivacy))))&&((this.mediaId == rhs.mediaId)||((this.mediaId!= null)&&this.mediaId.equals(rhs.mediaId))))&&((this.title == rhs.title)||((this.title!= null)&&this.title.equals(rhs.title))))&&((this.brandIds == rhs.brandIds)||((this.brandIds!= null)&&this.brandIds.equals(rhs.brandIds))))&&((this.makeScore == rhs.makeScore)||((this.makeScore!= null)&&this.makeScore.equals(rhs.makeScore))))&&((this.seriesIds == rhs.seriesIds)||((this.seriesIds!= null)&&this.seriesIds.equals(rhs.seriesIds))))&&((this.factoryIds == rhs.factoryIds)||((this.factoryIds!= null)&&this.factoryIds.equals(rhs.factoryIds))))&&((this.coverImage23 == rhs.coverImage23)||((this.coverImage23 != null)&&this.coverImage23 .equals(rhs.coverImage23))))&&((this.playUrl == rhs.playUrl)||((this.playUrl!= null)&&this.playUrl.equals(rhs.playUrl))))&&((this.contentLabelIds == rhs.contentLabelIds)||((this.contentLabelIds!= null)&&this.contentLabelIds.equals(rhs.contentLabelIds))))&&((this.videoSource == rhs.videoSource)||((this.videoSource!= null)&&this.videoSource.equals(rhs.videoSource))))&&((this.attributeNames == rhs.attributeNames)||((this.attributeNames!= null)&&this.attributeNames.equals(rhs.attributeNames))))&&((this.labelIds == rhs.labelIds)||((this.labelIds!= null)&&this.labelIds.equals(rhs.labelIds))))&&((this.attributeIds == rhs.attributeIds)||((this.attributeIds!= null)&&this.attributeIds.equals(rhs.attributeIds))))&&((this.firstFrame == rhs.firstFrame)||((this.firstFrame!= null)&&this.firstFrame.equals(rhs.firstFrame))))&&((this.verifyStatus == rhs.verifyStatus)||((this.verifyStatus!= null)&&this.verifyStatus.equals(rhs.verifyStatus))))&&((this.offVideo == rhs.offVideo)||((this.offVideo!= null)&&this.offVideo.equals(rhs.offVideo))))&&((this.coverImage == rhs.coverImage)||((this.coverImage!= null)&&this.coverImage.equals(rhs.coverImage))))&&((this.isPublic == rhs.isPublic)||((this.isPublic!= null)&&this.isPublic.equals(rhs.isPublic))))&&((this.expireDate == rhs.expireDate)||((this.expireDate!= null)&&this.expireDate.equals(rhs.expireDate))))&&((this.labeled == rhs.labeled)||((this.labeled!= null)&&this.labeled.equals(rhs.labeled))))&&((this.contentLabelNames == rhs.contentLabelNames)||((this.contentLabelNames!= null)&&this.contentLabelNames.equals(rhs.contentLabelNames))))&&((this.authorId == rhs.authorId)||((this.authorId!= null)&&this.authorId.equals(rhs.authorId))))&&((this.totalScore == rhs.totalScore)||((this.totalScore!= null)&&this.totalScore.equals(rhs.totalScore))))&&((this.styleLabelIds == rhs.styleLabelIds)||((this.styleLabelIds!= null)&&this.styleLabelIds.equals(rhs.styleLabelIds))))&&((this.authorName == rhs.authorName)||((this.authorName!= null)&&this.authorName.equals(rhs.authorName))))&&((this.styleLabelNames == rhs.styleLabelNames)||((this.styleLabelNames!= null)&&this.styleLabelNames.equals(rhs.styleLabelNames))))&&((this.additionalProperties == rhs.additionalProperties)||((this.additionalProperties!= null)&&this.additionalProperties.equals(rhs.additionalProperties))))&&((this.isDel == rhs.isDel)||((this.isDel!= null)&&this.isDel.equals(rhs.isDel))));
     }
 
 }

@@ -10,7 +10,7 @@ public class GenEsTest extends TestCase {
         //String sourceDirectory="/Users/xwx/projects/c-tools/c-jsongen/src/test/resources/schema.json";
         String sourceDirectory="https://httpbin.org/json";
         String targetDirectory="/Users/xwx/projects/c-tools/c-jsongen/src/test/java";
-        GenEs gen = new GenEs(sourceDirectory, targetDirectory, false);
+        GenEs gen = new GenEs(false, sourceDirectory, targetDirectory,  "com.bixuebihui.hit");
         gen.generate();
     }
     public void testGenerateEsMapping() throws IOException {
@@ -18,7 +18,7 @@ public class GenEsTest extends TestCase {
         String sourceDirectory="http://yz-test1.es6.autohome.com.cn/mobile-video-info/_mapping";
         String targetDirectory="/Users/xwx/projects/c-tools/c-jsongen/src/test/java";
         boolean isSchema = true;
-        GenEs gen = new GenEs(sourceDirectory, targetDirectory, isSchema);
+        GenEs gen = new GenEs(isSchema, sourceDirectory, targetDirectory, "com.bixuebihui.hit");
         gen.generate();
     }
 }

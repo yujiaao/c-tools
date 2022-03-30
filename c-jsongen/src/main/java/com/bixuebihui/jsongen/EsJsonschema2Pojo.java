@@ -4,6 +4,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.sun.codemodel.CodeWriter;
 import com.sun.codemodel.JCodeModel;
 import org.apache.commons.io.FilenameUtils;
+
 import org.jsonschema2pojo.*;
 import org.jsonschema2pojo.exception.GenerationException;
 import org.jsonschema2pojo.rules.RuleFactory;
@@ -58,6 +59,8 @@ public class EsJsonschema2Pojo {
                 removeOldOutput(config.getTargetDirectory());
             }
 
+            boolean mkdir = config.getTargetDirectory().exists() || config.getTargetDirectory().mkdirs();
+
             for (Iterator<URL> sources = config.getSource(); sources.hasNext();) {
                 URL source = sources.next();
 
@@ -65,11 +68,15 @@ public class EsJsonschema2Pojo {
                     generateRecursive(config, mapper, codeModel, defaultString(config.getTargetPackage()), Arrays.asList(URLUtil.getFileFromURL(source).listFiles(config.getFileFilter())));
                 } else {
 
-                   mapper.generate(codeModel, getNodeName(source, config), defaultString(config.getTargetPackage()), source);
+                    String className = getNodeName(source, config);
+                    String packageName  = defaultString(config.getTargetPackage());
+                   mapper.generate(codeModel, className, packageName, source);
+
+
                 }
             }
 
-            if (config.getTargetDirectory().exists() || config.getTargetDirectory().mkdirs()) {
+            if (mkdir) {
                 CodeWriter sourcesWriter = new FileCodeWriterWithEncoding(config.getTargetDirectory(), config.getOutputEncoding());
                 CodeWriter resourcesWriter = new FileCodeWriterWithEncoding(config.getTargetDirectory(), config.getOutputEncoding());
                 codeModel.build(sourcesWriter, resourcesWriter);
@@ -116,7 +123,13 @@ public class EsJsonschema2Pojo {
 
             for (File child : schemaFiles) {
                 if (child.isFile()) {
-                    mapper.generate(codeModel, getNodeName(child.toURI().toURL(), config), defaultString(packageName), child.toURI().toURL());
+
+                    String className =  getNodeName(child.toURI().toURL(), config);
+                    packageName  = defaultString(packageName);
+
+                    mapper.generate(codeModel,className, packageName, child.toURI().toURL());
+
+
                 } else {
                     generateRecursive(config, mapper, codeModel, childQualifiedName(packageName, child.getName()), Arrays.asList(child.listFiles(config.getFileFilter())));
                 }
@@ -155,8 +168,10 @@ public class EsJsonschema2Pojo {
 
             // extract index name
             String url = file.toString();
-            if(url.startsWith("http") && url.endsWith("/_mapping")){
-                url = url.substring(0,url.length()-"/_mapping".length());
+            if(url.startsWith("http") && url.contains("/_mapping")){
+                url = url.substring(0,  url.indexOf("/_mapping"));
+            }else if (url.startsWith("http") && url.contains("/_search")){
+                url = url.substring(0, url.indexOf("/_search"));
             }
 
             return getNodeName(url, config);

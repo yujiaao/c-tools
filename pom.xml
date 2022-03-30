@@ -11,7 +11,7 @@
     <groupId>com.github.yujiaao</groupId>
     <artifactId>c-tools-parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.8.1.1</version>
+    <version>1.9.0.2</version>
 
     <modules>
         <module>c-tools-bom</module>
@@ -26,6 +26,7 @@
         <module>c-tablegen-r2dbc-demo</module>
         <module>c-jsongen</module>
         <module>c-jsongen-es-demo</module>
+        <module>c-estools</module>
     </modules>
     <properties>
         <jackson-databind.version>2.10.4</jackson-databind.version>
@@ -37,7 +38,7 @@
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <mysql.version>8.0.26</mysql.version>
-        <slf4j.version>1.7.32</slf4j.version>
+        <slf4j.version>1.7.36</slf4j.version>
         <validator.version>6.2.0.Final</validator.version>
         <!--
         For a while, we will provide equivalent Hibernate Validator versions for both EE 8 and EE 9:

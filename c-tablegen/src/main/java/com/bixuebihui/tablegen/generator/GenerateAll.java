@@ -34,13 +34,20 @@ public class GenerateAll implements DiffHandler {
            new PojoGenerator(), new DalGenerator(), new BusinessGenerator(),
     };
 
+    Generator[] perIndexGenerator = new Generator[]{
+            new EsJsonSchemaGenerator(),
+    };
+
     Generator[] perViewGenerator = new Generator[]{
             new ViewGenerator(), new DalViewGenerator(), new BusinessViewGenerator(),
     };
+
     Generator[] onceGenerator = new Generator[]{
       new BaseListGenerator(),
             // new PomGenerator(),
     };
+
+
     private BaseListGenerator generator;
 
 
@@ -57,16 +64,22 @@ public class GenerateAll implements DiffHandler {
 
         try {
 
+            if(generator.esConfig!=null) {
+                generateJson(generator.esConfig.getProperty("index_list").split(","));
+                return;
+            }
+
             /*
              * 如果generator_all == yes，则生成所有表 否则，进行本地快照和数据库的比对
              */
             generateOnceFiles();
             if (generator.config.isGenerateAll()) {
-                generatorTables(generator.setInfo.getTableInfos());
+                generateTables(generator.setInfo.getTableInfos());
 
                 if(generator.setInfo.getViewInfos()!=null) {
-                    generatorViews(generator.setInfo.getViewInfos());
+                    generateViews(generator.setInfo.getViewInfos());
                 }
+
 
                // generateWebUI();
                // generateTest();
@@ -109,7 +122,7 @@ public class GenerateAll implements DiffHandler {
         LOG.info(s);
     }
 
-    private void generatorTables(LinkedHashMap<String, TableInfo> tableInfos) throws IOException {
+    private void generateTables(LinkedHashMap<String, TableInfo> tableInfos) throws IOException {
         for(Generator g: perTableGenerator){
             for(TableInfo info: tableInfos.values()) {
                 info(info.getName());
@@ -118,7 +131,16 @@ public class GenerateAll implements DiffHandler {
         }
     }
 
-    private void generatorViews(LinkedHashMap<String, TableInfo> viewInfos) throws IOException {
+    private void generateJson(String[] indices) throws IOException {
+        for(Generator g: perIndexGenerator){
+            for(String indexName: indices) {
+                info(indexName);
+                g.generateToFile(indexName);
+            }
+        }
+    }
+
+    private void generateViews(LinkedHashMap<String, TableInfo> viewInfos) throws IOException {
         for(Generator g: perViewGenerator){
             for(TableInfo info: viewInfos.values()) {
                 info(info.getName());
@@ -135,20 +157,28 @@ public class GenerateAll implements DiffHandler {
 
     void init(String filename) {
         generator = new BaseListGenerator();
-        generator.init(filename);
+        boolean isEs = generator.init(filename);
 
-        for(Generator g: perTableGenerator){
-            g.init(generator.config, generator.dbConfig, generator.setInfo);
+        if(isEs){
+
+            for(Generator g: perIndexGenerator){
+                g.init(generator.config, generator.dbConfig, generator.setInfo, generator.esConfig);
+            }
+
+        }else {
+
+            for (Generator g : perTableGenerator) {
+                g.init(generator.config, generator.dbConfig, generator.setInfo, generator.esConfig);
+            }
+
+            for (Generator g : perViewGenerator) {
+                g.init(generator.config, generator.dbConfig, generator.setInfo, generator.esConfig);
+            }
+
+            for (Generator g : onceGenerator) {
+                g.init(generator.config, generator.dbConfig, generator.setInfo, generator.esConfig);
+            }
         }
-
-        for(Generator g: perViewGenerator){
-            g.init(generator.config, generator.dbConfig, generator.setInfo);
-        }
-
-        for(Generator g: onceGenerator){
-            g.init(generator.config, generator.dbConfig, generator.setInfo);
-        }
-
     }
 
 
