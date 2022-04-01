@@ -1,20 +1,26 @@
 package com.bixuebihui.jsongen;
 
+import com.fasterxml.jackson.core.TreeNode;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.burt.jmespath.Expression;
 import io.burt.jmespath.JmesPath;
 import io.burt.jmespath.jackson.JacksonRuntime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author xwx
  */
 public class EsMapping2JsonschemaUtils {
+
+    static Logger logger = LoggerFactory.getLogger(EsMapping2JsonschemaUtils.class);
 
     /**
      * {
@@ -162,30 +168,49 @@ public class EsMapping2JsonschemaUtils {
      * @param src
      * @return JsonNode properties jsonschema
      */
-    public static JsonNode trans(String src) throws IOException {
+    public static JsonNode trans(String src, Set<String> ignoreFields, Set<String> collectionFields) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
-        return trans(mapper.readTree(src));
+        return trans(mapper.readTree(src), ignoreFields, collectionFields);
     }
 
-    public static JsonNode trans(JsonNode input) throws IOException {
+    public static JsonNode trans(JsonNode input, Set<String> ignoreFields, Set<String> collectionFields) throws IOException {
+
         JmesPath<JsonNode> jmespath = new JacksonRuntime();
         ObjectMapper mapper = new ObjectMapper();
-
 
         Expression<JsonNode> exp = jmespath.compile(
                 //table/index name
                 "{properties:*.mappings.*.properties}| {properties:properties[0]}| {properties:properties[0]}");
+        Expression<JsonNode> exp1 = jmespath.compile(
+                //table/index name
+                "{properties:*.mappings.properties}| {properties:properties[0]}");
         // Finally this is how you search a structure. There's really not much more to it.
         JsonNode result = exp.search(input);
         JsonNode properties = result.path("properties");
+        if(!properties.fields().hasNext()){
+            result = exp1.search(input);
+            properties = result.path("properties");
+        }
+
+        if(!properties.fields().hasNext()){
+            logger.debug("It is not a valid ElasticSearch mapping format, by pass trans");
+            return input;
+        }
+
+
+        for(String ignore : ignoreFields){
+            if(properties.has(ignore)){
+                ((ObjectNode) properties).remove(ignore);
+            }
+        }
 
 
         for (Iterator<Map.Entry<String, JsonNode>> iter = properties.fields(); iter.hasNext(); ) {
             Map.Entry<String, JsonNode> field = iter.next();
-            // System.out.println(field.getKey());
+
             String fieldName = field.getKey();
             String oldType = field.getValue().path("type").textValue();
-            if (fieldName.endsWith("_ids") || fieldName.endsWith("_names")) {
+            if (fieldName.endsWith("_ids") || fieldName.endsWith("_names") || collectionFields.contains(fieldName)) {
                 ((ObjectNode) field.getValue()).put("type", "array");
                 ((ObjectNode) field.getValue()).setAll((ObjectNode)
                         mapper.readTree("{\"items\" : { \"type\" : \"" + typeMapping(oldType) + "\"} }"));

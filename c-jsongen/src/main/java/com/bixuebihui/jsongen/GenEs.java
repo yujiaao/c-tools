@@ -1,5 +1,7 @@
 package com.bixuebihui.jsongen;
 
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jsonschema2pojo.AbstractRuleLogger;
 import org.jsonschema2pojo.DefaultGenerationConfig;
 import org.jsonschema2pojo.SourceType;
@@ -12,6 +14,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Set;
+import java.util.function.Consumer;
 
 
 /**
@@ -46,8 +50,8 @@ public class GenEs extends DefaultGenerationConfig {
      *                     <outputDirectory>${basedir}/src/main/java</outputDirectory>
      *                 </configuration>
      */
-   public void generate() throws  IOException {
-       EsJsonschema2Pojo.generate(this,  new MyRuleLogger());
+   public void generate(Consumer<Pair<String, String[]>> consumer, Set<String> ignoreFields, Set<String> collectionFields) throws  IOException {
+       EsJsonschema2Pojo.generate(this,  new MyRuleLogger(), consumer, ignoreFields,  collectionFields);
    }
 
     @Override

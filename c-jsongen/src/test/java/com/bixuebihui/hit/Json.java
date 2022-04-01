@@ -13,24 +13,24 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
-    "properties"
+    "slideshow"
 })
 @Generated("jsonschema2pojo")
 public class Json {
 
-    @JsonProperty("properties")
-    private Object properties;
+    @JsonProperty("slideshow")
+    private Slideshow slideshow;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
-    @JsonProperty("properties")
-    public Object getProperties() {
-        return properties;
+    @JsonProperty("slideshow")
+    public Slideshow getSlideshow() {
+        return slideshow;
     }
 
-    @JsonProperty("properties")
-    public void setProperties(Object properties) {
-        this.properties = properties;
+    @JsonProperty("slideshow")
+    public void setSlideshow(Slideshow slideshow) {
+        this.slideshow = slideshow;
     }
 
     @JsonAnyGetter
@@ -47,9 +47,9 @@ public class Json {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(Json.class.getName()).append('@').append(Integer.toHexString(System.identityHashCode(this))).append('[');
-        sb.append("properties");
+        sb.append("slideshow");
         sb.append('=');
-        sb.append(((this.properties == null)?"<null>":this.properties));
+        sb.append(((this.slideshow == null)?"<null>":this.slideshow));
         sb.append(',');
         sb.append("additionalProperties");
         sb.append('=');
@@ -66,7 +66,7 @@ public class Json {
     @Override
     public int hashCode() {
         int result = 1;
-        result = ((result* 31)+((this.properties == null)? 0 :this.properties.hashCode()));
+        result = ((result* 31)+((this.slideshow == null)? 0 :this.slideshow.hashCode()));
         result = ((result* 31)+((this.additionalProperties == null)? 0 :this.additionalProperties.hashCode()));
         return result;
     }
@@ -80,7 +80,7 @@ public class Json {
             return false;
         }
         Json rhs = ((Json) other);
-        return (((this.properties == rhs.properties)||((this.properties!= null)&&this.properties.equals(rhs.properties)))&&((this.additionalProperties == rhs.additionalProperties)||((this.additionalProperties!= null)&&this.additionalProperties.equals(rhs.additionalProperties))));
+        return (((this.slideshow == rhs.slideshow)||((this.slideshow!= null)&&this.slideshow.equals(rhs.slideshow)))&&((this.additionalProperties == rhs.additionalProperties)||((this.additionalProperties!= null)&&this.additionalProperties.equals(rhs.additionalProperties))));
     }
 
 }

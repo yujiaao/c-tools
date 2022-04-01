@@ -1,5 +1,5 @@
 
-package com.bixuebihui.hit;
+package com.bixuebihui.jsongen;
 
 import java.util.ArrayList;
 import java.util.HashMap;

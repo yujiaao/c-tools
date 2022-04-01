@@ -78,7 +78,7 @@ public class ElasticSearchFilter extends SqlFilter {
         if (value instanceof Object[]) {
             return Arrays.asList((Object[]) value);
         }
-        return Arrays.asList(value);
+        return List.of(value);
     }
 
 

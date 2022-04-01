@@ -30,17 +30,17 @@ public abstract class EsOperator<T,V> implements Record<T>{
 
     @Override
     public T find() throws DbException {
-        return null;
+        throw new NotImplementedException();
     }
 
     @Override
     public boolean delete() throws DbException {
-        return false;
+        throw new NotImplementedException();
     }
 
     @Override
     public int count() throws DbException {
-        return 0;
+        throw new NotImplementedException();
     }
 
     public static JsonWapper builder() {
@@ -170,16 +170,12 @@ public abstract class EsOperator<T,V> implements Record<T>{
 
     public Wrapper<T> toObjectWrapper(String jsonString) {
         try {
-//            JsonNode node = EsRequest.getTableJsonNode(jsonString, null);
-//
-//            return builder().getObjectMapper().treeToValue(node, clz.getType());
-           String json =  EsRequest.esJsonToTableJson(jsonString, 0,0,0,0,0);
 
+           String json =  EsRequest.esJsonToTableJson(jsonString, 0,0,0,0,0);
             JsonWapper wapper = builder();
             JavaType type = wapper.getObjectMapper().getTypeFactory().constructParametricType(Wrapper.class, getType());
             Wrapper<T> res=  wapper.getObjectMapper().readValue(json, type);
-          //  System.out.println(res);
-            return res;
+           return res;
 
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -220,8 +216,7 @@ public abstract class EsOperator<T,V> implements Record<T>{
 
     @Override
     public List<Object> getVector(String field) throws DbException {
-       //return queryBuilder;
-        return Collections.emptyList();
+        throw new NotImplementedException();
     }
 
     @Override
@@ -248,7 +243,7 @@ public abstract class EsOperator<T,V> implements Record<T>{
 
     @Override
     public Object get(String field) throws DbException {
-        return null;
+        throw new NotImplementedException();
     }
 
 
@@ -275,7 +270,7 @@ public abstract class EsOperator<T,V> implements Record<T>{
 
     @Override
     public SqlPocket getSql() throws DbException {
-        return null;
+        throw new NotImplementedException();
     }
 
     @Override
@@ -285,22 +280,36 @@ public abstract class EsOperator<T,V> implements Record<T>{
 
     @Override
     public List<String> getStringVector(String field) throws DbException {
-        return null;
+        throw new NotImplementedException();
     }
 
     @Override
     public List<Long> getLongVector(String field) throws DbException {
-        return null;
+        throw new NotImplementedException();
     }
 
     @Override
     public int inc(String field) throws DbException {
-        return 0;
+        throw new NotImplementedException();
     }
 
     @Override
     public int update(String[] fields, Object[] values) throws DbException {
-        return 0;
+        throw new NotImplementedException();
+    }
+
+
+    public int update(String _id, String[] fields, Object[] values) throws DbException {
+        HashMap<String, Object> map = Maps.newHashMap();
+        for(int i=0; i<fields.length; i++) {
+            map.put(fields[i], values[i]);
+        }
+        try {
+            return request.update(_id, map);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            throw new DbException(e.getMessage());
+        }
     }
 
 
@@ -317,8 +326,7 @@ public abstract class EsOperator<T,V> implements Record<T>{
 
     @Override
     public int update(String fields, Object values) throws DbException {
-       // return request.update(fields, values);
-        return 0;
+        throw new NotImplementedException();
     }
 
     /**
@@ -348,34 +356,31 @@ public abstract class EsOperator<T,V> implements Record<T>{
      * @return
      */
     public Wrapper<T> selectWithJoin(String resultFields, Query query, LinkedHashMap<String, String> sort, int begin, int end) {
-        int from=begin;
         int size =end-begin;
 
-        String res = request.search(EsQueryBuilder.build(query,  from, size,resultFields, sort));
+        String res = request.search(EsQueryBuilder.build(query, begin, size,resultFields, sort));
 
         return toObjectWrapper(res);
     }
 
     public List<EsSearchHitResult<T>> select(String resultFields, Query query, LinkedHashMap<String, String> sort, int begin, int end) {
-        int from=begin;
         int size =end-begin;
 
-        String res = request.search(EsQueryBuilder.build(query,  from, size,resultFields, sort));
+        String res = request.search(EsQueryBuilder.build(query, begin, size,resultFields, sort));
 
         return toEsResultWrapper(res);
     }
 
     public <K> List<K> select(String resultFields, Query query, LinkedHashMap<String, String> sort, int begin, int end, Class<K> clz) {
-        int from=begin;
         int size =end-begin;
 
-        String res = request.search(EsQueryBuilder.build(query,  from, size,resultFields, sort));
+        String res = request.search(EsQueryBuilder.build(query, begin, size,resultFields, sort));
 
         return toObjectList(res, clz);
     }
 
     public int deleteByQuery(Query sql) {
-            return 0;
+        throw new NotImplementedException();
     }
 
 }

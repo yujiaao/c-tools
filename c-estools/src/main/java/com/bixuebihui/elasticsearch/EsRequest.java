@@ -12,6 +12,7 @@ import com.google.common.collect.Maps;
 import io.burt.jmespath.Expression;
 import io.burt.jmespath.JmesPath;
 import io.burt.jmespath.jackson.JacksonRuntime;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
@@ -93,12 +94,7 @@ public class EsRequest {
     }
 
     public static <T> List<EsSearchHitResult<T>> json2result(String rawResult, JavaType type) throws JsonProcessingException {
-
-        List<EsSearchHitResult<T>> res = mapper.readerFor(type).at("/hits/hits").readValue(rawResult);
-
-        System.out.println(res);
-
-        return res;
+        return mapper.readerFor(type).at("/hits/hits").readValue(rawResult);
     }
 
     /**
@@ -190,7 +186,7 @@ public class EsRequest {
                                             int totalRows
     ) throws JsonProcessingException {
         JsonNode input = mapper.readTree(esJson);
-        if(input==null|| !(input.findPath("/hits/hits") instanceof MissingNode)){
+        if(input==null|| !(input.findPath("/hits/hits/_source") instanceof MissingNode)){
             return null;
         }
         // Finally this is how you search a structure. There's really not much more to it.
@@ -220,8 +216,7 @@ public class EsRequest {
     public String createDoc(String indexName, List<Document> docs) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
 
-        HttpEntityEnclosingRequestBase post;
-        post = new HttpPost(host + "/" + EsQueryBuilder.ACTION_BULK);
+        HttpEntityEnclosingRequestBase post = new HttpPost(host + "/" + EsQueryBuilder.ACTION_BULK);
         StringBuilder sb = new StringBuilder();
 
         for (Document doc : docs) {
@@ -235,17 +230,15 @@ public class EsRequest {
 
             sb.append(objectMapper.writeValueAsString(doc.values)).append("\n");
         }
-        post.setEntity(new StringEntity(sb.toString(), ContentType.APPLICATION_JSON));
 
-        return httpJson(post);
+        return httpJson(post, sb.toString());
     }
 
     public String createIndex(String indexName) {
 
-        HttpEntityEnclosingRequestBase post;
-        post = new HttpPut(host + "/" + indexName);
+        HttpEntityEnclosingRequestBase post = new HttpPut(host + "/" + indexName);
 
-        return httpJson(post);
+        return httpJson(post,"");
     }
 
     /**
@@ -254,9 +247,14 @@ public class EsRequest {
      * @param requestBase
      * @return
      */
-    private String httpJson(HttpEntityEnclosingRequestBase requestBase) {
+    private String httpJson(HttpEntityEnclosingRequestBase requestBase, String body) {
         logger.debug("====>>>>");
-        logger.debug(requestBase.toString());
+        logger.debug(requestBase.toString()+"\n"+body);
+
+        if(StringUtils.isNotBlank(body) && requestBase.getEntity()==null){
+            requestBase.setEntity(new StringEntity(body, ContentType.APPLICATION_JSON));
+        }
+
 
         try (CloseableHttpClient httpClient = HttpClientBuilder.create().build()) {
             if (this.username != null && password != null) {
@@ -275,7 +273,7 @@ public class EsRequest {
 
             String res = getResponseString(response);
             logger.debug("<<<<====");
-            logger.debug(res);
+            logger.debug(res.substring(0,Math.min(20000, res.length())));
             return res;
         } catch (IOException e) {
             e.printStackTrace();
@@ -289,13 +287,15 @@ public class EsRequest {
 
     public String query(Query query, int from, int size, LinkedHashMap<String, String> sort) {
         try {
+            String body = EsQueryBuilder.build(query, from, size, "", sort);
+
             HttpWithJsonEntity getRequest =
                     HttpWithJsonEntity.builder()
                             .withUrl(host + "/" + indexName + "/" + EsQueryBuilder.ACTION_SEARCH)
-                            .withBodyEntry(EsQueryBuilder.build(query, from, size, "", sort))
+                            .withBodyEntry(body)
                             .build();
 
-            return httpJson(getRequest);
+            return httpJson(getRequest,body);
         } catch (UnsupportedEncodingException | URISyntaxException e) {
             e.printStackTrace();
         }
@@ -329,7 +329,7 @@ public class EsRequest {
                             .withBodyEntry(rawJson)
                             .build();
 
-            return httpJson(getRequest);
+            return httpJson(getRequest, rawJson);
         } catch (UnsupportedEncodingException | URISyntaxException e) {
             e.printStackTrace();
         }
@@ -345,7 +345,7 @@ public class EsRequest {
                             .withMethod("POST")
                             .build();
 
-            return httpJson(getRequest);
+            return httpJson(getRequest, rawJson);
         } catch (UnsupportedEncodingException | URISyntaxException e) {
             e.printStackTrace();
         }
@@ -360,7 +360,7 @@ public class EsRequest {
                             .withUrl(host + "/" + EsQueryBuilder.ACTION_CAT + "/" + EsQueryBuilder.ACTION_INDICES)
                             .withBodyEntry("")
                             .build();
-            String res = httpJson(getRequest);
+            String res = httpJson(getRequest, "");
             Matcher matcher = pattern.matcher(res);
             while (matcher.find()) {
                 String matchStr = matcher.group();

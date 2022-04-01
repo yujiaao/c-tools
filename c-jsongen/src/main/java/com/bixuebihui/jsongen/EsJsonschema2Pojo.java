@@ -1,10 +1,12 @@
 package com.bixuebihui.jsongen;
 
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.sun.codemodel.CodeWriter;
-import com.sun.codemodel.JCodeModel;
+import com.sun.codemodel.*;
 import org.apache.commons.io.FilenameUtils;
 
+import org.apache.commons.io.output.StringBuilderWriter;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import org.jsonschema2pojo.*;
 import org.jsonschema2pojo.exception.GenerationException;
 import org.jsonschema2pojo.rules.RuleFactory;
@@ -18,10 +20,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
+import java.util.function.Consumer;
 
 import static org.apache.commons.lang3.StringUtils.*;
 
@@ -42,7 +42,9 @@ public class EsJsonschema2Pojo {
          * @throws IOException
          *             if the application is unable to read data from the source
          */
-        public static void generate(GenerationConfig config, RuleLogger logger) throws IOException {
+        public static void generate(GenerationConfig config, RuleLogger logger,
+                                    Consumer<Pair<String, String[]>> consumer,
+                                    Set<String> ignoreFields, Set<String> collectionFields ) throws IOException {
             Annotator annotator = getAnnotator(config);
             RuleFactory ruleFactory = createRuleFactory(config);
 
@@ -65,13 +67,18 @@ public class EsJsonschema2Pojo {
                 URL source = sources.next();
 
                 if (URLUtil.parseProtocol(source.toString()) == URLProtocol.FILE && URLUtil.getFileFromURL(source).isDirectory()) {
-                    generateRecursive(config, mapper, codeModel, defaultString(config.getTargetPackage()), Arrays.asList(URLUtil.getFileFromURL(source).listFiles(config.getFileFilter())));
+                    generateRecursive(config, mapper, codeModel, defaultString(config.getTargetPackage()), Arrays.asList(URLUtil.getFileFromURL(source).listFiles(config.getFileFilter())), ignoreFields, collectionFields);
                 } else {
 
-                    String className = getNodeName(source, config);
-                    String packageName  = defaultString(config.getTargetPackage());
-                   mapper.generate(codeModel, className, packageName, source);
 
+                   JType res = mapper.generate(codeModel, getNodeName(source, config),  defaultString(config.getTargetPackage()), source, ignoreFields, collectionFields);
+
+
+                    String[] fields = findFields((JDefinedClass) res);
+
+                    if(consumer!=null) {
+                        consumer.accept(ImmutablePair.of(res.name(), fields));
+                    }
 
                 }
             }
@@ -85,7 +92,24 @@ public class EsJsonschema2Pojo {
             }
         }
 
-        private static ContentResolver createContentResolver(GenerationConfig config) {
+    private static String[] findFields(JDefinedClass res) {
+        StringBuilderWriter sb = new StringBuilderWriter();
+        JFormatter f = new JFormatter(sb);
+        for(JAnnotationUse annotation: res.annotations()){
+            if("JsonPropertyOrder".equals(annotation.getAnnotationClass().name())){
+                List<JAnnotationUse> list = (List<JAnnotationUse>) ((JAnnotationArrayMember) (annotation.getAnnotationMembers().get("value"))).annotations();
+                for (JAnnotationValue a: list
+                     ) {
+                    a.generate(f);
+                }
+            }
+        }
+
+        StringBuilder s = sb.getBuilder();
+        return s.substring(1, s.length() - 1).split("\"\"");
+    }
+
+    private static ContentResolver createContentResolver(GenerationConfig config) {
             if (config.getSourceType() == SourceType.YAMLSCHEMA || config.getSourceType() == SourceType.YAML) {
                 return new ContentResolver(new YAMLFactory());
             } else {
@@ -117,9 +141,9 @@ public class EsJsonschema2Pojo {
             }
         }
 
-        private static void generateRecursive(GenerationConfig config, EsSchemaMapper mapper, JCodeModel codeModel, String packageName, List<File> schemaFiles) throws IOException {
+        private static void generateRecursive(GenerationConfig config, EsSchemaMapper mapper, JCodeModel codeModel, String packageName, List<File> schemaFiles, Set<String> ignoreFields, Set<String> collectionFields) throws IOException {
 
-            Collections.sort(schemaFiles, config.getSourceSortOrder().getComparator());
+            schemaFiles.sort(config.getSourceSortOrder().getComparator());
 
             for (File child : schemaFiles) {
                 if (child.isFile()) {
@@ -127,11 +151,11 @@ public class EsJsonschema2Pojo {
                     String className =  getNodeName(child.toURI().toURL(), config);
                     packageName  = defaultString(packageName);
 
-                    mapper.generate(codeModel,className, packageName, child.toURI().toURL());
+                    mapper.generate(codeModel,className, packageName, child.toURI().toURL(), ignoreFields, collectionFields);
 
 
                 } else {
-                    generateRecursive(config, mapper, codeModel, childQualifiedName(packageName, child.getName()), Arrays.asList(child.listFiles(config.getFileFilter())));
+                    generateRecursive(config, mapper, codeModel, childQualifiedName(packageName, child.getName()), Arrays.asList(child.listFiles(config.getFileFilter())), ignoreFields, collectionFields);
                 }
             }
         }
@@ -183,8 +207,8 @@ public class EsJsonschema2Pojo {
                 String[] extensions = config.getFileExtensions() == null ? new String[] {} : config.getFileExtensions();
 
                 boolean extensionRemoved = false;
-                for (int i = 0; i < extensions.length; i++) {
-                    String extension = extensions[i];
+                for (String s : extensions) {
+                    String extension = s;
                     if (extension.length() == 0) {
                         continue;
                     }

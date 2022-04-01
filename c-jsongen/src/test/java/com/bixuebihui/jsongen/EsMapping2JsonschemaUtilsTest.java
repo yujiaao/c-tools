@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import junit.framework.TestCase;
 
 import java.io.IOException;
+import java.util.Collections;
 
 public class EsMapping2JsonschemaUtilsTest extends TestCase {
 
@@ -138,7 +139,7 @@ public class EsMapping2JsonschemaUtilsTest extends TestCase {
             """;
     public void testTrans() throws IOException {
 
-        JsonNode trans = EsMapping2JsonschemaUtils.trans(s);
+        JsonNode trans = EsMapping2JsonschemaUtils.trans(s, Collections.emptySet(), Collections.emptySet());
         System.out.println(trans.toString());
         //  https://www.jsonschema2pojo.org/
     }

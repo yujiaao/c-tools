@@ -17,6 +17,7 @@ import org.jsonschema2pojo.rules.RuleFactory;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
+import java.util.Set;
 
 /**
  * @author xwx
@@ -71,22 +72,15 @@ public class EsSchemaMapper {
      * @throws IOException
      *             if the schema content cannot be read
      */
-    public JType generate(JCodeModel codeModel, String className, String packageName, URL schemaUrl) {
+    public JType generate(JCodeModel codeModel, String className, String packageName, URL schemaUrl, Set<String> ignoreFields, Set<String> collectionFields) throws IOException {
 
         JPackage jpackage = codeModel._package(packageName);
 
-        //ObjectNode schemaNode = readSchema(schemaUrl);
-        try {
-            JsonNode json = EsMapping2JsonschemaUtils.trans(objectMapper().readTree(schemaUrl));
+
+            JsonNode json = EsMapping2JsonschemaUtils.trans(objectMapper().readTree(schemaUrl), ignoreFields, collectionFields);
 
             return generate( codeModel,  className,  packageName,  json);
 
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        //return ruleFactory.getSchemaRule().apply(className, schemaNode, null, jpackage, new Schema(null, schemaNode, null));
-
-        return null;
 
     }
 
@@ -122,7 +116,7 @@ public class EsSchemaMapper {
 
         JPackage jpackage = codeModel._package(packageName);
 
-        JsonNode schemaNode = null;
+        JsonNode schemaNode;
         if (ruleFactory.getGenerationConfig().getSourceType() == SourceType.JSON) {
             JsonNode jsonNode = objectMapper().readTree(json);
             schemaNode = schemaGenerator.schemaFromExample(jsonNode);
@@ -138,7 +132,7 @@ public class EsSchemaMapper {
 
         JPackage jpackage = codeModel._package(packageName);
 
-        JsonNode schemaNode = null;
+        JsonNode schemaNode;
         if (ruleFactory.getGenerationConfig().getSourceType() == SourceType.JSON) {
             schemaNode = schemaGenerator.schemaFromExample(jsonNode);
         } else {

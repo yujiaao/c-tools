@@ -2,13 +2,13 @@ package com.bixuebihui.tablegen.generator;
 
 import com.bixuebihui.jsongen.GenEs;
 import com.bixuebihui.tablegen.NameUtils;
+import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static com.bixuebihui.jsongen.EsJsonschema2Pojo.getNodeName;
 
@@ -19,6 +19,7 @@ public class EsJsonSchemaGenerator extends BaseGenerator {
     protected final static String CLASS_SUFFIX = "Manager";
 
     private static final Logger LOG = LoggerFactory.getLogger(EsJsonSchemaGenerator.class);
+
 
     @Override
     public boolean wantToGenerate(String fileName) {
@@ -38,6 +39,7 @@ public class EsJsonSchemaGenerator extends BaseGenerator {
         return getTargetFileName("business", tableName);
     }
 
+
     @Override
     String getClassName(String tableName) {
         return getPojoClassName(tableName) + CLASS_SUFFIX;
@@ -45,7 +47,7 @@ public class EsJsonSchemaGenerator extends BaseGenerator {
 
     @Override
     public void generateToFile(String tableName) throws IOException {
-        String targetDirectory=this.getBaseDir();
+
         String type = esConfig.getProperty("type", "elasticsearch_mapping");
 
         boolean isSchema = "elasticsearch_mapping".equalsIgnoreCase(esConfig.getProperty("type"));
@@ -57,11 +59,22 @@ public class EsJsonSchemaGenerator extends BaseGenerator {
                 : ( isElasticSearch ? esConfig.getProperty("url") + "/" + tableName + "/_search?size=1"
                         : esConfig.getProperty("url")
         );
-        GenEs gen = new GenEs(isSchema, sourceDirectory, targetDirectory, esConfig.getProperty("package_name"));
-        gen.generate();
-        //String className = getNodeName(tableName, gen);
+        String targetDirectory=this.config.getSrcDir();
+        GenEs gen = new GenEs(isSchema, sourceDirectory, targetDirectory, esConfig.getProperty("package_name")+".pojo");
+
+        EsDalGenerator dal = new EsDalGenerator();
+        dal.init(config, dbConfig, setInfo, esConfig);
+
+        Set<String> ignoreFields = Set.of(esConfig.getProperty("ignore_fields","").split(","));
+        Set<String> collectionFields = Set.of(esConfig.getProperty("collection_fields","").split(","));
+        gen.generate(stringPair -> dal.fields.addAll(Arrays.asList(stringPair.getRight())), ignoreFields, collectionFields);
+
+       // String className = NameUtils.tableNameToClassName(tableName);
+        dal.generateToFile(tableName);
+
+
         if(isElasticSearch) {
-            super.generateToFile(NameUtils.tableNameToClassName(tableName));
+            super.generateToFile(tableName);
         }
     }
 

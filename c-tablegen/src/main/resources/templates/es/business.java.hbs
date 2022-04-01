@@ -1,35 +1,28 @@
 package {{config.packageName}}{{viewModifier}}.business;
 
-{{> [../header-comment.java]}}
+{{> [header-comment.java]}}
 
-import javax.sql.DataSource;
 import {{config.packageName}}{{viewModifier}}.pojo.{{pojoClassName}};
-import com.bixuebihui.jmesa.elasticsearch.EsActiveRecordImpl;
+import {{config.packageName}}{{viewModifier}}.dal.{{pojoClassName}}List;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.processing.Generated;
 
-@Generated("com.github.yujiaao:jsongen")
+import java.util.Map;
+
+@Generated("com.github.yujiaao:tablegen")
 @Repository
-public class {{className}}  extends com.bixuebihui.jmesa.elasticsearch.EsActiveRecordImpl<{{pojoClassName}},Long>
+public class {{className}}  extends {{pojoClassName}}List
 {
 
-    @Autowired
-    @Qualifier("{{config.alias}}")
-    EsProperties properties;
-
-    private EsActiveRecordImpl<{{pojoClassName}}, Long> repository = new EsActiveRecordImpl<>(
-        new EsOperator<>( new EsRequest(properties.getScheme()+ properties.getClusterNodes()[0], "","", EsConstant.CONTENT_DETAIL_INDEX)) {
-            @Override
-            protected Class<{{pojoClassName}}> getType() {
-                return {{pojoClassName}}.class;
-            }
-        });
-
-    public  EsActiveRecordImpl<{{pojoClassName}}, Long> ar(){
-        return repository;
+    /**
+     * the ds map must contain host/url, index_name, username and password for ElasticSearch/HTTP connection
+     */
+    protected {{className}}(@Qualifier("{{config.alias}}") Map<String,String> ds)
+    {
+       super(ds);
     }
 
     // please write your code here!

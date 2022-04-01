@@ -1,0 +1,55 @@
+package {{config.packageName}}{{viewModifier}}.dal;
+
+{{> [header-comment.java]}}
+
+import {{config.packageName}}{{viewModifier}}.pojo.*;
+
+import com.bixuebihui.elasticsearch.EsActiveRecordImpl;
+import com.bixuebihui.elasticsearch.EsOperator;
+import com.bixuebihui.elasticsearch.EsRequest;
+
+import java.util.Map;
+
+import javax.annotation.processing.Generated;
+
+
+@Generated("com.github.yujiaao:tablegen")
+public class {{className}}  {
+    {{! writeDALConstructor(tableName); }}
+
+    private EsActiveRecordImpl<{{pojoClassName}}, Long> repository;
+
+    public  EsActiveRecordImpl<{{pojoClassName}}, Long> ar(){
+        return repository;
+    }
+
+    public String getIndexName(){
+        return "{{tableName}}";
+    }
+
+
+    protected {{className}}(Map<String, String> ds)
+    {
+        this.repository = new EsActiveRecordImpl<>(
+        new EsOperator<>( new EsRequest(ds.get("host"),
+            ds.get("username"),
+            ds.get("password"),
+            this.getIndexName())) {
+            @Override
+            protected Class<{{pojoClassName}}> getType() {
+                return {{pojoClassName}}.class;
+            }
+        });
+    }
+    {{! writeSql(colData, keyData); }}
+    @SuppressWarnings("AlibabaClassNamingShouldBeCamel")
+    public static final class F{
+        {{#each fields ~}}
+        public static final String {{constantName this}} = "{{this}}";
+        {{/each}}
+        public static String[] getAllFields() {
+            return new String[] { {{#each fields}}{{constantName this}}{{#unless @last}}, {{/unless}}{{/each}} };
+        }
+    }
+
+}

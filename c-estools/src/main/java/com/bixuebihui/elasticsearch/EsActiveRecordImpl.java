@@ -15,14 +15,13 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class EsActiveRecordImpl<T, V> implements ActiveRecord<T> {
+public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     private static final Logger LOG = LoggerFactory.getLogger(EsActiveRecordImpl.class);
     /**
      * NOTE that: class field make this class can't use in spring as singleton!
      */
     EsSort orderStack;
     ElasticSearchFilter filterStack;
-
 
 
     SqlLimit limit;
@@ -55,13 +54,13 @@ public class EsActiveRecordImpl<T, V> implements ActiveRecord<T> {
     }
     /** {@inheritDoc} */
     @Override
-    public ActiveRecord<T> in(String field, Object[] values) {
+    public EsActiveRecord<T> in(String field, Object[] values) {
         filterStack.in(field, values);
         return this;
     }
 
     @Override
-    public ActiveRecord<T> emptyStringAsNullCondition() {
+    public EsActiveRecord<T> emptyStringAsNullCondition() {
 
         throw new NotImplementedException();
 
@@ -70,7 +69,7 @@ public class EsActiveRecordImpl<T, V> implements ActiveRecord<T> {
 
     /** {@inheritDoc} */
     @Override
-    public ActiveRecord<T> in(String field, Object values) {
+    public EsActiveRecord<T> in(String field, Object values) {
 
         filterStack.in(field, (Object[]) values);
 
@@ -81,33 +80,33 @@ public class EsActiveRecordImpl<T, V> implements ActiveRecord<T> {
 
     /** {@inheritDoc} */
     @Override
-    public ActiveRecord<T> like(String field, String value) {
+    public EsActiveRecord<T> like(String field, String value) {
         filterStack.contain(field, value);
         return this;
     }
 
     /** {@inheritDoc} */
     @Override
-    public ActiveRecord<T> startWith(String field, String value) {
+    public EsActiveRecord<T> startWith(String field, String value) {
         filterStack.startWith(field, value);
         return this;
     }
 
     /** {@inheritDoc} */
     @Override
-    public ActiveRecord<T> eq(String field, Object value) {
+    public EsActiveRecord<T> eq(String field, Object value) {
         filterStack.is(field, value);
         return this;
     }
 
     @Override
-    public ActiveRecord<T> between(String field, Object leftValue, Object rightValue) {
+    public EsActiveRecord<T> between(String field, Object leftValue, Object rightValue) {
         filterStack.between(field, leftValue, rightValue);
         return this;
     }
 
     @Override
-    public ActiveRecord<T> notBetween(String field, Object leftValue, Object rightValue) {
+    public EsActiveRecord<T> notBetween(String field, Object leftValue, Object rightValue) {
         filterStack.notBetween(field, leftValue, rightValue);
         return this;
     }
@@ -115,7 +114,7 @@ public class EsActiveRecordImpl<T, V> implements ActiveRecord<T> {
 
     /** {@inheritDoc} */
     @Override
-    public ActiveRecord<T> ne(String field, Object value){
+    public EsActiveRecord<T> ne(String field, Object value){
         filterStack.isNot(field, value);
         return this;
     }
@@ -124,7 +123,7 @@ public class EsActiveRecordImpl<T, V> implements ActiveRecord<T> {
     /** {@inheritDoc} */
 
     @Override
-    public ActiveRecord<T> eq(String[] fields, Object[] value)
+    public EsActiveRecord<T> eq(String[] fields, Object[] value)
             throws SQLException {
         for(int i=0; i<fields.length; i++) {
             filterStack.is(fields[i], value[i]);
@@ -135,53 +134,53 @@ public class EsActiveRecordImpl<T, V> implements ActiveRecord<T> {
 
     /** {@inheritDoc} */
     @Override
-    public ActiveRecord<T> greaterThan(String field, Object value) {
+    public EsActiveRecord<T> greaterThan(String field, Object value) {
         filterStack.gt(field, value);
         return this;
     }
 
     /** {@inheritDoc} */
     @Override
-    public ActiveRecord<T> smallerThan(String field, Object value) {
+    public EsActiveRecord<T> smallerThan(String field, Object value) {
         filterStack.lt(field, value);
         return this;
     }
 
     @Override
-    public ActiveRecord<T> isNull(String field) {
+    public EsActiveRecord<T> isNull(String field) {
         filterStack.isNull(field);
         return this;
     }
 
     @Override
-    public ActiveRecord<T> isNotNull(String field) {
+    public EsActiveRecord<T> isNotNull(String field) {
         filterStack.isNotNull(field);
         return this;
     }
 
     /** {@inheritDoc} */
     @Override
-    public ActiveRecord<T> greaterOrEqualThan(String field, Object value) {
+    public EsActiveRecord<T> greaterOrEqualThan(String field, Object value) {
         filterStack.gte(field, value);
         return this;
     }
 
     /** {@inheritDoc} */
     @Override
-    public ActiveRecord<T> smallerOrEqualThan(String field, Object value) {
+    public EsActiveRecord<T> smallerOrEqualThan(String field, Object value) {
         filterStack.lte(field, value);
         return this;
     }
 
 
-    protected ActiveRecord<T> order(String field, int order) {
-        orderStack.addSort(field, order == ActiveRecord.ORDER_DESC ? SqlSort.Sort.DESC	: SqlSort.Sort.ASC);
+    protected EsActiveRecord<T> order(String field, int order) {
+        orderStack.addSort(field, order == EsActiveRecord.ORDER_DESC ? SqlSort.Sort.DESC	: SqlSort.Sort.ASC);
         return this;
     }
 
     /** {@inheritDoc} */
     @Override
-    public ActiveRecord<T> orderByIn(String field, Object[] order) {
+    public EsActiveRecord<T> orderByIn(String field, Object[] order) {
             orderStack.addSortByIn(field, order);
 
         return this;
@@ -189,7 +188,7 @@ public class EsActiveRecordImpl<T, V> implements ActiveRecord<T> {
 
     /** {@inheritDoc} */
     @Override
-    public ActiveRecord<T> limit(int begin, int num) {
+    public EsActiveRecord<T> limit(int begin, int num) {
         limit = new SqlLimit(begin, num);
         return this;
     }
@@ -205,7 +204,7 @@ public class EsActiveRecordImpl<T, V> implements ActiveRecord<T> {
             List<EsSearchHitResult<T>> res = operator.select(resultFields, where
                     , toEsSort(), limit.getBegin(), limit.getEnd());
             if(res.size()>0){
-                return res.stream().map(x -> x.get_source()).collect(Collectors.toList());
+                return res.stream().map(EsSearchHitResult::get_source).collect(Collectors.toList());
             }
             return Collections.emptyList();
         } finally {
@@ -213,7 +212,7 @@ public class EsActiveRecordImpl<T, V> implements ActiveRecord<T> {
         }
     }
 
-    public List<EsSearchHitResult<T>> findAllResult() throws DbException {
+    public List<EsSearchHitResult<T>> findAllDocMeta() throws DbException {
         try {
             Query where = filterStack.toQuery();
 
@@ -315,9 +314,7 @@ public class EsActiveRecordImpl<T, V> implements ActiveRecord<T> {
     public List<Long> getLongVector(String field) throws DbException {
         try {
 
-
             return (List<Long>) operator.selectWithJoin(field, filterStack.toQuery(),null, 0,10000);
-
 
         } finally {
             clear();
@@ -325,7 +322,6 @@ public class EsActiveRecordImpl<T, V> implements ActiveRecord<T> {
     }
 
     public String parseLimitSql() throws DbException {
-
 
             if (limit == null) {
                 limit = SqlLimit.LIMIT_ONE;
@@ -346,90 +342,101 @@ public class EsActiveRecordImpl<T, V> implements ActiveRecord<T> {
 
 
     @Override
-    public ActiveRecord<T> asc(String field) {
-        return null;
+    public EsActiveRecord<T> asc(String field) {
+        order(field, ORDER_ASC);
+        return this;
     }
 
 
     @Override
-    public ActiveRecord<T> desc(String field) {
-        return null;
+    public EsActiveRecord<T> desc(String field) {
+        order(field, ORDER_DESC);
+        return this;
     }
 
     @Override
     public Record<T> last() {
-        return null;
+        throw new NotImplementedException();
     }
 
 
     @Override
     public SqlHelper getCondStack() {
-        return null;
-    }
-
-    @Override
-    public ActiveRecord<T> or(SqlHelper andStack) {
-        return null;
-    }
-
-    @Override
-    public ActiveRecord<T> alias(String shortName) {
-        return null;
-    }
-
-    @Override
-    public ActiveRecord<T> fields(String resultFields) {
-        return null;
-    }
-
-    @Override
-    public ActiveRecord<T> join(String joinClause) {
         throw new NotImplementedException();
     }
 
     @Override
-    public ActiveRecord<T> groupBy(String... fields) {
-        return null;
+    public EsActiveRecord<T> or(SqlHelper andStack) {
+        throw new NotImplementedException();
     }
 
     @Override
-    public ActiveRecord<T> having(HavingConditon fieldProcessor) {
-        return null;
+    public EsActiveRecord<T> alias(String shortName) {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public EsActiveRecord<T> fields(String resultFields) {
+        this.resultFields = resultFields;
+        return this;
+    }
+
+    @Override
+    public EsActiveRecord<T> join(String joinClause) {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public EsActiveRecord<T> groupBy(String... fields) {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public EsActiveRecord<T> having(HavingConditon fieldProcessor) {
+        throw new NotImplementedException();
     }
 
     @Override
     public int count() throws DbException {
-        return 0;
+
+        throw new NotImplementedException();
+
     }
 
     @Override
     public CountValue countValue(String field, GroupFunction fun) throws DbException {
-        return null;
+        throw new NotImplementedException();
+
     }
 
     @Override
     public <K> CountObject<K> countObject(String field, GroupFunction fun, Class<K> objectType) throws DbException {
-        return null;
+        throw new NotImplementedException();
+
     }
 
     @Override
     public <K> List<CountObject<K>> countList(String returnField, String[] groupByFields, String having, GroupFunction fun, Class<K> objectType) {
-        return null;
+        throw new NotImplementedException();
+
     }
 
     @Override
     public CountValue countSum(String field) throws DbException {
-        return null;
+        throw new NotImplementedException();
+
     }
 
     @Override
     public boolean exists() throws DbException {
-        return false;
+        throw new NotImplementedException();
+
     }
 
     @Override
     public List<String> getStringVector(String field) throws DbException {
-        return null;
+        throw new NotImplementedException();
+
     }
 
     /**
@@ -462,7 +469,8 @@ public class EsActiveRecordImpl<T, V> implements ActiveRecord<T> {
      */
     @Override
     public int inc(String field) throws DbException {
-        return 0;
+        throw new NotImplementedException();
+
     }
 
 
@@ -483,7 +491,7 @@ public class EsActiveRecordImpl<T, V> implements ActiveRecord<T> {
      */
     @Override
     public int update(String[] fields, Object[] values) throws DbException {
-        return 0;
+        throw new NotImplementedException();
     }
 
     @Override
@@ -492,9 +500,16 @@ public class EsActiveRecordImpl<T, V> implements ActiveRecord<T> {
     }
 
 
+    @Override
     public int update(String _id, String field, Object value) throws DbException {
         return operator.update(_id, field, value);
     }
+
+    @Override
+    public int update(String _id, String[] fields, Object[] values) throws DbException {
+        return operator.update(_id, fields, values);
+    }
+
 
     public SqlLimit getLimit() {
         return limit;
