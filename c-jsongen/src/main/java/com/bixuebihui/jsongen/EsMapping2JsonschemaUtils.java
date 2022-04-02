@@ -1,8 +1,10 @@
 package com.bixuebihui.jsongen;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.TreeNode;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.MissingNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.burt.jmespath.Expression;
 import io.burt.jmespath.JmesPath;
@@ -205,32 +207,57 @@ public class EsMapping2JsonschemaUtils {
         }
 
 
+        transFields(collectionFields, mapper, properties);
+        return result;
+    }
+
+    private static void transFields(Set<String> collectionFields, ObjectMapper mapper, JsonNode properties) throws JsonProcessingException {
         for (Iterator<Map.Entry<String, JsonNode>> iter = properties.fields(); iter.hasNext(); ) {
             Map.Entry<String, JsonNode> field = iter.next();
 
             String fieldName = field.getKey();
             String oldType = field.getValue().path("type").textValue();
+            JsonNode nested = field.getValue().path("properties");
+            if(!(nested  instanceof MissingNode)){
+                transFields(collectionFields, mapper, nested);
+                ((ObjectNode) field.getValue()).remove("properties");
+            }
+
             if (fieldName.endsWith("_ids") || fieldName.endsWith("_names") || collectionFields.contains(fieldName)) {
+
                 ((ObjectNode) field.getValue()).put("type", "array");
-                ((ObjectNode) field.getValue()).setAll((ObjectNode)
-                        mapper.readTree("{\"items\" : { \"type\" : \"" + typeMapping(oldType) + "\"} }"));
+                if(oldType==null && !(nested  instanceof MissingNode)){
+                    ((ObjectNode) field.getValue()).setAll((ObjectNode)
+                            mapper.readTree("{\"items\" : { \"type\": \"object\", \"properties\": "+nested.toPrettyString()+"} }"));
+                }else {
+                    ((ObjectNode) field.getValue()).setAll((ObjectNode)
+                            mapper.readTree("{\"items\" : { \"type\" : \"" + typeMapping(oldType) + "\"} }"));
+                }
             } else {
-                ((ObjectNode) field.getValue()).put("type", typeMapping(oldType));
+                if(oldType==null && !(nested  instanceof MissingNode)){
+                    ((ObjectNode) field.getValue()).setAll((ObjectNode)
+                            mapper.readTree("{\"items\" : "+nested.toPrettyString()+" }"));
+                }else {
+                    ((ObjectNode) field.getValue()).put("type", typeMapping(oldType));
+                }
+                if("date".equals(oldType)) {
+                    ((ObjectNode) field.getValue()).put("format", "date-time");
+                }
             }
         }
-        return result;
     }
 
     public static String typeMapping(String src) {
-        if ("keyword".equals(src) || "text".equals(src)) {
+        if ("keyword".equals(src) || "text".equals(src)|| "date".equals(src)) {
             return "string";
         }
         if ("long".equals(src)) {
             return "integer";
         }
-        if ("double".equals(src)) {
+        if ("double".equals(src) || "float".equals(src)) {
             return "number";
         }
+
         return src;
     }
 }

@@ -113,13 +113,16 @@ public class ElasticSearchFilter extends SqlFilter {
     }
 
     public String toEsObject(Query query, int from, int size,String fields, LinkedHashMap<String, String> sort) {
-
             return EsQueryBuilder.build(query,from, size,fields,  sort);
-
     }
 
     private void buildEsObject(Bool criteria, Filter filter) {
         Query queryFilter;
+
+        if (wantIgnoreNull(filter)) {
+            return;
+        }
+
         switch (filter.getComparison()) {
             case IS:
                 queryFilter = Query.term(filter.getProperty(), filter.getValue()[0]);
@@ -134,11 +137,10 @@ public class ElasticSearchFilter extends SqlFilter {
                 queryFilter = Query.range(null, null).between(filter.getProperty(), list.get(0), list.get(1));
                 criteria.addMust(queryFilter);
                 break;
-            case NOT_BETWEEN: {
+            case NOT_BETWEEN:
                 List list1 = objToList(filter.getValue());
                 queryFilter = Query.range(null, null).between(filter.getProperty(), list1.get(0), list1.get(1));
                 criteria.addMustNot(queryFilter);
-            }
             break;
             case IS_NULL:
                 queryFilter = Query.term(filter.getProperty(), null);
@@ -164,7 +166,6 @@ public class ElasticSearchFilter extends SqlFilter {
                 queryFilter = Query.range(filter.getProperty(), ImmutableMap.builder().put(Range.LTE, objToList(filter.getValue()).get(0)).build());
                 criteria.addMust(queryFilter);
                 break;
-
             case NOT_IN:
                 queryFilter = Query.terms(filter.getProperty(), Lists.newArrayList(filter.getValue()));
                 criteria.addMustNot(queryFilter);
@@ -173,26 +174,37 @@ public class ElasticSearchFilter extends SqlFilter {
                 queryFilter = Query.terms(filter.getProperty(), Lists.newArrayList(filter.getValue()));
                 criteria.addMust(queryFilter);
                 break;
-
             case NOT_EXISTS:
                 queryFilter = Query.exists(filter.getProperty());
-
                 criteria.addMustNot(queryFilter);
                 break;
             case EXISTS:
                 queryFilter = Query.exists(filter.getProperty());
-
                 criteria.addMust(queryFilter);
                 break;
             case CONTAIN:
                 queryFilter = Query.wildcard(filter.getProperty(), filter.getValue()[0].toString() + "*", 1);
-
                 criteria.addMust(queryFilter);
                 break;
             default:
-
         }
+    }
 
+    private boolean wantIgnoreNull(Filter filter) {
+        switch (filter.getComparison()) {
+            case IS_NOT_NULL:
+            case IS_NULL:
+                break;
+            default:
+                if(!isUseNullAsCondition() && isNullValue(filter)) {
+                    return true;
+                }
+        }
+        return false;
+    }
+
+    private boolean isNullValue(Filter filter) {
+        return filter.getValue() == null || filter.getValue().length > 0 && filter.getValue()[0] == null;
     }
 
 }

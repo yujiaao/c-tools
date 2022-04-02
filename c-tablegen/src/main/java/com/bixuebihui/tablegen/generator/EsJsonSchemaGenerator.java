@@ -69,7 +69,7 @@ public class EsJsonSchemaGenerator extends BaseGenerator {
         Set<String> collectionFields = Set.of(esConfig.getProperty("collection_fields","").split(","));
         gen.generate(stringPair -> dal.fields.addAll(Arrays.asList(stringPair.getRight())), ignoreFields, collectionFields);
 
-       // String className = NameUtils.tableNameToClassName(tableName);
+
         dal.generateToFile(tableName);
 
 

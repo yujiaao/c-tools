@@ -1,8 +1,6 @@
 package com.bixuebihui.jsongen;
 
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.jsonschema2pojo.AbstractRuleLogger;
 import org.jsonschema2pojo.DefaultGenerationConfig;
 import org.jsonschema2pojo.SourceType;
 import org.jsonschema2pojo.util.URLUtil;
@@ -79,55 +77,4 @@ public class GenEs extends DefaultGenerationConfig {
         return Collections.singleton( URLUtil.parseURL(sourceDirectory)).iterator();
     }
 
-    private static class MyRuleLogger extends AbstractRuleLogger {
-        @Override
-        protected void doDebug(String msg) {
-            logger.debug(msg);
-        }
-
-        @Override
-        protected void doError(String msg, Throwable e) {
-            logger.error(msg, e);
-        }
-
-        @Override
-        protected void doInfo(String msg) {
-            logger.info(msg);
-        }
-
-        @Override
-        protected void doTrace(String msg) {
-            logger.trace(msg);
-        }
-
-        @Override
-        protected void doWarn(String msg, Throwable e) {
-            logger.warn(msg, e);
-        }
-
-        @Override
-        public boolean isDebugEnabled() {
-            return logger.isDebugEnabled();
-        }
-
-        @Override
-        public boolean isErrorEnabled() {
-            return logger.isErrorEnabled();
-        }
-
-        @Override
-        public boolean isInfoEnabled() {
-            return logger.isInfoEnabled();
-        }
-
-        @Override
-        public boolean isTraceEnabled() {
-            return logger.isTraceEnabled();
-        }
-
-        @Override
-        public boolean isWarnEnabled() {
-            return logger.isWarnEnabled();
-        }
-    }
 }
