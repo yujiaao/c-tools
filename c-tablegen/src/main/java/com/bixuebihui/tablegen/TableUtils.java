@@ -799,11 +799,17 @@ public class TableUtils {
             }
             if (isNeedNotNullAnnotation(config, cd)) {
                 if (sb.indexOf("@NotNull") < 0) {
+                    if(sb.length()>0){
+                        sb.append("    ");
+                    }
                     sb.append("@NotNull\n");
                 }
             }
 
             if(config.useSwagger && StringUtils.isNotBlank(cd.getComment())){
+                if(sb.length()>0){
+                    sb.append("    ");
+                }
                 sb.append("@Schema(title = \"").append(cd.getComment()).append("\")");
             }
         }

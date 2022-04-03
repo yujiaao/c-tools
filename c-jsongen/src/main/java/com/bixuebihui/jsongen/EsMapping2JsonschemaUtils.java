@@ -1,7 +1,6 @@
 package com.bixuebihui.jsongen;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.TreeNode;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.MissingNode;
@@ -211,6 +210,14 @@ public class EsMapping2JsonschemaUtils {
         return result;
     }
 
+    /**
+     * es fields mapping trans to jsonschema2pojo format
+     * @link https://github.com/joelittlejohn/jsonschema2pojo/wiki/Reference#format
+     * @param collectionFields fields to generate List/Set
+     * @param mapper mapper object
+     * @param properties schema properties JsonNode
+     * @throws JsonProcessingException
+     */
     private static void transFields(Set<String> collectionFields, ObjectMapper mapper, JsonNode properties) throws JsonProcessingException {
         for (Iterator<Map.Entry<String, JsonNode>> iter = properties.fields(); iter.hasNext(); ) {
             Map.Entry<String, JsonNode> field = iter.next();
