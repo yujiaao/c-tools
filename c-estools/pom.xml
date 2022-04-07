@@ -5,11 +5,12 @@
     <parent>
         <artifactId>c-tools-parent</artifactId>
         <groupId>com.github.yujiaao</groupId>
-        <version>1.10.0</version>
+        <version>1.10.0.3</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>c-estools</artifactId>
+    <description>Generate ORM code by ElasticSearch index mapping</description>
 
 
     <properties>
@@ -21,7 +22,7 @@
         <dependency>
             <groupId>com.github.yujiaao</groupId>
             <artifactId>c-dbtools</artifactId>
-            <version>1.10.0</version>
+            <version>1.10.0.3</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
