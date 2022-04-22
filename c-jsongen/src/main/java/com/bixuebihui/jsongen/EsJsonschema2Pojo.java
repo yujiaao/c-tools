@@ -67,7 +67,8 @@ public class EsJsonschema2Pojo {
                 URL source = sources.next();
 
                 if (URLUtil.parseProtocol(source.toString()) == URLProtocol.FILE && URLUtil.getFileFromURL(source).isDirectory()) {
-                    generateRecursive(config, mapper, codeModel, defaultString(config.getTargetPackage()), Arrays.asList(URLUtil.getFileFromURL(source).listFiles(config.getFileFilter())), ignoreFields, collectionFields);
+                    generateRecursive(config, mapper, codeModel, defaultString(config.getTargetPackage()),
+                            Arrays.asList(URLUtil.getFileFromURL(source).listFiles(config.getFileFilter())), ignoreFields, collectionFields);
                 } else {
 
 

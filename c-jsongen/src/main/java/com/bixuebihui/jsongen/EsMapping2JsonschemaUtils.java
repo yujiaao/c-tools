@@ -248,7 +248,20 @@ public class EsMapping2JsonschemaUtils {
                     ((ObjectNode) field.getValue()).put("type", typeMapping(oldType));
                 }
                 if("date".equals(oldType)) {
-                    ((ObjectNode) field.getValue()).put("format", "date-time");
+                    JsonNode formatField = field.getValue().path("format");
+
+                    if(formatField!=null && !(formatField  instanceof MissingNode)) {
+                        String format = formatField.textValue();
+                        if(format.contains("||")){
+                            format = format.substring(0, format.indexOf("||"));
+                        }
+                        ((ObjectNode) field.getValue()).put("customDateTimePattern", format);
+                        ((ObjectNode) field.getValue()).put("format", "date-time");
+
+                    }else {
+                        ((ObjectNode) field.getValue()).put("format", "date-time");
+                    }
+
                 }
             }
         }

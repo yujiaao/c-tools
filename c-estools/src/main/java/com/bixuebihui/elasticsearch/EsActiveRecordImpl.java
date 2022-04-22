@@ -435,8 +435,13 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
 
     @Override
     public List<String> getStringVector(String field) throws DbException {
-        throw new NotImplementedException();
+        try {
 
+            return (List<String>) operator.selectWithJoin(field, filterStack.toQuery(),null, 0,10000);
+
+        } finally {
+            clear();
+        }
     }
 
     /**

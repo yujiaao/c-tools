@@ -1,0 +1,236 @@
+{
+  "all-content-info": {
+    "mappings": {
+      "all-content-info-type": {
+        "properties": {
+          "app_url": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "author_id": {
+            "type": "long"
+          },
+          "author_img": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "author_name": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "biz_id": {
+            "type": "long"
+          },
+          "brand_ids": {
+            "type": "long"
+          },
+          "city_ids": {
+            "type": "long"
+          },
+          "content": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "content_level": {
+            "type": "long"
+          },
+          "content_type": {
+            "type": "long"
+          },
+          "created_stime": {
+            "type": "date",
+            "format": "yyyy/MM/dd HH:mm:ss||yyyy/MM/dd||epoch_millis"
+          },
+          "description": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "duration": {
+            "type": "long"
+          },
+          "factory_ids": {
+            "type": "long"
+          },
+          "global_id": {
+            "type": "long"
+          },
+          "height": {
+            "type": "long"
+          },
+          "img_url": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "is_del": {
+            "type": "long"
+          },
+          "is_off": {
+            "type": "long"
+          },
+          "is_public": {
+            "type": "long"
+          },
+          "koubei_label_names": {
+            "properties": {
+              "name": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
+              },
+              "type": {
+                "type": "long"
+              }
+            }
+          },
+          "label_names": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "like_count": {
+            "type": "long"
+          },
+          "m_url": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "media_id": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "modified_stime": {
+            "type": "date",
+            "format": "yyyy/MM/dd HH:mm:ss||yyyy/MM/dd||epoch_millis"
+          },
+          "multi_images": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "pc_url": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "play_url": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "price": {
+            "type": "float"
+          },
+          "publish_time": {
+            "type": "date",
+            "format": "yyyy/MM/dd HH:mm:ss||yyyy/MM/dd||epoch_millis"
+          },
+          "pv": {
+            "type": "long"
+          },
+          "reply_count": {
+            "type": "long"
+          },
+          "series_ids": {
+            "type": "long"
+          },
+          "size": {
+            "type": "long"
+          },
+          "source": {
+            "type": "long"
+          },
+          "source_biz_id": {
+            "type": "long"
+          },
+          "spec_ids": {
+            "type": "long"
+          },
+          "title": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "topic_reply_count": {
+            "type": "long"
+          },
+          "verify_status": {
+            "type": "long"
+          },
+          "vv": {
+            "type": "long"
+          },
+          "width": {
+            "type": "long"
+          },
+          "year_ids": {
+            "type": "long"
+          }
+        }
+      }
+    }
+  }
+}

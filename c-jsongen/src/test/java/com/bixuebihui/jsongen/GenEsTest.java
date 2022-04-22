@@ -24,6 +24,20 @@ public class GenEsTest extends TestCase {
         String targetDirectory="/Users/xwx/projects/c-tools/c-jsongen/src/test/java";
         boolean isSchema = true;
         GenEs gen = new GenEs(isSchema, sourceDirectory, targetDirectory, "com.bixuebihui.hit");
-        gen.generate(stringPair -> System.out.println(stringPair.getLeft()+":"+ Arrays.toString(stringPair.getRight())), Set.of("duaration"), Set.of("play_url"));
+        gen.generate(stringPair -> System.out.println(stringPair.getLeft()+":"+
+                Arrays.toString(stringPair.getRight())), Set.of("duaration"), Set.of("play_url"));
+    }
+
+    public void testGenerateEsMappingWithNestedObject() throws IOException {
+        //String sourceDirectory="/Users/xwx/projects/c-tools/c-jsongen/src/test/resources/schema.json";
+        String sourceDirectory="/Users/xwx/projects/c-tools/c-jsongen/src/test/resources/schema_nested_object.json";
+        String targetDirectory="/Users/xwx/projects/c-tools/c-jsongen/src/test/java";
+        boolean isSchema = true;
+        GenEs gen = new GenEs(isSchema, sourceDirectory, targetDirectory, "com.bixuebihui.hit");
+        gen.generate(stringPair -> System.out.println(stringPair.getLeft()+":"+
+                        Arrays.toString(stringPair.getRight())),
+                Set.of("duaration"),
+                Set.of("play_url")
+        );
     }
 }

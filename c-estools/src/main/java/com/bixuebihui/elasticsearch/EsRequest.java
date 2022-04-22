@@ -273,7 +273,7 @@ public class EsRequest {
 
             String res = getResponseString(response);
             logger.debug("<<<<====");
-            logger.debug(res.substring(0,Math.min(20000, res.length())));
+            logger.debug(StringUtils.abbreviate(res,1000));
             return res;
         } catch (IOException e) {
             e.printStackTrace();

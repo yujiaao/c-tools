@@ -225,5 +225,10 @@ class EsActiveRecordImplTest {
 
     @Test
     void update() {
+        String _id="12345";
+        String field = "abc";
+        String value ="123";
+        int res = ar.eq("abc", 2).update(_id, field, value);
+        System.out.println(res);
     }
 }
