@@ -4,7 +4,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Set;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class EsActiveRecordImplTest {
@@ -197,6 +199,18 @@ class EsActiveRecordImplTest {
 
     @Test
     void fields() {
+        String _id="12345";
+        String field = "abc";
+        String value ="123";
+        List<Object> res = ar.eq("abc", 2).fields("abc").findAll();
+        System.out.println(res);
+
+        assertEquals("[{abc=2}]", res.toString());
+
+        List<Object> res1 = ar.eq("abc", 2).excludeFields(Set.of("abc")).findAll();
+        System.out.println(res1);
+
+        assertEquals("[{product=chocolate, price=[20, 4], name=12312312321}]", res1.toString());
     }
 
     @Test
@@ -230,5 +244,6 @@ class EsActiveRecordImplTest {
         String value ="123";
         int res = ar.eq("abc", 2).update(_id, field, value);
         System.out.println(res);
+
     }
 }

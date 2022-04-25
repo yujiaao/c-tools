@@ -2,12 +2,14 @@
 package com.bixuebihui.hit;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.processing.Generated;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -16,10 +18,13 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
     "app_url",
+    "attribute_ids",
+    "attribute_names",
     "author_id",
     "author_img",
     "author_level",
     "author_name",
+    "author_sex",
     "biz_id",
     "brand_ids",
     "city_ids",
@@ -29,6 +34,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "created_stime",
     "description",
     "duration",
+    "expire_time",
     "factory_ids",
     "first_frame",
     "global_id",
@@ -53,6 +59,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "off_video",
     "pc_url",
     "play_url",
+    "positive_negative",
     "price",
     "price_type",
     "publish_time",
@@ -66,6 +73,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "source_biz_id",
     "spec_ids",
     "spec_names",
+    "style_label_ids",
+    "style_label_names",
     "style_score",
     "sub_title",
     "title",
@@ -74,13 +83,18 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "total_score",
     "verify_status",
     "vv",
-    "width"
+    "width",
+    "year_ids"
 })
 @Generated("jsonschema2pojo")
 public class AllContentInfo {
 
     @JsonProperty("app_url")
     private String appUrl;
+    @JsonProperty("attribute_ids")
+    private List<Long> attributeIds = new ArrayList<Long>();
+    @JsonProperty("attribute_names")
+    private List<String> attributeNames = new ArrayList<String>();
     @JsonProperty("author_id")
     private Long authorId;
     @JsonProperty("author_img")
@@ -89,6 +103,8 @@ public class AllContentInfo {
     private Long authorLevel;
     @JsonProperty("author_name")
     private String authorName;
+    @JsonProperty("author_sex")
+    private Long authorSex;
     @JsonProperty("biz_id")
     private Long bizId;
     @JsonProperty("brand_ids")
@@ -107,6 +123,9 @@ public class AllContentInfo {
     private String description;
     @JsonProperty("duration")
     private Long duration;
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy/MM/dd HH:mm:ss", timezone = "UTC")
+    @JsonProperty("expire_time")
+    private Date expireTime;
     @JsonProperty("factory_ids")
     private List<Long> factoryIds = new ArrayList<Long>();
     @JsonProperty("first_frame")
@@ -132,7 +151,7 @@ public class AllContentInfo {
     @JsonProperty("is_recommend")
     private Long isRecommend;
     @JsonProperty("koubei_label_names")
-    private List<String> koubeiLabelNames = new ArrayList<String>();
+    private List<KoubeiLabelName> koubeiLabelNames = new ArrayList<KoubeiLabelName>();
     @JsonProperty("label_ids")
     private List<Long> labelIds = new ArrayList<Long>();
     @JsonProperty("label_names")
@@ -155,6 +174,8 @@ public class AllContentInfo {
     private String pcUrl;
     @JsonProperty("play_url")
     private List<String> playUrl = new ArrayList<String>();
+    @JsonProperty("positive_negative")
+    private Long positiveNegative;
     @JsonProperty("price")
     private Double price;
     @JsonProperty("price_type")
@@ -181,6 +202,10 @@ public class AllContentInfo {
     private List<Long> specIds = new ArrayList<Long>();
     @JsonProperty("spec_names")
     private List<String> specNames = new ArrayList<String>();
+    @JsonProperty("style_label_ids")
+    private List<Long> styleLabelIds = new ArrayList<Long>();
+    @JsonProperty("style_label_names")
+    private List<String> styleLabelNames = new ArrayList<String>();
     @JsonProperty("style_score")
     private Double styleScore;
     @JsonProperty("sub_title")
@@ -199,6 +224,8 @@ public class AllContentInfo {
     private Long vv;
     @JsonProperty("width")
     private Long width;
+    @JsonProperty("year_ids")
+    private List<Long> yearIds = new ArrayList<Long>();
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
@@ -210,6 +237,26 @@ public class AllContentInfo {
     @JsonProperty("app_url")
     public void setAppUrl(String appUrl) {
         this.appUrl = appUrl;
+    }
+
+    @JsonProperty("attribute_ids")
+    public List<Long> getAttributeIds() {
+        return attributeIds;
+    }
+
+    @JsonProperty("attribute_ids")
+    public void setAttributeIds(List<Long> attributeIds) {
+        this.attributeIds = attributeIds;
+    }
+
+    @JsonProperty("attribute_names")
+    public List<String> getAttributeNames() {
+        return attributeNames;
+    }
+
+    @JsonProperty("attribute_names")
+    public void setAttributeNames(List<String> attributeNames) {
+        this.attributeNames = attributeNames;
     }
 
     @JsonProperty("author_id")
@@ -250,6 +297,16 @@ public class AllContentInfo {
     @JsonProperty("author_name")
     public void setAuthorName(String authorName) {
         this.authorName = authorName;
+    }
+
+    @JsonProperty("author_sex")
+    public Long getAuthorSex() {
+        return authorSex;
+    }
+
+    @JsonProperty("author_sex")
+    public void setAuthorSex(Long authorSex) {
+        this.authorSex = authorSex;
     }
 
     @JsonProperty("biz_id")
@@ -340,6 +397,16 @@ public class AllContentInfo {
     @JsonProperty("duration")
     public void setDuration(Long duration) {
         this.duration = duration;
+    }
+
+    @JsonProperty("expire_time")
+    public Date getExpireTime() {
+        return expireTime;
+    }
+
+    @JsonProperty("expire_time")
+    public void setExpireTime(Date expireTime) {
+        this.expireTime = expireTime;
     }
 
     @JsonProperty("factory_ids")
@@ -463,12 +530,12 @@ public class AllContentInfo {
     }
 
     @JsonProperty("koubei_label_names")
-    public List<String> getKoubeiLabelNames() {
+    public List<KoubeiLabelName> getKoubeiLabelNames() {
         return koubeiLabelNames;
     }
 
     @JsonProperty("koubei_label_names")
-    public void setKoubeiLabelNames(List<String> koubeiLabelNames) {
+    public void setKoubeiLabelNames(List<KoubeiLabelName> koubeiLabelNames) {
         this.koubeiLabelNames = koubeiLabelNames;
     }
 
@@ -580,6 +647,16 @@ public class AllContentInfo {
     @JsonProperty("play_url")
     public void setPlayUrl(List<String> playUrl) {
         this.playUrl = playUrl;
+    }
+
+    @JsonProperty("positive_negative")
+    public Long getPositiveNegative() {
+        return positiveNegative;
+    }
+
+    @JsonProperty("positive_negative")
+    public void setPositiveNegative(Long positiveNegative) {
+        this.positiveNegative = positiveNegative;
     }
 
     @JsonProperty("price")
@@ -712,6 +789,26 @@ public class AllContentInfo {
         this.specNames = specNames;
     }
 
+    @JsonProperty("style_label_ids")
+    public List<Long> getStyleLabelIds() {
+        return styleLabelIds;
+    }
+
+    @JsonProperty("style_label_ids")
+    public void setStyleLabelIds(List<Long> styleLabelIds) {
+        this.styleLabelIds = styleLabelIds;
+    }
+
+    @JsonProperty("style_label_names")
+    public List<String> getStyleLabelNames() {
+        return styleLabelNames;
+    }
+
+    @JsonProperty("style_label_names")
+    public void setStyleLabelNames(List<String> styleLabelNames) {
+        this.styleLabelNames = styleLabelNames;
+    }
+
     @JsonProperty("style_score")
     public Double getStyleScore() {
         return styleScore;
@@ -802,6 +899,16 @@ public class AllContentInfo {
         this.width = width;
     }
 
+    @JsonProperty("year_ids")
+    public List<Long> getYearIds() {
+        return yearIds;
+    }
+
+    @JsonProperty("year_ids")
+    public void setYearIds(List<Long> yearIds) {
+        this.yearIds = yearIds;
+    }
+
     @JsonAnyGetter
     public Map<String, Object> getAdditionalProperties() {
         return this.additionalProperties;
@@ -820,6 +927,14 @@ public class AllContentInfo {
         sb.append('=');
         sb.append(((this.appUrl == null)?"<null>":this.appUrl));
         sb.append(',');
+        sb.append("attributeIds");
+        sb.append('=');
+        sb.append(((this.attributeIds == null)?"<null>":this.attributeIds));
+        sb.append(',');
+        sb.append("attributeNames");
+        sb.append('=');
+        sb.append(((this.attributeNames == null)?"<null>":this.attributeNames));
+        sb.append(',');
         sb.append("authorId");
         sb.append('=');
         sb.append(((this.authorId == null)?"<null>":this.authorId));
@@ -835,6 +950,10 @@ public class AllContentInfo {
         sb.append("authorName");
         sb.append('=');
         sb.append(((this.authorName == null)?"<null>":this.authorName));
+        sb.append(',');
+        sb.append("authorSex");
+        sb.append('=');
+        sb.append(((this.authorSex == null)?"<null>":this.authorSex));
         sb.append(',');
         sb.append("bizId");
         sb.append('=');
@@ -871,6 +990,10 @@ public class AllContentInfo {
         sb.append("duration");
         sb.append('=');
         sb.append(((this.duration == null)?"<null>":this.duration));
+        sb.append(',');
+        sb.append("expireTime");
+        sb.append('=');
+        sb.append(((this.expireTime == null)?"<null>":this.expireTime));
         sb.append(',');
         sb.append("factoryIds");
         sb.append('=');
@@ -968,6 +1091,10 @@ public class AllContentInfo {
         sb.append('=');
         sb.append(((this.playUrl == null)?"<null>":this.playUrl));
         sb.append(',');
+        sb.append("positiveNegative");
+        sb.append('=');
+        sb.append(((this.positiveNegative == null)?"<null>":this.positiveNegative));
+        sb.append(',');
         sb.append("price");
         sb.append('=');
         sb.append(((this.price == null)?"<null>":this.price));
@@ -1020,6 +1147,14 @@ public class AllContentInfo {
         sb.append('=');
         sb.append(((this.specNames == null)?"<null>":this.specNames));
         sb.append(',');
+        sb.append("styleLabelIds");
+        sb.append('=');
+        sb.append(((this.styleLabelIds == null)?"<null>":this.styleLabelIds));
+        sb.append(',');
+        sb.append("styleLabelNames");
+        sb.append('=');
+        sb.append(((this.styleLabelNames == null)?"<null>":this.styleLabelNames));
+        sb.append(',');
         sb.append("styleScore");
         sb.append('=');
         sb.append(((this.styleScore == null)?"<null>":this.styleScore));
@@ -1056,6 +1191,10 @@ public class AllContentInfo {
         sb.append('=');
         sb.append(((this.width == null)?"<null>":this.width));
         sb.append(',');
+        sb.append("yearIds");
+        sb.append('=');
+        sb.append(((this.yearIds == null)?"<null>":this.yearIds));
+        sb.append(',');
         sb.append("additionalProperties");
         sb.append('=');
         sb.append(((this.additionalProperties == null)?"<null>":this.additionalProperties));
@@ -1081,9 +1220,12 @@ public class AllContentInfo {
         result = ((result* 31)+((this.likeCount == null)? 0 :this.likeCount.hashCode()));
         result = ((result* 31)+((this.source == null)? 0 :this.source.hashCode()));
         result = ((result* 31)+((this.mediaId == null)? 0 :this.mediaId.hashCode()));
+        result = ((result* 31)+((this.yearIds == null)? 0 :this.yearIds.hashCode()));
         result = ((result* 31)+((this.makeScore == null)? 0 :this.makeScore.hashCode()));
         result = ((result* 31)+((this.playUrl == null)? 0 :this.playUrl.hashCode()));
+        result = ((result* 31)+((this.attributeNames == null)? 0 :this.attributeNames.hashCode()));
         result = ((result* 31)+((this.labelIds == null)? 0 :this.labelIds.hashCode()));
+        result = ((result* 31)+((this.attributeIds == null)? 0 :this.attributeIds.hashCode()));
         result = ((result* 31)+((this.firstFrame == null)? 0 :this.firstFrame.hashCode()));
         result = ((result* 31)+((this.multiImages == null)? 0 :this.multiImages.hashCode()));
         result = ((result* 31)+((this.subTitle == null)? 0 :this.subTitle.hashCode()));
@@ -1098,9 +1240,11 @@ public class AllContentInfo {
         result = ((result* 31)+((this.publishTime == null)? 0 :this.publishTime.hashCode()));
         result = ((result* 31)+((this.pcUrl == null)? 0 :this.pcUrl.hashCode()));
         result = ((result* 31)+((this.isLabeled == null)? 0 :this.isLabeled.hashCode()));
+        result = ((result* 31)+((this.authorSex == null)? 0 :this.authorSex.hashCode()));
         result = ((result* 31)+((this.globalId == null)? 0 :this.globalId.hashCode()));
         result = ((result* 31)+((this.shoppingTime == null)? 0 :this.shoppingTime.hashCode()));
         result = ((result* 31)+((this.specNames == null)? 0 :this.specNames.hashCode()));
+        result = ((result* 31)+((this.expireTime == null)? 0 :this.expireTime.hashCode()));
         result = ((result* 31)+((this.size == null)? 0 :this.size.hashCode()));
         result = ((result* 31)+((this.specIds == null)? 0 :this.specIds.hashCode()));
         result = ((result* 31)+((this.authorName == null)? 0 :this.authorName.hashCode()));
@@ -1130,6 +1274,9 @@ public class AllContentInfo {
         result = ((result* 31)+((this.imgUrl == null)? 0 :this.imgUrl.hashCode()));
         result = ((result* 31)+((this.mUrl == null)? 0 :this.mUrl.hashCode()));
         result = ((result* 31)+((this.replyCount == null)? 0 :this.replyCount.hashCode()));
+        result = ((result* 31)+((this.styleLabelIds == null)? 0 :this.styleLabelIds.hashCode()));
+        result = ((result* 31)+((this.positiveNegative == null)? 0 :this.positiveNegative.hashCode()));
+        result = ((result* 31)+((this.styleLabelNames == null)? 0 :this.styleLabelNames.hashCode()));
         result = ((result* 31)+((this.width == null)? 0 :this.width.hashCode()));
         result = ((result* 31)+((this.isDel == null)? 0 :this.isDel.hashCode()));
         return result;
@@ -1144,7 +1291,7 @@ public class AllContentInfo {
             return false;
         }
         AllContentInfo rhs = ((AllContentInfo) other);
-        return ((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((this.isRecommend == rhs.isRecommend)||((this.isRecommend!= null)&&this.isRecommend.equals(rhs.isRecommend)))&&((this.titleScore == rhs.titleScore)||((this.titleScore!= null)&&this.titleScore.equals(rhs.titleScore))))&&((this.labelNames == rhs.labelNames)||((this.labelNames!= null)&&this.labelNames.equals(rhs.labelNames))))&&((this.createdStime == rhs.createdStime)||((this.createdStime!= null)&&this.createdStime.equals(rhs.createdStime))))&&((this.pv == rhs.pv)||((this.pv!= null)&&this.pv.equals(rhs.pv))))&&((this.seriesNames == rhs.seriesNames)||((this.seriesNames!= null)&&this.seriesNames.equals(rhs.seriesNames))))&&((this.contentLevel == rhs.contentLevel)||((this.contentLevel!= null)&&this.contentLevel.equals(rhs.contentLevel))))&&((this.likeCount == rhs.likeCount)||((this.likeCount!= null)&&this.likeCount.equals(rhs.likeCount))))&&((this.source == rhs.source)||((this.source!= null)&&this.source.equals(rhs.source))))&&((this.mediaId == rhs.mediaId)||((this.mediaId!= null)&&this.mediaId.equals(rhs.mediaId))))&&((this.makeScore == rhs.makeScore)||((this.makeScore!= null)&&this.makeScore.equals(rhs.makeScore))))&&((this.playUrl == rhs.playUrl)||((this.playUrl!= null)&&this.playUrl.equals(rhs.playUrl))))&&((this.labelIds == rhs.labelIds)||((this.labelIds!= null)&&this.labelIds.equals(rhs.labelIds))))&&((this.firstFrame == rhs.firstFrame)||((this.firstFrame!= null)&&this.firstFrame.equals(rhs.firstFrame))))&&((this.multiImages == rhs.multiImages)||((this.multiImages!= null)&&this.multiImages.equals(rhs.multiImages))))&&((this.subTitle == rhs.subTitle)||((this.subTitle!= null)&&this.subTitle.equals(rhs.subTitle))))&&((this.topicReplyCount == rhs.topicReplyCount)||((this.topicReplyCount!= null)&&this.topicReplyCount.equals(rhs.topicReplyCount))))&&((this.offVideo == rhs.offVideo)||((this.offVideo!= null)&&this.offVideo.equals(rhs.offVideo))))&&((this.price == rhs.price)||((this.price!= null)&&this.price.equals(rhs.price))))&&((this.bizId == rhs.bizId)||((this.bizId!= null)&&this.bizId.equals(rhs.bizId))))&&((this.isOff == rhs.isOff)||((this.isOff!= null)&&this.isOff.equals(rhs.isOff))))&&((this.cityIds == rhs.cityIds)||((this.cityIds!= null)&&this.cityIds.equals(rhs.cityIds))))&&((this.contentType == rhs.contentType)||((this.contentType!= null)&&this.contentType.equals(rhs.contentType))))&&((this.height == rhs.height)||((this.height!= null)&&this.height.equals(rhs.height))))&&((this.publishTime == rhs.publishTime)||((this.publishTime!= null)&&this.publishTime.equals(rhs.publishTime))))&&((this.pcUrl == rhs.pcUrl)||((this.pcUrl!= null)&&this.pcUrl.equals(rhs.pcUrl))))&&((this.isLabeled == rhs.isLabeled)||((this.isLabeled!= null)&&this.isLabeled.equals(rhs.isLabeled))))&&((this.globalId == rhs.globalId)||((this.globalId!= null)&&this.globalId.equals(rhs.globalId))))&&((this.shoppingTime == rhs.shoppingTime)||((this.shoppingTime!= null)&&this.shoppingTime.equals(rhs.shoppingTime))))&&((this.specNames == rhs.specNames)||((this.specNames!= null)&&this.specNames.equals(rhs.specNames))))&&((this.size == rhs.size)||((this.size!= null)&&this.size.equals(rhs.size))))&&((this.specIds == rhs.specIds)||((this.specIds!= null)&&this.specIds.equals(rhs.specIds))))&&((this.authorName == rhs.authorName)||((this.authorName!= null)&&this.authorName.equals(rhs.authorName))))&&((this.additionalProperties == rhs.additionalProperties)||((this.additionalProperties!= null)&&this.additionalProperties.equals(rhs.additionalProperties))))&&((this.vv == rhs.vv)||((this.vv!= null)&&this.vv.equals(rhs.vv))))&&((this.styleScore == rhs.styleScore)||((this.styleScore!= null)&&this.styleScore.equals(rhs.styleScore))))&&((this.description == rhs.description)||((this.description!= null)&&this.description.equals(rhs.description))))&&((this.authorImg == rhs.authorImg)||((this.authorImg!= null)&&this.authorImg.equals(rhs.authorImg))))&&((this.isPrivacy == rhs.isPrivacy)||((this.isPrivacy!= null)&&this.isPrivacy.equals(rhs.isPrivacy))))&&((this.title == rhs.title)||((this.title!= null)&&this.title.equals(rhs.title))))&&((this.brandIds == rhs.brandIds)||((this.brandIds!= null)&&this.brandIds.equals(rhs.brandIds))))&&((this.seriesIds == rhs.seriesIds)||((this.seriesIds!= null)&&this.seriesIds.equals(rhs.seriesIds))))&&((this.content == rhs.content)||((this.content!= null)&&this.content.equals(rhs.content))))&&((this.factoryIds == rhs.factoryIds)||((this.factoryIds!= null)&&this.factoryIds.equals(rhs.factoryIds))))&&((this.duration == rhs.duration)||((this.duration!= null)&&this.duration.equals(rhs.duration))))&&((this.modifiedStime == rhs.modifiedStime)||((this.modifiedStime!= null)&&this.modifiedStime.equals(rhs.modifiedStime))))&&((this.verifyStatus == rhs.verifyStatus)||((this.verifyStatus!= null)&&this.verifyStatus.equals(rhs.verifyStatus))))&&((this.authorLevel == rhs.authorLevel)||((this.authorLevel!= null)&&this.authorLevel.equals(rhs.authorLevel))))&&((this.isPublic == rhs.isPublic)||((this.isPublic!= null)&&this.isPublic.equals(rhs.isPublic))))&&((this.imgUrl23 == rhs.imgUrl23)||((this.imgUrl23 != null)&&this.imgUrl23 .equals(rhs.imgUrl23))))&&((this.sourceBizId == rhs.sourceBizId)||((this.sourceBizId!= null)&&this.sourceBizId.equals(rhs.sourceBizId))))&&((this.koubeiLabelNames == rhs.koubeiLabelNames)||((this.koubeiLabelNames!= null)&&this.koubeiLabelNames.equals(rhs.koubeiLabelNames))))&&((this.priceType == rhs.priceType)||((this.priceType!= null)&&this.priceType.equals(rhs.priceType))))&&((this.appUrl == rhs.appUrl)||((this.appUrl!= null)&&this.appUrl.equals(rhs.appUrl))))&&((this.authorId == rhs.authorId)||((this.authorId!= null)&&this.authorId.equals(rhs.authorId))))&&((this.totalScore == rhs.totalScore)||((this.totalScore!= null)&&this.totalScore.equals(rhs.totalScore))))&&((this.imgUrl == rhs.imgUrl)||((this.imgUrl!= null)&&this.imgUrl.equals(rhs.imgUrl))))&&((this.mUrl == rhs.mUrl)||((this.mUrl!= null)&&this.mUrl.equals(rhs.mUrl))))&&((this.replyCount == rhs.replyCount)||((this.replyCount!= null)&&this.replyCount.equals(rhs.replyCount))))&&((this.width == rhs.width)||((this.width!= null)&&this.width.equals(rhs.width))))&&((this.isDel == rhs.isDel)||((this.isDel!= null)&&this.isDel.equals(rhs.isDel))));
+        return ((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((this.isRecommend == rhs.isRecommend)||((this.isRecommend!= null)&&this.isRecommend.equals(rhs.isRecommend)))&&((this.titleScore == rhs.titleScore)||((this.titleScore!= null)&&this.titleScore.equals(rhs.titleScore))))&&((this.labelNames == rhs.labelNames)||((this.labelNames!= null)&&this.labelNames.equals(rhs.labelNames))))&&((this.createdStime == rhs.createdStime)||((this.createdStime!= null)&&this.createdStime.equals(rhs.createdStime))))&&((this.pv == rhs.pv)||((this.pv!= null)&&this.pv.equals(rhs.pv))))&&((this.seriesNames == rhs.seriesNames)||((this.seriesNames!= null)&&this.seriesNames.equals(rhs.seriesNames))))&&((this.contentLevel == rhs.contentLevel)||((this.contentLevel!= null)&&this.contentLevel.equals(rhs.contentLevel))))&&((this.likeCount == rhs.likeCount)||((this.likeCount!= null)&&this.likeCount.equals(rhs.likeCount))))&&((this.source == rhs.source)||((this.source!= null)&&this.source.equals(rhs.source))))&&((this.mediaId == rhs.mediaId)||((this.mediaId!= null)&&this.mediaId.equals(rhs.mediaId))))&&((this.yearIds == rhs.yearIds)||((this.yearIds!= null)&&this.yearIds.equals(rhs.yearIds))))&&((this.makeScore == rhs.makeScore)||((this.makeScore!= null)&&this.makeScore.equals(rhs.makeScore))))&&((this.playUrl == rhs.playUrl)||((this.playUrl!= null)&&this.playUrl.equals(rhs.playUrl))))&&((this.attributeNames == rhs.attributeNames)||((this.attributeNames!= null)&&this.attributeNames.equals(rhs.attributeNames))))&&((this.labelIds == rhs.labelIds)||((this.labelIds!= null)&&this.labelIds.equals(rhs.labelIds))))&&((this.attributeIds == rhs.attributeIds)||((this.attributeIds!= null)&&this.attributeIds.equals(rhs.attributeIds))))&&((this.firstFrame == rhs.firstFrame)||((this.firstFrame!= null)&&this.firstFrame.equals(rhs.firstFrame))))&&((this.multiImages == rhs.multiImages)||((this.multiImages!= null)&&this.multiImages.equals(rhs.multiImages))))&&((this.subTitle == rhs.subTitle)||((this.subTitle!= null)&&this.subTitle.equals(rhs.subTitle))))&&((this.topicReplyCount == rhs.topicReplyCount)||((this.topicReplyCount!= null)&&this.topicReplyCount.equals(rhs.topicReplyCount))))&&((this.offVideo == rhs.offVideo)||((this.offVideo!= null)&&this.offVideo.equals(rhs.offVideo))))&&((this.price == rhs.price)||((this.price!= null)&&this.price.equals(rhs.price))))&&((this.bizId == rhs.bizId)||((this.bizId!= null)&&this.bizId.equals(rhs.bizId))))&&((this.isOff == rhs.isOff)||((this.isOff!= null)&&this.isOff.equals(rhs.isOff))))&&((this.cityIds == rhs.cityIds)||((this.cityIds!= null)&&this.cityIds.equals(rhs.cityIds))))&&((this.contentType == rhs.contentType)||((this.contentType!= null)&&this.contentType.equals(rhs.contentType))))&&((this.height == rhs.height)||((this.height!= null)&&this.height.equals(rhs.height))))&&((this.publishTime == rhs.publishTime)||((this.publishTime!= null)&&this.publishTime.equals(rhs.publishTime))))&&((this.pcUrl == rhs.pcUrl)||((this.pcUrl!= null)&&this.pcUrl.equals(rhs.pcUrl))))&&((this.isLabeled == rhs.isLabeled)||((this.isLabeled!= null)&&this.isLabeled.equals(rhs.isLabeled))))&&((this.authorSex == rhs.authorSex)||((this.authorSex!= null)&&this.authorSex.equals(rhs.authorSex))))&&((this.globalId == rhs.globalId)||((this.globalId!= null)&&this.globalId.equals(rhs.globalId))))&&((this.shoppingTime == rhs.shoppingTime)||((this.shoppingTime!= null)&&this.shoppingTime.equals(rhs.shoppingTime))))&&((this.specNames == rhs.specNames)||((this.specNames!= null)&&this.specNames.equals(rhs.specNames))))&&((this.expireTime == rhs.expireTime)||((this.expireTime!= null)&&this.expireTime.equals(rhs.expireTime))))&&((this.size == rhs.size)||((this.size!= null)&&this.size.equals(rhs.size))))&&((this.specIds == rhs.specIds)||((this.specIds!= null)&&this.specIds.equals(rhs.specIds))))&&((this.authorName == rhs.authorName)||((this.authorName!= null)&&this.authorName.equals(rhs.authorName))))&&((this.additionalProperties == rhs.additionalProperties)||((this.additionalProperties!= null)&&this.additionalProperties.equals(rhs.additionalProperties))))&&((this.vv == rhs.vv)||((this.vv!= null)&&this.vv.equals(rhs.vv))))&&((this.styleScore == rhs.styleScore)||((this.styleScore!= null)&&this.styleScore.equals(rhs.styleScore))))&&((this.description == rhs.description)||((this.description!= null)&&this.description.equals(rhs.description))))&&((this.authorImg == rhs.authorImg)||((this.authorImg!= null)&&this.authorImg.equals(rhs.authorImg))))&&((this.isPrivacy == rhs.isPrivacy)||((this.isPrivacy!= null)&&this.isPrivacy.equals(rhs.isPrivacy))))&&((this.title == rhs.title)||((this.title!= null)&&this.title.equals(rhs.title))))&&((this.brandIds == rhs.brandIds)||((this.brandIds!= null)&&this.brandIds.equals(rhs.brandIds))))&&((this.seriesIds == rhs.seriesIds)||((this.seriesIds!= null)&&this.seriesIds.equals(rhs.seriesIds))))&&((this.content == rhs.content)||((this.content!= null)&&this.content.equals(rhs.content))))&&((this.factoryIds == rhs.factoryIds)||((this.factoryIds!= null)&&this.factoryIds.equals(rhs.factoryIds))))&&((this.duration == rhs.duration)||((this.duration!= null)&&this.duration.equals(rhs.duration))))&&((this.modifiedStime == rhs.modifiedStime)||((this.modifiedStime!= null)&&this.modifiedStime.equals(rhs.modifiedStime))))&&((this.verifyStatus == rhs.verifyStatus)||((this.verifyStatus!= null)&&this.verifyStatus.equals(rhs.verifyStatus))))&&((this.authorLevel == rhs.authorLevel)||((this.authorLevel!= null)&&this.authorLevel.equals(rhs.authorLevel))))&&((this.isPublic == rhs.isPublic)||((this.isPublic!= null)&&this.isPublic.equals(rhs.isPublic))))&&((this.imgUrl23 == rhs.imgUrl23)||((this.imgUrl23 != null)&&this.imgUrl23 .equals(rhs.imgUrl23))))&&((this.sourceBizId == rhs.sourceBizId)||((this.sourceBizId!= null)&&this.sourceBizId.equals(rhs.sourceBizId))))&&((this.koubeiLabelNames == rhs.koubeiLabelNames)||((this.koubeiLabelNames!= null)&&this.koubeiLabelNames.equals(rhs.koubeiLabelNames))))&&((this.priceType == rhs.priceType)||((this.priceType!= null)&&this.priceType.equals(rhs.priceType))))&&((this.appUrl == rhs.appUrl)||((this.appUrl!= null)&&this.appUrl.equals(rhs.appUrl))))&&((this.authorId == rhs.authorId)||((this.authorId!= null)&&this.authorId.equals(rhs.authorId))))&&((this.totalScore == rhs.totalScore)||((this.totalScore!= null)&&this.totalScore.equals(rhs.totalScore))))&&((this.imgUrl == rhs.imgUrl)||((this.imgUrl!= null)&&this.imgUrl.equals(rhs.imgUrl))))&&((this.mUrl == rhs.mUrl)||((this.mUrl!= null)&&this.mUrl.equals(rhs.mUrl))))&&((this.replyCount == rhs.replyCount)||((this.replyCount!= null)&&this.replyCount.equals(rhs.replyCount))))&&((this.styleLabelIds == rhs.styleLabelIds)||((this.styleLabelIds!= null)&&this.styleLabelIds.equals(rhs.styleLabelIds))))&&((this.positiveNegative == rhs.positiveNegative)||((this.positiveNegative!= null)&&this.positiveNegative.equals(rhs.positiveNegative))))&&((this.styleLabelNames == rhs.styleLabelNames)||((this.styleLabelNames!= null)&&this.styleLabelNames.equals(rhs.styleLabelNames))))&&((this.width == rhs.width)||((this.width!= null)&&this.width.equals(rhs.width))))&&((this.isDel == rhs.isDel)||((this.isDel!= null)&&this.isDel.equals(rhs.isDel))));
     }
 
 }

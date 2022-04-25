@@ -1,10 +1,9 @@
 package com.bixuebihui.db;
 
 import com.bixuebihui.jdbc.BaseDao;
-import com.bixuebihui.jdbc.SqlFilter;
+import org.apache.commons.lang3.StringUtils;
 
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -271,7 +270,7 @@ public interface ActiveRecord<T> extends Record<T> {
 
 
     static Set<String> toFieldsSet(String commaSeparatedFields){
-        if(commaSeparatedFields==null || commaSeparatedFields.contains("*")){
+        if(StringUtils.isBlank(commaSeparatedFields)|| commaSeparatedFields.contains("*")){
             return emptySet();
         }
         return Stream.of(commaSeparatedFields.split(",")).map(x -> BaseDao.getFieldAlias(x.toLowerCase(Locale.ROOT))).collect(Collectors.toSet());

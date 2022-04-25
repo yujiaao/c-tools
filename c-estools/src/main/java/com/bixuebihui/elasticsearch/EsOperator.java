@@ -224,7 +224,7 @@ public abstract class EsOperator<T,V> implements Record<T>{
         int from=0;
         int size =10;
         LinkedHashMap<String, String> sort = new LinkedHashMap<>();
-        String res = request.search(EsQueryBuilder.build(Query.match_all(), from, size, "", sort));
+        String res = request.search(EsQueryBuilder.build(Query.match_all(), from, size, Collections.emptySet(), Collections.emptySet(), sort));
 
         Wrapper<T> w =  toObjectWrapper(res);
 
@@ -236,7 +236,7 @@ public abstract class EsOperator<T,V> implements Record<T>{
         int from=0;
         int size =10;
         LinkedHashMap<String, String> sort = new LinkedHashMap<>();
-        String res = request.search(EsQueryBuilder.build(Query.match_all(), from, size,"", sort));
+        String res = request.search(EsQueryBuilder.build(Query.match_all(), from, size,Collections.emptySet(),Collections.emptySet(), sort));
 
         return toObjectList(res, clz);
     }
@@ -355,26 +355,26 @@ public abstract class EsOperator<T,V> implements Record<T>{
      * @param end
      * @return
      */
-    public Wrapper<T> selectWithJoin(String resultFields, Query query, LinkedHashMap<String, String> sort, int begin, int end) {
+    public Wrapper<T> selectWithJoin(Set<String> resultFields,Set<String> exludeFields, Query query, LinkedHashMap<String, String> sort, int begin, int end) {
         int size =end-begin;
 
-        String res = request.search(EsQueryBuilder.build(query, begin, size,resultFields, sort));
+        String res = request.search(EsQueryBuilder.build(query, begin, size,resultFields, exludeFields, sort));
 
         return toObjectWrapper(res);
     }
 
-    public List<EsSearchHitResult<T>> select(String resultFields, Query query, LinkedHashMap<String, String> sort, int begin, int end) {
+    public List<EsSearchHitResult<T>> select(Set<String> resultFields,Set<String> exludeFields, Query query, LinkedHashMap<String, String> sort, int begin, int end) {
         int size =end-begin;
 
-        String res = request.search(EsQueryBuilder.build(query, begin, size,resultFields, sort));
+        String res = request.search(EsQueryBuilder.build(query, begin, size, resultFields, exludeFields, sort));
 
         return toEsResultWrapper(res);
     }
 
-    public <K> List<K> select(String resultFields, Query query, LinkedHashMap<String, String> sort, int begin, int end, Class<K> clz) {
+    public <K> List<K> select(Set<String> resultFields,Set<String> exludeFields, Query query, LinkedHashMap<String, String> sort, int begin, int end, Class<K> clz) {
         int size =end-begin;
 
-        String res = request.search(EsQueryBuilder.build(query, begin, size,resultFields, sort));
+        String res = request.search(EsQueryBuilder.build(query, begin, size,resultFields, exludeFields, sort));
 
         return toObjectList(res, clz);
     }

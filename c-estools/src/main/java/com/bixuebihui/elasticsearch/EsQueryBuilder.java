@@ -8,10 +8,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * a helper class for EsRequest to build query json string
@@ -35,13 +32,20 @@ public class EsQueryBuilder {
     static final String SOURCE = "_source";
     static final String QUERY ="query";
     static final String COUNT ="count";
-    static final String FIELDS ="fields";
+    static final String INCLUDES ="includes";
+    static final String EXCLUDES ="excludes";
+
 
 
     static ObjectMapper objectMapper = new ObjectMapper();
 
 
-    public static String build(Query query, int from, int size, String commaSeparatedFields, LinkedHashMap<String, String> sort)  {
+    static  boolean isNotEmpty(Set<String> fields){
+       return   fields != null &&  !fields.isEmpty();
+    }
+
+
+    public static String build(Query query, int from, int size, Set<String> commaSeparatedIncludeFields, Set<String> excludesFields, LinkedHashMap<String, String> sort)  {
         Map queryConditions = query.toArray();
 
         HashMap<Object, Object> body = Maps.newHashMap();
@@ -53,8 +57,16 @@ public class EsQueryBuilder {
             body.put(FROM, from);
         }
 
-        if(StringUtils.isNoneBlank(commaSeparatedFields)) {
-            query.setParam(FIELDS, List.of(commaSeparatedFields.split(",")));
+        if(isNotEmpty(commaSeparatedIncludeFields)
+             ||  isNotEmpty(excludesFields)
+        ) {
+            Map<String, Set<String>> map = isNotEmpty(commaSeparatedIncludeFields) && isNotEmpty(excludesFields) ?
+                    Map.of(INCLUDES, commaSeparatedIncludeFields, EXCLUDES, excludesFields):
+                    ( isNotEmpty(commaSeparatedIncludeFields) ?
+                    Map.of( INCLUDES, commaSeparatedIncludeFields) : Map.of(EXCLUDES, excludesFields));
+
+            body.put(SOURCE, map);
+
         }
 
         if(sort!=null && !sort.isEmpty()){

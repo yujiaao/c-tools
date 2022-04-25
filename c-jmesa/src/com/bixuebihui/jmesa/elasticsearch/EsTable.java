@@ -13,6 +13,8 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static java.util.Collections.emptySet;
+
 /**
  * @author xwx
  */
@@ -34,7 +36,7 @@ public class EsTable extends EasyTable {
             RowSelect rowSelect = limit.getRowSelect();
             LinkedHashMap<String,String> sort = toEsSort(limit.getSortSet());
             String query = filter.toEsObject(filter.toQuery(), rowSelect.getRowStart(),
-                    rowSelect.getRowEnd() - rowSelect.getRowStart(), "", sort);
+                    rowSelect.getRowEnd() - rowSelect.getRowStart(), emptySet(),emptySet(), sort);
             return EsRequest.esJsonToTableJson(request.search(query), rowSelect.getMaxRows(),rowSelect.getRowStart(), rowSelect.getRowEnd(), rowSelect.getTotalRows(), rowSelect.getPage() );
         }catch (Exception e){
             throw new SQLException(e);

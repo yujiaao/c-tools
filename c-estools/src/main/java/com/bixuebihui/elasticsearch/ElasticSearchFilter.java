@@ -10,6 +10,7 @@ import com.google.common.collect.Lists;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author xwx
@@ -112,8 +113,11 @@ public class ElasticSearchFilter extends SqlFilter {
         return criteria;
     }
 
-    public String toEsObject(Query query, int from, int size,String fields, LinkedHashMap<String, String> sort) {
-            return EsQueryBuilder.build(query,from, size,fields,  sort);
+    public String toEsObject(Query query, int from, int size,
+                             Set<String> includeFields,
+                             Set<String> excludeFields,
+                             LinkedHashMap<String, String> sort) {
+            return EsQueryBuilder.build(query,from, size,includeFields,excludeFields,  sort);
     }
 
     private void buildEsObject(Bool criteria, Filter filter) {

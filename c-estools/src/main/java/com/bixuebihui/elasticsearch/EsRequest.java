@@ -287,7 +287,7 @@ public class EsRequest {
 
     public String query(Query query, int from, int size, LinkedHashMap<String, String> sort) {
         try {
-            String body = EsQueryBuilder.build(query, from, size, "", sort);
+            String body = EsQueryBuilder.build(query, from, size, Collections.emptySet(), Collections.emptySet(), sort);
 
             HttpWithJsonEntity getRequest =
                     HttpWithJsonEntity.builder()

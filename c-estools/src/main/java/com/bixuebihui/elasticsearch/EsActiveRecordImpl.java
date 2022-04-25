@@ -15,6 +15,8 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static java.util.Collections.emptySet;
+
 public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     private static final Logger LOG = LoggerFactory.getLogger(EsActiveRecordImpl.class);
     /**
@@ -38,7 +40,8 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
 
     private String indexAlias;
 
-    private String resultFields ="";
+    private String resultFields;
+    Set<String> excludeFieldsSet = emptySet();
 
     public EsActiveRecordImpl() {
         init(null);
@@ -201,7 +204,7 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
         try {
             Query where = filterStack.toQuery();
 
-            List<EsSearchHitResult<T>> res = operator.select(resultFields, where
+            List<EsSearchHitResult<T>> res = operator.select(getResultFieldsSet(), getExcludeFieldsSet(), where
                     , toEsSort(), limit.getBegin(), limit.getEnd());
             if(res.size()>0){
                 return res.stream().map(EsSearchHitResult::get_source).collect(Collectors.toList());
@@ -216,7 +219,7 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
         try {
             Query where = filterStack.toQuery();
 
-            return operator.select(resultFields, where
+            return operator.select(getResultFieldsSet(), getExcludeFieldsSet(), where
                     , toEsSort() ,limit.getBegin(), limit.getEnd());
         } finally {
             clear();
@@ -229,7 +232,7 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     @Override
     public <K> List<K> findAll(Class<K> clz) throws DbException {
         try {
-            return operator.select(resultFields, filterStack.toQuery(), toEsSort(), limit.getBegin(),
+            return operator.select(getResultFieldsSet(),getExcludeFieldsSet(), filterStack.toQuery(), toEsSort(), limit.getBegin(),
                     limit.getEnd(), clz);
         } finally {
             clear();
@@ -244,6 +247,8 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
         this.orderStack.clear();
 //        this.groupByClause.clear();
         this.limit = SqlLimit.LIMIT_MAX;
+        this.fields("");
+        this.excludeFieldsSet = emptySet();
         useLast = false;
     }
 
@@ -254,7 +259,7 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     @Override
     public T find() throws DbException {
         try {
-           EsOperator.Wrapper<T> res = operator.selectWithJoin(resultFields, filterStack.toQuery() , toEsSort(),
+           EsOperator.Wrapper<T> res = operator.selectWithJoin(getResultFieldsSet(), getExcludeFieldsSet(), filterStack.toQuery() , toEsSort(),
                     SqlLimit.LIMIT_ONE.getBegin(), SqlLimit.LIMIT_ONE.getEnd());
             if (res!=null && res.data !=null && res.data.size() > 0) {
                 return res.data.get(0);
@@ -284,7 +289,7 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     @Override
     public Object get(String field) throws DbException {
         try {
-            return operator.selectWithJoin(field, filterStack.toQuery(),null, 0,1);
+            return operator.selectWithJoin(Set.of(field), emptySet(), filterStack.toQuery(),null, 0,1);
         } finally {
             clear();
         }
@@ -297,7 +302,7 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     public List<Object> getVector(String field) throws DbException {
         try {
             // orderStack.build()
-            return (List<Object>) operator.selectWithJoin(field, filterStack.toQuery(),null, 0,10000);
+            return (List<Object>) operator.selectWithJoin(Set.of(field), emptySet(), filterStack.toQuery(),null, 0,10000);
         } finally {
             clear();
         }
@@ -314,7 +319,7 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     public List<Long> getLongVector(String field) throws DbException {
         try {
 
-            return (List<Long>) operator.selectWithJoin(field, filterStack.toQuery(),null, 0,10000);
+            return (List<Long>) operator.selectWithJoin(Set.of(field), emptySet(), filterStack.toQuery(),null, 0,10000);
 
         } finally {
             clear();
@@ -437,7 +442,7 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     public List<String> getStringVector(String field) throws DbException {
         try {
 
-            return (List<String>) operator.selectWithJoin(field, filterStack.toQuery(),null, 0,10000);
+            return (List<String>) operator.selectWithJoin(Set.of(field), emptySet(), filterStack.toQuery(),null, 0,10000);
 
         } finally {
             clear();
@@ -532,5 +537,15 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
 //        groupByClause = new SqlGroup();
         havingStack = new ElasticSearchFilter();
         limit = SqlLimit.LIMIT_MAX;
+    }
+
+    public Set<String> getExcludeFieldsSet() {
+        return excludeFieldsSet;
+    }
+
+    @Override
+    public EsActiveRecord<T> excludeFields(Set<String> excludeFieldsSet) {
+        this.excludeFieldsSet = excludeFieldsSet;
+        return this;
     }
 }
