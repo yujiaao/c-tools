@@ -1,26 +1,39 @@
 package com.bixuebihui.elasticsearch;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import java.util.List;
+
 /**
  * @author xwx
  */
 public class EsSearchHitResult<T> {
     String _index;
     String _type;
+    List<String> sort;
+    String _id;
+    Double _score;
+    T _source;
+
+    public List<String> getSort() {
+        return sort;
+    }
+
+    public void setSort(List<String> sort) {
+        this.sort = sort;
+    }
 
     @Override
     public String toString() {
         return "EsSearchHitResult{" +
                 "_index='" + _index + '\'' +
                 ", _type='" + _type + '\'' +
+                ", sort=" + sort +
                 ", _id='" + _id + '\'' +
                 ", _score=" + _score +
                 ", _source=" + _source +
                 '}';
     }
-
-    String _id;
-    Double _score;
-    T _source;
 
     public String get_index() {
         return _index;

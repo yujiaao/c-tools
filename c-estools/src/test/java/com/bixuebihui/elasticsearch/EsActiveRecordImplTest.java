@@ -179,6 +179,12 @@ class EsActiveRecordImplTest {
 
     @Test
     void desc() {
+
+        List<Object> res = ar.smallerOrEqualThan("abc",5).desc("abc").findAll();
+        System.out.println(res);
+
+        assertEquals("[{product=chocolate, price=[20, 4], abc=5}, {product=chocolate, price=[20, 4], abc=5}, {product=chocolate, price=[20, 4], abc=4}, {product=chocolate, price=[20, 4], abc=3}, {product=chocolate, price=[20, 4], abc=2, name=12312312321}]", res.toString());
+
     }
 
     @Test
