@@ -245,10 +245,10 @@ class EsActiveRecordImplTest {
 
     @Test
     void update() {
-        String _id="12345";
+        String _id="3";
         String field = "abc";
-        String value ="123";
-        int res = ar.eq("abc", 2).update(_id, field, value);
+        int value =123;
+        int res = ar.eq("abc", "123").update(_id, field, value);
         System.out.println(res);
 
     }

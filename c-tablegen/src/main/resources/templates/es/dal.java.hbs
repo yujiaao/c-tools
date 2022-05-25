@@ -33,6 +33,7 @@ public class {{className}}  {
         this.operator = new EsOperator<>( new EsRequest(ds.get("host"),
             ds.get("username"),
             ds.get("password"),
+            ds.get("version"),
             this.getIndexName())) {
                 @Override
                 protected Class<{{pojoClassName}}> getType() {

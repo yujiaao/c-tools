@@ -80,6 +80,8 @@ public class EsRequest {
     Pattern pattern = Pattern.compile("open\\s+[\\.\\w|\\-|\\:+|\\w|\\-|\\:+]+");
     Pattern p = Pattern.compile("\\s+[\\.\\w\\-|\\:+|\\w\\-|\\:+]+");
 
+    String version;
+
 
     public EsRequest(String host, String username, String password) {
         this.host = host;
@@ -91,6 +93,13 @@ public class EsRequest {
         this.username = username;
         this.password = password;
         this.indexName = indexName;
+    }
+    public EsRequest(String host, String username, String password, String indexName, String version) {
+        this.host = host;
+        this.username = username;
+        this.password = password;
+        this.indexName = indexName;
+        this.version = version;
     }
 
     public static <T> List<EsSearchHitResult<T>> json2result(String rawResult, JavaType type) throws JsonProcessingException {
@@ -387,7 +396,12 @@ public class EsRequest {
     }
 
     public int update(String _id, Map<String, Object> map) throws JsonProcessingException {
-        String res = post(EsQueryBuilder.buildUpdate(map), EsQueryBuilder.ACTION_UPDATE, _id);
+        String res;
+        if(version!=null && version.startsWith("6")){
+           res = post(EsQueryBuilder.buildUpdate(map),"_doc" , _id+"/"+EsQueryBuilder.ACTION_UPDATE);
+        }else {
+            res = post(EsQueryBuilder.buildUpdate(map), EsQueryBuilder.ACTION_UPDATE, _id);
+        }
         /**
          * {
          *   "_index" : "my-index-000001",
