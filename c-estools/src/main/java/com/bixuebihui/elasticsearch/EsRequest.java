@@ -361,6 +361,39 @@ public class EsRequest {
         return EsQueryBuilder.EMPTY_JSON_STRING;
     }
 
+    /**
+     * POST /all-content-info/_update_by_query
+     * {
+     *   "query":{
+     *     "bool":{
+     *       "must":[
+     *     {"terms":{"global_id":[1961991758749401088,1985042401953087488,1987523321226362880]}}
+     *     ]
+     *     }
+     *   },
+     *
+     *   "script": {
+     *     "source": "ctx._source['carseries_status'] = 1"
+     *   }
+     * }
+     * @return
+     */
+    public String post(String rawJson, String action) {
+        try {
+            HttpWithJsonEntity getRequest =
+                    HttpWithJsonEntity.builder()
+                            .withUrl(host + "/" + indexName + "/" + action)
+                            .withBodyEntry(rawJson)
+                            .withMethod("POST")
+                            .build();
+
+            return httpJson(getRequest, rawJson);
+        } catch (UnsupportedEncodingException | URISyntaxException e) {
+            e.printStackTrace();
+        }
+        return EsQueryBuilder.EMPTY_JSON_STRING;
+    }
+
     public List<String> getAllIndexList() {
         List<String> indexList = new ArrayList<>();
         try {
@@ -398,6 +431,7 @@ public class EsRequest {
     public int update(String _id, Map<String, Object> map) throws JsonProcessingException {
         String res;
         if(version!=null && version.startsWith("6")){
+            //TODO routing problem
            res = post(EsQueryBuilder.buildUpdate(map),"_doc" , _id+"/"+EsQueryBuilder.ACTION_UPDATE);
         }else {
             res = post(EsQueryBuilder.buildUpdate(map), EsQueryBuilder.ACTION_UPDATE, _id);
@@ -420,6 +454,35 @@ public class EsRequest {
          */
         JsonNode result = mapper.readTree(res);
         return result.path("_shards.successful").asInt();
+    }
+
+    public int updateByQuery(Query query, Map<String,Object> keyValues) throws JsonProcessingException {
+        String q = EsQueryBuilder.buildUpdateByQuery(query, keyValues);
+
+        String res = post(q, EsQueryBuilder.ACTION_UPDATE_BY_QUERY);
+
+        /**
+         {
+         "took": 44,
+         "timed_out": false,
+         "total": 3,
+         "updated": 3,
+         "deleted": 0,
+         "batches": 1,
+         "version_conflicts": 0,
+         "noops": 0,
+         "retries": {
+         "bulk": 0,
+         "search": 0
+         },
+         "throttled_millis": 0,
+         "requests_per_second": -1,
+         "throttled_until_millis": 0,
+         "failures": []
+         }
+         */
+        JsonNode result = mapper.readTree(res);
+        return result.path("updated").asInt();
     }
 
     static class Document {

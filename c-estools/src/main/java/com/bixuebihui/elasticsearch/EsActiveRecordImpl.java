@@ -7,6 +7,8 @@ import com.bixuebihui.elasticsearch.query.Query;
 import com.bixuebihui.jdbc.*;
 import com.bixuebihui.jdbc.entity.CountObject;
 import com.bixuebihui.jdbc.entity.CountValue;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.collect.Maps;
 import org.apache.commons.lang3.NotImplementedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -501,12 +503,30 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
      */
     @Override
     public int update(String[] fields, Object[] values) throws DbException {
-        throw new NotImplementedException();
+        HashMap<String, Object> map = Maps.newHashMap();
+        for(int i=0; i<fields.length;i++) {
+            map.put(fields[i], values[i]);
+        }
+        try {
+            return operator.request.updateByQuery(filterStack.toQuery(), map);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            throw new DbException(e.getMessage());
+        }
     }
 
     @Override
     public int update(String field, Object value) throws DbException {
-        return operator.update(field, value);
+        HashMap<String, Object> map = Maps.newHashMap();
+
+        map.put(field, value);
+
+        try {
+            return operator.request.updateByQuery(filterStack.toQuery(), map);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            throw new DbException(e.getMessage());
+        }
     }
 
 
