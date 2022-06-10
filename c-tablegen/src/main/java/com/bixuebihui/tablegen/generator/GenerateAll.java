@@ -118,7 +118,6 @@ public class GenerateAll implements DiffHandler {
     }
 
     private void info(String s) {
-        System.out.println(s);
         LOG.info(s);
     }
 

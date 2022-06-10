@@ -453,13 +453,13 @@ public class EsRequest {
          * }
          */
         JsonNode result = mapper.readTree(res);
-        return result.path("_shards.successful").asInt();
+        return result.path("_shards").path("successful").asInt();
     }
 
-    public int updateByQuery(Query query, Map<String,Object> keyValues) throws JsonProcessingException {
+    public int updateByQuery(Query query, Map<String,Object> keyValues, boolean conflictsProceed) throws JsonProcessingException {
         String q = EsQueryBuilder.buildUpdateByQuery(query, keyValues);
 
-        String res = post(q, EsQueryBuilder.ACTION_UPDATE_BY_QUERY);
+        String res = post(q, EsQueryBuilder.ACTION_UPDATE_BY_QUERY + (conflictsProceed? "?conflicts=proceed":""));
 
         /**
          {

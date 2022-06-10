@@ -508,7 +508,7 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
             map.put(fields[i], values[i]);
         }
         try {
-            return operator.request.updateByQuery(filterStack.toQuery(), map);
+            return operator.request.updateByQuery(filterStack.toQuery(), map, true);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             throw new DbException(e.getMessage());
@@ -522,7 +522,7 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
         map.put(field, value);
 
         try {
-            return operator.request.updateByQuery(filterStack.toQuery(), map);
+            return operator.request.updateByQuery(filterStack.toQuery(), map, true);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             throw new DbException(e.getMessage());

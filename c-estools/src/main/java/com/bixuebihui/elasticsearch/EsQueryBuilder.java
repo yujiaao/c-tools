@@ -134,7 +134,7 @@ public class EsQueryBuilder {
                 .append(x.getKey())
                 .append("'] =")
                 .append(x.getValue() instanceof String ?
-                        StringEscapeUtils.escapeJson(x.getValue().toString())
+                        "'"+StringEscapeUtils.escapeJson(x.getValue().toString()) + "'"
                         : x.getValue().toString())
                 .append(";")
         );

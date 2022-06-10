@@ -222,13 +222,11 @@ public class TableGen implements DiffHandler {
 
     public void info(String message) {
         console.println(message);
-        LOG.info(message);
     }
 
     public void trace(String message) {
         if (traceEnable) {
             console.println(message);
-            LOG.info(message);
         }
     }
 

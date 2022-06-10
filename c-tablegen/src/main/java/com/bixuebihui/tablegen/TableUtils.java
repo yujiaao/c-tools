@@ -38,7 +38,7 @@ public class TableUtils {
 
     private static void end() {
         stopWatch.stop();
-        if (stopWatch.getLastTaskTimeMillis() > 100) {
+        if (stopWatch.getLastTaskTimeMillis() > 500) {
             String info = stopWatch.getLastTaskName() + " took:" + stopWatch.getLastTaskTimeMillis() +
                     "\nYour DB metadata is slow, By using the tip given there : http://www.mysqlperformanceblog.com/2011/12/23/solving-information_schema-slowness/\n" +
                     "If you use MySQL, try set this in my.cnf :\n" +

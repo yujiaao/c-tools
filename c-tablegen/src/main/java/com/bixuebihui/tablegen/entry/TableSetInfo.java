@@ -365,10 +365,10 @@ public class TableSetInfo {
             if (res) {
                 LOG.info("[Auto] The metadata tables created!");
             } else {
-                LOG.info(DB_ERROR);
+                LOG.warn(DB_ERROR);
             }
         } catch (Exception e) {
-            LOG.info(DB_ERROR, e);
+            LOG.error(DB_ERROR, e);
         } finally {
             JDBCUtils.close(conn);
         }

@@ -196,7 +196,7 @@ public class ProcedureUtils {
 						procedures
 						.add(p);
 						String str="Procedure name = "+tableName+" "+tables.getString(4)+" "+tables.getString(5)+" "+tables.getString(6)+" "+tables.getString(7)+" "+tables.getString(8);
-						System.out.println(str);
+
 					 LOG.info(str);
 					}
 				}
@@ -246,7 +246,7 @@ public class ProcedureUtils {
 						ProcedureInfo p = new ProcedureInfo(tables.getString(1), tables.getString(2), tables.getString(3), tables.getString(7), tables.getInt(8));
 						procedures.add(p);
 						String str="Procedure name = "+tableName+" "+tables.getString(4)+" "+tables.getString(5)+" "+tables.getString(6)+" "+tables.getString(7)+" "+tables.getString(8);
-						System.out.println(str);
+
 					 LOG.info(str);
 					}
 

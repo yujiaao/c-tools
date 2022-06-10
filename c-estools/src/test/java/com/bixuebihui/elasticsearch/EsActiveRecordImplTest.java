@@ -246,10 +246,22 @@ class EsActiveRecordImplTest {
     @Test
     void update() {
         String _id="3";
-        String field = "abc";
-        int value =123;
-        int res = ar.eq("abc", "123").update(_id, field, value);
+        String field = "name";
+        long value = System.currentTimeMillis();
+        int res = ar.eq("abc", "123").update(_id, field, value+"");
+        System.out.println(res);
+        assertEquals(1, res);
+
+
+    }
+
+    @Test
+    void updateByQuery() {
+        String field = "name";
+        long value = System.currentTimeMillis();
+        int res = ar.eq("abc", "123").update(field, value+"");
         System.out.println(res);
 
+        assertEquals(1, res);
     }
 }

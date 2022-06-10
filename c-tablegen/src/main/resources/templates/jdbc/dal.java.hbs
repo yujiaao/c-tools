@@ -152,21 +152,24 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
 {{/unless}}
 {{! writeGetNextKey(keyData, colData); }}
 {{#if hasKey}}{{#unless tableInfo.isView}}
-      {{#eq firstKeyType "Timestamp"}}
-          public {{firstKeyType}} getNextKey(){
-        return new Timestamp(System.currentTimeMillis());
-          }
-      {{/eq}}
-      {{#eq firstKeyType "String"}}
-          public {{firstKeyType}} getNextKey(){
-          return java.util.UUID.randomUUID().toString();
-          }
-      {{/eq}}
+
       {{#gt keys.size 1}}
           public {{firstKeyType}} getNextKey(){
-          throw new IllegalStateException("no autokey for union keys");
+            throw new IllegalStateException("no autokey for union keys");
           }
       {{/gt}}
+      {{#eq keys.size 1}}
+          {{#eq firstKeyType "Timestamp"}}
+              public {{firstKeyType}} getNextKey(){
+              return new Timestamp(System.currentTimeMillis());
+              }
+          {{/eq}}
+          {{#eq firstKeyType "String"}}
+              public {{firstKeyType}} getNextKey(){
+              return java.util.UUID.randomUUID().toString();
+              }
+          {{/eq}}
+      {{/eq}}
 
     {{#if hasVersionCol}}
     {{! writeUpdate(tableName, keyData, "updateByKeyAndVersion", false, withVersion, colData); }}
