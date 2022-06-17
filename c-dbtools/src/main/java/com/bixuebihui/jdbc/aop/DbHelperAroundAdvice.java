@@ -45,26 +45,26 @@ public class DbHelperAroundAdvice implements MethodInterceptor{
 
     private void beforeCall(Method method, Object[] args) {
         StringBuilder sb = new StringBuilder();
-        sb.append("[AOP] call " + method.getName()).append("\n");
+        sb.append("[AOP] call ").append(method.getName()).append("\n");
         for (Object arg : args) {
-            if (arg != null && arg instanceof Object[]) {
+            if (arg instanceof Object[]) {
                 Object[] s = (Object[]) arg;
                 for (int j = 0; j < s.length && j< MAX_SHOW; j++) {
                     if (s[j] == null) {
-                        sb.append("\t [" + j + "] null").append("\n");
+                        sb.append("\t [").append(j).append("] null").append("\n");
                     } else {
-                        sb.append("\t  [" + j + "]" + s[j].getClass()+ ": " + s[j].toString()).append("\n");
+                        sb.append("\t  [").append(j).append("]").append(s[j].getClass()).append(": ").append(s[j].toString()).append("\n");
                     }
                 }
                 if(s.length>= MAX_SHOW){
-                    sb.append("\t  " + (s.length- MAX_SHOW) + "... omited ").append("\n");
+                    sb.append("\t  ").append(s.length - MAX_SHOW).append("... omited ").append("\n");
                 }
             } else if (arg instanceof String
                     || arg instanceof Integer
                     || arg instanceof Long
                     || arg instanceof Date
                     || arg instanceof Byte) {
-                sb.append("\t " + arg).append("\n");
+                sb.append("\t ").append(arg).append("\n");
             }
         }
         LOG.debug(sb.toString());
@@ -94,7 +94,9 @@ public class DbHelperAroundAdvice implements MethodInterceptor{
                 }
                 ss.setCount(ss.getCount() + 1);
                 ss.setTotalTime(ss.getTotalTime() + thisTime);
-                if (thisTime > SqlStat.SLOW_QUERY) {
+                if(this.totalTime > SqlStat.VERY_SLOW_QUERY){
+                    LOG.error("[AOP] Query is VERY SLOW: " + thisTime + " sql=" + sql);
+                }else if (thisTime > SqlStat.SLOW_QUERY) {
                     LOG.warn("[AOP] Query is SLOW: " + thisTime + " sql=" + sql);
                 }
             }

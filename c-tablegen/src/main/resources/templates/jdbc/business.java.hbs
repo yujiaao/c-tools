@@ -15,14 +15,18 @@ import javax.annotation.processing.Generated;
 public class {{className}}  extends {{pojoClassName}}List
 {
     {{! writeDALConstructor(tableName); }}
-    /**
-     * @param ds datasource for injecting
-     */
 {{#if config.readWriteSeparate}}
+    /**
+    * @param readWrite master datasource for read & write
+    * @param readOnly slave datasource for read only
+    */
     public {{className}}(@Qualifier("{{config.alias}}") DataSource readWrite, @Qualifier("{{config.alias}}_r") DataSource readOnly)
     {
         super(readWrite,readOnly);
     }{{else}}
+    /**
+    * @param ds datasource for injecting
+    */
     public {{className}}(@Qualifier("{{config.alias}}") DataSource ds)
     {
         super(ds);

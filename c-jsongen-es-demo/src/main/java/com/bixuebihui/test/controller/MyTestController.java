@@ -20,12 +20,12 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/es")
 @Tag(name = "开发人员工具-数据源")
-public class TestController {
+public class MyTestController {
 
-    String indexName =  "mobile-video-info";
+    String indexName =  "my-index-000001";
 
     private EsActiveRecordImpl<MobileVideoInfo, Long> repository = new EsActiveRecordImpl<>(
-            new EsOperator<>( new EsRequest("http://yz-test1.es6.autohome.com.cn:80","","", indexName)) {
+            new EsOperator<>( new EsRequest("http://localhost:9200","","", indexName)) {
                 @Override
                 protected Class<MobileVideoInfo> getType() {
                     return MobileVideoInfo.class;
@@ -46,17 +46,19 @@ public class TestController {
     }
 
 
-    @GetMapping("/_update")
-    public MobileVideoInfo update(
-            @RequestParam(value = "id", required = true) int id) {
-        MobileVideoInfo content = repository.eq("biz_id", id).find();
+    @GetMapping("/update")
+    public String update(
+            @RequestParam(value = "abc", required = true) int abc) {
+//        MobileVideoInfo content = repository.eq("abc", abc).find();
+//
+//        int recommend = content.getIsRecommend().intValue();
 
-        int recommend = content.getIsRecommend().intValue();
+         repository.eq("abc", abc)
+                .update(new String[]{"is_recommend", "author_name"}, new Object[]{1, "邢'万\"祥"});
 
-         repository.eq("biz_id", id)
-                .update("is_recommend", recommend==0?1:0);
+         return "OK";
 
-        return repository.eq("biz_id", id).find();
+//        return repository.eq("abc", abc).find();
     }
 
 }

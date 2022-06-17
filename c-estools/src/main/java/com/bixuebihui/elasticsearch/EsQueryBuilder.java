@@ -51,6 +51,47 @@ public class EsQueryBuilder {
     }
 
 
+    /**
+     * SELECT * FROM crash-2022-06-14 where proviceid>userid
+     * {
+     * 	"from": 0,
+     * 	"size": 200,
+     * 	"query": {
+     * 		"bool": {
+     * 			"filter": [
+     *                                {
+     * 					"bool": {
+     * 						"must": [
+     *                            {
+     * 								"script": {
+     * 									"script": {
+     * 										"source": "doc['proviceid'].value > doc['userid'].value",
+     * 										"lang": "painless"
+     *                                    },
+     * 									"boost": 1
+     *                                }
+     *                            }
+     * 						],
+     * 						"adjust_pure_negative": true,
+     * 						"boost": 1
+     *                    }
+     *                }
+     * 			],
+     * 			"adjust_pure_negative": true,
+     * 			"boost": 1
+     * 		}
+     * 	}
+     * }
+     *
+     * @param query
+     * @param from
+     * @param size
+     * @param commaSeparatedIncludeFields
+     * @param excludesFields
+     * @param sort
+     * @return
+     */
+
     public static String build(Query query, int from, int size, Set<String> commaSeparatedIncludeFields, Set<String> excludesFields, LinkedHashMap<String, String> sort)  {
         Map queryConditions = query.toArray();
 
@@ -130,16 +171,23 @@ public class EsQueryBuilder {
         HashMap<Object, Object> source = Maps.newHashMap();
 
         StringBuilder sb = new StringBuilder();
-        updateFieldsValues.entrySet().stream().forEach(x -> sb.append("ctx._source['")
-                .append(x.getKey())
-                .append("'] =")
-                .append(x.getValue() instanceof String ?
-                        "'"+StringEscapeUtils.escapeJson(x.getValue().toString()) + "'"
-                        : x.getValue().toString())
-                .append(";")
+        HashMap<String, Object> valueMap = new HashMap<>();
+
+        updateFieldsValues.entrySet().stream().forEach(x -> {
+                    sb.append("ctx._source['")
+                            .append(x.getKey())
+                            .append("'] =params['").append(x.getKey()).append("'];");
+                    valueMap.put(x.getKey(), x.getValue());
+                }
         );
 
         source.put("source", sb.toString());
+
+        source.put("params", valueMap);
+
+//          .append(x.getValue() instanceof String ?
+//                "'"+StringEscapeUtils.escapeJson(x.getValue().toString()) + "'"
+//                : x.getValue().toString())
 
         body.put(SCRIPT, source);
 
