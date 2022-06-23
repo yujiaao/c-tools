@@ -19,6 +19,10 @@ public class UrlUtilTest extends TestCase {
 
 		url = "http://b.a.s?q=b&q1=true";
 		assertEquals("http://b.a.s?q=check&q1=true",	UrlUtil.addOrReplaceParam(url, name, value));
+
+		url = "http://b.a.s?q=a,b&q1=true";
+		value="a,b,c";
+		assertEquals("http://b.a.s?q=a,b,c&q1=true",	UrlUtil.addOrReplaceParam(url, name, value, false));
 	}
 
 	public String operation(String a, String b) {

@@ -49,6 +49,36 @@ public class UrlUtil {
                 return url + "?" + name + "=" + value;
             }
         }
+    }
+
+
+    //"[\\?&]" + name + "=([^&#]*)"
+    public static String addOrReplaceParam(String url, String name, String value, boolean needEncodeValue) {
+        if (value == null || "".equals(value)) {
+            return url;
+        }
+
+        if(needEncodeValue) {
+            try {
+                value = URLEncoder.encode(value, "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+                LOG.warn("", e);
+            }
+        }
+
+        if (url.contains("&" + name + "=") ) {
+            return url.replaceFirst("[\\?&]" + name + "=([^&#]*)", "&" + name  + "=" + value );
+
+        }else if(url.contains("?" + name + "=")){
+            return url.replaceFirst("[\\?&]" + name + "=([^&#]*)", "?" + name + "=" + value );
+
+        } else {
+            if (url.contains("?")) {
+                return url + "&" + name + "=" + value;
+            } else {
+                return url + "?" + name + "=" + value;
+            }
+        }
 
     }
 }
