@@ -195,7 +195,7 @@ public class EsRequest {
                                             int totalRows
     ) throws JsonProcessingException {
         JsonNode input = mapper.readTree(esJson);
-        if(input==null || (input.findPath("/hits/hits/_source") instanceof MissingNode)){
+        if(input==null || (input.at("/hits/hits/0/_source") instanceof MissingNode)){
             return null;
         }
         // Finally this is how you search a structure. There's really not much more to it.
