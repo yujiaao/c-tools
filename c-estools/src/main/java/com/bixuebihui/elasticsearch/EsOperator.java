@@ -204,6 +204,9 @@ public abstract class EsOperator<T,V> implements Record<T>{
     public <K> List<K> toObjectList(String jsonString, Class<K> clz) {
         try {
             JsonNode node = EsRequest.getTableJsonNode(jsonString, 0,0,0,0,0);
+            if(node==null){
+                return Collections.emptyList();
+            }
             return builder().getObjectMapper().readerForListOf(clz).readValue(node);
         } catch (IOException e) {
             throw new RuntimeException(e);
