@@ -195,6 +195,7 @@ public class EsRequest {
                                             int totalRows
     ) throws JsonProcessingException {
         JsonNode input = mapper.readTree(esJson);
+        // https://datatracker.ietf.org/doc/html/rfc6901
         if(input==null || (input.at("/hits/hits/0/_source") instanceof MissingNode)){
             return null;
         }
