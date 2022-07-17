@@ -487,6 +487,10 @@ public class TableUtils {
         String[] tableTypes = {"TABLE", "VIEW"};
         List<String> tableNames;
 
+        if(metaData.getDriverName().contains("SQL Server") && StringUtils.isBlank(schema)){
+            schema = null;
+        }
+
         ResultSet tables = metaData.getTables(catalog, schema, null, tableTypes);
         start("getTableData");
         try {
@@ -574,7 +578,7 @@ public class TableUtils {
      * columnNoNulls - 可能不允许使用 NULL 值
      * columnNullable - 明确允许使用 NULL 值
      * columnNullableUnknown - 不知道是否可使用 null
-     * REMARKS String => 描述列的注释（可为 null）
+     * REMARKS String => 描述列的注释（可为 null, SQL Server 始终返回 Null）
      * COLUMN_DEF String => 该列的默认值，当值在单引号内时应被解释为一个字符串（可为 null）
      * SQL_DATA_TYPE int => 未使用
      * SQL_DATETIME_SUB int => 未使用
@@ -628,6 +632,9 @@ public class TableUtils {
      * schemaPattern - 模式名称的模式；它必须与存储在数据库中的模式名称匹配；该参数为 "" 表示获取没有模式的那些描述；为 null 则表示该模式名称不应该用于缩小搜索范围
      * tableNamePattern - 表名称模式；它必须与存储在数据库中的表名称匹配
      * columnNamePattern - 列名称模式；它必须与存储在数据库中的列名称匹配
+     *
+     *
+     *
      */
     public static TableInfo getColumnData(DatabaseMetaData metaData,
                                                  String catalog, String schema, String tableName, boolean isR2dbc) throws SQLException {

@@ -45,6 +45,20 @@ public class ColumnData implements Serializable {
      * Requires name, XOPEN type, number of columns.
      * The isNullable is only used for CHAR(x) and DATE fields.
      *
+     *      * The DATA_TYPE column has the following changes:
+     *      *
+     *      * SQL Server Data Type	Return Type in JDBC Driver 2.0 (or, if connected to SQL Server 2005 (9.x)) and Associated Numeric Constant	Return Type in JDBC Driver 3.0 when connected to SQL Server 2008 or later
+     *      * user-defined type larger than 8 kB	LONGVARBINARY (-4)	VARBINARY (-3)
+     *      * geography	LONGVARBINARY (-4)	VARBINARY (-3)
+     *      * geometry	LONGVARBINARY (-4)	VARBINARY (-3)
+     *      * varbinary(max)	LONGVARBINARY (-4)	VARBINARY (-3)
+     *      * nvarchar(max)	LONGVARCHAR (-1) or LONGNVARCHAR (JDBC 4) (-16)	VARCHAR (12) or NVARCHAR (JDBC 4) (-9)
+     *      * varchar(max)	LONGVARCHAR (-1)	VARCHAR (12)
+     *      * time	VARCHAR (12) or NVARCHAR (JDBC 4) (-9)	TIME (-154)
+     *      * date	VARCHAR (12) or NVARCHAR (JDBC 4) (-9)	DATE (91)
+     *      * datetime2	VARCHAR (12) or NVARCHAR (JDBC 4) (-9)	TIMESTAMP (93)
+     *      * datetimeoffset	VARCHAR (12) or NVARCHAR (JDBC 4) (-9)	microsoft.sql.Types.DATETIMEOFFSET (-155)
+     *
      * @param remarks
      * @param defaultValue
      */
@@ -65,6 +79,7 @@ public class ColumnData implements Serializable {
 // for the columns. Usefully for debugging the inconsistent
 // use in between drivers/databases.
 //
+        // convert JDBC type to sqlTypes index
 
         switch (type) {
 
@@ -93,6 +108,11 @@ public class ColumnData implements Serializable {
             case -2:
                 //MySQL
                 //TINYBLOB - use VARBINARY for now. Cobble alert!
+
+                //SQL Server timestamp
+                // 总结：SQL Server timestamp 数据类型与时间和日期无关。SQL Server timestamp 是二进制数字，它表明数据库中数据修改发生的相对顺序
+                // 存储大小为 8 个字节。 不可为空的 timestamp 列在语义上等价于 binary(8) 列。可为空的 timestamp 列在语义上等价于 varbinary(8) 列。
+                // 这将导致在 C#/Java 程序中获取到的timestamp类型则变成了byte[]类型。所以如果我们需要从数据库中获取并使用这个时间戳的话就必需经过转换。
                 type = 18;
                 break;
 
@@ -155,6 +175,7 @@ public class ColumnData implements Serializable {
             case 93:
                 // MySQL timestamp
                 // Postgres  timestamp
+                //SQL Server datetime
                 type = 14;
                 break;
 

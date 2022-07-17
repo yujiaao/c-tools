@@ -129,6 +129,8 @@ public class TableGen implements DiffHandler {
         map.put("String", "\"\"");
         map.put("int", "0");
         map.put("byte", "0");
+        map.put("byte[]", "new byte[]{0}");
+
         map.put("long", "0");
         map.put("Integer", "0");
         map.put("Short", "0");
