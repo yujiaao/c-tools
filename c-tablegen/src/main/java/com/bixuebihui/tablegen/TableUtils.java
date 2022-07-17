@@ -2,26 +2,25 @@ package com.bixuebihui.tablegen;
 
 import com.bixuebihui.cache.DictionaryCache;
 import com.bixuebihui.cache.DictionaryItem;
+import com.bixuebihui.db.Dialect;
 import com.bixuebihui.generated.tablegen.pojo.T_metacolumn;
-import com.bixuebihui.jdbc.BaseDao;
-import com.bixuebihui.jdbc.IDbHelper;
-import com.bixuebihui.jdbc.RowMapperResultReader;
+import com.bixuebihui.jdbc.*;
 import com.bixuebihui.tablegen.entry.ColumnData;
 import com.bixuebihui.tablegen.entry.TableInfo;
 import com.bixuebihui.tablegen.entry.TableSetInfo;
 import com.bixuebihui.util.DbUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StopWatch;
 
+import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
 import static com.bixuebihui.db.Dialect.*;
 
 /**
@@ -58,6 +57,14 @@ public class TableUtils {
 
     }
 
+    public static boolean isMysql(DatabaseMetaData metaData) throws SQLException {
+        return metaData.getDriverName().toLowerCase().contains("mysql");
+    }
+
+    public static boolean isSQLServer(DatabaseMetaData metaData) throws SQLException {
+        return metaData.getDriverName().toLowerCase().contains("sql server");
+    }
+
     /**
      * Selects the primary keys for a particular table.
      *
@@ -72,6 +79,9 @@ public class TableUtils {
         ResultSet r = null;
         try {
             String key;
+            if(isSQLServer(metaData) && StringUtils.isBlank(schema)){
+                schema = null;
+            }
             r = metaData.getPrimaryKeys(catalog, schema, tableName);
             while (r.next()) {
                 // COLUMN_NAME
@@ -636,7 +646,7 @@ public class TableUtils {
      *
      *
      */
-    public static TableInfo getColumnData(DatabaseMetaData metaData,
+    public static TableInfo getColumnData(IDbHelper dbHelper, DatabaseMetaData metaData,
                                                  String catalog, String schema, String tableName, boolean isR2dbc) throws SQLException {
         start("getColumnData");
         List<ColumnData> colData = new ArrayList<>();
@@ -645,6 +655,11 @@ public class TableUtils {
         ResultSet rs = metaData.getColumns(catalog, schema, tableName, "%");
 
         int dbType = BaseDao.detectDbType(metaData.getDriverName());
+
+        Map<String, String > columnComment= new HashMap<>();
+        if(dbHelper!=null && dbType == SQLSERVER|| dbType==SQLSERVER_2005_AND_UP){
+            columnComment = getColumnComment(dbHelper, tableName);
+        }
 
         ColumnData cd;
         int colType;
@@ -661,11 +676,11 @@ public class TableUtils {
 
                 String colName = rs.getString(4);
 
-                System.out.println("TABLE_SCHEM="+rs.getObject("TABLE_SCHEM")
-                        +" TABLE_CAT="+rs.getObject("TABLE_CAT")
-                        +" colName="+colName
-                        +" IS_GENERATEDCOLUMN="+ rs.getObject("IS_GENERATEDCOLUMN")
-                        +" ORDINAL_POSITION="+rs.getObject("ORDINAL_POSITION"));
+//                System.out.println("TABLE_SCHEM="+rs.getObject("TABLE_SCHEM")
+//                        +" TABLE_CAT="+rs.getObject("TABLE_CAT")
+//                        +" colName="+colName
+//                        +" IS_GENERATEDCOLUMN="+ rs.getObject("IS_GENERATEDCOLUMN")
+//                        +" ORDINAL_POSITION="+rs.getObject("ORDINAL_POSITION"));
 
                // int curColumnPos = rs.getInt("ORDINAL_POSITION");
 
@@ -699,6 +714,9 @@ public class TableUtils {
 
                 // REMARKS String => 描述列的注释（可为 null）
                 remarks = rs.getString("REMARKS");
+                if(remarks==null && (dbType == SQLSERVER_2005_AND_UP || dbType==SQLSERVER)){
+                    remarks = columnComment.get(colName);
+                }
 
                 //COLUMN_DEF String => 该列的默认值，当值在单引号内时应被解释为一个字符串（可为 null）
                 defaultValue = rs.getString("COLUMN_DEF");
@@ -729,6 +747,46 @@ public class TableUtils {
 
     }
 
+    private static Map<String, String> getColumnComment(IDbHelper dbHelper, String tableName) {
+        String sql ="SELECT\n" +
+                "    B.name AS column_name,\n" +
+                "    C.value AS column_description\n" +
+                "FROM sys.tables A\n" +
+                "         INNER JOIN sys.columns B ON B.object_id = A.object_id\n" +
+                "         LEFT JOIN sys.extended_properties C ON C.major_id = B.object_id AND C.minor_id = B.column_id\n" +
+                "WHERE A.name = ?";
+        HashMap<String, String> res = new HashMap<>();
+        dbHelper.executeQuery(sql, new Object[]{tableName}, (RowMapper<Void>) (rs, index, fields) -> {
+               res.put(rs.getString("column_name"), rs.getString("column_description"));
+               return null;
+        });
+
+        return res;
+    }
+
+
+    public static Map<String, String> getTableComment(IDbHelper dbHelper, List<String> tableName) {
+        String sql ="select top 1000\n" +
+                "    ROW_NUMBER() OVER (ORDER BY a.name) AS No,\n" +
+                "    a.name AS table_name,\n" +
+                "    CONVERT(NVARCHAR(100),isnull(g.[value],'-')) AS table_description\n" +
+                "from\n" +
+                "    sys.tables a left join sys.extended_properties g\n" +
+                "        on (a.object_id = g.major_id AND g.minor_id = 0)" +
+                " where a.name in("+
+                StringUtils.join(StringUtils.repeat("?",
+                        tableName.size()).split(""),",")+")";
+        HashMap<String, String> res = new HashMap<>();
+        dbHelper.executeQuery(sql, tableName.toArray(), (RowMapper<Void>) (rs, index, fields) -> {
+            res.put(rs.getString("table_name"),
+                    rs.getString("table_description"));
+            return null;
+        });
+
+        return res;
+    }
+
+
     private static boolean isExistsCol(List<ColumnData> colData, String colName) {
         for (ColumnData dt : colData) {
             if (dt.getName().equalsIgnoreCase(colName)) {
@@ -757,6 +815,10 @@ public class TableUtils {
         if (cols != null && cols.get(columnName) != null) {
             T_metacolumn colMeta = cols.get(columnName);
             res += colMeta == null ? "" : colMeta.getDescription();
+        }else if(col.getRemarks()!=null){
+            res += " "+ col.getRemarks()+" ";
+        }else if(col.getComment()!=null){
+            res += " "+ col.getComment()+" ";
         }
 
         if (col.getDefaultValue() != null) {

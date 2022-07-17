@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.sql.*;
 import java.util.*;
 import static com.bixuebihui.db.Dialect.*;
+import static com.bixuebihui.tablegen.TableUtils.isMysql;
+import static com.bixuebihui.tablegen.TableUtils.isSQLServer;
 
 /**
  * @author xwx
@@ -66,7 +68,13 @@ public class TableSetInfo {
             LOG.warn("fail to execute: show create table " + tableName);
             LOG.warn(e.getMessage(), e);
         }
+    }
 
+    private static void fillTableComment(IDbHelper dbHelper, TableInfo tableInfo ) {
+        String tableName =tableInfo.getName();
+        Map<String, String> map = TableUtils.getTableComment(dbHelper, List.of(tableName));
+
+        tableInfo.setComment(map.get(tableName));
     }
 
     private static  void findFieldComment(String tableName, List<ColumnData> fields, String tableSql) {
@@ -435,9 +443,7 @@ public class TableSetInfo {
         indexCache.put(tableName, indexData);
     }
 
-    private boolean isMysql(DatabaseMetaData metaData) throws SQLException {
-        return metaData.getDriverName().toLowerCase().contains("mysql");
-    }
+
 
     private void initExportKeys(ProjectConfig config, IDbHelper dbHelper, DatabaseMetaData metaData, String tableName) throws SQLException {
         if(isMysql(metaData)){
@@ -472,13 +478,14 @@ public class TableSetInfo {
                 List<String> tableNames =
                         TableUtils.getTableData(metaData, config.getCatalog(), config.getSchema(),
                                 config.getTableOwner(), config.getTablesList(), config.getExcludeTablesList());
+
                 LOG.info("find tables:"+tableNames);
                 LinkedHashMap<String, TableInfo> tables = new LinkedHashMap<>();
                 for (String name : tableNames) {
                     TableInfo table = new TableInfo(name);
 
                     // Fill columns info
-                    TableInfo newInfo = TableUtils.getColumnData(metaData, config.getCatalog(), config.getSchema(), name, config.getR2dc());
+                    TableInfo newInfo = TableUtils.getColumnData(dbHelper, metaData, config.getCatalog(), config.getSchema(), name, config.getR2dc());
                     table.setFields(newInfo.getFields());
                     tables.put(name, table);
 
@@ -498,6 +505,8 @@ public class TableSetInfo {
                     // table & column's  comment
                     if(isMysql(metaData)) {
                         fillComment(cn, table);
+                    }else if(isSQLServer(metaData)){
+                        fillTableComment(dbHelper, table);
                     }
                 }
 

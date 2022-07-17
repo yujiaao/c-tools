@@ -2,6 +2,7 @@ package com.bixuebihui.tablegen;
 
 import com.bixuebihui.datasource.BitmechanicDataSource;
 import com.bixuebihui.dbcon.DatabaseConfig;
+import com.bixuebihui.jdbc.IDbHelper;
 import com.bixuebihui.tablegen.diffhandler.DiffHandler;
 import com.bixuebihui.tablegen.entry.ColumnData;
 import com.bixuebihui.tablegen.entry.TableInfo;
@@ -101,7 +102,7 @@ public class DbDiff {
 
         List<String> tab2 = getTableData(db2);
 
-        storeTableData(tab2, isR2dbc);
+        storeTableData( tab2, isR2dbc);
 
         compareTableData(tab1, tab2, isR2dbc);
         for (DiffHandler dh : diffHandlerList) {
@@ -109,7 +110,7 @@ public class DbDiff {
         }
     }
 
-    private void storeTableData(List<String> tab2, boolean isR2dbc) throws SQLException {
+    private void storeTableData( List<String> tab2, boolean isR2dbc) throws SQLException {
 
         for (String t : tab2) {
 
@@ -140,7 +141,7 @@ public class DbDiff {
 
     protected TableInfo getColumns(Database database, String tableName, boolean isR2dbc)
             throws SQLException {
-        return  TableUtils.getColumnData(database.metaData, database.catalog, database.schema, tableName, isR2dbc);
+        return  TableUtils.getColumnData(null, database.metaData, database.catalog, database.schema, tableName, isR2dbc);
     }
 
     public void compareColumns(String tableName, boolean isR2dbc) throws SQLException, IOException {
