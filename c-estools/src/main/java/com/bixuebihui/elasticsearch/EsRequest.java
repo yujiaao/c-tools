@@ -187,6 +187,21 @@ public class EsRequest {
         return resultTotal.toPrettyString();
     }
 
+
+    public static long getHits(  String esJson) {
+        JsonNode input;
+        try {
+            input = mapper.readTree(esJson);
+            if(input==null || (input.at("/hits/total") instanceof MissingNode)){
+                return 0;
+            }
+            return input.at("/hits/total").asLong();
+        } catch (JsonProcessingException e) {
+           logger.error("查询结果json格式错误", e);
+        }
+        return 0;
+    }
+
     public static JsonNode getTableJsonNode(String esJson,
                                             int maxRows,
                                             int rowEnd,

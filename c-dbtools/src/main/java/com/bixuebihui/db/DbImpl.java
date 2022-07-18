@@ -520,6 +520,11 @@ public class DbImpl<T, V> extends BaseDao<T, V> implements ActiveRecord<T>,
 		return null;
 	}
 
+	@Override
+	public ActiveRecord<T> tableName(String partitionTableName) {
+		return null;
+	}
+
 
 	/** {@inheritDoc} */
 	@Override

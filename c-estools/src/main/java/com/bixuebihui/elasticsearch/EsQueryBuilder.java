@@ -123,6 +123,21 @@ public class EsQueryBuilder {
         return toJsonString(body);
     }
 
+    public static String buildCount(Query query){
+        Map queryConditions = query.toArray();
+
+        HashMap<Object, Object> body = Maps.newHashMap();
+        body.put(QUERY, queryConditions);
+
+        // 大于10000时，下面的返回总数，relation 字段返回  eq, 否则返回  10000， relation 字段返回  gte
+        body.put("track_total_hits", true);
+
+        // 不返回内容本身，只返回聚合数据
+        body.put(SIZE, 0);
+
+        return toJsonString(body);
+    }
+
     private static String toJsonString(HashMap<Object, Object> body) {
         String s = EMPTY_JSON_STRING;
         try {

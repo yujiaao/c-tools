@@ -44,12 +44,20 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	SqlGroup groupByClause;
 	SqlHelper havingStack;
 
+
 	BaseDao<T, V> operator;
 	Connection cn;
 	private SqlPocket sqlPocket;
 	private boolean useLast=false;
 
 	private String tableAlias;
+
+	public String getTableName() {
+		return tableName==null? operator.getTableName(): tableName;
+	}
+
+
+	private  String tableName;
 
 	private String resultFields =" * ";
 
@@ -62,8 +70,6 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	public Set<String> getResultFieldsSet(){
 		return ActiveRecord.toFieldsSet(resultFields);
 	}
-
-
 
 
 	private List<String> joins;
@@ -293,7 +299,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 			String where = formWhereClause()+parseGroupBy()+having.getCondition();
 			List<Object> list = Arrays.asList(getParams().toArray());
 			list.addAll(having.getParams());
-			String select = "select " + resultFields + " from " + operator.getTableName() + " ";
+			String select = "select " + resultFields + " from " + this.getTableName() + " ";
 			return operator.select(select, where, parseOrder(), list.toArray(), limit.getBegin(),
 					limit.getEnd(), clz);
 		} finally {
@@ -344,7 +350,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 			List<Object> list = Arrays.asList(getParams().toArray());
 			list.addAll(having.getParams());
 			List<T> res = operator.selectWithJoin(resultFields, where, list.toArray(), parseOrder(),
-					SqlLimit.LIMIT_ONE.getBegin(), SqlLimit.LIMIT_ONE.getEnd());
+					SqlLimit.LIMIT_ONE.getBegin(), SqlLimit.LIMIT_ONE.getEnd(), tableName);
 			if (res.size() > 0) {
 				return res.get(0);
 			}
@@ -369,7 +375,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 			if (where.length() < " where ".length()) {
 				return false;
 			}
-			String sql = "delete from " + operator.getTableName() + " " + where;
+			String sql = "delete from " + this.getTableName() + " " + where;
 
 			if (limit != null && limit.getBegin()==0 && limit.getEnd()>0) {
 				sql +=" limit "+limit.getEnd();
@@ -451,7 +457,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	}
 
 
-	private String getVectorSql(String field) throws DbException {
+	String getVectorSql(String field) throws DbException {
 		field = SqlFilter.transactSQLInjection(field);
 		sqlPocket = this.getSql();
 		String where = formWhereClause();
@@ -459,7 +465,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 		where += " " + parseOrder();
 		where += " " + parseLimitSql();
 
-		return "select " + field + " from " + operator.getTableName()
+		return "select " + field + " from " + this.getTableName()
 				+ " " + where;
 	}
 
@@ -514,7 +520,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 			String where = formWhereClause()+parseGroupBy()+having.getCondition();
 			List<Object> list = Arrays.asList(getParams().toArray());
 			list.addAll(having.getParams());
-			return operator.exists(where, list.toArray());
+			return operator.exists(tableName, where, list.toArray());
 		} finally {
 			clear();
 		}
@@ -581,6 +587,12 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	@Override
 	public ActiveRecord<T> alias(String shortName) {
 		tableAlias = shortName;
+		return this;
+	}
+
+	@Override
+	public ActiveRecord<T> tableName(String partitionTableName) {
+		this.tableName = partitionTableName;
 		return this;
 	}
 

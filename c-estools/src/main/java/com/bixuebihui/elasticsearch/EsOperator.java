@@ -38,6 +38,12 @@ public abstract class EsOperator<T,V> implements Record<T>{
         throw new NotImplementedException();
     }
 
+
+    public long count(Query query) throws DbException {
+        String res = request.search(EsQueryBuilder.buildCount(query));
+        return EsRequest.getHits(res);
+    }
+
     @Override
     public int count() throws DbException {
         throw new NotImplementedException();

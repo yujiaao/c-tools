@@ -145,6 +145,14 @@ public class ActiveRecordImplTest extends TestCase {
 
 
 
+	public void testTableNameOverride() {
+
+		String obj = ((ActiveRecordImpl) bd.ar().tableName("t1")).getVectorSql("abc");
+		assertEquals("select abc from t1", obj.trim());
+
+	}
+
+
 	public void testCountSum() {
 
 		 CountValue res = bd.ar().countSum("id");

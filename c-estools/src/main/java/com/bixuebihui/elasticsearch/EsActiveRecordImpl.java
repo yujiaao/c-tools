@@ -405,9 +405,7 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
 
     @Override
     public int count() throws DbException {
-
-        throw new NotImplementedException();
-
+        return (int) operator.count(filterStack.toQuery());
     }
 
     @Override

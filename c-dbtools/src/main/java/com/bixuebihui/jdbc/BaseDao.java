@@ -27,6 +27,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Date;
 import java.util.Map.Entry;
+import java.util.function.Function;
 
 import static com.bixuebihui.db.Dialect.*;
 
@@ -560,6 +561,15 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         return o != null && Integer.parseInt(o.toString()) == 1;
     }
 
+    public String getTableName(String tableName) {
+        return (tableName==null ? getTableName():tableName);
+    }
+
+    protected boolean exists(String tableName, String where, Object... params) {
+        Object o = this.getDbHelper().executeScalar("select 1 from " + getTableName(tableName) + " " + where, params);
+        return o != null && Integer.parseInt(o.toString()) == 1;
+    }
+
     /**
      * <p>countWhere.</p>
      *
@@ -569,7 +579,11 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      */
     @Override
     public int countWhere(String where, Object... params) {
-        String query = SELECT_COUNT_FROM + getTableName() + " " + where;
+       return countWhere(null, where, params);
+    }
+
+    protected int countWhere(String tableName, String where, Object... params) {
+        String query = SELECT_COUNT_FROM + getTableName(tableName) + " " + where;
         Object o = this.getDbHelper().executeScalar(query, params);
         return o == null ? 0 : Integer.parseInt(o.toString());
     }
@@ -991,13 +1005,20 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      */
     public @NotNull
     List<T> selectWithJoin(String fieldList, String whereClause, Object[] params, String orderByClause,
-                           int beginNum, int endNum) {
-        String query = "select " + fieldList + " from " + getTableName() + " " + whereClause;
+                           int beginNum, int endNum, String tableName) {
+        String query = "select " + fieldList + " from " + getTableName(tableName) + " " + whereClause;
         if (this.getDbType() != DERBY) {
             query += orderByClause;
         }
         query = getPagingSql(query, beginNum, endNum);
         return getDbHelper().executeQuery(query, params, new RowMapperResultReader<>(this), ActiveRecord.toFieldsSet(fieldList));
+
+    }
+    public @NotNull
+    List<T> selectWithJoin(String fieldList, String whereClause, Object[] params, String orderByClause,
+                           int beginNum, int endNum) {
+      return   selectWithJoin( fieldList,  whereClause, params,  orderByClause,
+          beginNum,  endNum, null);
     }
 
     public @NotNull

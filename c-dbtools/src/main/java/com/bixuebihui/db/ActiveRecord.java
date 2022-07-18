@@ -244,6 +244,13 @@ public interface ActiveRecord<T> extends Record<T> {
     ActiveRecord<T> alias(String shortName);
 
     /**
+     * Override table name for partition or other porpoise, otherwise you can omit to call this
+     * @param partitionTableName
+     * @return
+     */
+    ActiveRecord<T> tableName(String partitionTableName);
+
+    /**
      * <p>fields.</p>
      *
      * @param resultFields a {@link java.lang.String} object.
