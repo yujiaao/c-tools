@@ -383,6 +383,11 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     }
 
     @Override
+    public ActiveRecord<T> tableName(String partitionTableName) {
+        throw new NotImplementedException();
+    }
+
+    @Override
     public EsActiveRecord<T> fields(String resultFields) {
         this.resultFields = resultFields;
         return this;
