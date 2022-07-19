@@ -274,7 +274,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 			list.addAll(having.getParams());
 
 			return operator.selectWithJoin(resultFields, where, list.toArray(), parseOrder(),
-					limit.getBegin(), limit.getEnd());
+					limit.getBegin(), limit.getEnd(), tableName);
 		} finally {
 			clear();
 		}
