@@ -565,7 +565,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         return (tableName==null ? getTableName():tableName);
     }
 
-    protected boolean exists(String tableName, String where, Object[] params) {
+    public boolean exists(String tableName, String where, Object[] params) {
         Object o = this.getDbHelper().executeScalar("select 1 from " + getTableName(tableName) + " " + where, params);
         return o != null && Integer.parseInt(o.toString()) == 1;
     }
