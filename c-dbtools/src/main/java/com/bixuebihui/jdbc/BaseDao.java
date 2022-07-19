@@ -544,7 +544,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @param params a {@link java.lang.Object} object.
      * @return a int.
      */
-    public int count(String sql, Object... params) {
+    public int count(String sql, Object[] params) {
         Object o = this.getDbHelper().executeScalar(sql, params);
         return o == null ? 0 : Integer.parseInt(o.toString());
     }
@@ -556,7 +556,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @param params a {@link java.lang.Object} object.
      * @return a boolean.
      */
-    public boolean exists(String where, Object... params) {
+    public boolean exists(String where, Object[] params) {
         Object o = this.getDbHelper().executeScalar("select 1 from " + getTableName() + " " + where, params);
         return o != null && Integer.parseInt(o.toString()) == 1;
     }
@@ -565,7 +565,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         return (tableName==null ? getTableName():tableName);
     }
 
-    protected boolean exists(String tableName, String where, Object... params) {
+    protected boolean exists(String tableName, String where, Object[] params) {
         Object o = this.getDbHelper().executeScalar("select 1 from " + getTableName(tableName) + " " + where, params);
         return o != null && Integer.parseInt(o.toString()) == 1;
     }
@@ -578,11 +578,11 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @return a int.
      */
     @Override
-    public int countWhere(String where, Object... params) {
+    public int countWhere(String where, Object[] params) {
        return countWhere(null, where, params);
     }
 
-    protected int countWhere(String tableName, String where, Object... params) {
+    protected int countWhere(String tableName, String where, Object[] params) {
         String query = SELECT_COUNT_FROM + getTableName(tableName) + " " + where;
         Object o = this.getDbHelper().executeScalar(query, params);
         return o == null ? 0 : Integer.parseInt(o.toString());
