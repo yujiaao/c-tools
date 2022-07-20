@@ -156,6 +156,13 @@ public class ColumnData implements Serializable {
                 type = 16;
                 break;
 
+            case -9:
+                // SQL Server
+                // nvarchar
+                type = 24;
+                break;
+
+
             case 1111:
                 // PostGres
                 // bytea / int28 / reltime / tinterval

@@ -77,12 +77,13 @@ public class NameUtils {
 		// CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, "camelCase"); // returns CAMEL_CASE
 		// CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_HYPHEN, "CamelCase"); // returns camel-case
 
-
-		return CaseUtils.toCamelCase(p, true, '_', '-');
+		p = p.replaceAll("([A-Z])","_$1");
+		return CaseUtils.toCamelCase(p, true, '_', '-',' ');
 	}
 
 	public static String firstLow(String p) {
-		return CaseUtils.toCamelCase(p, false, '_','-');
+		p = p.replaceAll("([A-Z])","_$1");
+		return CaseUtils.toCamelCase(p, false, '_','-',' ');
 
 	}
 

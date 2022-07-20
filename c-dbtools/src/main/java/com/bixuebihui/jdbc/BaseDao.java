@@ -249,7 +249,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @param endNum    结束行，每页数+startNum
      * @return 完整分页SQL
      */
-    private static String getPagingSqlSqlServer2005(String selectSql, int startNum, int endNum) {
+    public static String getPagingSqlSqlServer2005(String selectSql, int startNum, int endNum) {
 
         return SqlServer2005PageHepler.getLimitString(selectSql, startNum, endNum);
 

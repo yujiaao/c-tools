@@ -89,9 +89,9 @@ public class GenerateAll implements DiffHandler {
 //                }
 //                generateSpringXml();
 
-//                if (config.generate_procedures) {
-//                    generateStoreProcedures(meta);
-//                }
+                if (generator.config.isGenerateProcedures()) {
+                   // generateStoreProcedures(meta);
+                }
             } else {
                 info("generate_all is off, generate incrementally, " +
                         "if want regenerate, you can remove cache file 'target/gen_table_data.cache'");

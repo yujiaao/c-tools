@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.sql.*;
 import java.util.*;
 import static com.bixuebihui.db.Dialect.*;
+import static com.bixuebihui.jdbc.BaseDao.getPagingSqlSqlServer2005;
 import static com.bixuebihui.tablegen.TableUtils.isMysql;
 import static com.bixuebihui.tablegen.TableUtils.isSQLServer;
 
@@ -549,15 +550,17 @@ public class TableSetInfo {
                 int dbType = BaseDao.detectDbType(cn.getMetaData().getDriverName());
 
                 for (String name : config.getViewList().keySet()) {
-                    String sql = config.getViewList().get(name);
-                    dbHelper.executeQuery(sql.contains("limit") ? sql :sql + " limit 1",
+                    String originalSql = config.getViewList().get(name);
+                    String sql = addLimit(originalSql, dbType);
+
+                    dbHelper.executeQuery(sql,
                             new Object[0], new RowMapperResultReader<>((rs, index, set) -> null){
                                 @Override
                                 public @NotNull List<Object> processResultSet(ResultSet rs, Set<String> set){
 
                                     try {
                                         TableInfo info = OnFlyViewUtils.getColumnData(rs.getMetaData(), name, dbType, config.getR2dc());
-                                        info.setComment(sql);
+                                        info.setComment(originalSql);
                                         viewInfos.put(name, info);
                                     } catch (SQLException e) {
                                         e.printStackTrace();
@@ -576,6 +579,18 @@ public class TableSetInfo {
 
         }
 
+    }
+
+    private String addLimit(String sql, int dbType) {
+        if(dbType==MYSQL){
+           sql =  sql.contains("limit") ? sql :sql + " limit 1";
+        }else if(dbType==SQLSERVER_2005_AND_UP){
+            sql =  sql.contains(" top ") ? sql : sql.toLowerCase().replaceFirst("select", "select top 1 ");
+
+            // sql  = getPagingSqlSqlServer2005(sql, 0,1);
+        }
+
+        return sql;
     }
 
     private  void initImportKeys(ProjectConfig config, IDbHelper dbHelper, DatabaseMetaData metaData, String tableName) throws SQLException {

@@ -25,8 +25,7 @@ table_list=(\\w+)
 #exclude_table_list=PLAN_TABLE,T_SESSION,T_SEQUENCE
 view_list=my_test_view: select test_gen.*, degree from test_gen left join t_edu on test_gen.edu_id=t_edu.id;
 
-#keep table name and field case
-keep_case=yes
+
 
 r2dbc=false
 

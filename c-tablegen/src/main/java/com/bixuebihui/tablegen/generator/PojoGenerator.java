@@ -27,27 +27,27 @@ public class PojoGenerator extends BaseGenerator{
     }
 
     /**
-        import io.swagger.annotations.ApiModel;
-        import io.swagger.annotations.ApiModelProperty;
-
-        @ApiModel(value = "用户数据传输对象")
-        public class User {
-            @ApiModelProperty(value = "用户id")
-            private int id;
-            @ApiModelProperty(value = "用户昵称")
-            private String nickname;
-
-           https://blog.csdn.net/sdyy321/article/details/40298081
-
-            import com.fasterxml.jackson.annotation.JsonProperty;
-
-            @JsonAlias can be used!
-            @JsonAlias
-        这个注解是在JackSon 2.9版本中才有的。作用是在反序列化的时候可以让Bean的属性接收多个json字段的名称。可以加在字段上或者getter和setter方法上。
-
-        @JsonProperty("template_cnode")
-        @JsonIgnoreProperties
-         */
+     *         import io.swagger.annotations.ApiModel;
+     *         import io.swagger.annotations.ApiModelProperty;
+     *
+     *         @ApiModel(value = "用户数据传输对象")
+     *         public class User {
+     *             @ApiModelProperty(value = "用户id")
+     *             private int id;
+     *             @ApiModelProperty(value = "用户昵称")
+     *             private String nickname;
+     *
+     *            https://blog.csdn.net/sdyy321/article/details/40298081
+     *
+     *             import com.fasterxml.jackson.annotation.JsonProperty;
+     *
+     *             @JsonAlias can be used!
+     *             @JsonAlias
+     *         这个注解是在JackSon 2.9版本中才有的。作用是在反序列化的时候可以让Bean的属性接收多个json字段的名称。可以加在字段上或者getter和setter方法上。
+     *
+     *         @JsonProperty("template_cnode")
+     *         @JsonIgnoreProperties
+     */
     public String getAnnotationForClass(){
         return "io.swagger.annotations.ApiModel;";
     }
