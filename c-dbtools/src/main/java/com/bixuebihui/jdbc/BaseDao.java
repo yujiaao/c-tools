@@ -1490,6 +1490,12 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         return 1 == getDbHelper().executeNoQuery(getUpdateSql(), getUpdateObjs(info));
     }
 
+    public boolean updateByKey(T info, String shardTableName) {
+        beforeChange(info);
+
+        return 1 == getDbHelper().executeNoQuery(shardNameStrategy(getUpdateSql(),shardTableName), getUpdateObjs(info));
+    }
+
     /**
      * <p>updateByVersionAndKey.</p>
      *
@@ -1512,6 +1518,15 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         return 1 == getDbHelper().executeNoQuery(getUpdateSql(), getUpdateObjs(info), cn);
     }
 
+    public boolean updateByKey(T info, Connection cn, String tableShardName) {
+        beforeChange(info);
+        return 1 == getDbHelper().executeNoQuery(shardNameStrategy(getUpdateSql(), tableShardName), getUpdateObjs(info), cn);
+    }
+
+    String shardNameStrategy(String sql, String shardTableName){
+        return sql.replaceAll(getTableName(),shardTableName);
+    }
+
     /**
      * Inserts the info object values into the database.
      *
@@ -1524,6 +1539,10 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         return 1 == getDbHelper().executeNoQuery(getInsertSql(), getInsertObjs(info));
     }
 
+    public boolean insert(T info, String tableShardName) {
+        beforeChange(info);
+        return 1 == getDbHelper().executeNoQuery(shardNameStrategy(getInsertSql(), tableShardName), getInsertObjs(info));
+    }
     /**
      * Inserts the info object values into the database.
      *
@@ -1534,6 +1553,11 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     public boolean insert(T info, Connection cn) {
         beforeChange(info);
         return 1 == getDbHelper().executeNoQuery(getInsertSql(), getInsertObjs(info), cn);
+    }
+
+    public boolean insert(T info, Connection cn, String shardTableName) {
+        beforeChange(info);
+        return 1 == getDbHelper().executeNoQuery(shardNameStrategy(getInsertSql(), shardTableName), getInsertObjs(info), cn);
     }
 
     /**
@@ -1576,6 +1600,16 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         return infos.length == getDbHelper().executeNoQueryBatch(getInsertSql(), a, cn);
     }
 
+    public boolean insertBatch(T[] infos, Connection cn, String shardTableName) {
+        beforeChange(infos);
+
+        List<Object[]> a = new ArrayList<>();
+        for (T info : infos) {
+            a.add(getInsertObjs(info));
+        }
+        return infos.length == getDbHelper().executeNoQueryBatch(shardNameStrategy(getInsertSql(), shardTableName), a, cn);
+    }
+
     /**
      * <p>updateBatch.</p>
      *
@@ -1591,6 +1625,16 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
             a.add(getUpdateObjs(info));
         }
         return infos.length == getDbHelper().executeNoQueryBatch(getUpdateSql(), a, cn);
+    }
+
+    public boolean updateBatch(T[] infos, Connection cn, String shardTableName) {
+        beforeChange(infos);
+
+        List<Object[]> a = new ArrayList<>();
+        for (T info : infos) {
+            a.add(getUpdateObjs(info));
+        }
+        return infos.length == getDbHelper().executeNoQueryBatch(shardNameStrategy(getUpdateSql(), shardTableName), a, cn);
     }
 
     /**
@@ -1645,6 +1689,21 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     List<CountValue> countGroupValue(String field, String groupFunction, String where, String having,
                                      String[] groupBy, Object... params) {
 
+        String query = formGroupQuery(field, groupFunction, where, having, groupBy);
+        return  getDbHelper().executeQuery(query, params,
+                new RowMapperResultReader<>((rs, index, set) -> {
+                    CountValue cs = new CountValue();
+                    cs.setCount(rs.getLong(1));
+                    cs.setValue(rs.getDouble(2));
+                    if (!(groupBy == null || groupBy.length == 0)) {
+                        cs.setKey(rs.getString(3));
+                    }
+                    return cs;
+                }));
+
+    }
+
+    private String formGroupQuery(String field, String groupFunction, String where, String having, String[] groupBy) {
         if (field == null) {
             throw new DbException("field must not null");
         }
@@ -1658,17 +1717,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
 
         String query = "select count(" + keyName + ") gv_cnt, " + groupFunction + "(" + field + ") gv_sm " + groupKeys
                 + " from " + getTableName() + " " + where + groupByClause + (having == null ? "" : having);
-        return  getDbHelper().executeQuery(query, params,
-                new RowMapperResultReader<>((rs, index, set) -> {
-                    CountValue cs = new CountValue();
-                    cs.setCount(rs.getLong(1));
-                    cs.setValue(rs.getDouble(2));
-                    if (!noGroup) {
-                        cs.setKey(rs.getString(3));
-                    }
-                    return cs;
-                }));
-
+        return query;
     }
 
 
@@ -1688,25 +1737,14 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     public @NotNull <K> List<CountObject<K>> countGroupObject(String field, String groupFunction, String where, String having,
                                                               String[] groupBy, final Class<K> type, Object... params) {
 
-        if (field == null) {
-            throw new DbException("field must not null");
-        }
+        String query = formGroupQuery(field, groupFunction, where, having, groupBy);
 
-        String keyName = StringUtils.isEmpty(this.getKeyName()) ? field : this.getKeyName();
-        final boolean noGroup = (groupBy == null || groupBy.length == 0);
-
-        String groupKeys = noGroup ? "" : "concat(" + StringUtils.join(groupBy, ",") + ") gv_key";
-
-        String groupByClause = noGroup ? "" : " group by " + StringUtils.join(groupBy, ",");
-
-        String query = "select count(" + keyName + ") gv_cnt, " + groupFunction + "(" + field + ") gv_sm " +(noGroup? "": ","+groupKeys)
-                + " from " + getTableName() + " " + where + groupByClause + (having == null ? "" : having);
         return getDbHelper().executeQuery(query, params,
                 new RowMapperResultReader<>((rs, index, set) -> {
                     CountObject<K> cs = new CountObject<>();
                     cs.setCount(rs.getLong(1));
                     cs.setValue(rs.getObject(2, type));
-                    if (!noGroup) {
+                    if (!(groupBy == null || groupBy.length == 0)) {
                         cs.setKey(rs.getString(3));
                     }
                     return cs;
@@ -1788,6 +1826,14 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         }
     }
 
+    public boolean save(T info, String tableShardName) {
+        if (getId(info) != null && Integer.parseInt(getId(info).toString()) != 0) {
+            return updateByKey(info, null, tableShardName);
+        } else {
+            return insertAutoIncrement(info, tableShardName);
+        }
+    }
+
     protected void setIdLong(T info, long id) {
     }
 
@@ -1797,6 +1843,14 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
                 getInsertObjs(info), null, null));
         return true;
     }
+
+    protected boolean insertAutoIncrement(T info, String shardTableName) {
+        beforeChange(info);
+        setIdLong(info, getDbHelper().insertAndFetchLastId(shardNameStrategy(this.getInsertSql(), shardTableName),
+                getInsertObjs(info), null, null));
+        return true;
+    }
+
 
     protected String getInsertSqlAutoIncrement() {
         String res = this.getInsertSql();
