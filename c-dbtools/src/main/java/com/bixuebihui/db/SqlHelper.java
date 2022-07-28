@@ -143,7 +143,7 @@ public class SqlHelper {
 	}
 
 
-	public boolean isNotNull(Object v){
+	private boolean valueIsNotNull(Object v){
 		if(v==null){
 			return false;
 		}
@@ -157,7 +157,7 @@ public class SqlHelper {
 	}
 	private void buildCriteria(SqlPocket criteria, BaseFilter f)
 	{
-		if (isNotNull(f.value) || useNullAsCondition || f instanceof NullFilter ) {
+		if (valueIsNotNull(f.value) || useNullAsCondition || f instanceof NullFilter || f instanceof NotNullFilter ) {
 			f.build(criteria);
 		}
 	}
@@ -284,6 +284,11 @@ public class SqlHelper {
 	 */
 	public SqlHelper isNull(String field) {
 		filters.add(new NullFilter(field));
+		return this;
+	}
+
+	public SqlHelper isNotNull(String field) {
+		filters.add(new NotNullFilter(field));
 		return this;
 	}
 
@@ -575,6 +580,11 @@ public class SqlHelper {
 		}
 	}
 
+	protected static class NotNullFilter extends AbstractBiFilter {
+		public NotNullFilter(String property) {
+			super(property, null, " is not ");
+		}
+	}
 	protected static class CondFilter extends BaseFilter {
 		int databaseType;
 
