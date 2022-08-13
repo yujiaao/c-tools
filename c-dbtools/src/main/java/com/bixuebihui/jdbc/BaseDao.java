@@ -1711,11 +1711,11 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         String keyName = StringUtils.isEmpty(this.getKeyName()) ? field : this.getKeyName();
         final boolean noGroup = (groupBy == null || groupBy.length == 0);
 
-        String groupKeys = noGroup ? "" : ", concat(" + StringUtils.join(groupBy, ",") + ") gv_key";
+        String groupKeys = noGroup ? "" : " concat(" + StringUtils.join(groupBy, ",") + ") gv_key";
 
         String groupByClause = noGroup ? "" : " group by " + groupKeys;
 
-        String query = "select count(" + keyName + ") gv_cnt, " + groupFunction + "(" + field + ") gv_sm " + groupKeys
+        String query = "select count(" + keyName + ") gv_cnt, " + groupFunction + "(" + field + ") gv_sm " + (groupKeys.length()>0? ","+groupKeys:"")
                 + " from " + getTableName() + " " + where + groupByClause + (having == null ? "" : having);
         return query;
     }
