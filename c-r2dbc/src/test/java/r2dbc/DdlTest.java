@@ -17,7 +17,10 @@ import java.util.List;
 
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = {DatabaseClient.class})
+@SpringBootTest(classes = {
+        DatabaseClient.class,
+        ReactiveClientUserSortingRepository.class
+})
 @EnableAutoConfiguration
 public class DdlTest {
     @Autowired
@@ -90,8 +93,10 @@ ConnectionFactory connectionFactory = ConnectionFactories.get("r2dbc:mysql://roo
     @Test
     public void testDoDDL() {
 
-        List<String> ddl = Collections.unmodifiableList(Arrays.asList("drop table if exists client_user;",
-                "create table client_user(user_id varchar(64) not null primary key,nick_name varchar(32),phone_number varchar(16),gender tinyint default 0) charset = utf8mb4;"));
+        List<String> ddl = List.of("drop table if exists client_user;",
+                "create table client_user(user_id varchar(64) not null primary key," +
+                        "nick_name varchar(32),phone_number varchar(16)," +
+                        "gender tinyint default 0) charset = utf8mb4;");
         ddl.forEach(sql -> databaseClient.sql(sql)
                 .fetch()
                 .rowsUpdated()
