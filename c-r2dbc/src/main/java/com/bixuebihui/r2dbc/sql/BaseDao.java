@@ -2,6 +2,7 @@ package com.bixuebihui.r2dbc.sql;
 
 
 import com.bixuebihui.DbException;
+import com.bixuebihui.SqlUtils;
 import com.bixuebihui.db.GroupFunction;
 import com.bixuebihui.db.PojoValidator;
 import com.bixuebihui.db.SqlPocket;
@@ -1674,7 +1675,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     Mono<List<CountValue>> countGroupValue(String field, String groupFunction, String where, String having,
                                      String[] groupBy, Object... params) {
 
-        String query = formGroupQuery(field, groupFunction, where, having, groupBy);
+        String query = SqlUtils.formGroupQuery(this.getTableName(), this.getKeyName(), field, groupFunction, where, having, groupBy);
 
         return  getDbHelper().executeQuery(query, params,
                 new RowMapperResultReader<>((rs) -> {
@@ -1706,7 +1707,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     public @NotNull <K> Mono<List<CountObject<K>>> countGroupObject(String field, String groupFunction, String where, String having,
                                                               String[] groupBy, final Class<K> type, Object... params) {
 
-        String query = formGroupQuery(field, groupFunction, where, having, groupBy);
+        String query = SqlUtils.formGroupQuery(this.getTableName(), this.getKeyName(), field, groupFunction, where, having, groupBy);
 
         return getDbHelper().executeQuery(query, params,
                 new RowMapperResultReader<>((rs) -> {
@@ -1721,22 +1722,6 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
 
     }
 
-    private String formGroupQuery(String field, String groupFunction, String where, String having, String[] groupBy) {
-        if (field == null) {
-            throw new DbException("field must not null");
-        }
-
-        String keyName = StringUtils.isEmpty(this.getKeyName()) ? field : this.getKeyName();
-        final boolean noGroup = (groupBy == null || groupBy.length == 0);
-
-        String groupKeys = noGroup ? "" : " concat(" + StringUtils.join(groupBy, ",") + ") gv_key";
-
-        String groupByClause = noGroup ? "" : " group by " + groupKeys;
-
-        String query = "select count(" + keyName + ") gv_cnt, " + groupFunction + "(" + field + ") gv_sm " + (groupKeys.length()>0? ","+groupKeys:"")
-                + " from " + getTableName() + " " + where + groupByClause + (having == null ? "" : having);
-        return query;
-    }
 
     /**
      * 获取主键最大的记录，仅用于方便测试

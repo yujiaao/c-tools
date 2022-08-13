@@ -15,6 +15,7 @@
 
     <modules>
         <module>c-tools-bom</module>
+        <module>common-utils</module>
         <module>c-dbtools</module>
         <module>c-tools</module>
         <module>c-jmesa</module>
@@ -27,6 +28,7 @@
         <module>c-jsongen</module>
         <module>c-jsongen-es-demo</module>
         <module>c-estools</module>
+
     </modules>
     <properties>
         <jackson-databind.version>2.10.4</jackson-databind.version>

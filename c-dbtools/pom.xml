@@ -330,6 +330,12 @@
             <version>2.18.0</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.github.yujiaao</groupId>
+            <artifactId>common-utils</artifactId>
+            <version>1.11.2.1</version>
+            <scope>compile</scope>
+        </dependency>
 
 
     </dependencies>
