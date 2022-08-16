@@ -823,7 +823,7 @@ public class TableUtils {
 
         if (col.getDefaultValue() != null) {
             if (!res.contains("NotNull")) {
-                res += "\n * NotNull, but has default value :"+  col.getDefaultValue();
+                res += "\n    * NotNull, default value: "+  col.getDefaultValue();
             }
 
         }

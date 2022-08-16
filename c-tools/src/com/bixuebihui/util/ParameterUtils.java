@@ -459,14 +459,26 @@ public class ParameterUtils {
         return new Long[0];
     }
 
-    public static boolean isLocalOrUnknow(String ipaddress) {
+    public static boolean isLocalOrUnknown(String ipaddress) {
         return ipaddress == null || ipaddress.length() == 0 || "unknown".equalsIgnoreCase(ipaddress)
                 || ipaddress.startsWith("127.0") || ipaddress.startsWith("192.168.") || ipaddress.startsWith("172.16.")
                 || ipaddress.startsWith("172.17.") || ipaddress.startsWith("172.18.") || ipaddress.startsWith("172.19.")
-                || ipaddress.startsWith("10.");
+                || ipaddress.startsWith("10.")
+                //ipv4-mapped ipv6
+                || (ipaddress.toLowerCase().startsWith("::ffff:") ? isLocalOrUnknown(ipaddress.substring(7)): false)
+
+                // the prefix of a site-local address is FEC0::/10.
+                // Note:  Site-local addresses have been deprecated, but existing implementations can still continue use them
+                || ipaddress.toLowerCase().startsWith("fec0:")
+
+                //local-link address
+                || ipaddress.toLowerCase().startsWith("fe80:")
+
+                //loopback
+                || ipaddress.toLowerCase().startsWith("::");
     }
 
-    private static boolean isUnknow(String ipaddress) {
+    private static boolean isUnknown(String ipaddress) {
         return ipaddress == null || ipaddress.length() == 0 || "unknown".equalsIgnoreCase(ipaddress)
                 || "127.0.0.1".equals(ipaddress);
     }
@@ -478,7 +490,7 @@ public class ParameterUtils {
                 "X-Originating-IP", "HTTP_REMOTE_ADDR", "REMOTE_ADDR"};
 
         for (String header : ipHeaders) {
-            if (isLocalOrUnknow(ipAddress)) {
+            if (isLocalOrUnknown(ipAddress)) {
                 ipAddress = request.getHeader(header);
                 if (ipAddress == null) {
                     ipAddress = request.getHeader(header.toLowerCase());
@@ -493,7 +505,7 @@ public class ParameterUtils {
                 break;
             }
         }
-        if (isUnknow(ipAddress)) {
+        if (isUnknown(ipAddress)) {
             ipAddress = request.getRemoteAddr();
         }
         return ipAddress;
