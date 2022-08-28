@@ -23,12 +23,13 @@ import javax.sql.DataSource;
 import javax.validation.constraints.NotNull;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.Date;
 import java.util.Map.Entry;
-import java.util.function.Function;
 
 import static com.bixuebihui.db.Dialect.*;
 
@@ -40,18 +41,20 @@ import static com.bixuebihui.db.Dialect.*;
  */
 public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T, ID>, SimpleDaoInterface<T, ID> {
 
-    private static final String SELECT_COUNT_FROM = "select count(*) from ";
     /**
      * Constant <code>SELECT_FROM="select * from "</code>
      */
     public static final String SELECT_FROM = "select * from ";
-    /** Constant <code>WHERE=" where "</code> */
+    /**
+     * Constant <code>WHERE=" where "</code>
+     */
     protected static final String WHERE = " where ";
-    protected IDbHelper dbHelper = null;
-    /** Constant <code>LOG</code> */
+    /**
+     * Constant <code>LOG</code>
+     */
     protected static final Logger LOG = LoggerFactory.getLogger(BaseDao.class);
-    protected final PojoValidator<T> pojoValidator = new PojoValidator<>();
-
+    private static final String SELECT_COUNT_FROM = "select count(*) from ";
+    private static final Set<Class<?>> BUILT_IN_SET = new HashSet<>();
 
     static {
         ConvertUtils.register(new DateConverter(null), Date.class);
@@ -59,47 +62,6 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         ConvertUtils.register(new SqlTimestampConverter(null), Timestamp.class);
         ConvertUtils.register(new SqlTimeConverter(null), java.sql.Time.class);
         ConvertUtils.register(new BooleanConverter(null), Boolean.class);
-    }
-
-    /**
-     * <p>beforeChange.</p>
-     *
-     * @param info a T object.
-     */
-    protected void beforeChange(T info) {
-        pojoValidator.asureValid(info);
-        if(info instanceof IModifiedTime){
-            ((IModifiedTime)info).setModifiedTime(new Timestamp(
-                    System.currentTimeMillis()
-            ));
-        }
-    }
-    private void beforeChange(T info, long time) {
-        pojoValidator.asureValid(info);
-        if(info instanceof IModifiedTime){
-            ((IModifiedTime)info).setModifiedTime(new Timestamp(
-                   time
-            ));
-        }
-    }
-
-    private void beforeChange(T[] infos) {
-        long time = System.currentTimeMillis();
-        for (T info : infos) {
-            beforeChange(info, time);
-        }
-    }
-
-    private static final Set<Class<?>> BUILT_IN_SET = new HashSet<>();
-
-    /**
-     * <p>Getter for the field <code>dbHelper</code>.</p>
-     *
-     * @return a {@link IDbHelper} object.
-     */
-    @Override
-    public IDbHelper getDbHelper() {
-        return dbHelper;
     }
 
     static {
@@ -113,36 +75,9 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         BUILT_IN_SET.add(Short.class);
     }
 
-    /**
-     * <p>sql.</p>
-     *
-     * @param src a {@link java.lang.String} object.
-     * @return a {@link SqlString} object.
-     */
-    protected static SqlString sql(String src) {
-        return new SqlString(src);
-    }
-
-    /**
-     * <p>fields.</p>
-     * Comma separated column names, used for select statement when you don't want return all fields,
-     * in case to optimize the index usage.
-     * @param fields a {@link java.lang.String} object.
-     * @return an array of {@link java.lang.String} objects.
-     */
-    protected static String[] fields(String ...fields){
-        return fields;
-    }
-
-    /**
-     * <p>params.</p>
-     *
-     * @param params a {@link java.lang.Object} object.
-     * @return an array of {@link java.lang.Object} objects.
-     */
-    protected static Object[] params(Object ...params){
-        return params;
-    }
+    protected final PojoValidator<T> pojoValidator = new PojoValidator<>();
+    protected IDbHelper dbHelper = null;
+    private int dbtype = UNKNOWN;
 
     /**
      * <p>Constructor for BaseDao.</p>
@@ -154,7 +89,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     }
 
     public BaseDao(DataSource ds) {
-        this(ds,ds);
+        this(ds, ds);
     }
 
     public BaseDao(DataSource master, DataSource slave) {
@@ -178,16 +113,36 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     }
 
     /**
-     * <p>create.</p>
+     * <p>sql.</p>
      *
-     * @return a T object.
+     * @param src a {@link java.lang.String} object.
+     * @return a {@link SqlString} object.
      */
-    @Override
-    public T create() {
-        return null;
+    protected static SqlString sql(String src) {
+        return new SqlString(src);
     }
 
-    private int dbtype = UNKNOWN;
+    /**
+     * <p>fields.</p>
+     * Comma separated column names, used for select statement when you don't want return all fields,
+     * in case to optimize the index usage.
+     *
+     * @param fields a {@link java.lang.String} object.
+     * @return an array of {@link java.lang.String} objects.
+     */
+    protected static String[] fields(String... fields) {
+        return fields;
+    }
+
+    /**
+     * <p>params.</p>
+     *
+     * @param params a {@link java.lang.Object} object.
+     * @return an array of {@link java.lang.Object} objects.
+     */
+    protected static Object[] params(Object... params) {
+        return params;
+    }
 
     /**
      * MS SQL Server 2000
@@ -289,6 +244,250 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     }
 
     /**
+     * sql2005
+     * <p>
+     * WITH, ROW_NUMBER （行数）and OVER
+     * <p>
+     * 这对SQL Server
+     * 2005来说非常新鲜并且看上去非常有用。下面一个例子显示从一个结果集得到20至19条记录。刚开始有一点惊奇，但是浏览了查询器后发现它是如此简单。
+     * <p>
+     * <p>
+     * With Customer AS ( SELECT CustomerID, CompanyName, ROW_NUMBER() OVER (order
+     * by CompanyName) as RowNumber FROM Customers ) select * from Customer Where
+     * RowNumber Between 20 and 30
+     * <p>
+     * SQL Server 2005的WITH指定了一个临时命名的结果，很像SQL
+     * Server以前版本中的临时表。但是，输入部分是ROW_NUMBER和OVER声明
+     * ，它根据公司的名称在每组中创建行数。这就像通过命令条文向临时表添加一个身份种子。
+     * <p>
+     * DB2 上用 FETCH FIRST n ROW ONLY 代替可行啦，即是
+     * <p>
+     * SELECT tRANGE.* FROM (SELECT tTOP.* FROM (SELECT * FROM t ORDER BY k ASC
+     * FETCH FIRST endNum ROW ONLY) tTOP ORDER BY tTOP.k DESC FETCH FIRST
+     * (endNum-startNum+1) ROW ONLY) tRANGE ORDER BY tRANGE.k ASC
+     *
+     * @param selectSql 不带分页的基本语句
+     * @param startNum  起始行，第一页从零开始
+     * @param endNum    结束行，每页数+startNum
+     * @return 完整分页SQL
+     */
+    private static String getPagingSqlMySql(String selectSql, int startNum, int endNum) {
+
+        return selectSql + " LIMIT " + startNum + "," + (endNum - startNum);
+
+    }
+
+    /**
+     * SELECT * FROM ( SELECT ROW_NUMBER() OVER() AS rownum, myLargeTable.* FROM
+     * myLargeTable ) AS tmp WHERE rownum > 200000 AND rownum <= 200005;
+     *
+     * @param selectSql 不带分页的基本语句
+     * @param startNum  起始行，第一页从零开始
+     * @param endNum    结束行，每页数+startNum
+     * @return 完整分页SQL
+     */
+    private static String getPagingSqlDerby(String selectSql, int startNum, int endNum) {
+
+        String orderBy = selectSql.indexOf("order by") > 0 ? selectSql.substring(selectSql.indexOf("order by")) : "";
+        selectSql = selectSql.indexOf("order by") > 0 ? selectSql.substring(0, selectSql.indexOf("order by")) : selectSql;
+
+        return SELECT_FROM + "(select FR.*,ROW_NUMBER() OVER() AS RN from (" + selectSql
+                + ")as FR " + orderBy + ") as ttt where RN<=" + endNum + " and RN>" + startNum;
+
+    }
+
+    private static String getDateSqlDerby(String dt) {
+        return "date('" + dt + "')";
+    }
+
+    private static String getTimestampSqlDerby(String dt) {
+        return "TIMESTAMP('" + dt + "')";
+    }
+
+    private static String getDateSqlOracle(String dt) {
+        return "to_date('" + dt + "','yyyy-mm-dd')";
+    }
+
+    private static String getDateSqlMySql(String dt) {
+        return "'" + dt + "'";
+    }
+
+    private static String getDateSqlServer(String dt) {
+        return "'" + dt + "'";
+    }
+
+    private static String getDateSqlDerby(java.util.Date dt) {
+        return "date('" + formatDate(dt) + "')";
+    }
+
+    /**
+     * 使用SimpleDateFormat需要同步才行 For more information on this see Sun Bug
+     * #6231579 and Sun Bug #6178997.
+     *
+     * @param dt 日期
+     * @return 格式化的日期字符串
+     */
+    private static String formatDate(Date dt) {
+        SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
+        return fmt.format(dt);
+    }
+
+    private static String getDateSqlOracle(Date dt) {
+        return "to_date('" + formatDate(dt) + "','yyyy-mm-dd')";
+    }
+
+    private static String getDateSqlPostgresql(Date dt) {
+        return "to_date('" + formatDate(dt) + "','YYYY-MM-DD')";
+    }
+
+    private static String getDateSqlMySql(Date dt) {
+        return "'" + formatDate(dt) + "'";
+    }
+
+    private static String getDateSqlServer(Date dt) {
+        return "'" + formatDate(dt) + "'";
+    }
+
+    /**
+     * <p>registerConverters.</p>
+     *
+     * @param convertors a {@link java.util.Map} object.
+     */
+    public static void registerConverters(Map<Class, Converter> convertors) {
+        BeanUtilsBean b = BeanUtilsBean.getInstance();
+        for (Entry<Class, Converter> entry : convertors.entrySet()) {
+            b.getConvertUtils().register(entry.getValue(), entry.getKey());
+        }
+    }
+
+    /**
+     * <p>filterForSQL.</p>
+     *
+     * @param sql a {@link java.lang.String} object.
+     * @return a {@link java.lang.String} object.
+     */
+    public static String filterForSql(String sql) {
+        if (sql == null || sql.length() == 0) {
+            return "";
+        }
+        int nLen = sql.length();
+
+        char[] srcBuff = sql.toCharArray();
+        StringBuilder retBuff = new StringBuilder((int) (nLen * 1.5D));
+        for (int i = 0; i < nLen; ++i) {
+            char cTemp = srcBuff[i];
+            switch (cTemp) {
+                case '\'':
+                    retBuff.append("''");
+                    break;
+                case ';':
+                    boolean bSkip = false;
+                    for (int j = i + 1; (j < nLen) && (!(bSkip)); ++j) {
+                        char cTemp2 = srcBuff[j];
+                        if (cTemp2 == ' ') {
+                            continue;
+                        }
+                        if (cTemp2 == '&') {
+                            retBuff.append(';');
+                        }
+                        bSkip = true;
+                    }
+
+                    if (!(bSkip)) {
+                        retBuff.append(';');
+                    }
+                    break;
+                default:
+                    retBuff.append(cTemp);
+            }
+
+        }
+
+        return retBuff.toString();
+    }
+
+    /**
+     * contain field check
+     *
+     * @param field
+     * @param fields
+     * @return true if fields is empty or contains field, ignore
+     */
+    protected static boolean containsIgnoreCase(String field, Set<String> fields) {
+        return fields == null || fields.isEmpty() || fields.contains(getFieldAlias(field).toLowerCase(Locale.ROOT));
+    }
+
+    /**
+     * deal with alias and `` quotes
+     *
+     * @param field
+     * @return
+     */
+    public static String getFieldAlias(String field) {
+        field = field.strip();
+
+        if (!field.startsWith("`") && StringUtils.containsWhitespace(field)) {
+            StringTokenizer tokenizer = new StringTokenizer(field);
+            while (tokenizer.hasMoreTokens()) {
+                field = tokenizer.nextToken();
+            }
+        } else if (field.startsWith("`")) {
+            field = StringUtils.strip("`");
+        }
+        return field;
+    }
+
+    /**
+     * <p>beforeChange.</p>
+     *
+     * @param info a T object.
+     */
+    protected void beforeChange(T info) {
+        pojoValidator.asureValid(info);
+        if (info instanceof IModifiedTime) {
+            ((IModifiedTime) info).setModifiedTime(new Timestamp(
+                    System.currentTimeMillis()
+            ));
+        }
+    }
+
+    private void beforeChange(T info, long time) {
+        pojoValidator.asureValid(info);
+        if (info instanceof IModifiedTime) {
+            ((IModifiedTime) info).setModifiedTime(new Timestamp(
+                    time
+            ));
+        }
+    }
+
+    private void beforeChange(T[] infos) {
+        long time = System.currentTimeMillis();
+        for (T info : infos) {
+            beforeChange(info, time);
+        }
+    }
+
+    /**
+     * <p>Getter for the field <code>dbHelper</code>.</p>
+     *
+     * @return a {@link IDbHelper} object.
+     */
+    @Override
+    public IDbHelper getDbHelper() {
+        return dbHelper;
+    }
+
+    /**
+     * <p>create.</p>
+     *
+     * @return a T object.
+     */
+    @Override
+    public T create() {
+        return null;
+    }
+
+    /**
      * <p>getCount.</p>
      *
      * @param tableName   a {@link java.lang.String} object.
@@ -337,59 +536,6 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
 
     }
 
-    /**
-     * sql2005
-     * <p>
-     * WITH, ROW_NUMBER （行数）and OVER
-     * <p>
-     * 这对SQL Server
-     * 2005来说非常新鲜并且看上去非常有用。下面一个例子显示从一个结果集得到20至19条记录。刚开始有一点惊奇，但是浏览了查询器后发现它是如此简单。
-     * <p>
-     * <p>
-     * With Customer AS ( SELECT CustomerID, CompanyName, ROW_NUMBER() OVER (order
-     * by CompanyName) as RowNumber FROM Customers ) select * from Customer Where
-     * RowNumber Between 20 and 30
-     * <p>
-     * SQL Server 2005的WITH指定了一个临时命名的结果，很像SQL
-     * Server以前版本中的临时表。但是，输入部分是ROW_NUMBER和OVER声明
-     * ，它根据公司的名称在每组中创建行数。这就像通过命令条文向临时表添加一个身份种子。
-     * <p>
-     * DB2 上用 FETCH FIRST n ROW ONLY 代替可行啦，即是
-     * <p>
-     * SELECT tRANGE.* FROM (SELECT tTOP.* FROM (SELECT * FROM t ORDER BY k ASC
-     * FETCH FIRST endNum ROW ONLY) tTOP ORDER BY tTOP.k DESC FETCH FIRST
-     * (endNum-startNum+1) ROW ONLY) tRANGE ORDER BY tRANGE.k ASC
-     *
-     * @param selectSql 不带分页的基本语句
-     * @param startNum  起始行，第一页从零开始
-     * @param endNum    结束行，每页数+startNum
-     * @return 完整分页SQL
-     */
-    private static String getPagingSqlMySql(String selectSql, int startNum, int endNum) {
-
-        return selectSql + " LIMIT " + startNum + "," + (endNum - startNum);
-
-    }
-
-    /**
-     * SELECT * FROM ( SELECT ROW_NUMBER() OVER() AS rownum, myLargeTable.* FROM
-     * myLargeTable ) AS tmp WHERE rownum > 200000 AND rownum <= 200005;
-     *
-     * @param selectSql 不带分页的基本语句
-     * @param startNum  起始行，第一页从零开始
-     * @param endNum    结束行，每页数+startNum
-     * @return 完整分页SQL
-     */
-    private static String getPagingSqlDerby(String selectSql, int startNum, int endNum) {
-
-        String orderBy = selectSql.indexOf("order by")>0 ?  selectSql.substring(selectSql.indexOf("order by")):"";
-        selectSql = selectSql.indexOf("order by")>0 ? selectSql.substring(0, selectSql.indexOf("order by")): selectSql;
-
-        return SELECT_FROM + "(select FR.*,ROW_NUMBER() OVER() AS RN from (" + selectSql
-                + ")as FR "+orderBy+") as ttt where RN<=" + endNum + " and RN>" + startNum;
-
-    }
-
     private String getDateTimeSql(String dt, boolean isTimestamp) {
         detectDbType();
         if (dbtype == DERBY) {
@@ -426,26 +572,6 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         return getDateTimeSql(dt, true);
     }
 
-    private static String getDateSqlDerby(String dt) {
-        return "date('" + dt + "')";
-    }
-
-    private static String getTimestampSqlDerby(String dt) {
-        return "TIMESTAMP('" + dt + "')";
-    }
-
-    private static String getDateSqlOracle(String dt) {
-        return "to_date('" + dt + "','yyyy-mm-dd')";
-    }
-
-    private static String getDateSqlMySql(String dt) {
-        return "'" + dt + "'";
-    }
-
-    private static String getDateSqlServer(String dt) {
-        return "'" + dt + "'";
-    }
-
     /**
      * <p>getDateSql.</p>
      *
@@ -468,39 +594,6 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
 
     }
 
-
-    private static String getDateSqlDerby(java.util.Date dt) {
-        return "date('" + formatDate(dt) + "')";
-    }
-
-    /**
-     * 使用SimpleDateFormat需要同步才行 For more information on this see Sun Bug
-     * #6231579 and Sun Bug #6178997.
-     *
-     * @param dt 日期
-     * @return 格式化的日期字符串
-     */
-    private static String formatDate(Date dt) {
-        SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
-        return fmt.format(dt);
-    }
-
-    private static String getDateSqlOracle(Date dt) {
-        return "to_date('" + formatDate(dt) + "','yyyy-mm-dd')";
-    }
-
-    private static String getDateSqlPostgresql(Date dt) {
-        return "to_date('" + formatDate(dt) + "','YYYY-MM-DD')";
-    }
-
-    private static String getDateSqlMySql(Date dt) {
-        return "'" + formatDate(dt) + "'";
-    }
-
-    private static String getDateSqlServer(Date dt) {
-        return "'" + formatDate(dt) + "'";
-    }
-
     /**
      * <p>getDBTYPE.</p>
      *
@@ -510,7 +603,6 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         detectDbType();
         return dbtype;
     }
-
 
     /**
      * <p>getKeyName.</p>
@@ -563,7 +655,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     }
 
     public String getTableName(String tableName) {
-        return (tableName==null ? getTableName():tableName);
+        return (tableName == null ? getTableName() : tableName);
     }
 
     public boolean exists(String tableName, String where, Object[] params) {
@@ -580,7 +672,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      */
     @Override
     public int countWhere(String where, Object[] params) {
-       return countWhere(null, where, params);
+        return countWhere(null, where, params);
     }
 
     protected int countWhere(String tableName, String where, Object[] params) {
@@ -617,18 +709,6 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      */
     public int update(String[] fieldNames, String whereClause, Object[] params) {
         return update(fieldNames, whereClause, params, null);
-    }
-
-    /**
-     * <p>registerConverters.</p>
-     *
-     * @param convertors a {@link java.util.Map} object.
-     */
-    public static void registerConverters(Map<Class, Converter> convertors) {
-        BeanUtilsBean b = BeanUtilsBean.getInstance();
-        for (Entry<Class, Converter> entry : convertors.entrySet()) {
-            b.getConvertUtils().register(entry.getValue(), entry.getKey());
-        }
     }
 
     /**
@@ -688,13 +768,12 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     /**
      * <p>map2object.</p>
      *
-     * @param h a {@link java.util.Map} object.
+     * @param h        a {@link java.util.Map} object.
      * @param receiver a K object.
-     * @param <K> a K object.
+     * @param <K>      a K object.
      * @return a K object.
      */
-    protected @NotNull
-    <K> K map2object(Map<String, Object> h, @NotNull K receiver) {
+    protected @NotNull <K> K map2object(Map<String, Object> h, @NotNull K receiver) {
         BeanMap b = new BeanMap(receiver);
 
         Iterator<Entry<Object, Object>> iter = b.entryIterator();
@@ -704,11 +783,11 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
             Object value;
             if (h.containsKey(hkey)) {
                 value = h.get(hkey);
-            }else {
+            } else {
                 hkey = hkey.toUpperCase();
-                if (h.containsKey(hkey)){
+                if (h.containsKey(hkey)) {
                     value = h.get(hkey);
-                }else{
+                } else {
                     continue;
                 }
             }
@@ -825,16 +904,15 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @param h        源数据
      * @param receiver 目标对象
      * @return 目标对象
-     * @throws java.lang.IllegalAccessException    无法拷贝属性
+     * @throws java.lang.IllegalAccessException            无法拷贝属性
      * @throws java.lang.reflect.InvocationTargetException 无法拷贝属性
-     * @throws java.lang.NoSuchMethodException     无法拷贝属性
+     * @throws java.lang.NoSuchMethodException             无法拷贝属性
      */
-    protected @NotNull
-    <K> K convertCaseSensitive(Map<String, Object> h, @NotNull K receiver)
+    protected @NotNull <K> K convertCaseSensitive(Map<String, Object> h, @NotNull K receiver)
             throws IllegalAccessException, InvocationTargetException, NoSuchMethodException {
         // access properties as Map
         Map<String, String> properties = BeanUtils.describe(receiver);
-        Map<String, Object> values = new HashMap<>(h.size()*2);
+        Map<String, Object> values = new HashMap<>(h.size() * 2);
         for (Map.Entry<String, ?> e : properties.entrySet()) {
             Object o = h.get(e.getKey());
             values.put(e.getKey(), o);
@@ -846,8 +924,8 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     /**
      * <p>convert.</p>
      *
-     * @param <K>    期待类型
-     * @param h  源数据
+     * @param <K>      期待类型
+     * @param h        源数据
      * @param receiver 目标对象
      * @return 目标对象
      * @throws java.lang.IllegalAccessException 无法拷贝属性
@@ -869,10 +947,10 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
             }
 
             try {
-                if(dbtype==DERBY){
+                if (dbtype == DERBY) {
                     key = key.toLowerCase(Locale.ROOT);
                 }
-                b.copyProperty(receiver,  CaseUtils.toCamelCase(key, false, '_'), value);
+                b.copyProperty(receiver, CaseUtils.toCamelCase(key, false, '_'), value);
             } catch (IllegalAccessException e) {
                 LOG.error("类型错误:key=" + key + ", value=" + value + " instanceof " + value.getClass()
                         + ", ask xwx@live.cn to add a convertor for this type.");
@@ -890,14 +968,14 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     /**
      * <p>select.</p>
      *
-     * @param select a {@link java.lang.String} object.
+     * @param select      a {@link java.lang.String} object.
      * @param whereClause a {@link java.lang.String} object.
-     * @param orderBy a {@link java.lang.String} object.
-     * @param params an array of {@link java.lang.Object} objects.
-     * @param rowStart a int.
-     * @param rowEnd a int.
-     * @param clz a {@link java.lang.Class} object.
-     * @param <K> a K object.
+     * @param orderBy     a {@link java.lang.String} object.
+     * @param params      an array of {@link java.lang.Object} objects.
+     * @param rowStart    a int.
+     * @param rowEnd      a int.
+     * @param clz         a {@link java.lang.Class} object.
+     * @param <K>         a K object.
      * @return a {@link java.util.List} object.
      */
     public @NotNull <K> List<K> select(String select, String whereClause, String orderBy, Object[] params, int rowStart,
@@ -917,7 +995,8 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
             for (Map<String, Object> h : v) {
                 try {
                     v1.add(convert(h, clz.getConstructor().newInstance()));
-                } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException | InstantiationException e) {
+                } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException |
+                         InstantiationException e) {
                     throw new DbException(e);
                 }
             }
@@ -929,12 +1008,12 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     /**
      * <p>select.</p>
      *
-     * @param sql a {@link java.lang.String} object.
+     * @param sql         a {@link java.lang.String} object.
      * @param whereClause a {@link java.lang.String} object.
-     * @param orderBy a {@link java.lang.String} object.
-     * @param params an array of {@link java.lang.Object} objects.
-     * @param rowStart a int.
-     * @param rowEnd a int.
+     * @param orderBy     a {@link java.lang.String} object.
+     * @param params      an array of {@link java.lang.Object} objects.
+     * @param rowStart    a int.
+     * @param rowEnd      a int.
      * @return a {@link java.util.List} object.
      */
     protected @NotNull
@@ -956,11 +1035,10 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      */
     @Override
     public @NotNull
-    List<T> select(String whereClause, Object[] params, String orderByClause, int beginNum, int endNum)
-             {
+    List<T> select(String whereClause, Object[] params, String orderByClause, int beginNum, int endNum) {
         String query = getSelectAllFromTable() + whereClause;
         if (this.getDbType() != DERBY) {
-            query += " "+orderByClause;
+            query += " " + orderByClause;
         }
         query = getPagingSql(query, beginNum, endNum);
         return getDbHelper().executeQuery(query, params, new RowMapperResultReader<>(this));
@@ -1015,18 +1093,18 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         return getDbHelper().executeQuery(query, params, new RowMapperResultReader<>(this), ActiveRecord.toFieldsSet(fieldList));
 
     }
+
     public @NotNull
     List<T> selectWithJoin(String fieldList, String whereClause, Object[] params, String orderByClause,
                            int beginNum, int endNum) {
-      return   selectWithJoin( fieldList,  whereClause, params,  orderByClause,
-          beginNum,  endNum, null);
+        return selectWithJoin(fieldList, whereClause, params, orderByClause,
+                beginNum, endNum, null);
     }
 
     public @NotNull
-    List<T> select(String whereClause, String orderbyClause, int beginNum, int endNum)
-             {
-        return select(whereClause, null, orderbyClause, beginNum, endNum);
-             }
+    List<T> select(String whereClause, String orderByClause, int beginNum, int endNum) {
+        return select(whereClause, null, orderByClause, beginNum, endNum);
+    }
 
     /**
      * Select from the database for table
@@ -1064,7 +1142,6 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         return getSelectAllFromTable() + WHERE;
     }
 
-
     /**
      * <p>selectByKeys.</p>
      *
@@ -1089,7 +1166,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @param id 主键
      * @param cn 数据库连接
      * @return true成功删除
-     *       Deletes from the database for table
+     * Deletes from the database for table
      */
     public boolean deleteByKey(ID id, Connection cn) {
         String query = getDeleteWhere() + getKeyName() + "=?";
@@ -1128,7 +1205,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * <p>makeInPlaceHolder.</p>
      *
      * @param fieldName a {@link java.lang.String} object.
-     * @param size a int.
+     * @param size      a int.
      * @return a {@link java.lang.String} object.
      */
     protected String makeInPlaceHolder(String fieldName, int size) {
@@ -1160,52 +1237,6 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     }
 
     /**
-     * <p>filterForSQL.</p>
-     *
-     * @param sql a {@link java.lang.String} object.
-     * @return a {@link java.lang.String} object.
-     */
-    public static String filterForSql(String sql) {
-        if (sql == null || sql.length()==0) {
-            return "";
-        }
-        int nLen = sql.length();
-
-        char[] srcBuff = sql.toCharArray();
-        StringBuilder retBuff = new StringBuilder((int) (nLen * 1.5D));
-        for (int i = 0; i < nLen; ++i) {
-            char cTemp = srcBuff[i];
-            switch (cTemp) {
-                case '\'':
-                    retBuff.append("''");
-                    break;
-                case ';':
-                    boolean bSkip = false;
-                    for (int j = i + 1; (j < nLen) && (!(bSkip)); ++j) {
-                        char cTemp2 = srcBuff[j];
-                        if (cTemp2 == ' ') {
-                            continue;
-                        }
-                        if (cTemp2 == '&') {
-                            retBuff.append(';');
-                        }
-                        bSkip = true;
-                    }
-
-                    if (!(bSkip)) {
-                        retBuff.append(';');
-                    }
-                    break;
-                default:
-                    retBuff.append(cTemp);
-            }
-
-        }
-
-        return retBuff.toString();
-    }
-
-    /**
      * <p>insertAutoNewKey.</p>
      *
      * @param info a T object.
@@ -1231,7 +1262,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
 
     /**
      * {@inheritDoc}
-     *
+     * <p>
      * Select from the database for table "agent_form" by unique ids
      */
     @Override
@@ -1277,19 +1308,18 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     /**
      * <p>selectAllByStep.</p>
      *
-     * @param where a {@link java.lang.String} object.
+     * @param where   a {@link java.lang.String} object.
      * @param orderBy a {@link java.lang.String} object.
      * @param stepMax a int.
-     * @param params an array of {@link java.lang.Object} objects.
+     * @param params  an array of {@link java.lang.Object} objects.
      * @return a {@link java.util.List} object.
      */
     public @NotNull
-    List<T> selectAllByStep(String where, String orderBy, int stepMax, Object[] params)
-             {
+    List<T> selectAllByStep(String where, String orderBy, int stepMax, Object[] params) {
         final List<T> result = new ArrayList<>();
         processAllByStep(where, orderBy, stepMax, result::addAll, params);
         return result;
-             }
+    }
 
     /**
      * <p>processAllByStep.</p>
@@ -1309,8 +1339,8 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * 批处理数据表记录, 当处理结果不影响获取条件时，alwaysFromBeginning应为false
      *
      * @param where               条件字符串，应为形如" where site_id=0 "的字符串，前后需加空格
-     * @param orderBy            排序方法应为形如" order by id "的字符串，前后需加空格
-     * @param stepMax            每次获取最多记录数，返回结果数据表记录可能{@code site()<=step_max }
+     * @param orderBy             排序方法应为形如" order by id "的字符串，前后需加空格
+     * @param stepMax             每次获取最多记录数，返回结果数据表记录可能{@code site()<=step_max }
      * @param handler             真正用于处理返回结果的接口
      * @param params              sql参数, 为 where 和 order_by 里的？点位符对应参数
      * @param alwaysFromBeginning 当处理结果不影响获取条件时， alwaysFromBeginning 应为 false,
@@ -1377,13 +1407,13 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     /**
      * <p>select.</p>
      *
-     * @param sql a {@link java.lang.String} object.
-     * @param where a {@link java.lang.String} object.
+     * @param sql     a {@link java.lang.String} object.
+     * @param where   a {@link java.lang.String} object.
      * @param orderBy a {@link java.lang.String} object.
-     * @param params an array of {@link java.lang.Object} objects.
-     * @param start a int.
-     * @param rowEnd a int.
-     * @param clz an array of {@link java.lang.Class} objects.
+     * @param params  an array of {@link java.lang.Object} objects.
+     * @param start   a int.
+     * @param rowEnd  a int.
+     * @param clz     an array of {@link java.lang.Class} objects.
      * @return a {@link java.util.List} object.
      */
     protected @NotNull
@@ -1396,7 +1426,8 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
             for (int i = 0; i < clz.length; i++) {
                 try {
                     rec[i] = clz[i].getDeclaredConstructor().newInstance();
-                } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+                } catch (InstantiationException | IllegalAccessException | NoSuchMethodException |
+                         InvocationTargetException e) {
                     LOG.warn("newInstance", e);
                 }
                 this.map2object(h, rec[i]);
@@ -1463,7 +1494,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @return an array of {@link java.lang.Object} objects.
      */
     protected Object[] getUpdateObjs(T info) {
-        assert info!=null;
+        assert info != null;
         return new Object[0];
     }
 
@@ -1474,7 +1505,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @return an array of {@link java.lang.Object} objects.
      */
     protected Object[] getInsertObjs(T info) {
-        assert info!=null;
+        assert info != null;
         throw new IllegalArgumentException("this method must override!");
     }
 
@@ -1494,7 +1525,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     public boolean updateByKey(T info, String shardTableName) {
         beforeChange(info);
 
-        return 1 == getDbHelper().executeNoQuery(shardNameStrategy(getUpdateSql(),shardTableName), getUpdateObjs(info));
+        return 1 == getDbHelper().executeNoQuery(shardNameStrategy(getUpdateSql(), shardTableName), getUpdateObjs(info));
     }
 
     /**
@@ -1524,8 +1555,8 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         return 1 == getDbHelper().executeNoQuery(shardNameStrategy(getUpdateSql(), tableShardName), getUpdateObjs(info), cn);
     }
 
-    String shardNameStrategy(String sql, String shardTableName){
-        return sql.replaceAll(getTableName(),shardTableName);
+    String shardNameStrategy(String sql, String shardTableName) {
+        return sql.replaceAll(getTableName(), shardTableName);
     }
 
     /**
@@ -1544,6 +1575,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         beforeChange(info);
         return 1 == getDbHelper().executeNoQuery(shardNameStrategy(getInsertSql(), tableShardName), getInsertObjs(info));
     }
+
     /**
      * Inserts the info object values into the database.
      *
@@ -1647,7 +1679,6 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         return new ActiveRecordImpl<>(this);
     }
 
-
     /**
      * <p>ar.</p>
      *
@@ -1691,7 +1722,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
                                      String[] groupBy, Object... params) {
 
         String query = SqlUtils.formGroupQuery(this.getTableName(), this.getKeyName(), field, groupFunction, where, having, groupBy);
-        return  getDbHelper().executeQuery(query, params,
+        return getDbHelper().executeQuery(query, params,
                 new RowMapperResultReader<>((rs, index, set) -> {
                     CountValue cs = new CountValue();
                     cs.setCount(rs.getLong(1));
@@ -1703,8 +1734,6 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
                 }));
 
     }
-
-
 
     /**
      * <p>countGroupObject.</p>
@@ -1765,7 +1794,9 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         return this.selectByKey(id);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     @SuppressWarnings("unchecked")
     public ID getNextKey() {
@@ -1777,7 +1808,6 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     private String getSequenceKeyName() {
         return (this.getTableName() + "_" + this.getKeyName()).toLowerCase();
     }
-
 
     /**
      * 以下两个方法做为三明治用来做引导查询主库，使用场景为当用户刚更新过某个表，紧接查主库
@@ -1801,7 +1831,6 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
             LOG.warn("endForceMasterDB", e);
         }
     }
-
 
     public boolean save(T info) {
         if (getId(info) != null && Integer.parseInt(getId(info).toString()) != 0) {
@@ -1836,36 +1865,10 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         return true;
     }
 
-
     protected String getInsertSqlAutoIncrement() {
         String res = this.getInsertSql();
-        res += " ;" + getLastInsertIdSql() ;
+        res += " ;" + getLastInsertIdSql();
         return res;
-    }
-
-
-
-    /**
-     * Select from the database for table "Agent_form"
-     *
-     * @return list of pojo
-     */
-    public @NotNull
-    List<T> selectBy(ActiveRecord<T> ar) {
-        SqlPocket build = ar.getCondStack().build();
-
-        String sql = this.getCoreSql()+build.getCondition();
-        if(ar instanceof ActiveRecordImpl){
-            ActiveRecordImpl arr =  (( ActiveRecordImpl) ar);
-            sql += arr.parseOrder() + arr.parseLimitSql();
-
-        }
-        return this.dbHelper.executeQuery(sql,
-                build.getParams().toArray(new Object[0]), this, ar.getResultFieldsSet());
-    }
-
-    protected String getCoreSql(){
-        return SELECT_FROM+getTableName()+" ";
     }
 
 
@@ -1881,33 +1884,26 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
 //        return mapRow(rs, index, Collections.emptySet());
 //    };
 
-
     /**
-     * contain field check
-     * @param field
-     * @param fields
-     * @return true if fields is empty or contains field, ignore
+     * Select from the database for table "Agent_form"
+     *
+     * @return list of pojo
      */
-    protected static boolean containsIgnoreCase(String field, Set<String> fields){
-        return fields==null ||  fields.isEmpty() || fields.contains(getFieldAlias(field).toLowerCase(Locale.ROOT));
+    public @NotNull
+    List<T> selectBy(ActiveRecord<T> ar) {
+        SqlPocket build = ar.getCondStack().build();
+
+        String sql = this.getCoreSql() + build.getCondition();
+        if (ar instanceof ActiveRecordImpl) {
+            ActiveRecordImpl arr = ((ActiveRecordImpl) ar);
+            sql += arr.parseOrder() + arr.parseLimitSql();
+
+        }
+        return this.dbHelper.executeQuery(sql,
+                build.getParams().toArray(new Object[0]), this, ar.getResultFieldsSet());
     }
 
-    /**
-     * deal with alias and `` quotes
-     * @param field
-     * @return
-     */
-    public static String getFieldAlias(String field) {
-        field = field.strip();
-
-        if(!field.startsWith("`") && StringUtils.containsWhitespace(field)){
-            StringTokenizer tokenizer = new StringTokenizer(field);
-            while (tokenizer.hasMoreTokens()) {
-                field = tokenizer.nextToken();
-            }
-        }else if(field.startsWith("`")) {
-            field = StringUtils.strip("`");
-        }
-        return field;
+    protected String getCoreSql() {
+        return SELECT_FROM + getTableName() + " ";
     }
 }

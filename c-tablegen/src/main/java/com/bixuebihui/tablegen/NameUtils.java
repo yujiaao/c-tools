@@ -4,6 +4,7 @@ import com.google.common.base.CaseFormat;
 import org.apache.commons.text.CaseUtils;
 
 import java.io.File;
+import java.nio.file.FileSystem;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -88,7 +89,7 @@ public class NameUtils {
 	}
 
 	public static String getConfigBaseDir(String propertiesFilename) {
-		int i = propertiesFilename.lastIndexOf(File.separator) + 1;
+		int i = Math.max(propertiesFilename.lastIndexOf("/"),propertiesFilename.lastIndexOf("\\")) + 1;
 		return  propertiesFilename.substring(0, i);
 	}
 

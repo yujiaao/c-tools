@@ -25,5 +25,6 @@ public interface RowMapper<T> {
     */
    T mapRow(ResultSet rs, int index, Set<String> fields) throws SQLException ;
 
+  // T mapRow(ResultSet rs, int index, Set<String> fields, boolean keepNullForNumberField) throws SQLException ;
 
 }

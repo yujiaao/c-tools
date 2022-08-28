@@ -71,6 +71,11 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
 
     }
 
+    @Override
+    public ActiveRecord<T> keepNullForNumberField() {
+        return this;
+    }
+
 
     /** {@inheritDoc} */
     @Override

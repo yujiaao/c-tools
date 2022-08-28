@@ -30,6 +30,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	 */
 	SqlSort orderStack;
 	SqlHelper filterStack;
+	private boolean keepNullForNumberField = false;
 
 	public SqlLimit getLimit() {
 		return limit;
@@ -116,6 +117,12 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	public ActiveRecord<T> emptyStringAsNullCondition() {
 		filterStack.setAcceptEmptyStringAsNullObjectInCondition(true);
 		return this;
+	}
+
+	@Override
+	public ActiveRecord<T> keepNullForNumberField() {
+		 this.keepNullForNumberField = true;
+		 return this;
 	}
 
 

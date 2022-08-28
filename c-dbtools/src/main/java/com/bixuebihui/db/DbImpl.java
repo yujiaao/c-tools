@@ -52,6 +52,11 @@ public class DbImpl<T, V> extends BaseDao<T, V> implements ActiveRecord<T>,
 		return this;
 	}
 
+	@Override
+	public ActiveRecord<T> keepNullForNumberField() {
+		return this;
+	}
+
 	/** {@inheritDoc} */
 	@Override
 	public ActiveRecord<T> in(String field, Object values) {

@@ -47,5 +47,13 @@ class NameUtilsTest {
 
     @Test
     void getConfigBaseDir() {
+        String path = NameUtilsTest.class.getResource("/tablegen.properties").getPath();
+        String res = NameUtils.getConfigBaseDir(path);
+        if(OSType.getOSType() == OSType.Windows) {
+            assertTrue(res.endsWith("target\\test-classes\\"));
+        }else{
+            assertTrue(res.endsWith("target/test-classes/"));
+        }
+
     }
 }

@@ -48,6 +48,33 @@ public interface ActiveRecord<T> extends Record<T> {
     ActiveRecord<T> emptyStringAsNullCondition();
 
     /**
+     *   By defautl, the rs.getInt(fieldName) return primitive type, so well turn null to zero,
+     *   if this is not desired, then call keepNullForNumberField to return null using the trick below:
+     *     ResultSet rs = new ResultSet();
+     *
+     * resultVO.setTaskId(rs.getLong("task_id"));
+     * if(rs.wasNull()){
+     *     resultVO.setTaskId(null);
+     * }
+     *
+     * or
+     *
+     * ResultSet rs = statement.executeQuery("select Id from table");
+     *                    Integer id = 0;
+     *                    if (rs.getObject("Id") != null) {
+     *                             id = rs.getInt("Id");
+     *                    } else {
+     *                             id = null;
+     *                    }
+     *JDBC ResultSet 的getInt, getLong, getDouble, getFloat等方法，不论数据库中是否存储为null，都返回0，或者0.0。
+     *    注意：这个wasNull判断一定要紧跟在你想要判断非空的那个字段取动作之后，否则它判断的就不是你所期望的那个column值了。
+     *
+     * @return
+     */
+    ActiveRecord<T> keepNullForNumberField();
+
+
+    /**
      * <p>in.</p>
      *
      * @param field a {@link java.lang.String} object.
