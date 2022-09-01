@@ -624,7 +624,7 @@ public class DbImpl<T, V> extends BaseDao<T, V> implements ActiveRecord<T>,
 
 
 	@Override
-	public T mapRow(ResultSet rs, int index, Set<String> fields) throws SQLException {
+	public T mapRow(ResultSet rs, int index, Set<String> fields)  {
 		throw new NotImplementedException();
 	}
 }

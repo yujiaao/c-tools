@@ -410,7 +410,7 @@ public class BaseDaoTest  {
 
 
 	@Test
-	public void testGetFirstLast() throws SQLException{
+	public void testGetFirstLast() {
 		DbcpDataSource ds = new DbcpDataSource();
 		ds.setDatabaseConfig(DataSourceTest.getConfigDerby());
 		DbHelper db = new DbHelper();

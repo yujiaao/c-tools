@@ -21,10 +21,9 @@ public interface RowMapper<T> {
     * @param index row index from 1;
     * @param fields if empty, then map all fields
     * @return Data object
-    * @throws SQLException
     */
    T mapRow(ResultSet rs, int index, Set<String> fields) throws SQLException ;
 
-  // T mapRow(ResultSet rs, int index, Set<String> fields, boolean keepNullForNumberField) throws SQLException ;
+  // T mapRow(ResultSet rs, int index, Set<String> fields, boolean keepNullForNumberField)  ;
 
 }

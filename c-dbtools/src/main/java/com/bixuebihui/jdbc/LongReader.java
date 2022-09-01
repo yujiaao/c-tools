@@ -1,5 +1,8 @@
 package com.bixuebihui.jdbc;
 
+import com.bixuebihui.DbException;
+
+import java.sql.SQLException;
 import java.util.List;
 
 /**
@@ -16,7 +19,13 @@ public class LongReader extends RowMapperResultReader<Long> {
      * @param resultList a {@link java.util.List} object.
      */
     public LongReader(List<Long> resultList) {
-        super((rs, index, set) -> rs.getLong(1),resultList);
+        super((rs, index, set) -> {
+            try {
+                return rs.getLong(1);
+            } catch (SQLException e) {
+                throw new DbException(e);
+            }
+        },resultList);
     }
 
 

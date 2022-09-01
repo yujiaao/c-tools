@@ -333,7 +333,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 		return res;
 	}
 
-	private void clear() {
+	public void clear() {
 		this.filterStack.clear();
 		this.orderStack.clear();
 		this.groupByClause.clear();

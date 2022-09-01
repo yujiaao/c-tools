@@ -8,6 +8,8 @@ import java.sql.DriverManager;
 
 import org.h2.jdbcx.JdbcConnectionPool;
 import org.h2.tools.RunScript;
+
+import javax.sql.DataSource;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.InvocationTargetException;
@@ -17,7 +19,7 @@ import java.lang.reflect.InvocationTargetException;
  * to keep h2 table, use ;DB_CLOSE_DELAY=-1 parameter
  *   @see {@link <a href="https://stackoverflow.com/a/5936988/1484621">DB_CLOSE_DELAY</a>}
  */
-public class H2DataSource {
+public class H2DataSource  {
 	public final JdbcConnectionPool cp = JdbcConnectionPool.
 		    create("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1", "sa", "sa");
 

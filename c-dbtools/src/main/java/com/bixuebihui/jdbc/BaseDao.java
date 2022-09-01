@@ -1063,8 +1063,11 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         }
         query = getPagingSql(query, beginNum, endNum);
         List<ID> ids = getDbHelper().executeQuery(query, params, new RowMapperResultReader<>((rs, index, fieldsSet) -> {
-            Object o = rs.getObject(1);
-            return (ID) o;
+            try {
+                return  (ID)rs.getObject(1);
+            } catch (SQLException e) {
+                throw new DbException(e);
+            }
         }));
         return selectByKeys(ids, orderByClause);
     }
@@ -1725,12 +1728,17 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         return getDbHelper().executeQuery(query, params,
                 new RowMapperResultReader<>((rs, index, set) -> {
                     CountValue cs = new CountValue();
-                    cs.setCount(rs.getLong(1));
-                    cs.setValue(rs.getDouble(2));
-                    if (!(groupBy == null || groupBy.length == 0)) {
-                        cs.setKey(rs.getString(3));
+                    try {
+                        cs.setCount(rs.getLong(1));
+                        cs.setValue(rs.getDouble(2));
+                        if (!(groupBy == null || groupBy.length == 0)) {
+                            cs.setKey(rs.getString(3));
+                        }
+                        return cs;
+                    } catch (SQLException e) {
+                        throw new DbException(e);
                     }
-                    return cs;
+
                 }));
 
     }
@@ -1756,12 +1764,17 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         return getDbHelper().executeQuery(query, params,
                 new RowMapperResultReader<>((rs, index, set) -> {
                     CountObject<K> cs = new CountObject<>();
-                    cs.setCount(rs.getLong(1));
-                    cs.setValue(rs.getObject(2, type));
-                    if (!(groupBy == null || groupBy.length == 0)) {
-                        cs.setKey(rs.getString(3));
+                    try {
+                        cs.setCount(rs.getLong(1));
+                        cs.setValue(rs.getObject(2, type));
+                        if (!(groupBy == null || groupBy.length == 0)) {
+                            cs.setKey(rs.getString(3));
+                        }
+                        return cs;
+                    } catch (SQLException e) {
+                        throw new DbException(e);
                     }
-                    return cs;
+
                 }));
 
     }
@@ -1872,17 +1885,6 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     }
 
 
-    /**
-     * <p>mapRow.</p>
-     *
-     * @param rs    a {@link java.sql.ResultSet} object.
-     * @param index  row index from 1;
-     * @return a T object.
-     * @throws java.sql.SQLException if any.
-     */
-//    protected T mapRow(ResultSet rs, int index)  throws SQLException {
-//        return mapRow(rs, index, Collections.emptySet());
-//    };
 
     /**
      * Select from the database for table "Agent_form"
@@ -1890,12 +1892,12 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @return list of pojo
      */
     public @NotNull
-    List<T> selectBy(ActiveRecord<T> ar) {
+    <V>  List<T> selectBy(ActiveRecord<T> ar) {
         SqlPocket build = ar.getCondStack().build();
 
         String sql = this.getCoreSql() + build.getCondition();
         if (ar instanceof ActiveRecordImpl) {
-            ActiveRecordImpl arr = ((ActiveRecordImpl) ar);
+            ActiveRecordImpl<T,V> arr = ((ActiveRecordImpl<T, V>) ar);
             sql += arr.parseOrder() + arr.parseLimitSql();
 
         }

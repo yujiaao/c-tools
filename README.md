@@ -33,7 +33,11 @@ To generate code please refer [`c-tablegen-jdbc-demo`](c-tablegen-jdbc-demo) for
 ## A json table export adapter : c-jmesa
 
 ## TODO
-add async support for r2dbc.
+
+ * JSON support for table field;
+ * transaction support with spring datasource-utils;
+ * ES fields expression condition support.
+
 
 ## version 2.0 
 migrate to Java 11

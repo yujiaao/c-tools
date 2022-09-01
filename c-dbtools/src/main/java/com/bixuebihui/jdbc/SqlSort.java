@@ -116,6 +116,9 @@ public class SqlSort {
         private final String order;
 
         public Sort(String property, String order) {
+
+            assert order==null || "".equals(order) || ASC.equals(order) || DESC.equals(order);
+            
             this.property = property;
             this.order = order;
         }
