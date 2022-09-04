@@ -5,9 +5,10 @@ import java.util.Map;
 
 import com.bixuebihui.generated.tablegen.pojo.T_metacolumn;
 import com.bixuebihui.generated.tablegen.pojo.T_metatable;
+import org.junit.jupiter.api.Test;
 
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 
 public class PojoPropertiesParserTest {
 
@@ -31,7 +32,7 @@ public class PojoPropertiesParserTest {
 
 		Map<String, T_metatable> res = PojoPropertiesParser.mergeTableSetting(to, from);
 
-		Assert.assertEquals(mycol.getAnnotation(), res.get("test").getColumns().get("mycol").getAnnotation());
+		assertEquals(mycol.getAnnotation(), res.get("test").getColumns().get("mycol").getAnnotation());
 
 	}
 

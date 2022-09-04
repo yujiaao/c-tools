@@ -4,6 +4,7 @@ import com.bixuebihui.DbException;
 import com.bixuebihui.jdbc.*;
 import com.bixuebihui.jdbc.entity.CountObject;
 import com.bixuebihui.jdbc.entity.CountValue;
+import com.bixuebihui.query.Paging;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -630,6 +631,11 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	public ActiveRecord<T> having(HavingConditon fieldProcessor) {
 		 fieldProcessor.apply(havingStack);
 		 return this;
+	}
+
+	@Override
+	public <S> ActiveRecord<T> query(Paging<S> searchBean) {
+		return query(searchBean, Set.of(operator.getAllFields().toArray(new String[0])));
 	}
 
 	/**

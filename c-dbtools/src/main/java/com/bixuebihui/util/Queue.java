@@ -68,5 +68,5 @@ public class Queue<T> {
         v = new Vector<T>(i);
     }
 
-    private Vector<T> v;
+    private final Vector<T> v;
 }

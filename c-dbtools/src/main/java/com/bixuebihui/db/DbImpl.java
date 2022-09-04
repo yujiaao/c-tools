@@ -5,6 +5,7 @@ import com.bixuebihui.jdbc.SqlFilter;
 import com.bixuebihui.jdbc.SqlSort;
 import com.bixuebihui.jdbc.entity.CountObject;
 import com.bixuebihui.jdbc.entity.CountValue;
+import com.bixuebihui.query.Paging;
 import org.apache.commons.lang3.NotImplementedException;
 
 import java.sql.ResultSet;
@@ -12,6 +13,8 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+
+import static java.util.Collections.emptySet;
 
 /**
  * Created with IntelliJ IDEA. User: Administrator Date: 13-4-18 Time: 下午5:59 To
@@ -553,6 +556,11 @@ public class DbImpl<T, V> extends BaseDao<T, V> implements ActiveRecord<T>,
 	@Override
 	public ActiveRecord<T> having(HavingConditon fieldProcessor) {
 		return null;
+	}
+
+	@Override
+	public <S> ActiveRecord<T> query(Paging<S> searchBean) {
+		return query(searchBean, emptySet());
 	}
 
 

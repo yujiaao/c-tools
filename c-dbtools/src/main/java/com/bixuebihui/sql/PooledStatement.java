@@ -45,7 +45,7 @@ public class PooledStatement
      */
     public String dumpInfo() {
         String s = System.getProperty("line.separator");
-        String s1 = "\t\tPooledStatement: " + toString() + s;
+        String s1 = "\t\tPooledStatement: " + this + s;
         s1 += "\t\t\t Last Query SQL: " + lastQuerySQL + s;
         s1 += "\t\t\t Last Update SQL: " + lastUpdateSQL + s;
         return s1;

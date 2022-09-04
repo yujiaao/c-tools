@@ -36,7 +36,7 @@ public class ConnectionPool {
      */
     public static final String CONNECTION_POOL = "ConnectionPool: ";
     Executor executor = Runnable::run;
-    private int maxPrepStmts;
+    private final int maxPrepStmts;
 
     /**
      * <p>Setter for the field <code>cacheStatements</code>.</p>
@@ -440,16 +440,16 @@ public class ConnectionPool {
 
     List<PooledConnection> connVector;
     String url;
-    private String username;
-    private String password;
-    private String alias;
-    private int maxConn;
+    private final String username;
+    private final String password;
+    private final String alias;
+    private final int maxConn;
     private int timeoutMilliSeconds;
-    private int checkoutMilliSeconds;
+    private final int checkoutMilliSeconds;
     private int numCheckoutTimeout;
     private int numRequests;
     private int numWaits;
-    private int maxCheckout;
+    private final int maxCheckout;
     private boolean cacheStatements;
     int numConnectionFaults;
     private boolean trace;

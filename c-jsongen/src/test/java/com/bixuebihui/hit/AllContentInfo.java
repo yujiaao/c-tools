@@ -2,7 +2,7 @@
 package com.bixuebihui.hit;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.processing.Generated;
@@ -320,7 +320,7 @@ public class AllContentInfo {
     @JsonProperty("year_ids")
     private List<Long> yearIds = new ArrayList<Long>();
     @JsonIgnore
-    private Map<String, Object> additionalProperties = new HashMap<String, Object>();
+    private Map<String, Object> additionalProperties = new LinkedHashMap<String, Object>();
 
     @JsonProperty("app_url")
     public String getAppUrl() {

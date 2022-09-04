@@ -2,9 +2,9 @@ package com.bixuebihui.cache;
 
 import com.opensymphony.oscache.base.NeedsRefreshException;
 import com.opensymphony.oscache.general.GeneralCacheAdministrator;
-import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
 
-public class CacheTest extends TestCase {
+public class CacheTest {
     //	Be Careful
 
     //If a NeedsRefreshException is raised you have to invoke admin.putInCache or even admin.cancelUpdate to avoid deadlock situation.
@@ -12,6 +12,7 @@ public class CacheTest extends TestCase {
     private boolean updated = false;
 
 
+    @Test
     public void testFireFlash() {
         test1();
         test1();
@@ -53,6 +54,7 @@ public class CacheTest extends TestCase {
         }
     }
 
+    @Test
 
     //Typical use without fail over
     public void test2() {

@@ -143,7 +143,7 @@ public class SQLUtil
      * @return a boolean.
      */
     public static boolean stringToBoolean(String s) {
-        return s != null && "y".equals(s);
+        return "y".equals(s);
     }
 
 

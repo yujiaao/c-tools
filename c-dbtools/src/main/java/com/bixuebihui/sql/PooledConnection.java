@@ -552,7 +552,7 @@ public class PooledConnection implements Connection, Runnable {
 		}
 	}
 
-	private ConnectionPool pool;
+	private final ConnectionPool pool;
 	private Connection conn;
 	private boolean locked;
 	private long lastAccess;
@@ -565,7 +565,7 @@ public class PooledConnection implements Connection, Runnable {
 	int preparedStatementMisses;
 	int preparedStatements;
 	private String traceException;
-	private Map<String, PooledPreparedStatement> prepStmts;
+	private final Map<String, PooledPreparedStatement> prepStmts;
 
 	// set save point
 	// added by [xing]

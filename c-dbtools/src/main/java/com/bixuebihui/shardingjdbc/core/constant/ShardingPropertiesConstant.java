@@ -49,7 +49,7 @@ public enum ShardingPropertiesConstant {
      */
     EXECUTOR_SIZE("executor.size", String.valueOf(Runtime.getRuntime().availableProcessors()), int.class);
 
-    private ShardingPropertiesConstant(String key, String defaultValue, Class<?> type) {
+    ShardingPropertiesConstant(String key, String defaultValue, Class<?> type) {
 		this.key = key;
 		this.defaultValue = defaultValue;
 		this.type = type;

@@ -1,13 +1,13 @@
 package com.bixuebihui.shardingjdbc.core.util;
 
 import com.google.common.base.CaseFormat;
-import com.google.common.collect.Sets;
 
 import javax.sql.DataSource;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  * Data source utility class.
@@ -19,10 +19,10 @@ public final class DataSourceUtil {
 
     private static final String SET_METHOD_PREFIX = "set";
 
-    private static Collection<Class<?>> generalClassType;
+    private static final Collection<Class<?>> generalClassType;
 
     static {
-        generalClassType = Sets.newHashSet(boolean.class, Boolean.class, int.class, Integer.class, long.class, Long.class, String.class);
+        generalClassType = Set.of(boolean.class, Boolean.class, int.class, Integer.class, long.class, Long.class, String.class);
     }
 
     /**
@@ -45,7 +45,7 @@ public final class DataSourceUtil {
         if (propertyName.contains("-")) {
             return CaseFormat.LOWER_HYPHEN.to(CaseFormat.LOWER_CAMEL, SET_METHOD_PREFIX + "-" + propertyName);
         }
-        return SET_METHOD_PREFIX + String.valueOf(propertyName.charAt(0)).toUpperCase() + propertyName.substring(1, propertyName.length());
+        return SET_METHOD_PREFIX + String.valueOf(propertyName.charAt(0)).toUpperCase() + propertyName.substring(1);
     }
 
     private static void callSetterMethod(final DataSource dataSource, final String methodName, final String setterValue) {

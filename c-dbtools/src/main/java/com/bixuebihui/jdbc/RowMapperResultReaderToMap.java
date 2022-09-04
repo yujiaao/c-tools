@@ -13,8 +13,8 @@ import java.util.Map;
  */
 public class RowMapperResultReaderToMap<K,T> {
 
-    private RowMapper<T> handle;
-    private String keyName;
+    private final RowMapper<T> handle;
+    private final String keyName;
     private Map<K,T> res;
 
     /**

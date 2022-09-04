@@ -12,10 +12,11 @@ package com.bixuebihui.generated.tablegen.business;
 import com.bixuebihui.BeanFactory;
 import com.bixuebihui.generated.tablegen.pojo.T_metatable;
 import com.bixuebihui.jdbc.IDbHelper;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class T_metatableManagerTest {
   IDbHelper dbHelper = (IDbHelper) BeanFactory.createObjectById("dbHelper");
@@ -34,12 +35,12 @@ public class T_metatableManagerTest {
 
   @Test
   public void testCount() {
-    Assert.assertTrue(man.count("") >= 0);
+    assertTrue(man.count("") >= 0);
   }
 
   @Test
   public void testInsertdummy() {
-    Assert.assertTrue(man.insertDummy());
+    assertTrue(man.insertDummy());
 }
 
 }

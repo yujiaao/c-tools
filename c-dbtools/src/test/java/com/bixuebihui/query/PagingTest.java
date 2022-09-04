@@ -5,6 +5,7 @@ import com.bixuebihui.db.ActiveRecord;
 import com.bixuebihui.db.ActiveRecordImpl;
 import com.bixuebihui.db.SqlPocket;
 import com.bixuebihui.jdbc.AbstractViewBaseDao;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import javax.sql.DataSource;
@@ -78,7 +79,7 @@ public class PagingTest  {
 
         ar = (ActiveRecordImpl<User, Integer>) p.toActiveRecordParams(ar, fields);
         res = ar.getCondStack().toCondition();
-        assertEquals(" where id = ? and modifiedtime between ? and ?", res.getCondition().toString());
+        Assertions.assertEquals(" where id = ? and modifiedtime between ? and ?", res.getCondition().toString());
         ar.clear();
 
     }

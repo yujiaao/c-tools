@@ -32,6 +32,7 @@ import java.util.*;
 import java.util.Map.Entry;
 
 import static com.bixuebihui.db.Dialect.*;
+import static java.util.Collections.emptyList;
 
 /**
  * <p>Abstract BaseDao class.</p>
@@ -134,6 +135,8 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         return fields;
     }
 
+
+
     /**
      * <p>params.</p>
      *
@@ -143,6 +146,9 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     protected static Object[] params(Object... params) {
         return params;
     }
+
+
+    public  List<String> getAllFields(){return emptyList();}
 
     /**
      * MS SQL Server 2000
@@ -1133,7 +1139,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     public @NotNull
     List<T> selectByKeys(ID[] ids) {
         if (ids == null || ids.length <= 0) {
-            return Collections.emptyList();
+            return emptyList();
         }
 
         String query = getSelectAllWhere() + getKeyName() + " in ( "
@@ -1155,7 +1161,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     protected @NotNull
     List<T> selectByKeys(List<ID> ids, String orderbyClause) {
         if (ids == null || ids.isEmpty()) {
-            return Collections.emptyList();
+            return emptyList();
         }
 
         String query = getSelectAllWhere() + getKeyName() + " in ( "

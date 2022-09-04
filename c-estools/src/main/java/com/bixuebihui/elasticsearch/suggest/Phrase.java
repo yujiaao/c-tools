@@ -1,6 +1,5 @@
 package com.bixuebihui.elasticsearch.suggest;
 
-import com.google.common.collect.ImmutableMap;
 
 import java.util.Map;
 
@@ -74,9 +73,8 @@ public class Phrase extends Suggest {
          * @return this
          */
         public Phrase setHighlight(String preTag, String postTag) {
-            return (Phrase) this.setParam("highlight", ImmutableMap.<String, String>builder()
-                    .put("pre_tag", preTag)
-                    .put("post_tag", postTag).build());
+            return (Phrase) this.setParam("highlight", Map.of("pre_tag", preTag,
+                    "post_tag", postTag));
         }
 
         /**
@@ -84,8 +82,8 @@ public class Phrase extends Suggest {
          * @return this
          */
         public Phrase setStupidBackoffSmoothing(float discount) {
-            return this.setSmoothingModel("stupid_backoff", ImmutableMap.<String, Float>builder().put(
-                    "discount", discount).build());
+            return this.setSmoothingModel("stupid_backoff", Map.of(
+                    "discount", discount));
         }
 
         /**
@@ -93,8 +91,8 @@ public class Phrase extends Suggest {
          * @return this
          */
         public Phrase setLaplaceSmoothing(float alpha) {
-            return this.setSmoothingModel("laplace", ImmutableMap.<String, Float>builder().put(
-                    "alpha", alpha).build());
+            return this.setSmoothingModel("laplace", Map.of(
+                    "alpha", alpha));
         }
 
         /**
@@ -105,10 +103,9 @@ public class Phrase extends Suggest {
          */
         public Phrase setLinearInterpolationSmoothing(float trigramLambda, float bigramLambda, float unigramLambda) {
             return this.setSmoothingModel("linear_interpolation",
-                    ImmutableMap.<String, Float>builder()
-                            .put("trigram_lambda", trigramLambda)
-                            .put("bigram_lambda", bigramLambda)
-                            .put("unigram_lambda", unigramLambda).build());
+                    Map.of("trigram_lambda", trigramLambda,
+                            "bigram_lambda", bigramLambda,
+                            "unigram_lambda", unigramLambda));
         }
 
         /**
@@ -117,8 +114,8 @@ public class Phrase extends Suggest {
          * @return this
          */
         public Phrase setSmoothingModel(String model, Map params) {
-            return (Phrase) this.setParam("smoothing", ImmutableMap.<String, Map>builder().put(
-                    model, params).build());
+            return (Phrase) this.setParam("smoothing", Map.of(
+                    model, params));
         }
 
         /**

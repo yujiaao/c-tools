@@ -150,10 +150,7 @@ public class SqlHelper {
 		if(!acceptEmptyStringAsNullObjectInCondition){
 			return true;
 		}
-		if("".equals(v)){
-			return false;
-		}
-		return true;
+		return !"".equals(v);
 	}
 	private void buildCriteria(SqlPocket criteria, BaseFilter f)
 	{

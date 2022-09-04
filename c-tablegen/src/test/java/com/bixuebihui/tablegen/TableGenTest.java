@@ -4,9 +4,9 @@ import com.bixuebihui.generated.tablegen.business.T_metatableManager;
 import com.bixuebihui.generated.tablegen.pojo.T_metatable;
 import com.bixuebihui.jdbc.IDbHelper;
 import com.bixuebihui.tablegen.entry.TableInfo;
-import org.junit.Assert;
-import org.junit.Test;
+
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.sql.BatchUpdateException;
@@ -14,6 +14,9 @@ import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Disabled
 public class TableGenTest {
@@ -48,8 +51,8 @@ public class TableGenTest {
 		String extra_setting2="src/main/resources/pojos.xml";
 
 		Map<String, T_metatable> res = tg.setInfo.getExtraTableDataFromXml(extra_setting2, null);
-		Assert.assertEquals(1, res.size());
-		Assert.assertEquals(1, res.get("sm_template_suite").getColumns().size());
+		assertEquals(1, res.size());
+		assertEquals(1, res.get("sm_template_suite").getColumns().size());
 	}
 
 	@Test
@@ -59,11 +62,11 @@ public class TableGenTest {
 
 		String extra_setting2="src/main/resources/pojos.xml";
 		String name = "sm_template_suite";
-		Assert.assertEquals("Sm_template_suite", tg.getPojoClassName(name));
+		assertEquals("Sm_template_suite", tg.getPojoClassName(name));
 		Map<String, T_metatable> res = tg.setInfo.getExtraTableDataFromXml(extra_setting2, null);
 		tg.setInfo.setTableDataExt(res);
 
-		Assert.assertEquals("TemplateSuite", tg.getPojoClassName(name));
+		assertEquals("TemplateSuite", tg.getPojoClassName(name));
 	}
 
 
@@ -134,7 +137,7 @@ public class TableGenTest {
 			tg.setInfo.getTableData(tg.getConfig(), helper, meta);
 			T_metatableManager manager = new T_metatableManager(helper.getDataSource());
 			boolean res  = tg.setInfo.initTableData(tg.setInfo.getTableInfos(), manager);
-			Assert.assertTrue(res);
+			assertTrue(res);
 		}catch(BatchUpdateException e){
 			e.getNextException().printStackTrace();
 			e.printStackTrace();
@@ -148,7 +151,7 @@ public class TableGenTest {
 		System.out.println(this.getClass().getResource("/tablegen.properties")
 				.getFile());
 		tg.init(null);
-		Assert.assertTrue(tg.makeDir());
+		assertTrue(tg.makeDir());
 	}
 
 }

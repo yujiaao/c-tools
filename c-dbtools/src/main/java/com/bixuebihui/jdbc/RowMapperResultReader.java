@@ -15,7 +15,7 @@ import java.util.Set;
  */
 public class RowMapperResultReader<T> {
 
-	private RowMapper<T> handle;
+	private final RowMapper<T> handle;
 	private List<T> res;
 
     /**

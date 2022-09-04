@@ -1,7 +1,7 @@
 
 package com.bixuebihui.hit;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.annotation.processing.Generated;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
@@ -24,7 +24,7 @@ public class KoubeiLabelName {
     @JsonProperty("type")
     private Long type;
     @JsonIgnore
-    private Map<String, Object> additionalProperties = new HashMap<String, Object>();
+    private Map<String, Object> additionalProperties = new LinkedHashMap<String, Object>();
 
     @JsonProperty("name")
     public String getName() {

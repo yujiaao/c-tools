@@ -11,8 +11,8 @@ import java.util.List;
  * @version $Id: $Id
  */
 public class SqlPocket {
-	private StringBuffer condition;
-	private List<Object> params;
+	private final StringBuffer condition;
+	private final List<Object> params;
 
 	/**
 	 * <p>Constructor for SqlPocket.</p>

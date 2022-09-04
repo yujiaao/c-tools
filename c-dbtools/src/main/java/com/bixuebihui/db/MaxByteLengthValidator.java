@@ -17,7 +17,7 @@ import java.io.UnsupportedEncodingException;
  * @version $Id: $Id
  */
 public class MaxByteLengthValidator implements ConstraintValidator<Size, String> {
-	private static String UTF_8="UTF-8";
+	private static final String UTF_8="UTF-8";
     private static final Logger LOG = LoggerFactory.getLogger(MaxByteLengthValidator.class);
 
     private int max;

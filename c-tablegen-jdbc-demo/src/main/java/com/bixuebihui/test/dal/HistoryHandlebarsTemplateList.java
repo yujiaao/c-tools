@@ -12,21 +12,21 @@ package com.bixuebihui.test.dal;
 
 
 import java.sql.*;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import javax.sql.DataSource;
-import com.bixuebihui.test.business.*;
+
 import com.bixuebihui.test.pojo.*;
-import com.bixuebihui.jdbc.RowMapperResultReader;
-import com.bixuebihui.DbException;
 
 import com.bixuebihui.test.BaseList;
 
 import javax.annotation.processing.Generated;
 
 @Generated("com.github.yujiaao:tablegen")
-public class HistoryHandlebarsTemplateList  extends BaseList<HistoryHandlebarsTemplate, Integer> 
+public class HistoryHandlebarsTemplateList  extends BaseList<HistoryHandlebarsTemplate, Integer>
 {
-    
+
     /**
       * Don't direct use the HistoryHandlebarsTemplateList, use HistoryHandlebarsTemplateManager instead.
       */
@@ -37,7 +37,7 @@ public class HistoryHandlebarsTemplateList  extends BaseList<HistoryHandlebarsTe
     }
 
 
-    
+
     @SuppressWarnings("AlibabaClassNamingShouldBeCamel")
     public static final class F{
         public static final String HISTORY_ID = "history_id";
@@ -52,13 +52,13 @@ public class HistoryHandlebarsTemplateList  extends BaseList<HistoryHandlebarsTe
         public static final String IS_DEL = "is_del";
         public static final String CREATED_STIME = "created_stime";
         public static final String MODIFIED_STIME = "modified_stime";
-        
+
         public static String[] getAllFields() {
             return new String[] { HISTORY_ID, TEMPLATE_ID, TEMPLATE_CODE, DESCRIPTION, DATASOURCE_ID, BASE_TEMPLATE_ID, TEMPLATE_BODY, OPERATOR_ID, VERSION, IS_DEL, CREATED_STIME, MODIFIED_STIME };
         }
     }
 
-    
+
     protected String getDeleteSql(){
         return "delete from "+this.getTableName()+" where  history_id=? ";
     }
@@ -70,11 +70,11 @@ public class HistoryHandlebarsTemplateList  extends BaseList<HistoryHandlebarsTe
 
 
     @Override
-    protected String getUpdateSql(){ 
+    protected String getUpdateSql(){
         return "update "+this.getTableName()+" set   template_id=?,  template_code=?,  description=?,  datasource_id=?,  base_template_id=?,  template_body=?,  operator_id=?,version= version +1,  is_del=?,  created_stime=?,  modified_stime=? where history_id=?";
     }
 
-    
+
    @Override
    protected Object[] getInsertObjs(HistoryHandlebarsTemplate info){
         return new Object[]{ info.getTemplateId(),info.getTemplateCode(),info.getDescription(),info.getDatasourceId(),info.getBaseTemplateId(),info.getTemplateBody(),info.getOperatorId(),info.getVersion(),info.getIsDel(),info.getCreatedStime(),info.getModifiedStime() };
@@ -97,7 +97,7 @@ return  "history_handlebars_template";
 
     }
 
-    
+
     /**
     * Get key name.
     */
@@ -163,25 +163,25 @@ return  "history_handlebars_template";
 
     @Override
     public void setId(HistoryHandlebarsTemplate info, Integer id) {
-    
+
         info.setHistoryId(id);
     }
 
     @Override
     public void setIdLong(HistoryHandlebarsTemplate info, long id) {
-    
+
         info.setHistoryId((int)id);
-    
+
     }
 
 
 
-      
-      
-      
 
-    
-    
+
+
+
+
+
 
     /**
      * Updates the current object values into the database with version condition as an optimistic database lock.
@@ -189,30 +189,30 @@ return  "history_handlebars_template";
     public boolean updateByKeyAndVersion(HistoryHandlebarsTemplate  info, Connection cn)
     {
        return 1 == dbHelper.executeNoQuery(getUpdateSql()+" and version=?", new Object[]{
-        
+
             info.getHistoryId(),
-            
+
             info.getTemplateId(),
-            
+
             info.getTemplateCode(),
-            
+
             info.getDescription(),
-            
+
             info.getDatasourceId(),
-            
+
             info.getBaseTemplateId(),
-            
+
             info.getTemplateBody(),
-            
+
             info.getOperatorId(),
-            
-            
+
+
             info.getIsDel(),
-            
+
             info.getCreatedStime(),
-            
+
             info.getModifiedStime(),
-            
+
         info.getHistoryId(),info.getVersion()
         }, cn );
     }
@@ -220,48 +220,48 @@ return  "history_handlebars_template";
     public boolean updateByKeyAndVersion(HistoryHandlebarsTemplate  info)
     {
         return 1 == dbHelper.executeNoQuery(getUpdateSql()+" and version=?", new Object[]{
-        
+
             info.getHistoryId(),
-            
-        
+
+
             info.getTemplateId(),
-            
-        
+
+
             info.getTemplateCode(),
-            
-        
+
+
             info.getDescription(),
-            
-        
+
+
             info.getDatasourceId(),
-            
-        
+
+
             info.getBaseTemplateId(),
-            
-        
+
+
             info.getTemplateBody(),
-            
-        
+
+
             info.getOperatorId(),
-            
-        
-            
-        
+
+
+
+
             info.getIsDel(),
-            
-        
+
+
             info.getCreatedStime(),
-            
-        
+
+
             info.getModifiedStime(),
-            
-        
+
+
         info.getHistoryId(),info.getVersion()
         });
     }
-    
 
-    
+
+
     /**
      * Deletes from the database for table history_handlebars_template with connection
      */
@@ -280,6 +280,11 @@ return  "history_handlebars_template";
         return 1 <= dbHelper.executeNoQuery(getDeleteSql(), new Object[]{  history_id   });
     }
 
+    @Override
+    public List<String> getAllFields(){
+        return Arrays.asList(F.getAllFields());
+    }
+
 
 
 
@@ -295,15 +300,15 @@ return  "history_handlebars_template";
     {
         HistoryHandlebarsTemplate  info = new HistoryHandlebarsTemplate();
         java.util.Random rnd = new java.util.Random();
-    
+
         info.setTemplateCode(Integer.toString(Math.abs(rnd.nextInt(Integer.MAX_VALUE)), 36));
-    
+
         info.setDescription(Integer.toString(Math.abs(rnd.nextInt(Integer.MAX_VALUE)), 36));
-    
+
         info.setTemplateBody(Integer.toString(Math.abs(rnd.nextInt(Integer.MAX_VALUE)), 36));
-    
+
         info.setHistoryId(getNextKey());
-    
+
         return this.insert(info);
     }
 

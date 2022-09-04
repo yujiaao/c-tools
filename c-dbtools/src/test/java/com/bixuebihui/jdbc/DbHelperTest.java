@@ -2,19 +2,26 @@ package com.bixuebihui.jdbc;
 
 import com.bixuebihui.datasource.BitmechanicDataSource;
 import com.bixuebihui.datasource.DataSourceTest;
-import junit.framework.TestCase;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-public class DbHelperTest extends TestCase {
+
+public class DbHelperTest  {
 
 
     DbHelper h = new DbHelper();
 
+
+    @Test
     public void testExecuteNoQueryBatch2() throws Exception {
 
         String sql = "insert into t_log(lid, uid, content)values(?,?,?)";
@@ -25,6 +32,7 @@ public class DbHelperTest extends TestCase {
         assertTrue(a == 100);
     }
 
+    @Test
     public void testInsertAndFetchId() throws Exception {
 
         String sql = "insert into t_log( uid, content)values(?,?)";
@@ -37,13 +45,10 @@ public class DbHelperTest extends TestCase {
         assertTrue(a == 1);
     }
 
-    public void testExecuteQuery1() throws Exception {
-    }
 
-    public void testExecuteScalar() throws Exception {
-    }
 
-    protected void setUp() {
+    @BeforeEach
+    public void setUp() {
         BitmechanicDataSource ds = new BitmechanicDataSource();
         ds.setDatabaseConfig(DataSourceTest.getConfigMaster());
 
@@ -51,17 +56,22 @@ public class DbHelperTest extends TestCase {
     }
 
 
+    @Test
     public void testGetConnection() throws SQLException {
 
         h.getConnection();
     }
 
+
+    @Test
     public void testFreeConnection() throws SQLException {
         Connection cn = h.getConnection();
         DbHelper.freeConnection(cn);
 
     }
 
+
+    @Test
     public void testDbHelperConnection() throws SQLException {
         Connection cn = h.getConnection();
         IDbHelper h1 = new DbHelper(cn);
@@ -69,6 +79,8 @@ public class DbHelperTest extends TestCase {
 
     }
 
+
+    @Test
     public void testClose() throws SQLException {
         Connection cn = h.getConnection();
         cn.close();
@@ -77,15 +89,18 @@ public class DbHelperTest extends TestCase {
     }
 
 
+
+    @Test
     public void testExecuteScalarString() throws SQLException {
         String strSql = "select 1+2 from dual";
         String v = h.executeScalar(strSql).toString();
         assertEquals(v, "3");
     }
 
-    public void testExecuteUpdate() {
-    }
 
+
+
+    @Test
     public void testExeQuery() throws SQLException {
         String strSql = "select 1+2 from dual";
         List<Map<String, Object>> v = h.exeQuery(strSql);

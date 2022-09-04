@@ -1,19 +1,12 @@
 package com.bixuebihui.datasource;
 
 import com.bixuebihui.ConnectionManagerTest;
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import org.junit.platform.suite.api.SelectClasses;
+import org.junit.platform.suite.api.Suite;
+import org.junit.runner.RunWith;
 
+@SelectClasses( { DbcpDataSourceTest.class, BitmechanicDataSourceTest.class, ConnectionManagerTest.class } )
+@Suite
 public class AllTests {
-
-	public static Test suite() {
-		TestSuite suite = new TestSuite("Test for com.bixuebihui.datasource");
-		//$JUnit-BEGIN$
-		suite.addTestSuite(DbcpDataSourceTest.class);
-		suite.addTestSuite(BitmechanicDataSourceTest.class);
-		suite.addTestSuite(ConnectionManagerTest.class);
-		//$JUnit-END$
-		return suite;
-	}
 
 }

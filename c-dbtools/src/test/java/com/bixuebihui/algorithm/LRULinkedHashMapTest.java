@@ -1,11 +1,16 @@
 package com.bixuebihui.algorithm;
 
+import org.junit.jupiter.api.Test;
+
 import java.util.Map;
 
-import junit.framework.TestCase;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class LRULinkedHashMapTest extends TestCase {
 
+public class LRULinkedHashMapTest  {
+
+
+	@Test
 	public void testRemoveObject() {
 		int cap=5;
 	Map<String, String> map = new  LRULinkedHashMap<String, String>(cap, new RemoveActionImpl());

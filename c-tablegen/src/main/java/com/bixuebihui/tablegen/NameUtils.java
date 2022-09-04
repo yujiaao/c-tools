@@ -3,8 +3,6 @@ package com.bixuebihui.tablegen;
 import com.google.common.base.CaseFormat;
 import org.apache.commons.text.CaseUtils;
 
-import java.io.File;
-import java.nio.file.FileSystem;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;

@@ -1,32 +1,40 @@
 package com.bixuebihui.cache;
 
-import junit.framework.TestCase;
+
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class ObjectCacheTest extends TestCase {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+public class ObjectCacheTest  {
 
     ObjectCache oc;
     String key = "objtest";
 
+    @BeforeEach
     protected void setUp() {
         System.out.println("Start...");
 
         oc = new ObjectCache();
     }
 
-    protected void tearDown() {
+
+    @AfterEach
+    public void tearDown() {
         oc.destroy();
         System.out.println("Done.");
 
     }
 
-    public void testObjectCache() {
-    }
 
+    @Test
     public void testBatchGet() throws SQLException {
 
         List<String> arr = new ArrayList<String>();

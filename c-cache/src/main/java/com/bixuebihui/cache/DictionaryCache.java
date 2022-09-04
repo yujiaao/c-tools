@@ -33,15 +33,12 @@ public class DictionaryCache {
     }
 
     @SuppressWarnings({"unchecked"})
-    protected static Map sortByValue(Map map) {
-        List list = new LinkedList(map.entrySet());
-        Collections.sort(list, (Comparator) (o1, o2) -> ((Comparable) ((Map.Entry) (o1)).getValue())
-                .compareTo(((Map.Entry) (o2)).getValue()));
-        Map result = new LinkedHashMap();
-        for (Iterator it = list.iterator(); it.hasNext(); ) {
-            Map.Entry entry = (Map.Entry) it.next();
-            result.put(entry.getKey(), entry.getValue());
-        }
+    protected static Map<String, Object> sortByValue(Map<String, Object> map) {
+        List<Map.Entry<String, Object>> list = new LinkedList<>(map.entrySet());
+        list.sort((Comparator) (o1, o2) -> ((Comparable) ((Map.Entry<String, Object>) (o1)).getValue())
+                .compareTo(((Map.Entry<String, Object>) (o2)).getValue()));
+        Map<String, Object> result = new LinkedHashMap<>();
+        list.forEach( it -> result.put(it.getKey(),it.getValue()));
         return result;
     }
 

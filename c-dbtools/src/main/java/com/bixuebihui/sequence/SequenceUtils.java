@@ -18,8 +18,8 @@ import java.util.Map;
  * @version $Id: $Id
  */
 public class SequenceUtils {
-	private static SequenceUtils INSTANCE = new SequenceUtils();
-	private Map<String, KeyInfo> keyMap = new Hashtable<>(20); // Sequence载体容器
+	private static final SequenceUtils INSTANCE = new SequenceUtils();
+	private final Map<String, KeyInfo> keyMap = new Hashtable<>(20); // Sequence载体容器
 	private static final int POOL_SIZE = 10; // Sequence值缓存大小
 	private static final Logger LOG = LoggerFactory.getLogger(SequenceUtils.class);
 

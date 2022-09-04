@@ -1,7 +1,7 @@
 
 package com.bixuebihui.hit;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.annotation.processing.Generated;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
@@ -21,7 +21,7 @@ public class Json {
     @JsonProperty("slideshow")
     private Slideshow slideshow;
     @JsonIgnore
-    private Map<String, Object> additionalProperties = new HashMap<String, Object>();
+    private Map<String, Object> additionalProperties = new LinkedHashMap<String, Object>();
 
     @JsonProperty("slideshow")
     public Slideshow getSlideshow() {

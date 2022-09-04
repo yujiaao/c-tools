@@ -1,6 +1,7 @@
 package com.bixuebihui.db;
 
 import com.bixuebihui.jdbc.BaseDao;
+import com.bixuebihui.query.Paging;
 import org.apache.commons.lang3.StringUtils;
 
 import java.sql.SQLException;
@@ -27,15 +28,24 @@ public interface ActiveRecord<T> extends Record<T> {
      * Constant <code>ORDER_ASC=0</code>
      */
     int ORDER_ASC = 0;
-    /** Constant <code>ORDER_DESC=1</code> */
-    int ORDER_DESC=1;
+    /**
+     * Constant <code>ORDER_DESC=1</code>
+     */
+    int ORDER_DESC = 1;
+
+    /**
+     * the fields that query will return
+     *
+     * @return a set of DB fields
+     */
 
     Set<String> getResultFieldsSet();
 
     /**
      * <p>in.</p>
      * 条件
-     * @param field a {@link java.lang.String} object.
+     *
+     * @param field  a {@link java.lang.String} object.
      * @param values an array of {@link java.lang.Object} objects.
      * @return a {@link ActiveRecord} object.
      */
@@ -43,31 +53,32 @@ public interface ActiveRecord<T> extends Record<T> {
 
     /**
      * Call this method will reject empty string as where condition value
+     *
      * @return this
      */
     ActiveRecord<T> emptyStringAsNullCondition();
 
     /**
-     *   By defautl, the rs.getInt(fieldName) return primitive type, so well turn null to zero,
-     *   if this is not desired, then call keepNullForNumberField to return null using the trick below:
-     *     ResultSet rs = new ResultSet();
-     *
+     * By defautl, the rs.getInt(fieldName) return primitive type, so well turn null to zero,
+     * if this is not desired, then call keepNullForNumberField to return null using the trick below:
+     * ResultSet rs = new ResultSet();
+     * <p>
      * resultVO.setTaskId(rs.getLong("task_id"));
      * if(rs.wasNull()){
-     *     resultVO.setTaskId(null);
+     * resultVO.setTaskId(null);
      * }
-     *
+     * <p>
      * or
-     *
+     * <p>
      * ResultSet rs = statement.executeQuery("select Id from table");
-     *                    Integer id = 0;
-     *                    if (rs.getObject("Id") != null) {
-     *                             id = rs.getInt("Id");
-     *                    } else {
-     *                             id = null;
-     *                    }
-     *JDBC ResultSet 的getInt, getLong, getDouble, getFloat等方法，不论数据库中是否存储为null，都返回0，或者0.0。
-     *    注意：这个wasNull判断一定要紧跟在你想要判断非空的那个字段取动作之后，否则它判断的就不是你所期望的那个column值了。
+     * Integer id = 0;
+     * if (rs.getObject("Id") != null) {
+     * id = rs.getInt("Id");
+     * } else {
+     * id = null;
+     * }
+     * JDBC ResultSet 的getInt, getLong, getDouble, getFloat等方法，不论数据库中是否存储为null，都返回0，或者0.0。
+     * 注意：这个wasNull判断一定要紧跟在你想要判断非空的那个字段取动作之后，否则它判断的就不是你所期望的那个column值了。
      *
      * @return
      */
@@ -77,7 +88,7 @@ public interface ActiveRecord<T> extends Record<T> {
     /**
      * <p>in.</p>
      *
-     * @param field a {@link java.lang.String} object.
+     * @param field  a {@link java.lang.String} object.
      * @param values a {@link java.lang.Object} object.
      * @return a {@link ActiveRecord} object.
      */
@@ -113,8 +124,8 @@ public interface ActiveRecord<T> extends Record<T> {
     /**
      * <p>between.</p>
      *
-     * @param field a {@link java.lang.String} object.
-     * @param leftValue a {@link java.lang.Object} object.
+     * @param field      a {@link java.lang.String} object.
+     * @param leftValue  a {@link java.lang.Object} object.
      * @param rightValue a {@link java.lang.Object} object.
      * @return a {@link ActiveRecord} object.
      */
@@ -123,8 +134,8 @@ public interface ActiveRecord<T> extends Record<T> {
     /**
      * <p>notBetween.</p>
      *
-     * @param field a {@link java.lang.String} object.
-     * @param leftValue a {@link java.lang.Object} object.
+     * @param field      a {@link java.lang.String} object.
+     * @param leftValue  a {@link java.lang.Object} object.
      * @param rightValue a {@link java.lang.Object} object.
      * @return a {@link ActiveRecord} object.
      */
@@ -143,7 +154,7 @@ public interface ActiveRecord<T> extends Record<T> {
      * <p>eq.</p>
      *
      * @param fields an array of {@link java.lang.String} objects.
-     * @param value an array of {@link java.lang.Object} objects.
+     * @param value  an array of {@link java.lang.Object} objects.
      * @return a {@link ActiveRecord} object.
      * @throws SQLException if any.
      */
@@ -183,8 +194,8 @@ public interface ActiveRecord<T> extends Record<T> {
 
     /**
      * Sort by given order
-     *  e.g. select FirstName from DemoTable where Id IN(4,5,6) order by field(Id,4,5,6);
-     *  +----+-----------+
+     * e.g. select FirstName from DemoTable where Id IN(4,5,6) order by field(Id,4,5,6);
+     * +----+-----------+
      * | Id | FirstName |
      * +----+-----------+
      * |  1 | Chris     |
@@ -202,8 +213,9 @@ public interface ActiveRecord<T> extends Record<T> {
      * | Carol     |
      * | David     |
      * +-----------+
+     *
      * @param field field name
-     * @param in fields value in IN clause
+     * @param in    fields value in IN clause
      * @return this
      */
     ActiveRecord<T> orderByIn(String field, Object[] in);
@@ -220,7 +232,7 @@ public interface ActiveRecord<T> extends Record<T> {
      * <p>limit.</p>
      *
      * @param begin a int.
-     * @param num a int.
+     * @param num   a int.
      * @return a {@link ActiveRecord} object.
      */
     ActiveRecord<T> limit(int begin, int num);
@@ -272,6 +284,7 @@ public interface ActiveRecord<T> extends Record<T> {
 
     /**
      * Override table name for partition or other porpoise, otherwise you can omit to call this
+     *
      * @param partitionTableName
      * @return
      */
@@ -295,6 +308,7 @@ public interface ActiveRecord<T> extends Record<T> {
 
     /**
      * sql group by clause
+     *
      * @param fields
      * @return
      */
@@ -303,11 +317,28 @@ public interface ActiveRecord<T> extends Record<T> {
     ActiveRecord<T> having(HavingConditon fieldProcessor);
 
 
-    static Set<String> toFieldsSet(String commaSeparatedFields){
-        if(StringUtils.isBlank(commaSeparatedFields)|| commaSeparatedFields.contains("*")){
+    static Set<String> toFieldsSet(String commaSeparatedFields) {
+        if (StringUtils.isBlank(commaSeparatedFields) || commaSeparatedFields.contains("*")) {
             return emptySet();
         }
         return Stream.of(commaSeparatedFields.split(",")).map(x -> BaseDao.getFieldAlias(x.toLowerCase(Locale.ROOT))).collect(Collectors.toSet());
     }
+
+    /**
+     * use 'search bean' value to query result:
+     * when search bean's property is primitive, this is equals `eq`,
+     * when property is String, this is like 'like',
+     * when property is Date/Time, this is between operation
+     *
+     * @param searchBean
+     * @param fields     valid table/view fields
+     * @param <S>
+     * @return
+     */
+    default <S> ActiveRecord<T> query(Paging<S> searchBean, Set<String> fields) {
+        return searchBean.toActiveRecordParams(this, fields);
+    }
+
+    <S> ActiveRecord<T> query(Paging<S> searchBean);
 }
 

@@ -2,8 +2,9 @@ package com.bixuebihui.tablegen.dbinfo;
 
 import com.bixuebihui.BeanFactory;
 import com.bixuebihui.jdbc.IDbHelper;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -25,7 +26,7 @@ public class ProcedureUtilsTest {
 
 
 
-	@Before
+	@BeforeEach
 	public void setUp() {
 		try {
 			 dbHelper= (IDbHelper) BeanFactory.createObjectById("dbHelper");
