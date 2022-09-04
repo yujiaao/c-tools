@@ -6,6 +6,9 @@
 package com.bixuebihui.util.downfile;
 
 
+/**
+ * @author xwx
+ */
 public class Utility {
 
     public Utility() {

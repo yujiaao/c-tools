@@ -111,8 +111,18 @@ public interface ActiveRecord<T> extends Record<T> {
      */
     ActiveRecord<T> smallerThan(String field, Object value);
 
+    /**
+     *  SQL is null
+     * @param field
+     * @return
+     */
     ActiveRecord<T> isNull(String field);
 
+    /**
+     * SQL is not null
+     * @param field
+     * @return
+     */
     ActiveRecord<T> isNotNull(String field);
     /**
      * <p>asc.</p>

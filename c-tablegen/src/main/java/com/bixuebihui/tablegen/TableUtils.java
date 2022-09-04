@@ -670,28 +670,12 @@ public class TableUtils {
         String defaultValue;
         String remarks;
 
-       // int prevPos=0;
         try {
             while (rs.next()) {
 
                 String colName = rs.getString(4);
 
-//                System.out.println("TABLE_SCHEM="+rs.getObject("TABLE_SCHEM")
-//                        +" TABLE_CAT="+rs.getObject("TABLE_CAT")
-//                        +" colName="+colName
-//                        +" IS_GENERATEDCOLUMN="+ rs.getObject("IS_GENERATEDCOLUMN")
-//                        +" ORDINAL_POSITION="+rs.getObject("ORDINAL_POSITION"));
-
-               // int curColumnPos = rs.getInt("ORDINAL_POSITION");
-
-                //mysql-connector-java 8.x.x return already deleted columns, so skip those columns!
-//                if(curColumnPos<prevPos){
-//                    break;
-//                }else{
-//                    prevPos = curColumnPos;
-//                }
-
-                //oracle system columns
+                // Oracle system columns
                 if (colName.contains("#"))
                 {
                     continue;

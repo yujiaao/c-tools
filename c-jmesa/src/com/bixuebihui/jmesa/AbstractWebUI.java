@@ -141,6 +141,10 @@ public abstract class AbstractWebUI<T, V> implements WorksheetSaver {
         return sqlSort;
     }
 
+    /**
+     * 取表列名
+     * @return
+     */
     protected abstract String[] getColNames();
 
     public void setTitles(org.jmesa.view.component.Table table,

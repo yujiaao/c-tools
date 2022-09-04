@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -134,11 +135,9 @@ public class EsJsonschema2Pojo {
             }
 
             try {
-                return clazz.newInstance();
-            } catch (InstantiationException e) {
-                throw new IllegalArgumentException("Failed to create a rule factory from the given class. An exception was thrown on trying to create a new instance.", e.getCause());
-            } catch (IllegalAccessException e) {
-                throw new IllegalArgumentException("Failed to create a rule factory from the given class. It appears that we do not have access to this class - is both the class and its no-arg constructor marked public?", e);
+                return clazz.getDeclaredConstructor().newInstance();
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                throw new RuntimeException(e);
             }
         }
 

@@ -1,8 +1,8 @@
 package com.bixuebihui.test.controller;
 
 
+import com.bixuebihui.elasticsearch.BaseEsOperator;
 import com.bixuebihui.elasticsearch.EsActiveRecordImpl;
-import com.bixuebihui.elasticsearch.EsOperator;
 import com.bixuebihui.elasticsearch.EsRequest;
 import com.bixuebihui.jsongen.MobileVideoInfo;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -25,7 +25,7 @@ public class MyTestController {
     String indexName =  "my-index-000001";
 
     private EsActiveRecordImpl<MobileVideoInfo, Long> repository = new EsActiveRecordImpl<>(
-            new EsOperator<>( new EsRequest("http://localhost:9200","","", indexName)) {
+            new BaseEsOperator<>( new EsRequest("http://localhost:9200","","", indexName)) {
                 @Override
                 protected Class<MobileVideoInfo> getType() {
                     return MobileVideoInfo.class;

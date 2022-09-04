@@ -18,13 +18,15 @@ import org.apache.commons.lang3.NotImplementedException;
 import java.io.IOException;
 import java.util.*;
 
+import static java.util.Collections.emptyList;
+
 /**
  * @author xwx
  */
-public abstract class EsOperator<T,V> implements Record<T>{
+public abstract class BaseEsOperator<T,V> implements Record<T>{
     EsRequest request;
 
-    public EsOperator(EsRequest request) {
+    public BaseEsOperator(EsRequest request) {
         this.request = request;
     }
 
@@ -54,7 +56,7 @@ public abstract class EsOperator<T,V> implements Record<T>{
     }
 
 
-
+    public  List<String> getAllFields(){return emptyList();}
 
     static  class JsonWapper {
         private  ObjectMapper objectMapper;
@@ -391,5 +393,8 @@ public abstract class EsOperator<T,V> implements Record<T>{
     public int deleteByQuery(Query sql) {
         throw new NotImplementedException();
     }
+
+
+
 
 }

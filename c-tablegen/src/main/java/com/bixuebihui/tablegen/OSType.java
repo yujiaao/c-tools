@@ -27,22 +27,25 @@ public enum OSType {
 
     private boolean match(String osKey) {
         for (int i = 0; i < keys.length; i++) {
-            if (osKey.indexOf(keys[i]) != -1)
+            if (osKey.indexOf(keys[i]) != -1) {
                 return true;
+            }
         }
         return false;
     }
 
     public static OSType getOSType() {
-        if (detectedOS == null)
+        if (detectedOS == null) {
             detectedOS = getOperatingSystemType(System.getProperty("os.name", Other.keys[0]).toLowerCase());
+        }
         return detectedOS;
     }
 
     private static OSType getOperatingSystemType(String osKey) {
         for (OSType osType : values()) {
-            if (osType.match(osKey))
+            if (osType.match(osKey)) {
                 return osType;
+            }
         }
         return Other;
     }

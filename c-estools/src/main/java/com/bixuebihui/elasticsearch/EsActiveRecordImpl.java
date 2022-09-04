@@ -7,6 +7,7 @@ import com.bixuebihui.elasticsearch.query.Query;
 import com.bixuebihui.jdbc.*;
 import com.bixuebihui.jdbc.entity.CountObject;
 import com.bixuebihui.jdbc.entity.CountValue;
+import com.bixuebihui.query.Paging;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.NotImplementedException;
@@ -33,11 +34,11 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
 //    SqlGroup groupByClause;
     ElasticSearchFilter havingStack;
 
-    public EsActiveRecordImpl(EsOperator<T, V> operator) {
+    public EsActiveRecordImpl(BaseEsOperator<T, V> operator) {
        init(operator);
     }
 
-    EsOperator<T, V> operator;
+    BaseEsOperator<T, V> operator;
     private boolean useLast=false;
 
     private String indexAlias;
@@ -252,7 +253,6 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
             this.filterStack.getFilters().clear();
         }
         this.orderStack.clear();
-//        this.groupByClause.clear();
         this.limit = SqlLimit.LIMIT_MAX;
         this.fields("");
         this.excludeFieldsSet = emptySet();
@@ -266,7 +266,7 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     @Override
     public T find() throws DbException {
         try {
-           EsOperator.Wrapper<T> res = operator.selectWithJoin(getResultFieldsSet(), getExcludeFieldsSet(), filterStack.toQuery() , toEsSort(),
+           BaseEsOperator.Wrapper<T> res = operator.selectWithJoin(getResultFieldsSet(), getExcludeFieldsSet(), filterStack.toQuery() , toEsSort(),
                     SqlLimit.LIMIT_ONE.getBegin(), SqlLimit.LIMIT_ONE.getEnd());
             if (res!=null && res.data !=null && res.data.size() > 0) {
                 return res.data.get(0);
@@ -414,6 +414,16 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     }
 
     @Override
+    public <S> EsActiveRecord<T> query(Paging<S> searchBean, Set<String> fields) {
+        return query(searchBean, fields);
+    }
+
+    @Override
+    public <S> ActiveRecord<T> query(Paging<S> searchBean) {
+        return query(searchBean, Set.of(operator.getAllFields().toArray(new String[0])));
+    }
+
+    @Override
     public int count() throws DbException {
         return (int) operator.count(filterStack.toQuery());
     }
@@ -558,7 +568,7 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     }
 
 
-    private void init(EsOperator<T, V> operator){
+    private void init(BaseEsOperator<T, V> operator){
         this.operator = operator;
         orderStack = new EsSort();
         filterStack = new ElasticSearchFilter();

@@ -351,7 +351,7 @@ public class DbHelper implements IDbHelper {
      */
     public static Flux<Map<String, Object>> resultSet2Vector(Result rs) {
         return Flux.from(rs.map((row, rowMetadata) -> {
-            int iColumnNumber = rowMetadata.getColumnNames().size();
+            int iColumnNumber = rowMetadata.getColumnMetadatas().size();
 
             Map<String, Object> mapColumn = new HashMap<>(32);
             for (int i = 0; i < iColumnNumber; i++) {

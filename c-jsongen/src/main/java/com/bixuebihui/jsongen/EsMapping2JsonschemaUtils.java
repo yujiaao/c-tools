@@ -233,7 +233,7 @@ public class EsMapping2JsonschemaUtils {
             if (fieldName.endsWith("_ids") || fieldName.endsWith("_names") || collectionFields.contains(fieldName)) {
 
                 ((ObjectNode) field.getValue()).put("type", "array");
-                if((oldType==null || oldType.equals("nested")) && !(nested  instanceof MissingNode)){
+                if((oldType==null || "nested".equals(oldType)) && !(nested  instanceof MissingNode)){
                     ((ObjectNode) field.getValue()).setAll((ObjectNode)
                             mapper.readTree("{\"items\" : { \"type\": \"object\", \"properties\": "+nested.toPrettyString()+"} }"));
                 }else {

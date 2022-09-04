@@ -186,7 +186,7 @@ public class EsQueryBuilder {
         HashMap<Object, Object> source = Maps.newHashMap();
 
         StringBuilder sb = new StringBuilder();
-        HashMap<String, Object> valueMap = new HashMap<>();
+        HashMap<String, Object> valueMap = new HashMap<>(32);
 
         updateFieldsValues.entrySet().stream().forEach(x -> {
                     sb.append("ctx._source['")

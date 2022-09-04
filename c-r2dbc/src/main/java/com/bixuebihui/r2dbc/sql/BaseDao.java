@@ -869,10 +869,6 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
             }
 
             try {
-                //TODO
-//                if(dbtype==DERBY){
-//                    key = key.toLowerCase(Locale.ROOT);
-//                }
                 b.copyProperty(receiver,  CaseUtils.toCamelCase(key, false, '_'), value);
             } catch (IllegalAccessException e) {
                 LOG.error("类型错误:key=" + key + ", value=" + value + " instanceof " + value.getClass()

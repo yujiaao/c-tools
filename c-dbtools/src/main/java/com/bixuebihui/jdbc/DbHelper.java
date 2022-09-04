@@ -537,7 +537,6 @@ public class DbHelper implements IDbHelper {
     public @NotNull
     List<Map<String, Object>> resultSet2Vector(ResultSet rs) {
         List<Map<String, Object>> result = new ArrayList<>();
-        //System.out.println("No data"); //http://stackoverflow.com/a/6813771/1484621
         try {
             if (!rs.isBeforeFirst()) {
                 return result;

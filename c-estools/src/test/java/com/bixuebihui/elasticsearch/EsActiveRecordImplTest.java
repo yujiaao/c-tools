@@ -15,7 +15,7 @@ class EsActiveRecordImplTest {
     String indexName = "my-index-000001";
 
     private EsActiveRecordImpl<Object, Long> ar = new EsActiveRecordImpl<>(
-            new EsOperator<>( new EsRequest("http://localhost:9200","","", indexName)) {
+            new BaseEsOperator<>( new EsRequest("http://localhost:9200","","", indexName)) {
                 @Override
                 protected Class<Object> getType() {
                     return Object.class;

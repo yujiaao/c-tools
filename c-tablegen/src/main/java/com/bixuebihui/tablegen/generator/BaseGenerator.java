@@ -155,6 +155,11 @@ public abstract class BaseGenerator implements Generator {
        return StringUtils.removeStart(tableName, removePrefix);
     }
 
+    /**
+     * Java class name to generate
+     * @param tableName
+     * @return
+     */
     abstract String getClassName(String tableName);
 
     /**

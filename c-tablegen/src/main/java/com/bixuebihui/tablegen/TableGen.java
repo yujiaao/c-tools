@@ -247,7 +247,7 @@ public class TableGen implements DiffHandler {
                 Map<String, List<ColumnData>> v = (Map<String, List<ColumnData>>) in.readObject();
 
                 if (v == null) {
-                    return new HashMap<>();
+                    return new HashMap<>(16);
                 }
                 return v;
 
@@ -256,7 +256,7 @@ public class TableGen implements DiffHandler {
             }
         }
 
-        return new HashMap<>();
+        return new HashMap<>(16);
 
     }
 
@@ -274,7 +274,7 @@ public class TableGen implements DiffHandler {
 
         String fileName = this.config.resourceDir + File.separator + "config" + File.separator + "spring-dal.xml";
         try {
-            Map<String, String> beans = new HashMap<>();
+            Map<String, String> beans = new HashMap<>(16);
             for (TableInfo table : setInfo.getTableInfos().values()) {
                 beans.put(NameUtils.firstLow(table.getName())
                         + MANAGER_SUFFIX, getBusFullClassName(table.getName()));

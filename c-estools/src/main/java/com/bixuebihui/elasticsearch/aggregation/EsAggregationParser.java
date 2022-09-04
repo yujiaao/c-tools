@@ -3,6 +3,7 @@ package com.bixuebihui.elasticsearch.aggregation;
 /**
  * https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations.html
  *
+ * @author xwx
  */
 public class EsAggregationParser {
 
