@@ -1,11 +1,12 @@
 package com.bixuebihui.db;
 
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
+import jakarta.validation.constraints.Size;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
-import javax.validation.constraints.Size;
+
 import java.io.UnsupportedEncodingException;
 
 
@@ -25,7 +26,7 @@ public class MaxByteLengthValidator implements ConstraintValidator<Size, String>
     /**
      * <p>initialize.</p>
      *
-     * @param constraintAnnotation a {@link javax.validation.constraints.Size} object.
+     * @param constraintAnnotation a {@link jakarta.validation.constraints.Size} object.
      */
     @Override
     public void initialize(Size constraintAnnotation) {

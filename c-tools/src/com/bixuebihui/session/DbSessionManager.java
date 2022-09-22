@@ -7,8 +7,11 @@ import com.bixuebihui.util.other.CMyException;
 import java.sql.SQLException;
 import java.util.Date;
 
+/**
+ * @author xwx
+ */
 public class DbSessionManager extends BaseSessionManager {
-    /*
+    /**
      *
      * drop table t_session; CREATE TABLE t_session ( s_id varchar2(64) NOT
      * NULL, user_id number(10) NOT NULL, s_start date default sysdate NOT NULL ,
@@ -35,7 +38,7 @@ public class DbSessionManager extends BaseSessionManager {
             + " WHERE s_expire < ?";
 
     private final static String INSTALL = "CREATE TABLE IF NOT EXISTS t_session ( s_id varchar2(64) NOT " +
-            "NULL, user_id number(10) NOT NULL, s_start date default sysdate NOT NULL ," +
+            "NULL, user_id number(10) NOT NULL, s_start date default current_timestamp() NOT NULL ," +
             " s_expire number(15) NOT NULL , s_fp varchar2(64) NOT NULL, PRIMARY KEY" +
             " (s_id), unique (user_id) ) ";
 

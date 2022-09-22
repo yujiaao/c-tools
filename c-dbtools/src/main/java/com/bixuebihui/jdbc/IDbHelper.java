@@ -1,7 +1,8 @@
 package com.bixuebihui.jdbc;
 
+import jakarta.validation.constraints.NotNull;
+
 import javax.sql.DataSource;
-import javax.validation.constraints.NotNull;
 import java.sql.Connection;
 import java.util.List;
 import java.util.Map;

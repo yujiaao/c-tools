@@ -14,6 +14,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.Assert.assertEquals;
 
@@ -52,13 +53,13 @@ public class PagingTest  {
         H2DataSource db = new H2DataSource().init();
         ActiveRecordImpl<User, Integer> ar = new ActiveRecordImpl<>(new MyAr(db.cp));
 
-        Set<String> fields = Set.of("id", "name", "modifiedTime").stream().map(s -> s.toLowerCase()).collect(Collectors.toSet());
+        Set<String> fields = Stream.of("id", "name", "modifiedTime").map(String::toLowerCase).collect(Collectors.toSet());
         SqlPocket res;
         ar = (ActiveRecordImpl<User, Integer>) p.toActiveRecordParams(ar, fields);
 
         res = ar.getCondStack().toCondition();
 
-        assertEquals("", res.getCondition().toString());
+        Assertions.assertEquals("", res.getCondition().toString());
         ar.clear();
 
         p.searchBean.id=1;

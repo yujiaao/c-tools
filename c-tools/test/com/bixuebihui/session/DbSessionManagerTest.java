@@ -47,7 +47,7 @@ public class DbSessionManagerTest {
 	@Test
 	public void testDestroy() throws CMyException, SQLException {
 		DbSessionManager sm = new DbSessionManager(dbh);
-		SimpleSession ss = null;
+		SimpleSession ss;
 		for (int i = 0; i < 10; i++) {
 			ss = sm.createUUIDSession();
 			sm.write(ss);

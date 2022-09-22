@@ -4,9 +4,11 @@ import java.sql.SQLException;
 
 import com.bixuebihui.dbcon.DatabaseConfig;
 import junit.framework.TestCase;
+import org.junit.jupiter.api.Test;
 
-public class DbcpDataSourceTest extends TestCase {
+public class DbcpDataSourceTest  {
 
+	@Test
 	public void testGetConnection() throws SQLException {
 		DbcpDataSource ds = new DbcpDataSource();
 		DatabaseConfig cfg = DataSourceTest.getConfigMaster();
@@ -19,6 +21,7 @@ public class DbcpDataSourceTest extends TestCase {
 
 	}
 
+	@Test
 	public void testSetDatabaseConfig() throws SQLException {
 		DbcpDataSource ds = new DbcpDataSource();
 

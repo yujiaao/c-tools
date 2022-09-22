@@ -117,8 +117,8 @@ import static com.bixuebihui.jdbc.SqlSort.Sort.ASC;
  * 成功为pojo赋值，包括级联属性address。
  */
 public class Paging<S> {
-    Long start;
-    Long count;
+    Long start=0L;
+    Long count=10L;
     List<SqlSort.Sort> sort;
     S searchBean;
     String dateTimeRangeBeginPrefix = "b";
@@ -199,16 +199,21 @@ public class Paging<S> {
 
         range(dateRange, ar);
 
-        ar.limit(start.intValue(), count.intValue());
+        if(start!=null && count!=null) {
+            ar.limit(start.intValue(), count.intValue());
+        }
 
-        this.sort.forEach(sort1 -> {
-                    if (sort1.getOrder().equals(ASC)) {
-                        ar.asc(sort1.getProperty());
-                    } else {
-                        ar.desc(sort1.getProperty());
+        if(sort!=null) {
+            this.sort.forEach(sort1 -> {
+
+                        if (sort1.getOrder().equals(ASC)) {
+                            ar.asc(sort1.getProperty());
+                        } else {
+                            ar.desc(sort1.getProperty());
+                        }
                     }
-                }
-        );
+            );
+        }
 
         return ar;
     }

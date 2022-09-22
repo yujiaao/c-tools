@@ -8,6 +8,7 @@ import com.bixuebihui.sequence.SequenceUtils;
 import com.bixuebihui.util.DbUtils;
 import junit.framework.TestCase;
 import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,7 +21,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
-public class DataSourceTest extends TestCase {
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+public class DataSourceTest {
 
 	private static final Logger LOG = LoggerFactory.getLogger(DataSourceTest.class);
 	protected static DatabaseConfig cfg = new DatabaseConfig();
@@ -44,14 +48,13 @@ public class DataSourceTest extends TestCase {
 		return getConfigMaster();
 	}
 
-	public static String getDummySql(Connection cn) throws SQLException {
+	public static String getDummySql(Connection cn) {
 		IDbHelper db = new DbHelper(cn);
 		AbstractBaseDao mybd = new AbstractBaseDao(db);
 		return mybd.getDummySql();
-
 	}
 
-	public static List<Long> getIds(DataSource ds, int count) throws SQLException {
+	public static List<Long> getIds(DataSource ds, int count) {
 		IDbHelper db = new DbHelper();
 		db.setDataSource(ds);
 		AbstractBaseDao mybd = new AbstractBaseDao(db) {
@@ -63,7 +66,7 @@ public class DataSourceTest extends TestCase {
 		return mybd.ar().limit(0, count).getLongVector("lid");
 	}
 
-	public static void dataSourceTest(DataSource ds) throws SQLException {
+	public static  void dataSourceTest(DataSource ds) throws SQLException {
 		Date dtStart = new Date();
 
 		String sql = getDummySql(ds.getConnection());
@@ -98,7 +101,8 @@ public class DataSourceTest extends TestCase {
 
 
 
-	public static void testDbHelper(DataSource ds){
+
+	public  static  void testDbHelper(DataSource ds){
 		DbHelper dbHelper = new DbHelper();
 		dbHelper.setDataSource(ds);
 
@@ -328,11 +332,6 @@ public class DataSourceTest extends TestCase {
 
 		return cfg;
 
-	}
-
-	// this is a superclass for test DataSource!
-	public void testDummy() {
-		assertTrue(true);
 	}
 
 }

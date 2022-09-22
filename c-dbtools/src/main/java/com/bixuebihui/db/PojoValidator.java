@@ -1,11 +1,12 @@
 package com.bixuebihui.db;
 
+import jakarta.validation.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.validation.*;
+
 import java.util.Collections;
 import java.util.Set;
 
@@ -37,7 +38,7 @@ public class PojoValidator<T> {
      * @param pojo a T object.
      * @return a {@link java.util.Set} object.
      */
-    public  Set<ConstraintViolation<T>> validate(T pojo){
+    public Set<ConstraintViolation<T>> validate(T pojo){
         if(validator!=null) {
             return validator.validate(pojo);
         }
