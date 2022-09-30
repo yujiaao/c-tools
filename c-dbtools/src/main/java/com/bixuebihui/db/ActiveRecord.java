@@ -42,14 +42,24 @@ public interface ActiveRecord<T> extends Record<T> {
     Set<String> getResultFieldsSet();
 
     /**
-     * <p>in.</p>
-     * 条件
+     * <p>in</p>
+     * condition
      *
      * @param field  a {@link java.lang.String} object.
      * @param values an array of {@link java.lang.Object} objects.
      * @return a {@link ActiveRecord} object.
      */
     ActiveRecord<T> in(String field, Object[] values);
+
+    /**
+     * <p>not in</p>
+     * condition
+     *
+     * @param field  a {@link java.lang.String} object.
+     * @param values an array of {@link java.lang.Object} objects.
+     * @return a {@link ActiveRecord} object.
+     */
+    ActiveRecord<T> notIn(String field, Object[] values);
 
     /**
      * Call this method will reject empty string as where condition value

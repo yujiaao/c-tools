@@ -261,17 +261,6 @@ public class SqlHelper {
 		return this;
 	}
 
-	/**
-	 * <p>in.</p>
-	 *
-	 * @param field a {@link java.lang.String} object.
-	 * @param value an array of {@link java.lang.Object} objects.
-	 * @return a {@link SqlHelper} object.
-	 */
-	public SqlHelper in(String field, Object[] value) {
-		filters.add(new InFilter(field, Arrays.asList(value)));
-		return this;
-	}
 
 	/**
 	 * <p>isNull.</p>
@@ -463,6 +452,29 @@ public class SqlHelper {
         }
 	}
 
+	/**
+	 * <p>in </p>
+	 *
+	 * @param field a {@link java.lang.String} object.
+	 * @param value an array of {@link java.lang.Object} objects.
+	 * @return a {@link SqlHelper} object.
+	 */
+	public SqlHelper in(String field, Object[] value) {
+		filters.add(new InFilter(field, Arrays.asList(value)));
+		return this;
+	}
+
+	/**
+	 * <p> not in</p>
+	 *
+	 * @param field a {@link java.lang.String} object.
+	 * @param values an array of {@link java.lang.Object} objects.
+	 * @return a {@link SqlHelper} object.
+	 */
+	public SqlHelper notIn(String field, Object[] values) {
+		filters.add(new NotInFilter(field, Arrays.asList(values)));
+		return this;
+	}
 
 
 	protected abstract static class BaseFilter {
@@ -483,7 +495,21 @@ public class SqlHelper {
 
 	}
 
+	protected static class NotInFilter extends InFilter {
+		public NotInFilter(String property, Collection<Object> value) {
+			super(property, new HashSet<>(value)); //use Hashset to reduce duplicated values
+			op = "not in";
+		}
+
+		public NotInFilter(String property, SqlString value) {
+			super(property, value); //use Hashset to reduce duplicated values
+			op = "not in";
+		}
+
+	}
+
 	protected static class InFilter extends BaseFilter {
+		String op ="in";
 		public InFilter(String property, Collection<Object> value) {
 			super(property, new HashSet<>(value)); //use Hashset to reduce duplicated values
 		}
@@ -495,7 +521,7 @@ public class SqlHelper {
 		@Override
 		public SqlPocket build(SqlPocket sb) {
 			if (value instanceof SqlString) {
-				sb.getCondition().append(" and ").append(property).append(" in (").append(value).append(")");
+				sb.getCondition().append(" and ").append(property).append(" "+op+" (").append(value).append(")");
 
 			} else if (!(value instanceof Collection)) {
 				throw new DbException("InFilter must have a Collection value:"
@@ -503,7 +529,7 @@ public class SqlHelper {
 			} else {
 				int size = ((Collection<?>) value).size();
 				sb.addFilter(" and " +
-						property + " in (" + StringUtils.repeat("?", ",", size)
+						property + " "+op+" (" + StringUtils.repeat("?", ",", size)
 						+ ")", value);
 			}
 			return sb;

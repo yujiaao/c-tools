@@ -65,6 +65,13 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
         return this;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public EsActiveRecord<T> notIn(String field, Object[] values) {
+        filterStack.notIn(field, values);
+        return this;
+    }
+
     @Override
     public EsActiveRecord<T> emptyStringAsNullCondition() {
 

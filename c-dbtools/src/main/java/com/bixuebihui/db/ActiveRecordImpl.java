@@ -114,6 +114,14 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 		return this;
 	}
 
+	/** {@inheritDoc} */
+	@Override
+	public ActiveRecord<T> notIn(String field, Object[] values) {
+		filterStack.notIn(field, values);
+		return this;
+	}
+
+
 	@Override
 	public ActiveRecord<T> emptyStringAsNullCondition() {
 		filterStack.setAcceptEmptyStringAsNullObjectInCondition(true);

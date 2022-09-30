@@ -50,6 +50,12 @@ public class DbImpl<T, V> extends BaseDao<T, V> implements ActiveRecord<T>,
 	}
 
 	@Override
+	public ActiveRecord<T> notIn(String field, Object[] values) {
+		filterStack.notIn(field, values);
+		return this;
+	}
+
+	@Override
 	public ActiveRecord<T> emptyStringAsNullCondition() {
 		filterStack.setAcceptEmptyStringAsNullObjectInCondition(true);
 		return this;
