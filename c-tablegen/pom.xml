@@ -8,7 +8,7 @@
     <parent>
         <groupId>com.github.yujiaao</groupId>
         <artifactId>c-tools-parent</artifactId>
-        <version>1.11.3.5</version>
+        <version>1.11.3.6</version>
     </parent>
     <properties>
         <handlebars-version>4.3.0</handlebars-version>
@@ -112,18 +112,8 @@
     </reporting>
 
     <dependencies>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>c-tools</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>c-dbtools</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>c-cache</artifactId>
-        </dependency>
+
+
         <dependency>
             <groupId>postgresql</groupId>
             <artifactId>postgresql</artifactId>
@@ -152,17 +142,6 @@
         </dependency>
 
 
-        <dependency>
-            <groupId>javax.validation</groupId>
-            <artifactId>validation-api</artifactId>
-            <version>2.0.1.Final</version>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/javax.el/javax.el-api -->
-<!--        <dependency>-->
-<!--            <groupId>javax.el</groupId>-->
-<!--            <artifactId>javax.el-api</artifactId>-->
-<!--            <version>3.0.0</version>-->
-<!--        </dependency>-->
 
         <dependency>
             <groupId>mysql</groupId>

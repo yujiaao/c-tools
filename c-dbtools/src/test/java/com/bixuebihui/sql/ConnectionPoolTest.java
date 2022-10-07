@@ -99,11 +99,9 @@ public class ConnectionPoolTest {
 		cp.getConnection();
 		int res = cp.size();
 		assertTrue(res > 0);
-		System.out.println("size before removeAllConnections = " + res);
 		cp.removeAllConnections();
 		res = cp.size();
 		assertEquals(0, res);
-		System.out.println("size after removeAllConnections = " + res);
 	}
 
 	volatile AtomicInteger count = new AtomicInteger(1000);

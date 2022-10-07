@@ -3,8 +3,7 @@ package com.bixuebihui.db;
 import java.util.Set;
 
 
-import javax.validation.ConstraintViolation;
-import javax.validation.Valid;
+import javax.validation.*;
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;

@@ -22,6 +22,7 @@ public class TableGenMojo extends AbstractMojo {
      */
     private String propPath;
 
+
     @Override
     public void execute() {
         TableGen gen = new TableGen();

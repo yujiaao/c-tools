@@ -3,7 +3,7 @@ package com.bixuebihui.elasticsearch.query;
 /**
  * Percolate query.
  *
- * @author Boris Popovschi <zyqsempai@mail.ru>
+ * @author Boris Popovschi zyqsempai@mail.ru
  *
  *  https://www.elastic.co/guide/en/elasticsearch/reference/5.0/query-dsl-percolate-query.html
  * Class Percolate.

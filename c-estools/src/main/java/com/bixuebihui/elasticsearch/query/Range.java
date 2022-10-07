@@ -7,7 +7,7 @@ import java.util.Map;
 /**
      * Range query.
      *
-     * @author Nicolas Ruflin <spam@ruflin.com>
+     * @author Nicolas Ruflin spam@ruflin.com
      * <p>
      * https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-range-query.html
      */

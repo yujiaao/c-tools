@@ -80,21 +80,17 @@ public class ActiveRecordImplTest extends TestCase {
 	}
 
 	public void testAlias() {
-
 		Object obj = bd.ar().alias("t1").eq("t1.id", 123).find();
-		System.out.println(((T) obj).id);
 		assertEquals(123L, ((T) obj).id.longValue());
 	}
 
 	public void testFields() {
 		Object obj = bd.ar().alias("t1").fields("name,id").eq("t1.id", 123).find();
-		System.out.println(((T) obj).name);
 		assertEquals("bac", ((T) obj).name);
 	}
 
 	public void testInc() {
 		int res = bd.ar().in("id",new Object[]{123,234}).inc("value");
-		System.out.println(res);
 		assertEquals(2, res);
 		long inc = Long.parseLong(bd.ar().eq("ID", 123).get("value").toString());
 		assertEquals(1, inc);
@@ -122,7 +118,6 @@ public class ActiveRecordImplTest extends TestCase {
 				.in("id",new Object[]{123,234})
 				.update(new String[]{"value", "name"},
 						new Object[]{new SqlString("value+1"), "wow*"});
-		System.out.println(res);
 		assertEquals(2, res);
 		long inc = Long.parseLong(bd.ar().eq("ID", 123).get("value").toString());
 		assertEquals(1, inc);
@@ -135,10 +130,9 @@ public class ActiveRecordImplTest extends TestCase {
 		assertEquals(123L, ((T) obj).id.longValue());
 
 		ActiveRecord<Object> ar = bd.ar();
-        // Record<Object> ar1 =ar.eq("id", 123).clone();
 
 		Object obj1 = ar.eq("id", 123).find();
-		System.out.println(((T) obj1).id);
+		assertEquals(123L, (long)((T)obj1).id);
 		int res1 = ar.last().count();
 		assertEquals(1, res1);
 	}

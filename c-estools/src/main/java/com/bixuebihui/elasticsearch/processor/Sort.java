@@ -5,7 +5,7 @@ import com.bixuebihui.elasticsearch.query.Params;
 /**
  * Elastica Sort Processor.
  *
- * @author   Federico Panini <fpanini@gmail.com>
+ * @author   Federico Panini fpanini@gmail.com
  *
  * https://www.elastic.co/guide/en/elasticsearch/reference/current/sort-processor.html
  */

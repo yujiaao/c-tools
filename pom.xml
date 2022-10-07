@@ -11,7 +11,7 @@
     <groupId>com.github.yujiaao</groupId>
     <artifactId>c-tools-parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.11.3.5</version>
+    <version>1.11.3.6</version>
 
     <modules>
         <module>c-tools-bom</module>
@@ -42,7 +42,9 @@
         <mysql.version>8.0.30</mysql.version>
         <slf4j.version>1.7.36</slf4j.version>
         <validator.version>6.2.0.Final</validator.version>
+<!--        <validator.version>8.0.0.Final</validator.version>-->
         <hamcrest.version>2.2</hamcrest.version>
+        <expressly.version>5.0.0</expressly.version>
         <!--
         For a while, we will provide equivalent Hibernate Validator versions for both EE 8 and EE 9:
         Hibernate Validator 6.x will keep the javax. packages while Hibernate Validator 7.x

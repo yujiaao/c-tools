@@ -13,13 +13,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.util.CollectionUtils;
 
-import javax.validation.constraints.NotNull;
 import java.io.File;
 import java.io.IOException;
 import java.sql.*;
 import java.util.*;
+
 import static com.bixuebihui.db.Dialect.*;
-import static com.bixuebihui.jdbc.BaseDao.getPagingSqlSqlServer2005;
 import static com.bixuebihui.tablegen.TableUtils.isMysql;
 import static com.bixuebihui.tablegen.TableUtils.isSQLServer;
 
@@ -468,7 +467,7 @@ public class TableSetInfo {
      *
      * @throws IOException
      */
-    public synchronized void getTableData(ProjectConfig config, IDbHelper dbHelper, @NotNull DatabaseMetaData metaData) throws SQLException, IOException {
+    public synchronized void getTableData(ProjectConfig config, IDbHelper dbHelper,  DatabaseMetaData metaData) throws SQLException, IOException {
 
         LinkedHashMap<String, TableInfo> col = getTableInfos();
 
@@ -556,7 +555,7 @@ public class TableSetInfo {
                     dbHelper.executeQuery(sql,
                             new Object[0], new RowMapperResultReader<>((rs, index, set) -> null){
                                 @Override
-                                public @NotNull List<Object> processResultSet(ResultSet rs, Set<String> set){
+                                public  List<Object> processResultSet(ResultSet rs, Set<String> set){
 
                                     try {
                                         TableInfo info = OnFlyViewUtils.getColumnData(rs.getMetaData(), name, dbType, config.getR2dc());
@@ -613,21 +612,21 @@ public class TableSetInfo {
     /**
      * Selects the primary keys for a particular table.
      */
-    public @NotNull List<String> getTableKeys(String tableName){
+    public  List<String> getTableKeys(String tableName){
         return getKeyCache().getOrDefault(tableName, Collections.emptyList());
     }
 
     /**
      * Selects the Imported Keys defined for a particular table.
      */
-    public @NotNull List<ForeignKeyDefinition> getTableImportedKeys(String tableName){
+    public  List<ForeignKeyDefinition> getTableImportedKeys(String tableName){
         return getForeignKeyImCache().getOrDefault(tableName, Collections.emptyList());
     }
 
     /**
      * Selects the Exported Keys defined for a particular table.
      */
-    public @NotNull List<ForeignKeyDefinition> getTableExportedKeys(String tableName) {
+    public  List<ForeignKeyDefinition> getTableExportedKeys(String tableName) {
         return getForeignKeyExCache().getOrDefault(tableName, Collections.emptyList());
     }
 

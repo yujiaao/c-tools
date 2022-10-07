@@ -39,12 +39,9 @@ public class JavaAlarmTest {
             }
         }.start();
 
-        JavaAlarm ja = new JavaAlarm(new Runnable() {
-            @Override
-            public void run() {
-                while (!stop)
-                    count++;
-            }
+        JavaAlarm ja = new JavaAlarm(() -> {
+            while (!stop)
+                count++;
         }, 100);
 
         synchronized (ja) {

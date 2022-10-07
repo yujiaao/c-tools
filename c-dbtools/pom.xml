@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.github.yujiaao</groupId>
         <artifactId>c-tools-parent</artifactId>
-        <version>1.11.3.5</version>
+        <version>1.11.3.6</version>
     </parent>
 
     <artifactId>c-dbtools</artifactId>
@@ -160,7 +160,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-text</artifactId>
-            <version>1.9</version>
+            <version>1.10.0</version>
         </dependency>
 
 
@@ -171,13 +171,6 @@
             <version>2.9.0</version>
             <scope>provided</scope>
         </dependency>
-
-<!--        <dependency>-->
-<!--            <groupId>com.jolbox</groupId>-->
-<!--            <artifactId>bonecp</artifactId>-->
-<!--            <version>0.8.0.RELEASE</version>-->
-<!--            <scope>provided</scope>-->
-<!--        </dependency>-->
 
         <!-- Alibaba Druid -->
         <dependency>
@@ -202,6 +195,28 @@
 
         </dependency>
 
+        <dependency>
+            <groupId>org.hibernate.validator</groupId>
+            <artifactId>hibernate-validator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>jakarta.el</artifactId>
+            <version>3.0.4</version>
+        </dependency>
+
+
+<!--        <dependency>-->
+<!--            <groupId>org.glassfish</groupId>-->
+<!--            <artifactId>jakarta.el</artifactId>-->
+<!--            <version>4.0.2</version>-->
+<!--        </dependency>-->
+
+<!--        <dependency>-->
+<!--            <groupId>org.glassfish.expressly</groupId>-->
+<!--            <artifactId>expressly</artifactId>-->
+<!--            <version>5.0.0</version>-->
+<!--        </dependency>-->
 
         <!-- https://mvnrepository.com/artifact/org.apache.derby/derby -->
         <dependency>
@@ -216,6 +231,11 @@
             <groupId>commons-beanutils</groupId>
             <artifactId>commons-beanutils</artifactId>
             <version>1.9.4</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-collections</groupId>
+            <artifactId>commons-collections</artifactId>
+            <version>3.2.2</version>
         </dependency>
 
 
@@ -232,25 +252,7 @@
             <version>4.4</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.hibernate.validator</groupId>
-            <artifactId>hibernate-validator</artifactId>
-            <version>8.0.0.Final</version>
-        </dependency>
 
-        <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>jakarta.el</artifactId>
-            <version>4.0.2</version>
-        </dependency>
-
-<!--        <dependency>-->
-<!--            <groupId>org.glassfish</groupId>-->
-<!--            <artifactId>javax.el</artifactId>-->
-<!--            <version>3.0.0</version>-->
-<!--            <scope>provided</scope>-->
-<!--            &lt;!&ndash; javax.el vs Hibernate 6.xx and jakarta.el for Hibernate 7.xx&ndash;&gt;-->
-<!--        </dependency>-->
 
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -329,7 +331,7 @@
         <dependency>
             <groupId>com.github.yujiaao</groupId>
             <artifactId>common-utils</artifactId>
-            <version>1.11.3.5</version>
+            <version>1.11.3.6</version>
             <scope>compile</scope>
         </dependency>
 
@@ -373,6 +375,7 @@
             <artifactId>junit-platform-suite-engine</artifactId>
             <scope>test</scope>
         </dependency>
+
 
     </dependencies>
     <dependencyManagement>

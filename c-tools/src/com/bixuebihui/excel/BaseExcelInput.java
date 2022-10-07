@@ -8,7 +8,6 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.ss.usermodel.*;
 
-import javax.validation.constraints.NotNull;
 import java.io.File;
 import java.io.FileInputStream;
 import java.sql.Date;
@@ -27,7 +26,7 @@ public class BaseExcelInput {
     private static final  Logger LOG = LoggerFactory.getLogger(BaseExcelInput.class);
 
 
-    protected static @NotNull
+    protected static
     String getCellContent(Row row, int i) {
 
         Cell cell = row.getCell(i);
@@ -227,7 +226,7 @@ public class BaseExcelInput {
      */
     public static Map<String, String> findDictionary(String fileName, String sheetName,
                                                            int keyRowNum, int valueRowNum, int skipLines) {
-        Map<String, String> ht = new HashMap<>();
+        Map<String, String> ht = new HashMap<>(32);
 
         Workbook workbook;
         Sheet sheet1;
