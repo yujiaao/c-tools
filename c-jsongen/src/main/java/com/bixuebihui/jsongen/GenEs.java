@@ -42,7 +42,7 @@ public class GenEs extends DefaultGenerationConfig {
      *                     <sourceDirectory>${basedir}/src/test/resources/schemas</sourceDirectory>
      *                     <serializable>true</serializable>
      *                     <includeAdditionalProperties>false</includeAdditionalProperties>
-     *                     <targetPackage>com.autohome.mobilevideo.car.dto</targetPackage>
+     *                     <targetPackage>com.bixuebihui.dto</targetPackage>
      *                     <useLongIntegers>true</useLongIntegers>
      *                     <sourceType>json</sourceType>
      *                     <outputDirectory>${basedir}/src/main/java</outputDirectory>

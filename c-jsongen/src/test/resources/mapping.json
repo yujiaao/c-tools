@@ -1,0 +1,404 @@
+{
+  "all-content-info": {
+    "mappings": {
+      "all-content-info-type": {
+        "properties": {
+          "app_url": {
+            "type": "text"
+          },
+          "attribute_ids": {
+            "type": "long"
+          },
+          "attribute_names": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "author_id": {
+            "type": "long"
+          },
+          "author_img": {
+            "type": "text"
+          },
+          "author_level": {
+            "type": "integer"
+          },
+          "author_name": {
+            "type": "keyword"
+          },
+          "author_sex": {
+            "type": "integer"
+          },
+          "bbs_id": {
+            "type": "integer"
+          },
+          "bbs_image": {
+            "type": "text"
+          },
+          "bbs_name": {
+            "type": "text"
+          },
+          "bbs_scheme": {
+            "type": "text"
+          },
+          "biz_id": {
+            "type": "long"
+          },
+          "brand_ids": {
+            "type": "long"
+          },
+          "brand_names": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "carseries_status": {
+            "type": "integer"
+          },
+          "city_ids": {
+            "type": "long"
+          },
+          "clip_play_url": {
+            "type": "text"
+          },
+          "community_status": {
+            "type": "integer"
+          },
+          "content": {
+            "type": "text"
+          },
+          "content_level": {
+            "type": "integer"
+          },
+          "content_type": {
+            "type": "long"
+          },
+          "created_stime": {
+            "type": "keyword"
+          },
+          "default_img_url": {
+            "type": "text"
+          },
+          "description": {
+            "type": "keyword"
+          },
+          "duration": {
+            "type": "long"
+          },
+          "expire_time": {
+            "type": "keyword"
+          },
+          "factory_ids": {
+            "type": "long"
+          },
+          "first_frame": {
+            "type": "text"
+          },
+          "global_id": {
+            "type": "long"
+          },
+          "height": {
+            "type": "long"
+          },
+          "highlight_section": {
+            "type": "text"
+          },
+          "img_url": {
+            "type": "text"
+          },
+          "img_url_23": {
+            "type": "text"
+          },
+          "imgurlheight": {
+            "type": "integer"
+          },
+          "imgurlwidth": {
+            "type": "integer"
+          },
+          "ip_location": {
+            "type": "text"
+          },
+          "is_del": {
+            "type": "integer"
+          },
+          "is_labeled": {
+            "type": "integer"
+          },
+          "is_off": {
+            "type": "long"
+          },
+          "is_privacy": {
+            "type": "integer"
+          },
+          "is_public": {
+            "type": "long"
+          },
+          "is_recommend": {
+            "type": "integer"
+          },
+          "is_recommend_up": {
+            "type": "integer"
+          },
+          "koubei_boughtDate": {
+            "type": "keyword"
+          },
+          "koubei_driveKilometer": {
+            "type": "double"
+          },
+          "koubei_electricity": {
+            "type": "integer"
+          },
+          "koubei_label_names": {
+            "type": "nested",
+            "properties": {
+              "name": {
+                "type": "keyword"
+              },
+              "type": {
+                "type": "keyword"
+              }
+            }
+          },
+          "koubei_oilFeeling": {
+            "type": "text"
+          },
+          "koubei_powerDrivenType": {
+            "type": "integer"
+          },
+          "koubei_routineCruisingRange": {
+            "type": "integer"
+          },
+          "koubei_winterCruisingRange": {
+            "type": "integer"
+          },
+          "label_ids": {
+            "type": "long"
+          },
+          "label_names": {
+            "type": "keyword"
+          },
+          "like_count": {
+            "type": "long"
+          },
+          "m_url": {
+            "type": "text"
+          },
+          "make_score": {
+            "type": "double"
+          },
+          "max_play_url": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "media_id": {
+            "type": "text"
+          },
+          "modified_stime": {
+            "type": "keyword"
+          },
+          "multi_images": {
+            "type": "text"
+          },
+          "new_content_type": {
+            "type": "integer"
+          },
+          "new_source": {
+            "type": "integer"
+          },
+          "off_video": {
+            "type": "integer"
+          },
+          "pc_url": {
+            "type": "text"
+          },
+          "play_url": {
+            "type": "text"
+          },
+          "positive_negative": {
+            "type": "integer"
+          },
+          "price": {
+            "type": "double"
+          },
+          "price_type": {
+            "type": "long"
+          },
+          "publish_time": {
+            "type": "keyword"
+          },
+          "pv": {
+            "type": "long"
+          },
+          "qa_author_id": {
+            "type": "long"
+          },
+          "qa_author_img": {
+            "type": "text"
+          },
+          "qa_author_name": {
+            "type": "keyword"
+          },
+          "qa_author_sex": {
+            "type": "integer"
+          },
+          "query": {
+            "properties": {
+              "bool": {
+                "properties": {
+                  "must_not": {
+                    "properties": {
+                      "exists": {
+                        "properties": {
+                          "field": {
+                            "type": "text",
+                            "fields": {
+                              "keyword": {
+                                "type": "keyword",
+                                "ignore_above": 256
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "randombackgroundurl": {
+            "type": "text"
+          },
+          "randomcolor": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "reply_count": {
+            "type": "long"
+          },
+          "script": {
+            "properties": {
+              "inline": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
+              },
+              "lang": {
+                "type": "text",
+                "fields": {
+                  "keyword": {
+                    "type": "keyword",
+                    "ignore_above": 256
+                  }
+                }
+              }
+            }
+          },
+          "series_ids": {
+            "type": "long"
+          },
+          "series_names": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "shopping_time": {
+            "type": "keyword"
+          },
+          "size": {
+            "type": "long"
+          },
+          "source": {
+            "type": "long"
+          },
+          "source_biz_id": {
+            "type": "long"
+          },
+          "spec_ids": {
+            "type": "long"
+          },
+          "spec_names": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "style_label_ids": {
+            "type": "long"
+          },
+          "style_label_names": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword",
+                "ignore_above": 256
+              }
+            }
+          },
+          "style_score": {
+            "type": "double"
+          },
+          "sub_title": {
+            "type": "keyword"
+          },
+          "title": {
+            "type": "keyword"
+          },
+          "title_score": {
+            "type": "double"
+          },
+          "topic_reply_count": {
+            "type": "long"
+          },
+          "total_score": {
+            "type": "double"
+          },
+          "verify_status": {
+            "type": "integer"
+          },
+          "videovertical": {
+            "type": "integer"
+          },
+          "vv": {
+            "type": "long"
+          },
+          "width": {
+            "type": "long"
+          },
+          "year_ids": {
+            "type": "long"
+          }
+        }
+      }
+    }
+  }
+}

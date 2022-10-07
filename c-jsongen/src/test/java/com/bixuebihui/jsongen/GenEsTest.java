@@ -19,8 +19,8 @@ public class GenEsTest  {
     }
     @Test
     public void testGenerateEsMapping() throws IOException {
-        //String sourceDirectory="/Users/xwx/projects/c-tools/c-jsongen/src/test/resources/schema.json";
-        String sourceDirectory="http://yz-test1.es6.autohome.com.cn/all-content-info/_mapping";
+        String sourceDirectory="src/test/resources/mapping.json";
+        // String sourceDirectory="http://localhost:9020/my-index-001/_mapping.json";
         String targetDirectory="/Users/xwx/projects/c-tools/c-jsongen/src/test/java";
         boolean isSchema = true;
         GenEs gen = new GenEs(isSchema, sourceDirectory, targetDirectory, "com.bixuebihui.hit");

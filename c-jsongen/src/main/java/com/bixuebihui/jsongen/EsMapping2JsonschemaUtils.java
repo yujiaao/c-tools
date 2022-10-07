@@ -21,137 +21,17 @@ import java.util.Set;
  */
 public class EsMapping2JsonschemaUtils {
 
+    static final Map<String, String> typeMap = Map.of(
+            "keyword", "string",
+            "text", "string",
+            "date", "string",
+            "long", "integer",
+            "double", "number",
+            "float", "number"
+    );
     static Logger logger = LoggerFactory.getLogger(EsMapping2JsonschemaUtils.class);
 
     /**
-     * {
-     * "mobile-video-info": {
-     * "mappings": {
-     * "mobile-video-info-type": {
-     * "properties": {
-     * "attribute_ids": {
-     * "type": "long"
-     * },
-     * "attribute_names": {
-     * "type": "keyword"
-     * },
-     * "author_id": {
-     * "type": "long"
-     * },
-     * "author_name": {
-     * "type": "keyword"
-     * },
-     * "brand_ids": {
-     * "type": "long"
-     * },
-     * "content_label_ids": {
-     * "type": "long"
-     * },
-     * "content_label_names": {
-     * "type": "text",
-     * "fields": {
-     * "keyword": {
-     * "type": "keyword",
-     * "ignore_above": 256
-     * }
-     * }
-     * },
-     * "cover_image": {
-     * "type": "text"
-     * },
-     * "cover_image_2_3": {
-     * "type": "text"
-     * },
-     * "created_stime": {
-     * "type": "keyword"
-     * },
-     * "duaration": {
-     * "type": "long"
-     * },
-     * "expire_date": {
-     * "type": "keyword"
-     * },
-     * "factory_ids": {
-     * "type": "long"
-     * },
-     * "first_frame": {
-     * "type": "text"
-     * },
-     * "is_del": {
-     * "type": "long"
-     * },
-     * "is_privacy": {
-     * "type": "integer"
-     * },
-     * "is_public": {
-     * "type": "long"
-     * },
-     * "is_recommend": {
-     * "type": "integer"
-     * },
-     * "label_ids": {
-     * "type": "long"
-     * },
-     * "label_names": {
-     * "type": "keyword"
-     * },
-     * "labeled": {
-     * "type": "integer"
-     * },
-     * "make_score": {
-     * "type": "double"
-     * },
-     * "media_id": {
-     * "type": "text"
-     * },
-     * "off_video": {
-     * "type": "integer"
-     * },
-     * "play_url": {
-     * "type": "text"
-     * },
-     * "series_ids": {
-     * "type": "long"
-     * },
-     * "style_label_ids": {
-     * "type": "long"
-     * },
-     * "style_label_names": {
-     * "type": "text",
-     * "fields": {
-     * "keyword": {
-     * "type": "keyword",
-     * "ignore_above": 256
-     * }
-     * }
-     * },
-     * "stytle_score": {
-     * "type": "double"
-     * },
-     * "title": {
-     * "type": "keyword"
-     * },
-     * "title_score": {
-     * "type": "double"
-     * },
-     * "total_score": {
-     * "type": "double"
-     * },
-     * "verify_status": {
-     * "type": "integer"
-     * },
-     * "video_id": {
-     * "type": "long"
-     * },
-     * "video_source": {
-     * "type": "long"
-     * }
-     * }
-     * }
-     * }
-     * }
-     * }
-     * <p>
      * trip 3 layers, and make ids, names to array type like:
      * <p>
      * {
@@ -188,19 +68,19 @@ public class EsMapping2JsonschemaUtils {
         // Finally this is how you search a structure. There's really not much more to it.
         JsonNode result = exp.search(input);
         JsonNode properties = result.path("properties");
-        if(!properties.fields().hasNext()){
+        if (!properties.fields().hasNext()) {
             result = exp1.search(input);
             properties = result.path("properties");
         }
 
-        if(!properties.fields().hasNext()){
+        if (!properties.fields().hasNext()) {
             logger.debug("It is not a valid ElasticSearch mapping format, by pass trans");
             return input;
         }
 
 
-        for(String ignore : ignoreFields){
-            if(properties.has(ignore)){
+        for (String ignore : ignoreFields) {
+            if (properties.has(ignore)) {
                 ((ObjectNode) properties).remove(ignore);
             }
         }
@@ -212,11 +92,12 @@ public class EsMapping2JsonschemaUtils {
 
     /**
      * es fields mapping trans to jsonschema2pojo format
-     * @link https://github.com/joelittlejohn/jsonschema2pojo/wiki/Reference#format
+     *
      * @param collectionFields fields to generate List/Set
-     * @param mapper mapper object
-     * @param properties schema properties JsonNode
+     * @param mapper           mapper object
+     * @param properties       schema properties JsonNode
      * @throws JsonProcessingException
+     * @link https://github.com/joelittlejohn/jsonschema2pojo/wiki/Reference#format
      */
     private static void transFields(Set<String> collectionFields, ObjectMapper mapper, JsonNode properties) throws JsonProcessingException {
         for (Iterator<Map.Entry<String, JsonNode>> iter = properties.fields(); iter.hasNext(); ) {
@@ -225,7 +106,7 @@ public class EsMapping2JsonschemaUtils {
             String fieldName = field.getKey();
             String oldType = field.getValue().path("type").textValue();
             JsonNode nested = field.getValue().path("properties");
-            if(!(nested  instanceof MissingNode)){
+            if (!(nested instanceof MissingNode)) {
                 transFields(collectionFields, mapper, nested);
                 ((ObjectNode) field.getValue()).remove("properties");
             }
@@ -233,32 +114,32 @@ public class EsMapping2JsonschemaUtils {
             if (fieldName.endsWith("_ids") || fieldName.endsWith("_names") || collectionFields.contains(fieldName)) {
 
                 ((ObjectNode) field.getValue()).put("type", "array");
-                if((oldType==null || "nested".equals(oldType)) && !(nested  instanceof MissingNode)){
+                if ((oldType == null || "nested".equals(oldType)) && !(nested instanceof MissingNode)) {
                     ((ObjectNode) field.getValue()).setAll((ObjectNode)
-                            mapper.readTree("{\"items\" : { \"type\": \"object\", \"properties\": "+nested.toPrettyString()+"} }"));
-                }else {
+                            mapper.readTree("{\"items\" : { \"type\": \"object\", \"properties\": " + nested.toPrettyString() + "} }"));
+                } else {
                     ((ObjectNode) field.getValue()).setAll((ObjectNode)
                             mapper.readTree("{\"items\" : { \"type\" : \"" + typeMapping(oldType) + "\"} }"));
                 }
             } else {
-                if(oldType==null && !(nested  instanceof MissingNode)){
+                if (oldType == null && !(nested instanceof MissingNode)) {
                     ((ObjectNode) field.getValue()).setAll((ObjectNode)
-                            mapper.readTree("{\"items\" : "+nested.toPrettyString()+" }"));
-                }else {
+                            mapper.readTree("{\"items\" : " + nested.toPrettyString() + " }"));
+                } else {
                     ((ObjectNode) field.getValue()).put("type", typeMapping(oldType));
                 }
-                if("date".equals(oldType)) {
+                if ("date".equals(oldType)) {
                     JsonNode formatField = field.getValue().path("format");
 
-                    if(formatField!=null && !(formatField  instanceof MissingNode)) {
+                    if (formatField != null && !(formatField instanceof MissingNode)) {
                         String format = formatField.textValue();
-                        if(format.contains("||")){
+                        if (format.contains("||")) {
                             format = format.substring(0, format.indexOf("||"));
                         }
                         ((ObjectNode) field.getValue()).put("customDateTimePattern", format);
                         ((ObjectNode) field.getValue()).put("format", "date-time");
 
-                    }else {
+                    } else {
                         ((ObjectNode) field.getValue()).put("format", "date-time");
                     }
 
@@ -268,16 +149,7 @@ public class EsMapping2JsonschemaUtils {
     }
 
     public static String typeMapping(String src) {
-        if ("keyword".equals(src) || "text".equals(src)|| "date".equals(src)) {
-            return "string";
-        }
-        if ("long".equals(src)) {
-            return "integer";
-        }
-        if ("double".equals(src) || "float".equals(src)) {
-            return "number";
-        }
+        return typeMap.getOrDefault(src, src);
 
-        return src;
     }
 }

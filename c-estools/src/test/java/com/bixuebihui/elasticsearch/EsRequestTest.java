@@ -5,12 +5,19 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.springframework.util.ResourceUtils;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Random;
 
@@ -183,11 +190,12 @@ public class EsRequestTest {
     }
 
     @Test
-    void getTableJsonNode() throws JsonProcessingException {
-        String json = " {\"took\":4,\"timed_out\":false,\"_shards\":{\"total\":10,\"successful\":10,\"skipped\":0,\"failed\":0},\"hits\":{\"total\":1,\"max_score\":1.0,\"hits\":[{\"_index\":\"all-content-info\",\"_type\":\"all-content-info-type\",\"_id\":\"1998367890176217088\",\"_score\":1.0,\"_source\":{\"author_level\":null,\"pv\":174439,\"author_img\":\"https://i2.autoimg.cn/userscenter/g26/M03/77/42/120X120_0_q87_autohomecar__ChsEdmKGJSSAPcYXAADFNVFECes436.jpg\",\"year_ids\":null,\"source\":2,\"community_status\":null,\"qa_author_img\":null,\"koubei_label_names\":null,\"publish_time\":\"2022/07/07 19:00:00\",\"price\":null,\"bbs_name\":null,\"brand_ids\":[331],\"media_id\":null,\"verify_status\":null,\"pc_url\":\"http://www.autohome.com.cn/news/202205/1246789.html\",\"height\":null,\"like_count\":19,\"label_ids\":null,\"qa_author_id\":null,\"bbs_image\":null,\"factory_ids\":[4],\"global_id\":1998367890176217088,\"expire_time\":null,\"reply_count\":2095,\"content_level\":null,\"city_ids\":[],\"attribute_ids\":null,\"m_url\":\"http://m.autohome.com.cn/news/202205/1246789.html\"}}]}}";
+    void getTableJsonNode() throws IOException, URISyntaxException {
+        String json = IOUtils.toString(this.getClass().getResource("/es_result_paging.json").toURI(), StandardCharsets.UTF_8);
 
         JsonNode res = EsRequest.getTableJsonNode(json, 10, 10, 10, 1, 100);
 
-        assertEquals("{\"caption\":\"all-content-info\",\"titles\":[\"author_level\",\"pv\",\"author_img\",\"year_ids\",\"source\",\"community_status\",\"qa_author_img\",\"koubei_label_names\",\"publish_time\",\"price\",\"bbs_name\",\"brand_ids\",\"media_id\",\"verify_status\",\"pc_url\",\"height\",\"like_count\",\"label_ids\",\"qa_author_id\",\"bbs_image\",\"factory_ids\",\"global_id\",\"expire_time\",\"reply_count\",\"content_level\",\"city_ids\",\"attribute_ids\",\"m_url\"],\"_id\":[\"1998367890176217088\"],\"data\":[{\"author_level\":null,\"pv\":174439,\"author_img\":\"https://i2.autoimg.cn/userscenter/g26/M03/77/42/120X120_0_q87_autohomecar__ChsEdmKGJSSAPcYXAADFNVFECes436.jpg\",\"year_ids\":null,\"source\":2,\"community_status\":null,\"qa_author_img\":null,\"koubei_label_names\":null,\"publish_time\":\"2022/07/07 19:00:00\",\"price\":null,\"bbs_name\":null,\"brand_ids\":[331],\"media_id\":null,\"verify_status\":null,\"pc_url\":\"http://www.autohome.com.cn/news/202205/1246789.html\",\"height\":null,\"like_count\":19,\"label_ids\":null,\"qa_author_id\":null,\"bbs_image\":null,\"factory_ids\":[4],\"global_id\":1998367890176217088,\"expire_time\":null,\"reply_count\":2095,\"content_level\":null,\"city_ids\":[],\"attribute_ids\":null,\"m_url\":\"http://m.autohome.com.cn/news/202205/1246789.html\"}],\"paging\":{\"totalRows\":null,\"maxRows\":10,\"rowEnd\":10,\"rowStart\":10,\"page\":1}}", res.toString());
+        assertEquals("{\"caption\":\"all-content-info\",\"titles\":[\"author_level\",\"pv\",\"author_img\",\"year_ids\",\"source\",\"community_status\",\"qa_author_img\",\"koubei_label_names\",\"publish_time\",\"price\",\"bbs_name\",\"brand_ids\",\"media_id\",\"verify_status\",\"pc_url\",\"height\",\"like_count\",\"label_ids\",\"qa_author_id\",\"bbs_image\",\"factory_ids\",\"global_id\",\"expire_time\",\"reply_count\",\"content_level\",\"city_ids\",\"attribute_ids\",\"m_url\"],\"_id\":[\"1998367890176217088\"],\"data\":[{\"author_level\":null,\"pv\":174439,\"author_img\":\"https://test.com/abc.jpg\",\"year_ids\":null,\"source\":2,\"community_status\":null,\"qa_author_img\":null,\"koubei_label_names\":null,\"publish_time\":\"2022/07/07 19:00:00\",\"price\":null,\"bbs_name\":null,\"brand_ids\":[331],\"media_id\":null,\"verify_status\":null,\"pc_url\":\"http://localhost/\",\"height\":null,\"like_count\":19,\"label_ids\":null,\"qa_author_id\":null,\"bbs_image\":null,\"factory_ids\":[4],\"global_id\":1998367890176217088,\"expire_time\":null,\"reply_count\":2095,\"content_level\":null,\"city_ids\":[],\"attribute_ids\":null,\"m_url\":\"http://m.url.com/\"}],\"paging\":{\"totalRows\":null,\"maxRows\":10,\"rowEnd\":10,\"rowStart\":10,\"page\":1}}",
+                res.toString());
     }
 }

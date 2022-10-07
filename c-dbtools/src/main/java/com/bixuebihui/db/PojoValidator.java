@@ -1,6 +1,6 @@
 package com.bixuebihui.db;
 
-import jakarta.validation.*;
+import javax.validation.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.Logger;

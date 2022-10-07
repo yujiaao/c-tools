@@ -10,7 +10,7 @@ import com.bixuebihui.sequence.SequenceUtils;
 import com.bixuebihui.shardingjdbc.core.api.HintManager;
 import com.bixuebihui.sql.SQLUtil;
 import com.bixuebihui.util.DbUtils;
-import jakarta.validation.constraints.NotNull;
+import javax.validation.constraints.NotNull;
 import org.apache.commons.beanutils.*;
 import org.apache.commons.beanutils.converters.*;
 import org.apache.commons.lang3.NotImplementedException;

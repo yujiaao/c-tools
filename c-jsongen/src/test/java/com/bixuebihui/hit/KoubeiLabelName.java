@@ -22,7 +22,7 @@ public class KoubeiLabelName {
     @JsonProperty("name")
     private String name;
     @JsonProperty("type")
-    private Long type;
+    private String type;
     @JsonIgnore
     private Map<String, Object> additionalProperties = new LinkedHashMap<String, Object>();
 
@@ -37,12 +37,12 @@ public class KoubeiLabelName {
     }
 
     @JsonProperty("type")
-    public Long getType() {
+    public String getType() {
         return type;
     }
 
     @JsonProperty("type")
-    public void setType(Long type) {
+    public void setType(String type) {
         this.type = type;
     }
 
