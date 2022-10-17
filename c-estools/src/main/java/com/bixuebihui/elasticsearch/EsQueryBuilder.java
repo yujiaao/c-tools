@@ -40,7 +40,8 @@ public class EsQueryBuilder {
     static final String EXCLUDES ="excludes";
 
     static final String SCRIPT ="script";
-
+    public static final String SCRIPT_SOURCE = "source";
+    public static final String SCRIPT_PARAMS = "params";
 
 
     static ObjectMapper objectMapper = new ObjectMapper();
@@ -92,7 +93,10 @@ public class EsQueryBuilder {
      * @return
      */
 
-    public static String build(Query query, int from, int size, Set<String> commaSeparatedIncludeFields, Set<String> excludesFields, LinkedHashMap<String, String> sort)  {
+    public static String build(Query query, int from, int size,
+                               Set<String> commaSeparatedIncludeFields,
+                               Set<String> excludesFields,
+                               LinkedHashMap<String, String> sort, String scriptSource, Map<String,Object> scriptParams)  {
         Map queryConditions = query.toArray();
 
         HashMap<Object, Object> body = Maps.newHashMap();
@@ -118,6 +122,10 @@ public class EsQueryBuilder {
 
         if(sort!=null && !sort.isEmpty()){
             body.put("sort", sort);
+        }
+
+        if(scriptSource!=null){
+            body.put(SCRIPT_SOURCE, Map.of(SCRIPT_SOURCE,scriptSource, SCRIPT_PARAMS, scriptParams, "lang", "painless"));
         }
 
         return toJsonString(body);
@@ -174,7 +182,7 @@ public class EsQueryBuilder {
      *     "source": "ctx._source['carseries_status'] = 1;ctx._source['is_recommend=1'];"
      *   }
      * }
-     * @param updateFieldsValues
+     * @param updateFieldsValues field's values to update to
      * @return
      */
     public static String buildUpdateByQuery(Query query, Map<String, Object> updateFieldsValues)  {
@@ -188,21 +196,14 @@ public class EsQueryBuilder {
         StringBuilder sb = new StringBuilder();
         HashMap<String, Object> valueMap = new HashMap<>(32);
 
-        updateFieldsValues.entrySet().stream().forEach(x -> {
-                    sb.append("ctx._source['")
-                            .append(x.getKey())
-                            .append("'] =params['").append(x.getKey()).append("'];");
-                    valueMap.put(x.getKey(), x.getValue());
-                }
-        );
+        updateFieldsValues.forEach((key, value) -> {
+            sb.append("ctx._source['").append(key).append("'] ="+SCRIPT_PARAMS+"['").append(key).append("'];");
+            valueMap.put(key, value);
+        });
 
-        source.put("source", sb.toString());
+        source.put(SCRIPT_SOURCE, sb.toString());
 
-        source.put("params", valueMap);
-
-//          .append(x.getValue() instanceof String ?
-//                "'"+StringEscapeUtils.escapeJson(x.getValue().toString()) + "'"
-//                : x.getValue().toString())
+        source.put(SCRIPT_PARAMS, valueMap);
 
         body.put(SCRIPT, source);
 

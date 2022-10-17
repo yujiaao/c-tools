@@ -3,6 +3,7 @@ package com.bixuebihui.elasticsearch;
 import com.bixuebihui.DbException;
 import com.bixuebihui.db.ActiveRecord;
 
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -15,4 +16,7 @@ public interface EsActiveRecord<T> extends ActiveRecord<T> {
     int update(String _id, String[] fields, Object[] values) throws DbException;
 
     EsActiveRecord<T> excludeFields(Set<String> excludeFieldsSet);
+
+
+    int updateByScript(String script, Map<String, Object> params) throws DbException;
 }

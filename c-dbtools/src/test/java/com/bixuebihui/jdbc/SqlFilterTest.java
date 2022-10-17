@@ -91,7 +91,6 @@ public class SqlFilterTest {
 		Object[] objs = obj.getParameters();
 		assertEquals(1L, objs[0]);
 		assertEquals(12L, objs[1]);
-		//assertEquals(null, objs[2]);
 	}
 
 

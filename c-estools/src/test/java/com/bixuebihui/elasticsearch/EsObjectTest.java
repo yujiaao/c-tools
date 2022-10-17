@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.LinkedHashMap;
 
+import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -13,7 +14,7 @@ public  class EsObjectTest {
     @Test
     public void testMatchAll() {
 
-        String s = EsQueryBuilder.build(Query.match_all(), 0, 5, emptySet(),emptySet(), null);
+        String s = EsQueryBuilder.build(Query.match_all(), 0, 5, emptySet(),emptySet(), null, null, emptyMap());
 
         assertEquals("{\"size\":5,\"query\":{\"match_all\":{}}}", s);
     }
@@ -26,7 +27,7 @@ public  class EsObjectTest {
 
 
         String s = EsQueryBuilder.build(Query.match_all()
-               , 0,5,emptySet(), emptySet(), sort);
+               , 0,5,emptySet(), emptySet(), sort, null, emptyMap());
 
         assertEquals("{\"size\":5,\"query\":{\"match_all\":{}},\"sort\":{\"age\":\"desc\"}}", s);
 
@@ -51,7 +52,7 @@ public  class EsObjectTest {
     public void testMatch() {
 
         String s = EsQueryBuilder.build(Query.match(null, null)
-                .setFieldQuery("abc","test 123"), 0,5,emptySet(), emptySet(),null);
+                .setFieldQuery("abc","test 123"), 0,5,emptySet(), emptySet(),null, null, emptyMap());
 
         assertEquals("{\"size\":5,\"query\":{\"match\":{\"abc\":{\"query\":\"test 123\"}}}}", s);
     }
@@ -67,7 +68,7 @@ public  class EsObjectTest {
 
 
         String s = EsQueryBuilder.build(Query.match(null, null)
-                .setFieldQuery("abc","test 123"), 0,5,emptySet(),emptySet(), sort);
+                .setFieldQuery("abc","test 123"), 0,5,emptySet(),emptySet(), sort, null, emptyMap());
 
         assertEquals("{\"size\":5,\"query\":{\"match\":{\"abc\":{\"query\":\"test 123\"}}},\"sort\":{\"age\":\"desc\"}}", s);
     }

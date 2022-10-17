@@ -40,7 +40,7 @@
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <mysql.version>8.0.30</mysql.version>
-        <slf4j.version>1.7.36</slf4j.version>
+        <slf4j.version>2.0.3</slf4j.version>
         <validator.version>6.2.0.Final</validator.version>
 <!--        <validator.version>8.0.0.Final</validator.version>-->
         <hamcrest.version>2.2</hamcrest.version>

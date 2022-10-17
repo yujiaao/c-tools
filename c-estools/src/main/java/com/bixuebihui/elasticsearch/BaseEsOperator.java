@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.*;
 
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptyMap;
 
 /**
  * @author xwx
@@ -235,7 +236,7 @@ public abstract class BaseEsOperator<T,V> implements Record<T>{
         int from=0;
         int size =10;
         LinkedHashMap<String, String> sort = new LinkedHashMap<>();
-        String res = request.search(EsQueryBuilder.build(Query.match_all(), from, size, Collections.emptySet(), Collections.emptySet(), sort));
+        String res = request.search(EsQueryBuilder.build(Query.match_all(), from, size, Collections.emptySet(), Collections.emptySet(), sort, null, emptyMap()));
 
         Wrapper<T> w =  toObjectWrapper(res);
 
@@ -247,7 +248,7 @@ public abstract class BaseEsOperator<T,V> implements Record<T>{
         int from=0;
         int size =10;
         LinkedHashMap<String, String> sort = new LinkedHashMap<>();
-        String res = request.search(EsQueryBuilder.build(Query.match_all(), from, size,Collections.emptySet(),Collections.emptySet(), sort));
+        String res = request.search(EsQueryBuilder.build(Query.match_all(), from, size,Collections.emptySet(),Collections.emptySet(), sort, null, emptyMap()));
 
         return toObjectList(res, clz);
     }
@@ -369,7 +370,7 @@ public abstract class BaseEsOperator<T,V> implements Record<T>{
     public Wrapper<T> selectWithJoin(Set<String> resultFields,Set<String> exludeFields, Query query, LinkedHashMap<String, String> sort, int begin, int end) {
         int size =end-begin;
 
-        String res = request.search(EsQueryBuilder.build(query, begin, size,resultFields, exludeFields, sort));
+        String res = request.search(EsQueryBuilder.build(query, begin, size,resultFields, exludeFields, sort, null, emptyMap()));
 
         return toObjectWrapper(res);
     }
@@ -377,7 +378,7 @@ public abstract class BaseEsOperator<T,V> implements Record<T>{
     public List<EsSearchHitResult<T>> select(Set<String> resultFields,Set<String> exludeFields, Query query, LinkedHashMap<String, String> sort, int begin, int end) {
         int size =end-begin;
 
-        String res = request.search(EsQueryBuilder.build(query, begin, size, resultFields, exludeFields, sort));
+        String res = request.search(EsQueryBuilder.build(query, begin, size, resultFields, exludeFields, sort, null, emptyMap()));
 
         return toEsResultWrapper(res);
     }
@@ -385,7 +386,7 @@ public abstract class BaseEsOperator<T,V> implements Record<T>{
     public <K> List<K> select(Set<String> resultFields,Set<String> exludeFields, Query query, LinkedHashMap<String, String> sort, int begin, int end, Class<K> clz) {
         int size =end-begin;
 
-        String res = request.search(EsQueryBuilder.build(query, begin, size,resultFields, exludeFields, sort));
+        String res = request.search(EsQueryBuilder.build(query, begin, size,resultFields, exludeFields, sort, null, emptyMap()));
 
         return toObjectList(res, clz);
     }

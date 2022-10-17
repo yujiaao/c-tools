@@ -36,6 +36,8 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static java.util.Collections.emptyMap;
+
 /**
  * common operation with elasticsearch use http request at 'low' level
  *
@@ -77,7 +79,19 @@ public class EsRequest {
      */
     protected String indexName;
     String host;
-    Pattern pattern = Pattern.compile("open\\s+[\\.\\w|\\-|\\:+|\\w|\\-|\\:+]+");
+
+    /**
+     * GET _cat/indices
+     * return:
+     *
+     * green open  mis_search_magic                               Vo6oSORTQX6x2rIgH92iSw  3 1        359       89 987.8kb  482.4kb
+     * green open  some_order                                     hc1oM33eSIylkxN_Sc3k8w  2 1   13252991     5806   7.4gb    3.7gb
+     * green open  ics_big_data_num                               mPJ27dzuQAqyVKjeQt1u7Q  5 1    6999295        0     1gb  563.3mb
+     * green open  online_spec_idmix                              nq1EWl2oSyq85DGuzSEVVA  5 1      68618        0   5.5mb    2.7mb
+     *       close page_life_cycle-2021-05                        3IwTiqWZQTyhM40MnF0wSw
+     * green open  online_spec_lifting_of_windowmix               bfUXVdu5SlSVfxu5jFE3Uw  5 1      19937        0   1.2mb  609.3kb
+     */
+    Pattern patternForIndices = Pattern.compile("open\\s+[\\.\\w|\\-|\\:+|\\w|\\-|\\:+]+");
     Pattern p = Pattern.compile("\\s+[\\.\\w\\-|\\:+|\\w\\-|\\:+]+");
 
     String version;
@@ -311,8 +325,11 @@ public class EsRequest {
     }
 
     public String query(Query query, int from, int size, LinkedHashMap<String, String> sort) {
+        return query(query, from, size, sort, null, emptyMap());
+    }
+    public String query(Query query, int from, int size, LinkedHashMap<String, String> sort, String scriptSource, Map<String, Object> scriptParams) {
         try {
-            String body = EsQueryBuilder.build(query, from, size, Collections.emptySet(), Collections.emptySet(), sort);
+            String body = EsQueryBuilder.build(query, from, size, Collections.emptySet(), Collections.emptySet(), sort, scriptSource, scriptParams);
 
             HttpWithJsonEntity getRequest =
                     HttpWithJsonEntity.builder()
@@ -419,12 +436,13 @@ public class EsRequest {
                             .withBodyEntry("")
                             .build();
             String res = httpJson(getRequest, "");
-            Matcher matcher = pattern.matcher(res);
+            Matcher matcher = patternForIndices.matcher(res);
             while (matcher.find()) {
                 String matchStr = matcher.group();
                 Matcher m = p.matcher(matchStr);
-                m.find();
-                indexList.add(m.group().trim());
+                if(m.find()) {
+                    indexList.add(m.group().trim());
+                }
             }
         } catch (UnsupportedEncodingException | URISyntaxException e) {
             e.printStackTrace();

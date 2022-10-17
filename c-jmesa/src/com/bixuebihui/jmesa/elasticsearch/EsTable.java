@@ -13,6 +13,7 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
 
 /**
@@ -35,8 +36,12 @@ public class EsTable extends EasyTable {
             getFilter(filter, limit, id);
             RowSelect rowSelect = limit.getRowSelect();
             LinkedHashMap<String,String> sort = toEsSort(limit.getSortSet());
+
+            String scriptSource = null;
+            Map<String, Object> scriptParams = emptyMap();
+
             String query = filter.toEsObject(filter.toQuery(), rowSelect.getRowStart(),
-                    rowSelect.getRowEnd() - rowSelect.getRowStart(), emptySet(),emptySet(), sort);
+                    rowSelect.getRowEnd() - rowSelect.getRowStart(), emptySet(),emptySet(), sort, scriptSource, scriptParams);
             return EsRequest.esJsonToTableJson(request.search(query), rowSelect.getMaxRows(),rowSelect.getRowStart(), rowSelect.getRowEnd(), rowSelect.getTotalRows(), rowSelect.getPage() );
         }catch (Exception e){
             throw new SQLException(e);

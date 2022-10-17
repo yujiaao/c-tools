@@ -593,4 +593,9 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
         this.excludeFieldsSet = excludeFieldsSet;
         return this;
     }
+
+    @Override
+    public int updateByScript(String script, Map<String, Object> params) throws DbException {
+        return 0;
+    }
 }
