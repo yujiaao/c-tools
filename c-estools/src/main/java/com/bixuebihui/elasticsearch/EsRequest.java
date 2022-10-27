@@ -45,8 +45,10 @@ import static java.util.Collections.emptyMap;
  */
 public class EsRequest {
     static final Logger logger = LoggerFactory.getLogger(EsRequest.class);
-    // This you have to fill in yourself, you're probably using Jackson's ObjectMapper
-    // to load JSON data, and that should fit right in here.
+    /**
+     *  This you have to fill in yourself, you're probably using Jackson's ObjectMapper
+     *  to load JSON data, and that should fit right in here.
+     */
     static ObjectMapper mapper = new ObjectMapper();
     /**
      * // The first thing you need is a runtime. These objects can compile expressions
@@ -83,7 +85,6 @@ public class EsRequest {
     /**
      * GET _cat/indices
      * return:
-     *
      * green open  mis_search_magic                               Vo6oSORTQX6x2rIgH92iSw  3 1        359       89 987.8kb  482.4kb
      * green open  some_order                                     hc1oM33eSIylkxN_Sc3k8w  2 1   13252991     5806   7.4gb    3.7gb
      * green open  ics_big_data_num                               mPJ27dzuQAqyVKjeQt1u7Q  5 1    6999295        0     1gb  563.3mb
@@ -181,7 +182,7 @@ public class EsRequest {
      * "paging":{"page":2,"maxRows":1,"rowEnd":2,"rowStart":1,"totalRows":3}}
      *
      * @param esJson
-     * @return
+     * @return json string
      */
     public static String esJsonToTableJson(String esJson,
                                            int maxRows,
@@ -378,11 +379,11 @@ public class EsRequest {
         return EsQueryBuilder.EMPTY_JSON_STRING;
     }
 
-    public String post(String rawJson, String action, String _id) {
+    public String post(String rawJson, String action, String id) {
         try {
             HttpWithJsonEntity getRequest =
                     HttpWithJsonEntity.builder()
-                            .withUrl(host + "/" + indexName + "/" + action + "/" + _id)
+                            .withUrl(host + "/" + indexName + "/" + action + "/" + id)
                             .withBodyEntry(rawJson)
                             .withMethod("POST")
                             .build();
@@ -409,7 +410,7 @@ public class EsRequest {
      *     "source": "ctx._source['carseries_status'] = 1"
      *   }
      * }
-     * @return
+     * @return response
      */
     public String post(String rawJson, String action) {
         try {
@@ -462,13 +463,13 @@ public class EsRequest {
         return sb.toString();
     }
 
-    public int update(String _id, Map<String, Object> map) throws JsonProcessingException {
+    public int update(String id, Map<String, Object> map) throws JsonProcessingException {
         String res;
         if(version!=null && version.startsWith("6")){
             //TODO routing problem
-           res = post(EsQueryBuilder.buildUpdate(map),"_doc" , _id+"/"+EsQueryBuilder.ACTION_UPDATE);
+           res = post(EsQueryBuilder.buildUpdate(map),"_doc" , id+"/"+EsQueryBuilder.ACTION_UPDATE);
         }else {
-            res = post(EsQueryBuilder.buildUpdate(map), EsQueryBuilder.ACTION_UPDATE, _id);
+            res = post(EsQueryBuilder.buildUpdate(map), EsQueryBuilder.ACTION_UPDATE, id);
         }
         /**
          * {
@@ -493,7 +494,9 @@ public class EsRequest {
     public int updateByQuery(Query query, Map<String,Object> keyValues, boolean conflictsProceed) throws JsonProcessingException {
         String q = EsQueryBuilder.buildUpdateByQuery(query, keyValues);
 
-        String res = post(q, EsQueryBuilder.ACTION_UPDATE_BY_QUERY + (conflictsProceed? "?conflicts=proceed":""));
+        String action = EsQueryBuilder.ACTION_UPDATE_BY_QUERY + (conflictsProceed ? "?conflicts=proceed" : "");
+
+        String res = post(q, action);
 
         /**
          {
@@ -516,7 +519,11 @@ public class EsRequest {
          }
          */
         JsonNode result = mapper.readTree(res);
-        return result.path("updated").asInt();
+        int resCount = result.path("updated").asInt();
+        if(resCount==0){
+            logger.error("更新记录为0, action={} \n q={}\n result=\n{}\n", action, q, result.toPrettyString());
+        }
+        return resCount;
     }
 
     static class Document {
