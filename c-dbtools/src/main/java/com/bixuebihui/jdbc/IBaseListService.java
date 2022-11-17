@@ -1,6 +1,5 @@
 package com.bixuebihui.jdbc;
 
-import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 /**
@@ -11,7 +10,7 @@ import java.util.Map;
  * @param <V> 主键类型
  * @version $Id: $Id
  */
-public interface IBaseListService<T, V> extends IReaderService<T> {
+public interface IBaseListService<T, V> extends IReaderService<T>, IPrimaryKeyedTable<T,V> {
     /**
      * <p>selectByIds.</p>
      *
@@ -52,21 +51,6 @@ public interface IBaseListService<T, V> extends IReaderService<T> {
      */
     boolean insertAutoNewKey(T info);
 
-    /**
-     * <p>getId.</p>
-     *
-     * @param info a T object.
-     * @return a V object.
-     */
-    V getId(T info);
-
-    /**
-     * <p>setId.</p>
-     *
-     * @param info a T object.
-     * @param id a V object.
-     */
-    void setId(T info, V id);
 
     /**
      * <p>getDbHelper.</p>
@@ -75,12 +59,6 @@ public interface IBaseListService<T, V> extends IReaderService<T> {
      */
     IDbHelper getDbHelper();
 
-    /**
-     * <p>getTableName.</p>
-     *
-     * @return a {@link java.lang.String} object.
-     */
-    String getTableName();
 
     /**
      * <p>insert.</p>

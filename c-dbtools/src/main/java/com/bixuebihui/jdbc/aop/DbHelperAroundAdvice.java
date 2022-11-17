@@ -2,7 +2,7 @@ package com.bixuebihui.jdbc.aop;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
-import org.apache.commons.collections4.map.LRUMap;
+import org.apache.commons.collections.map.LRUMap;
 import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

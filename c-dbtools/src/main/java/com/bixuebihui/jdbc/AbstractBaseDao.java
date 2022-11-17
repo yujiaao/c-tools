@@ -73,6 +73,7 @@ public class AbstractBaseDao extends BaseDao<Object, Long> {
         return null;
     }
 
+
     @Override
     protected void setIdLong(Object info, long id) {
 

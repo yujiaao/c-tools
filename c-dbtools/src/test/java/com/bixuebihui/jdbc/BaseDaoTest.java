@@ -5,6 +5,8 @@ import com.bixuebihui.datasource.DataSourceTest;
 import com.bixuebihui.datasource.DbcpDataSource;
 import com.bixuebihui.db.ActiveRecord;
 import com.bixuebihui.jdbc.aop.DbHelperAroundAdvice;
+import com.bixuebihui.jdbc.event.LogAfterChangeEventHandler;
+import com.mysql.cj.log.Log;
 import org.junit.jupiter.api.Test;
 import org.springframework.aop.framework.ProxyFactory;
 
@@ -34,6 +36,7 @@ public class BaseDaoTest  {
 			}
 
 		};
+
 		System.out.println(bd.addAlias(bd.getTableName()));
 
 		System.out.println(bd.getCount(bd.getTableName(), ""));
@@ -54,6 +57,7 @@ public class BaseDaoTest  {
 			}
 
 		};
+
 
 		System.out.println(bd.getPagingSql("select * from test", 20, 40));
 	}
@@ -209,6 +213,8 @@ public class BaseDaoTest  {
 		}
 
 		BD bd = new BD(db);
+		bd.setAfterChangeEventHandler(new LogAfterChangeEventHandler<>(bd));
+
 		List<T> objs = bd.selectAll();
 		for(T o: objs){
 			o.name = o.name+o.id;
@@ -498,7 +504,7 @@ public class BaseDaoTest  {
 	}
 
 	@Test
-	public void testConvert() throws SQLException {
+	public void testConvert() {
 
 		DbcpDataSource ds = new DbcpDataSource();
 		ds.setDatabaseConfig(DataSourceTest.getConfigDerby());

@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.github.yujiaao</groupId>
         <artifactId>c-tools-parent</artifactId>
-        <version>1.11.3.7</version>
+        <version>1.11.3.8</version>
     </parent>
 
     <artifactId>c-dbtools</artifactId>
@@ -248,9 +248,9 @@
 
         <!-- LRUMap -->
         <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-collections4</artifactId>
-            <version>4.4</version>
+            <groupId>commons-collections</groupId>
+            <artifactId>commons-collections</artifactId>
+            <version>3.2.2</version>
         </dependency>
 
 
@@ -332,7 +332,7 @@
         <dependency>
             <groupId>com.github.yujiaao</groupId>
             <artifactId>common-utils</artifactId>
-            <version>1.11.3.7</version>
+            <version>1.11.3.8</version>
             <scope>compile</scope>
         </dependency>
 
