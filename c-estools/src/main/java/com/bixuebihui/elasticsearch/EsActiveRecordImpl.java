@@ -105,8 +105,8 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
 
     /** {@inheritDoc} */
     @Override
-    public EsActiveRecord<T> match(String field, String[] value) {
-        filterStack.match(field, value);
+    public EsActiveRecord<T> wildcard(String field, String[] value) {
+        filterStack.wildcard(field, value);
         return this;
     }
 

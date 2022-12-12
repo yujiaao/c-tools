@@ -424,8 +424,8 @@ public class SqlFilter {
 	 * @param value
 	 * @return
 	 */
-	public SqlFilter match(String field, Object[] value){
-		return this.addFilter(field, Comparison.MATCH,  value);
+	public SqlFilter wildcard(String field, Object[] value){
+		return this.addFilter(field, Comparison.WILDCARD,  value);
 	}
 
 	public SqlFilter startWith(String field, Object value){
@@ -521,7 +521,7 @@ public class SqlFilter {
 		/**
 		 * like concat('%', value, '%'), but for es it for text type field
 		 */
-		MATCH,
+		WILDCARD,
 
 		/**
 		 * low level es query

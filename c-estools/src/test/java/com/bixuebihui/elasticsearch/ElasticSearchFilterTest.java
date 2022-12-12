@@ -44,4 +44,16 @@ class ElasticSearchFilterTest {
         assertEquals("{\"size\":10,\"query\":{\"bool\":{\"must\":[{\"match\":{\"title\":\"abc 中国\"}},{\"range\":{\"height\":{\"gt\":100}}}]}}}", res);
 
     }
+
+    @Test
+    void toEsObjectWildcard() {
+        ElasticSearchFilter filter = new ElasticSearchFilter();
+        filter.addFilter("title", SqlFilter.Comparison.WILDCARD, new String[]{"中国","北京"});
+        filter.addFilter("height", SqlFilter.Comparison.GT, new Integer[]{100});
+
+        String res = filter.toEsObject(filter.toQuery(), 0, 10, emptySet(),emptySet(),null, null, emptyMap());
+
+        assertEquals("{\"size\":10,\"query\":{\"bool\":{\"must\":[{\"match\":{\"title\":\"abc 中国\"}},{\"range\":{\"height\":{\"gt\":100}}}]}}}", res);
+
+    }
 }

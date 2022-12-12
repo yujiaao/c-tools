@@ -485,6 +485,11 @@ public class DbImpl<T, V> extends BaseDao<T, V> implements ActiveRecord<T>,
 		return null;
 	}
 
+	@Override
+	public ActiveRecord<T> wildcard(String field, String[] value) {
+		throw new NotImplementedException();
+	}
+
 
 	/** {@inheritDoc} */
 	@Override

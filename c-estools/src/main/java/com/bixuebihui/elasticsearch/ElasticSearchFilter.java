@@ -188,7 +188,7 @@ public class ElasticSearchFilter extends SqlFilter {
                 criteria.addMust(queryFilter);
                 break;
 
-            case MATCH:
+            case WILDCARD:
                 Arrays.asList(filter.getValue()).forEach(value -> criteria.addShould( Query.wildcard(filter.getProperty(), value + "*", 1)));
 
                 break;

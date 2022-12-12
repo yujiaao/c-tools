@@ -6,6 +6,8 @@ import com.bixuebihui.jdbc.entity.CountObject;
 import com.bixuebihui.jdbc.entity.CountValue;
 import com.bixuebihui.query.Paging;
 import javax.validation.constraints.NotNull;
+
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -241,6 +243,11 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	public ActiveRecord<T> smallerOrEqualThan(String field, Object value) {
 		filterStack.smallerOrEqualThan(field, value);
 		return this;
+	}
+
+	@Override
+	public ActiveRecord<T> wildcard(String field, String[] value) {
+		throw new NotImplementedException();
 	}
 
 	/** {@inheritDoc} */

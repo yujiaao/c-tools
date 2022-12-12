@@ -270,6 +270,11 @@ public interface ActiveRecord<T> extends Record<T> {
     ActiveRecord<T> smallerOrEqualThan(String field, Object value);
 
     /**
+     * @param field db field
+     * @param value value to compare
+    */
+    ActiveRecord<T> wildcard(String field, String[] value);
+    /**
      * <p>getCondStack.</p>
      *
      * @return a {@link SqlHelper} object.
