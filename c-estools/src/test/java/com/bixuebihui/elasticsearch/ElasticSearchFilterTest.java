@@ -53,7 +53,9 @@ class ElasticSearchFilterTest {
 
         String res = filter.toEsObject(filter.toQuery(), 0, 10, emptySet(),emptySet(),null, null, emptyMap());
 
-        assertEquals("{\"size\":10,\"query\":{\"bool\":{\"must\":[{\"match\":{\"title\":\"abc 中国\"}},{\"range\":{\"height\":{\"gt\":100}}}]}}}", res);
+        assertEquals("{\"size\":10,\"query\":{\"bool\":{\"should\":[{\"wildcard\":{\"title\":" +
+                "{\"boost\":1.0,\"value\":\"中国*\"}}},{\"wildcard\":{\"title\":{\"boost\":1.0,\"value\":\"北京*\"}}}]," +
+                "\"must\":[{\"range\":{\"height\":{\"gt\":100}}}]}}}", res);
 
     }
 }
