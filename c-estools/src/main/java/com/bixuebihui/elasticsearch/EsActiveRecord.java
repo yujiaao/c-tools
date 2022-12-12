@@ -11,6 +11,8 @@ import java.util.Set;
  */
 public interface EsActiveRecord<T> extends ActiveRecord<T> {
 
+    EsActiveRecord<T> match(String field, String[] value);
+
     int update(String _id, String field, Object value) throws DbException;
 
     int update(String _id, String[] fields, Object[] values) throws DbException;

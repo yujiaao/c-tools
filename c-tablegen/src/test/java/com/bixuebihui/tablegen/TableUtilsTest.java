@@ -3,17 +3,19 @@ package com.bixuebihui.tablegen;
 import com.bixuebihui.jdbc.IDbHelper;
 import com.bixuebihui.tablegen.entry.ColumnData;
 import com.bixuebihui.tablegen.entry.TableInfo;
+import com.google.common.primitives.Primitives;
+import org.apache.poi.util.ArrayUtil;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.util.StopWatch;
+import org.springframework.util.comparator.BooleanComparator;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
+import static java.util.Collections.binarySearch;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class TableUtilsTest {
@@ -211,5 +213,25 @@ public class TableUtilsTest {
             }
         }
         assertTrue(res.size() > 1);
+    }
+
+
+    /**
+     * 问题测试！
+     */
+    @Test void testTrue(){
+        {
+            boolean[] test1 = new boolean[]{false, true, false};
+            boolean hasTrue = Arrays.asList(test1).contains(true);
+            assertFalse(hasTrue);
+            System.out.println("expect 1 = "+Arrays.asList(test1).size());
+
+        }
+        {
+            Boolean[] test1 = new Boolean[]{false, true, false};
+            boolean hasTrue = Arrays.asList(test1).contains(true);
+            assertTrue(hasTrue);
+            System.out.println("expect 3 = "+Arrays.asList(test1).size());
+        }
     }
 }

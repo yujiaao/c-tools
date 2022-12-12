@@ -27,7 +27,7 @@ public class Query extends Params {
      * @param values values
      * @return Match
      */
-    public static Match match(String field, Map values) {
+    public static Match match(String field, String values) {
         return new Match(field, values);
     }
 

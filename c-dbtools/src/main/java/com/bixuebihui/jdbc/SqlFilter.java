@@ -408,8 +408,24 @@ public class SqlFilter {
 		return this.addFilter(field, Comparison.LTE,  new Object[]{value});
 	}
 
+	/**
+	 * wildcard for es keyword field
+	 * @param field
+	 * @param value
+	 * @return
+	 */
 	public SqlFilter contain(String field, Object value){
 		return this.addFilter(field, Comparison.CONTAIN,  new Object[]{value});
+	}
+
+	/**
+	 * wildcard for es keyword field
+	 * @param field
+	 * @param value
+	 * @return
+	 */
+	public SqlFilter match(String field, Object[] value){
+		return this.addFilter(field, Comparison.MATCH,  value);
 	}
 
 	public SqlFilter startWith(String field, Object value){
@@ -500,6 +516,17 @@ public class SqlFilter {
 		 * like concat( value, '%')
 		 */
 		START_WITH,
+
+
+		/**
+		 * like concat('%', value, '%'), but for es it for text type field
+		 */
+		MATCH,
+
+		/**
+		 * low level es query
+		 */
+		QUERY
 
 	}
 

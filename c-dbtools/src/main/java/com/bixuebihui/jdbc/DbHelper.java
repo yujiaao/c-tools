@@ -464,7 +464,14 @@ public class DbHelper implements IDbHelper {
                 p.addBatch();
             }
             int[] updateCounts = p.executeBatch();
+
+            p.getGeneratedKeys();
+
             n = updateCounts.length;
+            // updateCounts[0] A number greater than or equal to zero -- indicates that the
+            //     * command was processed successfully and is an update count giving the
+            //     * number of rows in the database that were affected by the command's
+            //     * execution
         } catch (SQLException ex) {
             for (Object[] ps : params) {
                 dumpSql(ex, sql, ps);

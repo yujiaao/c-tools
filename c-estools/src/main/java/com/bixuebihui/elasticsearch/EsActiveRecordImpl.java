@@ -105,6 +105,13 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
 
     /** {@inheritDoc} */
     @Override
+    public EsActiveRecord<T> match(String field, String[] value) {
+        filterStack.match(field, value);
+        return this;
+    }
+
+    /** {@inheritDoc} */
+    @Override
     public EsActiveRecord<T> startWith(String field, String value) {
         filterStack.startWith(field, value);
         return this;
