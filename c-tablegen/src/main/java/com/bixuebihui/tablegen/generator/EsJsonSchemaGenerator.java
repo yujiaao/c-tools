@@ -60,7 +60,9 @@ public class EsJsonSchemaGenerator extends BaseGenerator {
                         : esConfig.getProperty("url")
         );
         String targetDirectory=this.config.getSrcDir();
-        GenEs gen = new GenEs(isSchema, sourceDirectory, targetDirectory, esConfig.getProperty("package_name")+".pojo");
+        GenEs gen = new GenEs(isSchema, sourceDirectory, targetDirectory,
+                esConfig.getProperty("package_name")+".pojo",
+                esConfig.getProperty("username"), esConfig.getProperty("password"));
 
         EsDalGenerator dal = new EsDalGenerator();
         dal.init(config, dbConfig, setInfo, esConfig);
