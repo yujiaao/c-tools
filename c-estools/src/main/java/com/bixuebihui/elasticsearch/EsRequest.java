@@ -16,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.ContentType;
@@ -46,8 +47,8 @@ import static java.util.Collections.emptyMap;
 public class EsRequest {
     static final Logger logger = LoggerFactory.getLogger(EsRequest.class);
     /**
-     *  This you have to fill in yourself, you're probably using Jackson's ObjectMapper
-     *  to load JSON data, and that should fit right in here.
+     * This you have to fill in yourself, you're probably using Jackson's ObjectMapper
+     * to load JSON data, and that should fit right in here.
      */
     static ObjectMapper mapper = new ObjectMapper();
     /**
@@ -89,7 +90,7 @@ public class EsRequest {
      * green open  some_order                                     hc1oM33eSIylkxN_Sc3k8w  2 1   13252991     5806   7.4gb    3.7gb
      * green open  ics_big_data_num                               mPJ27dzuQAqyVKjeQt1u7Q  5 1    6999295        0     1gb  563.3mb
      * green open  online_spec_idmix                              nq1EWl2oSyq85DGuzSEVVA  5 1      68618        0   5.5mb    2.7mb
-     *       close page_life_cycle-2021-05                        3IwTiqWZQTyhM40MnF0wSw
+     * close page_life_cycle-2021-05                        3IwTiqWZQTyhM40MnF0wSw
      * green open  online_spec_lifting_of_windowmix               bfUXVdu5SlSVfxu5jFE3Uw  5 1      19937        0   1.2mb  609.3kb
      */
     Pattern patternForIndices = Pattern.compile("open\\s+[\\.\\w|\\-|\\:+|\\w|\\-|\\:+]+");
@@ -103,12 +104,14 @@ public class EsRequest {
         this.username = username;
         this.password = password;
     }
+
     public EsRequest(String host, String username, String password, String indexName) {
         this.host = host;
         this.username = username;
         this.password = password;
         this.indexName = indexName;
     }
+
     public EsRequest(String host, String username, String password, String indexName, String version) {
         this.host = host;
         this.username = username;
@@ -196,23 +199,23 @@ public class EsRequest {
                 rowStart,
                 page,
                 totalRows);
-        if(resultTotal==null){
+        if (resultTotal == null) {
             return "{}";
         }
         return resultTotal.toPrettyString();
     }
 
 
-    public static long getHits(  String esJson) {
+    public static long getHits(String esJson) {
         JsonNode input;
         try {
             input = mapper.readTree(esJson);
-            if(input==null || (input.at("/hits/total") instanceof MissingNode)){
+            if (input == null || (input.at("/hits/total") instanceof MissingNode)) {
                 return 0;
             }
             return input.at("/hits/total").asLong();
         } catch (JsonProcessingException e) {
-           logger.error("查询结果json格式错误", e);
+            logger.error("查询结果json格式错误", e);
         }
         return 0;
     }
@@ -226,7 +229,7 @@ public class EsRequest {
     ) throws JsonProcessingException {
         JsonNode input = mapper.readTree(esJson);
         // https://datatracker.ietf.org/doc/html/rfc6901
-        if(input==null || (input.at("/hits/hits/0/_source") instanceof MissingNode)){
+        if (input == null || (input.at("/hits/hits/0/_source") instanceof MissingNode)) {
             return null;
         }
         // Finally this is how you search a structure. There's really not much more to it.
@@ -278,7 +281,25 @@ public class EsRequest {
 
         HttpEntityEnclosingRequestBase post = new HttpPut(host + "/" + indexName);
 
-        return httpJson(post,"");
+        return httpJson(post, "");
+    }
+
+    public String getFromUrl(String url, String body, String method) {
+
+
+        try {
+            HttpWithJsonEntity getRequest =
+                    HttpWithJsonEntity.builder()
+                            .withUrl(url)
+                            .withBodyEntry(body)
+                            .withMethod(method)
+                            .build();
+            return httpJson(getRequest, body);
+        } catch (URISyntaxException | UnsupportedEncodingException e) {
+            logger.error("get from url: " + url, e);
+        }
+        return null;
+
     }
 
     /**
@@ -289,9 +310,9 @@ public class EsRequest {
      */
     private String httpJson(HttpEntityEnclosingRequestBase requestBase, String body) {
         logger.debug("====>>>>");
-        logger.debug(requestBase.toString()+"\n"+body);
+        logger.debug(requestBase.toString() + "\n" + body);
 
-        if(StringUtils.isNotBlank(body) && requestBase.getEntity()==null){
+        if (StringUtils.isNotBlank(body) && requestBase.getEntity() == null) {
             requestBase.setEntity(new StringEntity(body, ContentType.APPLICATION_JSON));
         }
 
@@ -313,7 +334,7 @@ public class EsRequest {
 
             String res = getResponseString(response);
             logger.debug("<<<<====");
-            logger.debug(StringUtils.abbreviate(res,1000));
+            logger.debug(StringUtils.abbreviate(res, 1000));
             return res;
         } catch (IOException e) {
             e.printStackTrace();
@@ -328,6 +349,7 @@ public class EsRequest {
     public String query(Query query, int from, int size, LinkedHashMap<String, String> sort) {
         return query(query, from, size, sort, null, emptyMap());
     }
+
     public String query(Query query, int from, int size, LinkedHashMap<String, String> sort, String scriptSource, Map<String, Object> scriptParams) {
         try {
             String body = EsQueryBuilder.build(query, from, size, Collections.emptySet(), Collections.emptySet(), sort, scriptSource, scriptParams);
@@ -338,7 +360,7 @@ public class EsRequest {
                             .withBodyEntry(body)
                             .build();
 
-            return httpJson(getRequest,body);
+            return httpJson(getRequest, body);
         } catch (UnsupportedEncodingException | URISyntaxException e) {
             e.printStackTrace();
         }
@@ -398,18 +420,19 @@ public class EsRequest {
     /**
      * POST /all-content-info/_update_by_query
      * {
-     *   "query":{
-     *     "bool":{
-     *       "must":[
-     *     {"terms":{"global_id":[1961991758749401088,1985042401953087488,1987523321226362880]}}
-     *     ]
-     *     }
-     *   },
-     *
-     *   "script": {
-     *     "source": "ctx._source['carseries_status'] = 1"
-     *   }
+     * "query":{
+     * "bool":{
+     * "must":[
+     * {"terms":{"global_id":[1961991758749401088,1985042401953087488,1987523321226362880]}}
+     * ]
      * }
+     * },
+     * <p>
+     * "script": {
+     * "source": "ctx._source['carseries_status'] = 1"
+     * }
+     * }
+     *
      * @return response
      */
     public String post(String rawJson, String action) {
@@ -441,7 +464,7 @@ public class EsRequest {
             while (matcher.find()) {
                 String matchStr = matcher.group();
                 Matcher m = p.matcher(matchStr);
-                if(m.find()) {
+                if (m.find()) {
                     indexList.add(m.group().trim());
                 }
             }
@@ -465,10 +488,10 @@ public class EsRequest {
 
     public int update(String id, Map<String, Object> map) throws JsonProcessingException {
         String res;
-        if(version!=null && version.startsWith("6")){
+        if (version != null && version.startsWith("6")) {
             //TODO routing problem
-           res = post(EsQueryBuilder.buildUpdate(map),"_doc" , id+"/"+EsQueryBuilder.ACTION_UPDATE);
-        }else {
+            res = post(EsQueryBuilder.buildUpdate(map), "_doc", id + "/" + EsQueryBuilder.ACTION_UPDATE);
+        } else {
             res = post(EsQueryBuilder.buildUpdate(map), EsQueryBuilder.ACTION_UPDATE, id);
         }
         /**
@@ -491,7 +514,7 @@ public class EsRequest {
         return result.path("_shards").path("successful").asInt();
     }
 
-    public int updateByQuery(Query query, Map<String,Object> keyValues, boolean conflictsProceed) throws JsonProcessingException {
+    public int updateByQuery(Query query, Map<String, Object> keyValues, boolean conflictsProceed) throws JsonProcessingException {
         String q = EsQueryBuilder.buildUpdateByQuery(query, keyValues);
 
         String action = EsQueryBuilder.ACTION_UPDATE_BY_QUERY + (conflictsProceed ? "?conflicts=proceed" : "");
@@ -520,7 +543,7 @@ public class EsRequest {
          */
         JsonNode result = mapper.readTree(res);
         int resCount = result.path("updated").asInt();
-        if(resCount==0){
+        if (resCount == 0) {
             logger.error("更新记录为0, action={} \n q={}\n result=\n{}\n", action, q, result.toPrettyString());
         }
         return resCount;

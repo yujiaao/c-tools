@@ -43,16 +43,17 @@ public class EsJsonschema2Pojo {
          * @throws IOException
          *             if the application is unable to read data from the source
          */
-        public static void generate(GenerationConfig config, RuleLogger logger,
+        public static void generate(GenEs config, RuleLogger logger,
                                     Consumer<Pair<String, String[]>> consumer,
-                                    Set<String> ignoreFields, Set<String> collectionFields ) throws IOException {
+                                    Set<String> ignoreFields, Set<String> collectionFields,
+                                    Map<String, String> additionalProperties) throws IOException {
             Annotator annotator = getAnnotator(config);
             RuleFactory ruleFactory = createRuleFactory(config);
 
             ruleFactory.setAnnotator(annotator);
             ruleFactory.setGenerationConfig(config);
             ruleFactory.setLogger(logger);
-            ruleFactory.setSchemaStore(new SchemaStore(createContentResolver(config)));
+            ruleFactory.setSchemaStore(new SchemaStore(createContentResolver(config, additionalProperties)));
 
             EsSchemaMapper mapper = new EsSchemaMapper(ruleFactory, createSchemaGenerator(config));
 
@@ -73,7 +74,10 @@ public class EsJsonschema2Pojo {
                 } else {
 
 
-                   JType res = mapper.generate(codeModel, getNodeName(source, config),  defaultString(config.getTargetPackage()), source, ignoreFields, collectionFields);
+                   JType res = mapper.generate(codeModel, getNodeName(source, config),
+                           defaultString(config.getTargetPackage()), source, ignoreFields, collectionFields,
+                           additionalProperties.get("username"),additionalProperties.get("password")
+                   );
 
 
                     String[] fields = findFields((JDefinedClass) res);
@@ -111,15 +115,15 @@ public class EsJsonschema2Pojo {
         return s.substring(1, s.length() - 1).split("\"\"");
     }
 
-    private static ContentResolver createContentResolver(GenerationConfig config) {
+    private static ContentResolver createContentResolver(GenEs config, Map<String, String> additionalProperties) {
             if (config.getSourceType() == SourceType.YAMLSCHEMA || config.getSourceType() == SourceType.YAML) {
                 return new ContentResolver(new YAMLFactory());
             } else {
-                return new ContentResolver();
+                return new EsContentResolver(null, additionalProperties);
             }
         }
 
-        private static SchemaGenerator createSchemaGenerator(GenerationConfig config) {
+        private static SchemaGenerator createSchemaGenerator(GenEs config) {
             if (config.getSourceType() == SourceType.YAMLSCHEMA || config.getSourceType() == SourceType.YAML) {
                 return new SchemaGenerator(new YAMLFactory());
             } else {
@@ -127,7 +131,7 @@ public class EsJsonschema2Pojo {
             }
         }
 
-        private static RuleFactory createRuleFactory(GenerationConfig config) {
+        private static RuleFactory createRuleFactory(GenEs config) {
             Class<? extends RuleFactory> clazz = config.getCustomRuleFactory();
 
             if (!RuleFactory.class.isAssignableFrom(clazz)) {
@@ -141,7 +145,7 @@ public class EsJsonschema2Pojo {
             }
         }
 
-        private static void generateRecursive(GenerationConfig config, EsSchemaMapper mapper, JCodeModel codeModel, String packageName, List<File> schemaFiles, Set<String> ignoreFields, Set<String> collectionFields) throws IOException {
+        private static void generateRecursive(GenEs config, EsSchemaMapper mapper, JCodeModel codeModel, String packageName, List<File> schemaFiles, Set<String> ignoreFields, Set<String> collectionFields) throws IOException {
 
             schemaFiles.sort(config.getSourceSortOrder().getComparator());
 
@@ -151,11 +155,14 @@ public class EsJsonschema2Pojo {
                     String className =  getNodeName(child.toURI().toURL(), config);
                     packageName  = defaultString(packageName);
 
-                    mapper.generate(codeModel,className, packageName, child.toURI().toURL(), ignoreFields, collectionFields);
+                    mapper.generate(codeModel,className, packageName,
+                            child.toURI().toURL(), ignoreFields, collectionFields, config.getUsername(), config.getPassword());
 
 
                 } else {
-                    generateRecursive(config, mapper, codeModel, childQualifiedName(packageName, child.getName()), Arrays.asList(child.listFiles(config.getFileFilter())), ignoreFields, collectionFields);
+                    generateRecursive(config, mapper, codeModel,
+                            childQualifiedName(packageName, child.getName()),
+                            Arrays.asList(child.listFiles(config.getFileFilter())), ignoreFields, collectionFields);
                 }
             }
         }
@@ -183,12 +190,12 @@ public class EsJsonschema2Pojo {
             f.delete();
         }
 
-        private static Annotator getAnnotator(GenerationConfig config) {
+        private static Annotator getAnnotator(GenEs config) {
             AnnotatorFactory factory = new AnnotatorFactory(config);
             return factory.getAnnotator(factory.getAnnotator(config.getAnnotationStyle()), factory.getAnnotator(config.getCustomAnnotator()));
         }
 
-        public static String getNodeName(URL file, GenerationConfig config) {
+        public static String getNodeName(URL file, GenEs config) {
 
             // extract index name
             String url = file.toString();
@@ -201,7 +208,7 @@ public class EsJsonschema2Pojo {
             return getNodeName(url, config);
         }
 
-        public static String getNodeName(String filePath, GenerationConfig config) {
+        public static String getNodeName(String filePath, GenEs config) {
             try {
                 String fileName = FilenameUtils.getName(URLDecoder.decode(filePath, StandardCharsets.UTF_8.toString()));
                 String[] extensions = config.getFileExtensions() == null ? new String[] {} : config.getFileExtensions();

@@ -10,9 +10,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 
 
@@ -29,11 +27,34 @@ public class GenEs extends DefaultGenerationConfig {
 
     private String targetPackage;
 
-    public GenEs(boolean isSchema, String sourceDirectory, String targetDirectory, String targetPackage) {
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    private String username;
+    private String password;
+
+
+
+    public GenEs(boolean isSchema, String sourceDirectory, String targetDirectory, String targetPackage, String username, String password) {
         this.isSchema = isSchema;
         this.sourceDirectory = sourceDirectory;
         this.targetDirectory = targetDirectory;
         this.targetPackage = targetPackage;
+        this.username = username;
+        this.password = password;
     }
 
 
@@ -49,7 +70,12 @@ public class GenEs extends DefaultGenerationConfig {
      *                 </configuration>
      */
    public void generate(Consumer<Pair<String, String[]>> consumer, Set<String> ignoreFields, Set<String> collectionFields) throws  IOException {
-       EsJsonschema2Pojo.generate(this,  new MyRuleLogger(), consumer, ignoreFields,  collectionFields);
+       Map<String, String> additionalProperties = new HashMap<>();
+       if(username!=null) {
+           additionalProperties.put("username", username);
+           additionalProperties.put("password", password);
+       }
+       EsJsonschema2Pojo.generate(this,  new MyRuleLogger(), consumer, ignoreFields,  collectionFields, additionalProperties);
    }
 
     @Override

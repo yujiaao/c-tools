@@ -72,12 +72,22 @@ public class EsSchemaMapper {
      * @throws IOException
      *             if the schema content cannot be read
      */
-    public JType generate(JCodeModel codeModel, String className, String packageName, URL schemaUrl, Set<String> ignoreFields, Set<String> collectionFields) throws IOException {
+    public JType generate(JCodeModel codeModel, String className,
+                          String packageName, URL schemaUrl,
+                          Set<String> ignoreFields, Set<String> collectionFields, String username, String password) throws IOException {
 
         JPackage jpackage = codeModel._package(packageName);
 
+        JsonNode node;
+        String url = schemaUrl.toString();
+        if(url.startsWith("http://")|| url.startsWith("https://")) {
+            String s = EsMapping2JsonschemaUtils.readFromUrl(url, username, password);
+            node= objectMapper().readTree(s);
+        }else{
+            node = objectMapper().readTree(schemaUrl);
+        }
 
-            JsonNode json = EsMapping2JsonschemaUtils.trans(objectMapper().readTree(schemaUrl), ignoreFields, collectionFields);
+            JsonNode json = EsMapping2JsonschemaUtils.trans(node, ignoreFields, collectionFields);
 
             return generate( codeModel,  className,  packageName,  json);
 

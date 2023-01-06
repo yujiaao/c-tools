@@ -17,7 +17,7 @@ public class HttpWithJsonEntity extends HttpEntityEnclosingRequestBase {
     public final static String METHOD_NAME = "GET";
     private String method;
 
-    public static Builder builder(){
+    public static Builder builder() {
         return new Builder();
     }
 
@@ -26,20 +26,26 @@ public class HttpWithJsonEntity extends HttpEntityEnclosingRequestBase {
         return method;
     }
 
-    public static class Builder{
+    private void setMethod(String method) {
+        this.method = method;
+    }
+
+    public static class Builder {
         String url;
         String body;
         String method = METHOD_NAME;
 
-        public Builder withUrl(String url){
+        public Builder withUrl(String url) {
             this.url = url;
             return this;
         }
-        public Builder withMethod(String method){
+
+        public Builder withMethod(String method) {
             this.method = method;
             return this;
         }
-        public Builder withBodyEntry(String body){
+
+        public Builder withBodyEntry(String body) {
             this.body = body;
             return this;
         }
@@ -48,13 +54,13 @@ public class HttpWithJsonEntity extends HttpEntityEnclosingRequestBase {
             HttpWithJsonEntity request = new HttpWithJsonEntity();
             request.setMethod(method);
             request.setURI(new URI(this.url));
+            if (body == null) {
+                body = "{}";
+            }
             request.setEntity(new StringEntity(this.body, ContentType.APPLICATION_JSON));
+
             return request;
         }
-    }
-
-    private void setMethod(String method) {
-        this.method = method;
     }
 
 

@@ -1,5 +1,6 @@
 package com.bixuebihui.jsongen;
 
+import com.bixuebihui.elasticsearch.EsRequest;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -60,21 +61,22 @@ public class EsMapping2JsonschemaUtils {
         ObjectMapper mapper = new ObjectMapper();
 
         Expression<JsonNode> exp = jmespath.compile(
-                //table/index name
+                //es6 table/index name
                 "{properties:*.mappings.*.properties}| {properties:properties[0]}| {properties:properties[0]}");
         Expression<JsonNode> exp1 = jmespath.compile(
-                //table/index name
+                //es7 table/index name
                 "{properties:*.mappings.properties}| {properties:properties[0]}");
         // Finally this is how you search a structure. There's really not much more to it.
         JsonNode result = exp.search(input);
         JsonNode properties = result.path("properties");
         if (!properties.fields().hasNext()) {
+            //es7
             result = exp1.search(input);
             properties = result.path("properties");
         }
 
         if (!properties.fields().hasNext()) {
-            logger.debug("It is not a valid ElasticSearch mapping format, by pass trans");
+            logger.error("It is not a valid ElasticSearch mapping format, by pass trans");
             return input;
         }
 
@@ -151,5 +153,12 @@ public class EsMapping2JsonschemaUtils {
     public static String typeMapping(String src) {
         return typeMap.getOrDefault(src, src);
 
+    }
+
+
+    public static String readFromUrl(String url, String username, String password) {
+        EsRequest request = new EsRequest(url, username   , password);
+        String res =   request.getFromUrl(url, null, "GET");
+        return res;
     }
 }
