@@ -1,0 +1,23 @@
+package {{config.packageName}}{{viewModifier}}.service;
+
+{{> [header-comment.java]}}
+
+import javax.sql.DataSource;
+import {{config.packageName}}{{viewModifier}}.dal.{{pojoClassName}}Manager;
+
+
+import org.springframework.stereotype.Service;
+
+import javax.annotation.processing.Generated;
+
+@Generated("com.github.yujiaao:tablegen")
+@Service
+public class {{className}}Service
+{
+    @Autowired
+    {{pojoClassName}}Manager {{firstLow pojoClassName}}Manager;
+
+
+
+
+}

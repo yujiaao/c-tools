@@ -73,10 +73,15 @@ public class EsJsonschema2Pojo {
                             Arrays.asList(URLUtil.getFileFromURL(source).listFiles(config.getFileFilter())), ignoreFields, collectionFields);
                 } else {
 
+                    String className =   getNodeName(source, config);
+                    if(config.getAlias()!=null){
+                        className = config.getAlias();
+                    }
 
-                   JType res = mapper.generate(codeModel, getNodeName(source, config),
+                    JType res = mapper.generate(codeModel,className,
                            defaultString(config.getTargetPackage()), source, ignoreFields, collectionFields,
                            additionalProperties.get("username"),additionalProperties.get("password")
+
                    );
 
 
@@ -153,6 +158,11 @@ public class EsJsonschema2Pojo {
                 if (child.isFile()) {
 
                     String className =  getNodeName(child.toURI().toURL(), config);
+
+                    if(config.getAlias()!=null){
+                        className = config.getAlias();
+                    }
+
                     packageName  = defaultString(packageName);
 
                     mapper.generate(codeModel,className, packageName,

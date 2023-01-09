@@ -46,15 +46,22 @@ public class GenEs extends DefaultGenerationConfig {
     private String username;
     private String password;
 
+    private String alias;
 
 
-    public GenEs(boolean isSchema, String sourceDirectory, String targetDirectory, String targetPackage, String username, String password) {
+
+    public GenEs(boolean isSchema, String sourceDirectory,
+                 String targetDirectory, String targetPackage,
+                 String username, String password,
+                 String alias) {
         this.isSchema = isSchema;
         this.sourceDirectory = sourceDirectory;
         this.targetDirectory = targetDirectory;
         this.targetPackage = targetPackage;
         this.username = username;
         this.password = password;
+
+        this.alias = alias;
     }
 
 
@@ -74,6 +81,9 @@ public class GenEs extends DefaultGenerationConfig {
        if(username!=null) {
            additionalProperties.put("username", username);
            additionalProperties.put("password", password);
+       }
+       if(alias!=null){
+           additionalProperties.put("alias", alias);
        }
        EsJsonschema2Pojo.generate(this,  new MyRuleLogger(), consumer, ignoreFields,  collectionFields, additionalProperties);
    }
@@ -103,4 +113,11 @@ public class GenEs extends DefaultGenerationConfig {
         return Collections.singleton( URLUtil.parseURL(sourceDirectory)).iterator();
     }
 
+    public String getAlias() {
+        return alias;
+    }
+
+    public void setAlias(String alias) {
+        this.alias = alias;
+    }
 }

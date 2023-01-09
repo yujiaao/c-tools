@@ -29,17 +29,13 @@ public class EsSchemaMapper {
     private final SchemaGenerator schemaGenerator;
 
 
-
-
     /**
      * Create a schema mapper with the given {@link RuleFactory}.
      *
-     * @param ruleFactory
-     *            A factory used by this mapper to create Java type generation
-     *            rules.
-     * @param schemaGenerator
-     *            the generator that this mapper will use if the config dictates
-     *            that the input documents are plain json (not json schema)
+     * @param ruleFactory     A factory used by this mapper to create Java type generation
+     *                        rules.
+     * @param schemaGenerator the generator that this mapper will use if the config dictates
+     *                        that the input documents are plain json (not json schema)
      */
     public EsSchemaMapper(RuleFactory ruleFactory, SchemaGenerator schemaGenerator) {
         this.ruleFactory = ruleFactory;
@@ -59,37 +55,33 @@ public class EsSchemaMapper {
     /**
      * Reads a schema and adds generated types to the given code model.
      *
-     * @param codeModel
-     *            the java code-generation context that should be used to
-     *            generated new types
-     * @param className
-     *            the name of the parent class the represented by this schema
-     * @param packageName
-     *            the target package that should be used for generated types
-     * @param schemaUrl
-     *            location of the schema to be used as input
+     * @param codeModel   the java code-generation context that should be used to
+     *                    generated new types
+     * @param className   the name of the parent class the represented by this schema
+     * @param packageName the target package that should be used for generated types
+     * @param schemaUrl   location of the schema to be used as input
      * @return The top-most type generated from the given file
-     * @throws IOException
-     *             if the schema content cannot be read
+     * @throws IOException if the schema content cannot be read
      */
     public JType generate(JCodeModel codeModel, String className,
                           String packageName, URL schemaUrl,
-                          Set<String> ignoreFields, Set<String> collectionFields, String username, String password) throws IOException {
+                          Set<String> ignoreFields, Set<String> collectionFields,
+                          String username, String password) throws IOException {
 
         JPackage jpackage = codeModel._package(packageName);
 
         JsonNode node;
         String url = schemaUrl.toString();
-        if(url.startsWith("http://")|| url.startsWith("https://")) {
+        if (url.startsWith("http://") || url.startsWith("https://")) {
             String s = EsMapping2JsonschemaUtils.readFromUrl(url, username, password);
-            node= objectMapper().readTree(s);
-        }else{
+            node = objectMapper().readTree(s);
+        } else {
             node = objectMapper().readTree(schemaUrl);
         }
 
-            JsonNode json = EsMapping2JsonschemaUtils.trans(node, ignoreFields, collectionFields);
+        JsonNode json = EsMapping2JsonschemaUtils.trans(node, ignoreFields, collectionFields);
 
-            return generate( codeModel,  className,  packageName,  json);
+        return generate(codeModel, className, packageName, json);
 
 
     }

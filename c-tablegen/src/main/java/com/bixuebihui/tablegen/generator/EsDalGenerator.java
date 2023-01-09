@@ -19,6 +19,7 @@ import static java.util.Collections.emptyList;
  */
 public class EsDalGenerator extends BaseGenerator {
     protected final static String CLASS_SUFFIX = "List";
+    public static final String INDEX_ALIAS_SEPARATOR = ":";
 
     List<String> fields = new ArrayList<>();
 
@@ -27,10 +28,33 @@ public class EsDalGenerator extends BaseGenerator {
         return "dal.java";
     }
 
+    public static String getIndexName(String tableName){
+        if(tableName.contains(INDEX_ALIAS_SEPARATOR)) {
+           return tableName.substring(0, tableName.indexOf(INDEX_ALIAS_SEPARATOR));
+        }
+        return tableName;
+    }
+
+    public  static  String getAliasName(String tableName){
+        if(tableName.contains(INDEX_ALIAS_SEPARATOR)) {
+           return tableName.substring(tableName.indexOf(INDEX_ALIAS_SEPARATOR)+1);
+        }
+        return tableName;
+    }
+
 
     @Override
     protected Map<String, Object> getContextMap(String tableName) {
         Map<String, Object> v = super.getContextMap(tableName);
+
+        String aliasName = getAliasName(tableName);
+
+        v.put("tableName", aliasName);
+        v.put("pojoClassName", this.getPojoClassName(aliasName));
+        v.put("className", this.getClassName(aliasName));
+        v.put("interface", this.getInterface(aliasName));
+        v.put("extends", this.getExtendsClasses(aliasName));
+
         v.put("fields", this.fields);
         return v;
     }
@@ -42,12 +66,12 @@ public class EsDalGenerator extends BaseGenerator {
 
     @Override
     public String getTargetFileName(String tableName) {
-        return getTargetFileName("dal", tableName);
+        return getTargetFileName("dal", getAliasName(tableName));
     }
 
     @Override
     String getClassName(String tableName) {
-        return getPojoClassName(tableName) + CLASS_SUFFIX;
+        return getPojoClassName(getAliasName(tableName)) + CLASS_SUFFIX;
     }
 
 

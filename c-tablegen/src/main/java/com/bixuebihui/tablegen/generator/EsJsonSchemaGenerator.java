@@ -54,15 +54,19 @@ public class EsJsonSchemaGenerator extends BaseGenerator {
 
         boolean isElasticSearch = type.contains("elasticsearch");
 
+        String indexName= EsDalGenerator.getIndexName(tableName);
+        String aliasName = EsDalGenerator.getAliasName(tableName);
 
-        String sourceDirectory = isSchema ? esConfig.getProperty("url") + "/" + tableName + "/_mapping"
-                : ( isElasticSearch ? esConfig.getProperty("url") + "/" + tableName + "/_search?size=1"
+        String sourceDirectory = isSchema ? esConfig.getProperty("url") + "/" + indexName + "/_mapping"
+                : ( isElasticSearch ? esConfig.getProperty("url") + "/" + indexName + "/_search?size=1"
                         : esConfig.getProperty("url")
         );
+
+
         String targetDirectory=this.config.getSrcDir();
         GenEs gen = new GenEs(isSchema, sourceDirectory, targetDirectory,
                 esConfig.getProperty("package_name")+".pojo",
-                esConfig.getProperty("username"), esConfig.getProperty("password"));
+                esConfig.getProperty("username"), esConfig.getProperty("password"), aliasName);
 
         EsDalGenerator dal = new EsDalGenerator();
         dal.init(config, dbConfig, setInfo, esConfig);
@@ -72,11 +76,11 @@ public class EsJsonSchemaGenerator extends BaseGenerator {
         gen.generate(stringPair -> dal.fields.addAll(Arrays.asList(stringPair.getRight())), ignoreFields, collectionFields);
 
 
-        dal.generateToFile(tableName);
+        dal.generateToFile(aliasName);
 
 
         if(isElasticSearch) {
-            super.generateToFile(tableName);
+            super.generateToFile(aliasName);
         }
     }
 
