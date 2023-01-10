@@ -4,15 +4,13 @@ import com.bixuebihui.jdbc.IReaderService;
 import com.bixuebihui.jdbc.SqlFilter;
 import com.bixuebihui.jdbc.SqlObject;
 import com.bixuebihui.jdbc.SqlSort;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jmesa.limit.Limit;
 import org.jmesa.model.PageItems;
 
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author xwx

@@ -2,7 +2,7 @@ package com.bixuebihui.test.controller;
 
 import com.bixuebihui.test.business.TestGenManager;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,7 +14,6 @@ import reactor.core.publisher.Mono;
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.IntBinaryOperator;
 
 /**
  * @author xwx
@@ -45,7 +44,7 @@ public class TestController {
     }
     @GetMapping("/test")
     public Mono<String> scale(){
-        return manager.getFirst().doOnNext(x -> LOG.info(x.toXml())).map( x -> "first = " + StringEscapeUtils.escapeHtml(x.toXml()));
+        return manager.getFirst().doOnNext(x -> LOG.info(x.toXml())).map( x -> "first = " + StringEscapeUtils.escapeHtml4(x.toXml()));
     }
 
     @GetMapping("/id")

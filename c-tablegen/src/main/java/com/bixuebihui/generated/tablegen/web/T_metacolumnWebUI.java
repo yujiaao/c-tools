@@ -15,7 +15,7 @@ import com.bixuebihui.generated.tablegen.pojo.T_metacolumn;
 import com.bixuebihui.jmesa.AbstractWebUI;
 import org.jmesa.worksheet.WorksheetColumn;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 public class T_metacolumnWebUI extends AbstractWebUI<T_metacolumn, Long> {
 

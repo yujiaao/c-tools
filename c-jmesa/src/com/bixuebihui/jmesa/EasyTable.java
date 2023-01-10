@@ -7,7 +7,7 @@ import com.bixuebihui.jmesa.mock.SimpleHttpServletResponse;
 import com.bixuebihui.util.DbUtils;
 import com.foundationdb.sql.StandardException;
 import com.foundationdb.sql.parser.*;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nullable;
 import java.io.UnsupportedEncodingException;

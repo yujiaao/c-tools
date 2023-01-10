@@ -2,11 +2,12 @@ package com.bixuebihui.util;
 
 import com.bixuebihui.util.other.CMyException;
 import junit.framework.TestCase;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.springframework.mock.web.MockHttpServletRequest;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
+
+import static com.bixuebihui.util.ParameterUtils.isMultipartContent;
 
 
 public class ParameterUtilsTest extends TestCase {
@@ -161,7 +162,7 @@ public class ParameterUtilsTest extends TestCase {
 
 	public void testMultiPart() {
 		MockHttpServletRequest request = new MockHttpServletRequest();
-		assertFalse(ServletFileUpload.isMultipartContent(request));
+		assertFalse(isMultipartContent(request));
 	}
 
 	public void testEncryptParam() throws CMyException {

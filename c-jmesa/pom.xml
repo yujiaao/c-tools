@@ -9,7 +9,7 @@
     <parent>
         <groupId>com.github.yujiaao</groupId>
         <artifactId>c-tools-parent</artifactId>
-        <version>1.12.1.10</version>
+        <version>1.13.0</version>
     </parent>
 
     <properties>
@@ -121,11 +121,10 @@
         </dependency>
 
 
-
         <dependency>
             <groupId>com.github.yujiaao</groupId>
             <artifactId>jmesa</artifactId>
-            <version>4.4.2.1</version>
+            <version>4.5.0</version>
             <exclusions>
                 <exclusion>
                     <artifactId>spring-core</artifactId>
@@ -139,21 +138,10 @@
                     <artifactId>spring-web</artifactId>
                     <groupId>org.springframework</groupId>
                 </exclusion>
-                <exclusion>
-                    <artifactId>spring-webmvc-portlet</artifactId>
-                    <groupId>org.springframework</groupId>
-                </exclusion>
+
             </exclusions>
         </dependency>
 
-
-        <!-- this can be removed, for web test only -->
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <version>3.1.0</version>
-            <scope>provided</scope>
-        </dependency>
 
         <dependency>
             <groupId>org.hibernate.validator</groupId>
@@ -166,6 +154,7 @@
             <artifactId>spring-test</artifactId>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-beans</artifactId>
@@ -181,10 +170,30 @@
         </dependency>
 
         <dependency>
-            <groupId>javax.servlet.jsp</groupId>
-            <artifactId>javax.servlet.jsp-api</artifactId>
-            <version>2.3.3</version>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+        </dependency>
+
+
+
+        <dependency>
+            <groupId>jakarta.servlet.jsp</groupId>
+            <artifactId>jakarta.servlet.jsp-api</artifactId>
+            <version>3.1.0</version>
             <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>jakarta.el</artifactId>
+            <version>4.0.2</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.glassfish.expressly</groupId>
+            <artifactId>expressly</artifactId>
+            <version>5.0.0</version>
         </dependency>
 
         <!-- sql parser from derby -->
@@ -192,12 +201,6 @@
             <groupId>com.foundationdb</groupId>
             <artifactId>fdb-sql-parser</artifactId>
             <version>1.6.1</version>
-        </dependency>
-        <dependency>
-            <groupId>javax.el</groupId>
-            <artifactId>javax.el-api</artifactId>
-            <version>3.0.0</version>
-            <scope>provided</scope>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-jsp-2.1 -->
@@ -232,7 +235,7 @@
         <dependency>
             <groupId>com.github.yujiaao</groupId>
             <artifactId>c-estools</artifactId>
-            <version>1.12.1.10</version>
+            <version>1.13.0</version>
         </dependency>
 
 
@@ -268,6 +271,12 @@
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-suite-engine</artifactId>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
+            <version>${servlet.version}</version>
+
         </dependency>
 
 

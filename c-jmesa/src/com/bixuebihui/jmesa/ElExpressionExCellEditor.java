@@ -1,12 +1,12 @@
 package com.bixuebihui.jmesa;
 
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jmesa.view.editor.expression.ElExpressionCellEditor;
 import org.jmesa.view.editor.expression.Expression;
 
-import javax.el.FunctionMapper;
-import javax.el.VariableMapper;
+import jakarta.el.FunctionMapper;
+import jakarta.el.VariableMapper;
 import java.lang.reflect.Method;
 import java.util.Hashtable;
 import java.util.Map;

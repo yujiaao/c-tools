@@ -5,19 +5,16 @@
 package com.bixuebihui.util;
 
 import com.bixuebihui.util.other.CMyException;
-import com.bixuebihui.util.upfile.UploadFile;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.apache.commons.fileupload.servlet.ServletRequestContext;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
@@ -248,11 +245,12 @@ public class ParameterUtils {
 
         ServletFileUpload fu = new ServletFileUpload(new DiskFileItemFactory());
         List<FileItem> li = null;
-        try {
-            li = fu.parseRequest(request);
-        } catch (FileUploadException e) {
-            log.error("",e);
-        }
+        //try {
+            // li = fu.parseRequest(request);
+            new RuntimeException("commons-fileupload not implemented jakarta interface yet!");
+        //} catch (FileUploadException e) {
+        //    log.error("",e);
+        //}
         int m = 0;
         if (li != null) {
             for (FileItem fi : li) {
@@ -282,8 +280,8 @@ public class ParameterUtils {
 
                     String storePath = request.getSession().getServletContext().getRealPath(UPLOADEDFILEPATH);
                     try {
-                        UploadFile up = new UploadFile();
-                        up.saveFileItem(fileNames, m++, storePath, fi);
+                        //UploadFile up = new UploadFile();
+                        //up.saveFileItem(fileNames, m++, storePath, fi);
                     } catch (Exception e) {
                         log.error("",e);
                     }
@@ -298,8 +296,22 @@ public class ParameterUtils {
         return getString(request, s, "");
     }
 
+    public static final boolean isMultipartContent(HttpServletRequest request) {
+        String contentType = request.getContentType();
+
+        return !"POST".equalsIgnoreCase(request.getMethod()) ? false : isMultipartContent(contentType);
+    }
+
+    public static final boolean isMultipartContent(String contentType) {
+        if (contentType == null) {
+            return false;
+        } else {
+            return contentType.toLowerCase(Locale.ENGLISH).startsWith("multipart/");
+        }
+    }
+
     public static String getString(HttpServletRequest request, String s, String defaultValue) {
-        boolean isMultipart = ServletFileUpload.isMultipartContent(request);
+        boolean isMultipart = isMultipartContent(request);
 
         String res = null;
         if (isMultipart) {
@@ -410,7 +422,7 @@ public class ParameterUtils {
     }
 
     public static String[] getArray(HttpServletRequest request, String s) {
-        boolean isMultipart = ServletFileUpload.isMultipartContent(new ServletRequestContext(request));
+        boolean isMultipart = isMultipartContent(request.getContentType());
         String[] res = null;
         if (isMultipart) {
             try {

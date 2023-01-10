@@ -5,7 +5,7 @@
     <parent>
         <artifactId>c-tools-parent</artifactId>
         <groupId>com.github.yujiaao</groupId>
-        <version>1.12.1.10</version>
+        <version>1.13.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -14,15 +14,15 @@
 
 
     <properties>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>com.github.yujiaao</groupId>
             <artifactId>c-dbtools</artifactId>
-            <version>1.12.1.10</version>
+            <version>1.13.0</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
@@ -57,7 +57,7 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-aop</artifactId>
-            <version>5.3.23</version>
+            <version>6.0.3</version>
             <scope>test</scope>
         </dependency>
 

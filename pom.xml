@@ -11,7 +11,7 @@
     <groupId>com.github.yujiaao</groupId>
     <artifactId>c-tools-parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.12.1.10</version>
+    <version>1.13.0</version>
 
     <modules>
         <module>c-tools-bom</module>
@@ -35,16 +35,19 @@
         <web-access-limit>1.1.9</web-access-limit>
         <justauth-spring.version>1.1.0</justauth-spring.version>
         <junitVersion>5.9.0</junitVersion>
-        <springboot.version>2.7.3</springboot.version>
+        <springboot.version>2.7.7</springboot.version>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <mysql.version>8.0.30</mysql.version>
         <slf4j.version>2.0.3</slf4j.version>
-        <validator.version>6.2.0.Final</validator.version>
-<!--        <validator.version>8.0.0.Final</validator.version>-->
+<!--        <validator.version>6.2.0.Final</validator.version>-->
+        <validator.version>8.0.0.Final</validator.version>
+        <jakartaValidation.version>3.0.2</jakartaValidation.version>
         <hamcrest.version>2.2</hamcrest.version>
         <expressly.version>5.0.0</expressly.version>
+        <servlet.version>5.0.0</servlet.version>
+
         <!--
         For a while, we will provide equivalent Hibernate Validator versions for both EE 8 and EE 9:
         Hibernate Validator 6.x will keep the javax. packages while Hibernate Validator 7.x
@@ -210,7 +213,7 @@
                             <sourceFileExcludes>
                                 <sourceFileExclude>**/module-info.java</sourceFileExclude>
                             </sourceFileExcludes>
-                            <source>11</source>
+                            <source>17</source>
                         </configuration>
                     </plugin>
                     <plugin>
