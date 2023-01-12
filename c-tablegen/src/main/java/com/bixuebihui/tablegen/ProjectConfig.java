@@ -116,6 +116,7 @@ public class ProjectConfig {
         c.parseTableNames(props.getProperty("table_list"));
         c.parseViewNames(props.getProperty("view_list"));
 
+
         c.parseExcludeTableNames(props.getProperty("exclude_table_list"));
 
         // 有扩展表时用以下interface的设置值

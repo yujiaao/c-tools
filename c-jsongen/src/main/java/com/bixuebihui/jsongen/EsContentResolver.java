@@ -39,7 +39,7 @@ public class EsContentResolver extends ContentResolver {
         } else {
 
             String res = EsMapping2JsonschemaUtils.readFromUrl(uri.toString(),
-                    additionalProperties.get("username"), additionalProperties.get("password"));
+                    additionalProperties.get(GenEs.USERNAME), additionalProperties.get(GenEs.PASSWORD));
 
             try {
                 return objectMapper.readTree(res);

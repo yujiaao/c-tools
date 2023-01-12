@@ -14,8 +14,8 @@ public class GenEsTest  {
         //String sourceDirectory="/Users/xwx/projects/c-tools/c-jsongen/src/test/resources/schema.json";
         String sourceDirectory="https://httpbin.org/json";
         String targetDirectory="/Users/xwx/projects/c-tools/c-jsongen/src/test/java";
-        GenEs gen = new GenEs(false, sourceDirectory, targetDirectory,  "com.bixuebihui.hit", null, null);
-        gen.generate(null, Collections.emptySet(), Collections.emptySet());
+        GenEs gen = new GenEs(false, sourceDirectory, targetDirectory,  "com.bixuebihui.hit", null, null, null);
+        gen.generate(null, Collections.emptySet(), Collections.emptySet(), null);
     }
     @Test
     public void testGenerateEsMapping() throws IOException {
@@ -25,9 +25,10 @@ public class GenEsTest  {
 
         String targetDirectory="/Users/xwx/projects/c-tools/c-jsongen/src/test/java";
         boolean isSchema = true;
-        GenEs gen = new GenEs(isSchema, sourceDirectory, targetDirectory, "com.bixuebihui.hit", null, null);
+        GenEs gen = new GenEs(isSchema, sourceDirectory, targetDirectory, "com.bixuebihui.hit", null, null, null);
         gen.generate(stringPair -> System.out.println(stringPair.getLeft()+":"+
-                Arrays.toString(stringPair.getRight())), Set.of("duaration"), Set.of("play_url"));
+                Arrays.toString(stringPair.getRight())), Set.of("duaration"),
+                Set.of("play_url"), null);
     }
 
     @Test
@@ -36,11 +37,12 @@ public class GenEsTest  {
         String sourceDirectory="/Users/xwx/projects/c-tools/c-jsongen/src/test/resources/schema_nested_object.json";
         String targetDirectory="/Users/xwx/projects/c-tools/c-jsongen/src/test/java";
         boolean isSchema = true;
-        GenEs gen = new GenEs(isSchema, sourceDirectory, targetDirectory, "com.bixuebihui.hit", null, null);
+        GenEs gen = new GenEs(isSchema, sourceDirectory, targetDirectory, "com.bixuebihui.hit", null, null, null);
         gen.generate(stringPair -> System.out.println(stringPair.getLeft()+":"+
                         Arrays.toString(stringPair.getRight())),
                 Set.of("duaration"),
-                Set.of("play_url")
+                Set.of("play_url"),
+                null
         );
     }
 }

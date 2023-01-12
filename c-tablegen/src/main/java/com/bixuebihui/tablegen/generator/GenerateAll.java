@@ -123,34 +123,38 @@ public class GenerateAll implements DiffHandler {
 
     private void generateTables(LinkedHashMap<String, TableInfo> tableInfos) throws IOException {
         for(Generator g: perTableGenerator){
+            int i=0;
             for(TableInfo info: tableInfos.values()) {
                 info(info.getName());
-                g.generateToFile(info.getName());
+                g.generateToFile(info.getName(), i++);
             }
         }
     }
 
     private void generateJson(String[] indices) throws IOException {
         for(Generator g: perIndexGenerator){
+            int i=0;
             for(String indexName: indices) {
                 info(indexName);
-                g.generateToFile(indexName);
+                g.generateToFile(indexName, i++);
             }
         }
     }
 
     private void generateViews(LinkedHashMap<String, TableInfo> viewInfos) throws IOException {
         for(Generator g: perViewGenerator){
+            int i=0;
             for(TableInfo info: viewInfos.values()) {
                 info(info.getName());
-                g.generateToFile(info.getName());
+                g.generateToFile(info.getName(), i++);
             }
         }
     }
 
     private void generateOnceFiles() throws IOException {
+        int i=0;
         for(Generator g: onceGenerator){
-            g.generateToFile("");
+            g.generateToFile("", i++);
         }
     }
 
@@ -193,8 +197,9 @@ public class GenerateAll implements DiffHandler {
             return;
         }
 
+        int i=0;
         for(Generator g: perTableGenerator){
-            g.generateToFile(tableName);
+            g.generateToFile(tableName, i++);
         }
 // view is not generated?
 ///        for(Generator g: perViewGenerator){

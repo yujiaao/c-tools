@@ -18,6 +18,9 @@ import java.util.function.Consumer;
  * @author xwx
  */
 public class GenEs extends DefaultGenerationConfig {
+    public static final String USERNAME = "username";
+    public static final String PASSWORD = "password";
+    public static final String ALIAS = "alias";
     static Logger logger = LoggerFactory.getLogger(GenEs.class);
 
     private  boolean isSchema;
@@ -76,16 +79,20 @@ public class GenEs extends DefaultGenerationConfig {
      *                     <outputDirectory>${basedir}/src/main/java</outputDirectory>
      *                 </configuration>
      */
-   public void generate(Consumer<Pair<String, String[]>> consumer, Set<String> ignoreFields, Set<String> collectionFields) throws  IOException {
-       Map<String, String> additionalProperties = new HashMap<>();
+   public Map<String, String> generate(Consumer<Pair<String, String[]>> consumer,
+                                       Set<String> ignoreFields,
+                                       Set<String> collectionFields,
+                                       List<String> primaryKeyFields) throws  IOException {
+       Map<String, String> additionalProperties = new HashMap<>(16);
        if(username!=null) {
-           additionalProperties.put("username", username);
-           additionalProperties.put("password", password);
+           additionalProperties.put(USERNAME, username);
+           additionalProperties.put(PASSWORD, password);
        }
        if(alias!=null){
-           additionalProperties.put("alias", alias);
+           additionalProperties.put(ALIAS, alias);
        }
-       EsJsonschema2Pojo.generate(this,  new MyRuleLogger(), consumer, ignoreFields,  collectionFields, additionalProperties);
+       return EsJsonschema2Pojo.generate(this,  new MyRuleLogger(), consumer,
+               ignoreFields,  collectionFields, additionalProperties, primaryKeyFields);
    }
 
     @Override

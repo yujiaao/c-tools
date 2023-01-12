@@ -3,8 +3,8 @@ package com.bixuebihui.jmesa;
 import org.jmesa.worksheet.WorksheetColumn;
 import org.junit.jupiter.api.Test;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 public class AbstractWebUITest {
 

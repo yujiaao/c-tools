@@ -1293,7 +1293,7 @@ public class TableGen implements DiffHandler {
                 out("import " + config.packageName + ".business." + this.getPojoClassName(table.getName()) + "Manager;");
 
                 out("import org.jmesa.worksheet.WorksheetColumn;");
-                out("import javax.servlet.http.HttpServletRequest;");
+                out("importjakarta.servlet.http.HttpServletRequest;");
 
                 out("import org.apache.commons.beanutils.ConvertUtilsBean;");
             }

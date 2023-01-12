@@ -25,7 +25,7 @@ import static com.bixuebihui.tablegen.TableUtils.isSQLServer;
 /**
  * @author xwx
  */
-public class TableSetInfo {
+public class TableSetInfo implements KeyInfo {
     public static final String DB_ERROR = "[GEN]Error setup database";
     private static final Logger LOG = LoggerFactory.getLogger(TableSetInfo.class);
     private final Map<String, List<ForeignKeyDefinition>> foreignKeyImCache = new LRULinkedHashMap<>(
@@ -167,6 +167,7 @@ public class TableSetInfo {
         return foreignKeyImCache;
     }
 
+    @Override
     public Map<String, List<String>> getKeyCache() {
         return keyCache;
     }
@@ -612,6 +613,7 @@ public class TableSetInfo {
     /**
      * Selects the primary keys for a particular table.
      */
+    @Override
     public  List<String> getTableKeys(String tableName){
         return getKeyCache().getOrDefault(tableName, Collections.emptyList());
     }

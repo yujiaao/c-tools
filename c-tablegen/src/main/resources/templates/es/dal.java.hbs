@@ -4,43 +4,50 @@ package {{config.packageName}}{{viewModifier}}.dal;
 
 import {{config.packageName}}{{viewModifier}}.pojo.*;
 
-import com.bixuebihui.elasticsearch.EsActiveRecordImpl;
 import com.bixuebihui.elasticsearch.BaseEsOperator;
 import com.bixuebihui.elasticsearch.EsRequest;
+import com.bixuebihui.elasticsearch.BaseDao;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 import javax.annotation.processing.Generated;
 
 
 @Generated("com.github.yujiaao:tablegen")
-public class {{className}}  {
+public class {{className}} extends BaseDao<{{pojoClassName}}, {{firstKeyType}}> {
     {{! writeDALConstructor(tableName); }}
 
-    private BaseEsOperator<{{pojoClassName}}, Long> operator;
-
-    public  EsActiveRecordImpl<{{pojoClassName}}, Long> ar(){
-        return new EsActiveRecordImpl<>(this.operator);
+    @Override
+    public {{firstKeyType}} getId({{pojoClassName}} info) {
+        return info.get{{firstUp firstKeyName}}();
     }
 
-    public String getIndexName(){
-        return "{{tableName}}";
+    /**
+    * Get key name.
+    */
+    @Override
+    public String getKeyName()
+    {
+        return  F.{{constantName firstKeyName}};
     }
 
 
     protected {{className}}(Map<String, String> ds)
     {
-        this.operator = new BaseEsOperator<>( new EsRequest(ds.get("host"),
+        super(new BaseEsOperator<>( new EsRequest(ds.get("host"),
             ds.get("username"),
             ds.get("password"),
-            this.getIndexName(),
+            "{{tableName}}",
             ds.get("version")
             )) {
                 @Override
                 protected Class<{{pojoClassName}}> getType() {
                     return {{pojoClassName}}.class;
                 }
-        };
+        });
+        this.indexName =  "{{tableName}}";
     }
     {{! writeSql(colData, keyData); }}
     @SuppressWarnings("AlibabaClassNamingShouldBeCamel")
@@ -51,6 +58,11 @@ public class {{className}}  {
         public static String[] getAllFields() {
             return new String[] { {{#each fields}}{{constantName this}}{{#unless @last}}, {{/unless}}{{/each}} };
         }
+    }
+
+    @Override
+    public List<String> getAllFields() {
+        return Arrays.asList(F.getAllFields());
     }
 
 }

@@ -5,7 +5,7 @@
     <parent>
         <artifactId>c-tools-parent</artifactId>
         <groupId>com.github.yujiaao</groupId>
-        <version>1.13.0</version>
+        <version>1.13.1.1</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -156,16 +156,10 @@
         </dependency>
 
         <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>jakarta.el</artifactId>
-            <version>3.0.4</version>
+            <groupId>org.glassfish.expressly</groupId>
+            <artifactId>expressly</artifactId>
+            <version>5.0.0</version>
         </dependency>
-
-<!--        <dependency>-->
-<!--            <groupId>org.glassfish.expressly</groupId>-->
-<!--            <artifactId>expressly</artifactId>-->
-<!--            <version>5.0.0</version>-->
-<!--        </dependency>-->
 
     </dependencies>
 

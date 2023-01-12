@@ -3,6 +3,7 @@ package com.bixuebihui.db;
 import jakarta.validation.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
+import org.hibernate.validator.messageinterpolation.ParameterMessageInterpolator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,9 +22,13 @@ public class PojoValidator<T> {
 
     Validator validator;
 
+    static ValidatorFactory factory = Validation.byDefaultProvider()
+            .configure()
+            .messageInterpolator(new ParameterMessageInterpolator())
+            .buildValidatorFactory();
+
     public PojoValidator() {
         try {
-            ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
             validator = factory.getValidator();
         }catch (Exception e){
             logger.warn("Validator init error, annotation constrains will not work", e);

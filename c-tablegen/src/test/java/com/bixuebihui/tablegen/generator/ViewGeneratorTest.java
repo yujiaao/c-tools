@@ -29,7 +29,7 @@ class ViewGeneratorTest {
     void testGenerate() throws IOException {
         ViewGenerator gen = new ViewGenerator();
         gen.init(this.getClass().getResource("/tablegen.properties").getPath());
-        String res = gen.generate("my_test_view");
+        String res = gen.generate("my_test_view", 0);
 
         System.out.println(res);
     }
@@ -38,7 +38,7 @@ class ViewGeneratorTest {
     void testGenerateViewAsField() throws IOException {
         ViewGenerator gen = new ViewGenerator();
         gen.init(this.getClass().getResource("/tablegen.properties").getPath());
-        String res = gen.generate("my_test_view");
+        String res = gen.generate("my_test_view",0);
         assertThat("contains as field", res, containsString("DegreePlus"));
 
         System.out.println(res);

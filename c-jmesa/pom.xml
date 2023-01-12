@@ -9,7 +9,7 @@
     <parent>
         <groupId>com.github.yujiaao</groupId>
         <artifactId>c-tools-parent</artifactId>
-        <version>1.13.0</version>
+        <version>1.13.1.1</version>
     </parent>
 
     <properties>
@@ -152,6 +152,7 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
+            <version>6.0.3</version>
             <scope>test</scope>
         </dependency>
 
@@ -186,9 +187,8 @@
         <dependency>
             <groupId>org.glassfish</groupId>
             <artifactId>jakarta.el</artifactId>
-            <version>4.0.2</version>
+            <version>5.0.0-M1</version>
         </dependency>
-
 
         <dependency>
             <groupId>org.glassfish.expressly</groupId>
@@ -235,7 +235,7 @@
         <dependency>
             <groupId>com.github.yujiaao</groupId>
             <artifactId>c-estools</artifactId>
-            <version>1.13.0</version>
+            <version>1.13.1.1</version>
         </dependency>
 
 

@@ -6,11 +6,11 @@
     <parent>
         <groupId>com.github.yujiaao</groupId>
         <artifactId>c-tools-parent</artifactId>
-        <version>1.13.0</version>
+        <version>1.13.1.1</version>
     </parent>
 
     <artifactId>c-dbtools</artifactId>
-    <name>database base tools</name>
+    <name>Database ORM tools</name>
     <description>a fast small database connection pool and a active record flavor mini framework</description>
 
     <build>
@@ -210,15 +210,7 @@
             <groupId>jakarta.el</groupId>
             <artifactId>jakarta.el-api</artifactId>
             <version>5.0.1</version>
-
         </dependency>
-        <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>jakarta.el</artifactId>
-            <version>4.0.2</version>
-        </dependency>
-
-
 
 
         <!-- https://mvnrepository.com/artifact/org.apache.derby/derby -->
@@ -333,7 +325,7 @@
         <dependency>
             <groupId>com.github.yujiaao</groupId>
             <artifactId>common-utils</artifactId>
-            <version>1.13.0</version>
+            <version>1.13.1.1</version>
             <scope>compile</scope>
         </dependency>
 

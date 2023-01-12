@@ -18,7 +18,7 @@ import java.util.Properties;
 public interface Generator {
     void init(ProjectConfig config, DatabaseConfig dbConfig, TableSetInfo setInfo, Properties prop);
 
-    String generate(String tableName) throws IOException;
+    String generate(String tableName, int index) throws IOException;
 
     String getTargetFileName(String tableName);
 
@@ -26,7 +26,12 @@ public interface Generator {
         return true;
     }
 
-    default void generateToFile(String tableName) throws IOException {
+    /**
+     * Generates 生成文件
+     * @param tableName
+     * @throws IOException
+     */
+    default void generateToFile(String tableName, int index) throws IOException {
 
         String fileName = getTargetFileName(tableName);
         File file = new File(fileName);
@@ -38,7 +43,7 @@ public interface Generator {
         }
         if(wantToGenerate(fileName)) {
             try (OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(fileName))) {
-                IOUtils.write(generate(tableName), writer);
+                IOUtils.write(generate(tableName, index), writer);
                 System.out.println(tableName + ": " + fileName);
             }
         }

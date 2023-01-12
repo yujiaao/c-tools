@@ -1,18 +1,14 @@
 package com.bixuebihui.tablegen.generator;
 
-import com.bixuebihui.tablegen.TableGen;
+import com.bixuebihui.dbcon.DatabaseConfig;
+import com.bixuebihui.tablegen.GenException;
+import com.bixuebihui.tablegen.ProjectConfig;
 import com.bixuebihui.tablegen.entry.ColumnData;
-import com.github.jknack.handlebars.Handlebars;
+import com.bixuebihui.tablegen.entry.EsKeyInfo;
+import com.bixuebihui.tablegen.entry.KeyInfo;
+import com.bixuebihui.tablegen.entry.TableSetInfo;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import static com.bixuebihui.tablegen.NameUtils.columnNameToConstantName;
-import static com.bixuebihui.tablegen.NameUtils.firstUp;
-import static com.bixuebihui.tablegen.TableGen.INDENT;
-import static java.util.Collections.emptyList;
+import java.util.*;
 
 /**
  * @author xwx
@@ -22,6 +18,10 @@ public class EsDalGenerator extends BaseGenerator {
     public static final String INDEX_ALIAS_SEPARATOR = ":";
 
     List<String> fields = new ArrayList<>();
+
+    KeyInfo keyInfo;
+    private List<String> primaryKeyFields;
+    private int keyIndex;
 
     @Override
     String getTemplateFileName() {
@@ -42,10 +42,32 @@ public class EsDalGenerator extends BaseGenerator {
         return tableName;
     }
 
+    String getFirstKeyType() {
+        if(keyIndex>=0 && keyIndex < primaryKeyFields.size()) {
+            String field = primaryKeyFields.get(keyIndex);
+            if(field != null &&  keyInfo.getKeyCache().containsKey(field)) {
+                return keyInfo.getKeyCache().get(field).get(keyIndex);
+            }
+        }
+        return null;
+    }
+
 
     @Override
     protected Map<String, Object> getContextMap(String tableName) {
         Map<String, Object> v = super.getContextMap(tableName);
+
+
+
+        v.put("keys", keyInfo.getTableKeys(tableName));
+
+        String keyType = this.getFirstKeyType();
+
+        if(keyType!=null ) {
+            v.put("hasKey", true);
+            v.put("firstKeyType", keyType);
+            v.put("firstKeyName", this.getFirstKeyName());
+        }
 
         String aliasName = getAliasName(tableName);
 
@@ -57,6 +79,10 @@ public class EsDalGenerator extends BaseGenerator {
 
         v.put("fields", this.fields);
         return v;
+    }
+
+    private String getFirstKeyName() {
+        return primaryKeyFields.get(keyIndex);
     }
 
     @Override
@@ -75,4 +101,16 @@ public class EsDalGenerator extends BaseGenerator {
     }
 
 
+    public void init(ProjectConfig config, DatabaseConfig dbConfig, Properties esConfig) {
+        super.init(config, dbConfig, new TableSetInfo(),  esConfig);
+    }
+
+    public void setKeyInfo(KeyInfo keyInfo){
+        this.keyInfo = keyInfo;
+    }
+
+    public void setPrimaryKeyInfo(List<String> primaryKeyFields, int index) {
+        this.primaryKeyFields = primaryKeyFields;
+        this.keyIndex = index;
+    }
 }

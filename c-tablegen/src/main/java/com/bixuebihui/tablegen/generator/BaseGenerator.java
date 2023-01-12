@@ -202,7 +202,7 @@ public abstract class BaseGenerator implements Generator {
     }
 
     @Override
-    public String generate(String tableName) throws IOException {
+    public String generate(String tableName, int index) throws IOException {
         Handlebars handlebars = getHandlebars();
 
         Template template = handlebars.compile(getTemplateFileName());
@@ -226,6 +226,7 @@ public abstract class BaseGenerator implements Generator {
                     v.put((String) entry.getKey(), entry.getValue());
                 }
             }
+
         }else{
             if (setInfo.getTableInfos().get(tableName) != null) {
                 v.put("tableInfo", setInfo.getTableInfos().get(tableName));

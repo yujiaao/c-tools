@@ -2,6 +2,7 @@ package com.bixuebihui.tablegen.generator;
 
 import com.bixuebihui.jsongen.GenEs;
 import com.bixuebihui.tablegen.NameUtils;
+import com.bixuebihui.tablegen.entry.EsKeyInfo;
 import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +47,7 @@ public class EsJsonSchemaGenerator extends BaseGenerator {
     }
 
     @Override
-    public void generateToFile(String tableName) throws IOException {
+    public void generateToFile(String tableName, int index) throws IOException {
 
         String type = esConfig.getProperty("type", "elasticsearch_mapping");
 
@@ -69,18 +70,29 @@ public class EsJsonSchemaGenerator extends BaseGenerator {
                 esConfig.getProperty("username"), esConfig.getProperty("password"), aliasName);
 
         EsDalGenerator dal = new EsDalGenerator();
-        dal.init(config, dbConfig, setInfo, esConfig);
+
+        dal.init(config, dbConfig, esConfig);
 
         Set<String> ignoreFields = Set.of(esConfig.getProperty("ignore_fields","").split(","));
         Set<String> collectionFields = Set.of(esConfig.getProperty("collection_fields","").split(","));
-        gen.generate(stringPair -> dal.fields.addAll(Arrays.asList(stringPair.getRight())), ignoreFields, collectionFields);
+
+        List<String> primaryKeyFields = Arrays.asList(esConfig.getProperty("primary_key_fields","").split(","));
 
 
-        dal.generateToFile(aliasName);
+        Map<String, String> keyNameTypeMap = gen.generate(indexFieldsPair -> dal.fields.addAll(Arrays.asList(indexFieldsPair.getRight())),
+                ignoreFields, collectionFields, primaryKeyFields);
+
+        EsKeyInfo esKeyInfo = new EsKeyInfo();
+
+        esKeyInfo.setKeyCache(keyNameTypeMap);
+
+        dal.setKeyInfo(esKeyInfo);
+        dal.setPrimaryKeyInfo(primaryKeyFields, index);
+        dal.generateToFile(aliasName, index);
 
 
         if(isElasticSearch) {
-            super.generateToFile(aliasName);
+            super.generateToFile(aliasName,index);
         }
     }
 

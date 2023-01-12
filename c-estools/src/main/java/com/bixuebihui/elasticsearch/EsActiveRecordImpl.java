@@ -9,13 +9,17 @@ import com.bixuebihui.jdbc.entity.CountObject;
 import com.bixuebihui.jdbc.entity.CountValue;
 import com.bixuebihui.query.Paging;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.SQLException;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptySet;
@@ -31,7 +35,6 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
 
     SqlLimit limit;
 
-//    SqlGroup groupByClause;
     ElasticSearchFilter havingStack;
 
     public EsActiveRecordImpl(BaseEsOperator<T, V> operator) {
@@ -40,8 +43,6 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
 
     BaseEsOperator<T, V> operator;
     private boolean useLast=false;
-
-    private String indexAlias;
 
     private String resultFields;
     Set<String> excludeFieldsSet = emptySet();
@@ -604,5 +605,36 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     @Override
     public int updateByScript(String script, Map<String, Object> params) throws DbException {
         return 0;
+    }
+
+    @Override
+    public boolean insert(String indexName, T info) {
+        return insertBatch(indexName, List.of(info), null);
+    }
+
+    @Override
+    public boolean insert(String indexName, T info, Function<T, String> getId) {
+        return insertBatch(indexName, List.of(info), getId);
+    }
+
+    public boolean insertBatch(String indexName, List<T> infos, Function<T, String> getId) {
+        try {
+            String response =  operator.request.insertBatch(indexName, infos,
+                    (t) -> (getId!=null) ? StringUtils.trimToNull(getId.apply(t)):null);
+
+            ObjectMapper mapper = EsRequest.getMapper();
+
+            JsonNode jsonNode = mapper.readTree(response);
+
+            LOG.debug(response);
+
+            String errorField = "errors";
+            return jsonNode.has(errorField) && !jsonNode.get(errorField).asBoolean();
+
+
+        } catch (JsonProcessingException e) {
+            LOG.error(e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
     }
 }

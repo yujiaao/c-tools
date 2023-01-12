@@ -34,6 +34,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -82,7 +83,6 @@ public class EsRequest {
      */
     protected String indexName;
     String host;
-
     /**
      * GET _cat/indices
      * return:
@@ -95,15 +95,14 @@ public class EsRequest {
      */
     Pattern patternForIndices = Pattern.compile("open\\s+[\\.\\w|\\-|\\:+|\\w|\\-|\\:+]+");
     Pattern p = Pattern.compile("\\s+[\\.\\w\\-|\\:+|\\w\\-|\\:+]+");
-
     String version;
-
 
     public EsRequest(String host, String username, String password) {
         this.host = host;
         this.username = username;
         this.password = password;
     }
+
 
     public EsRequest(String host, String username, String password, String indexName) {
         this.host = host;
@@ -118,6 +117,10 @@ public class EsRequest {
         this.password = password;
         this.indexName = indexName;
         this.version = version;
+    }
+
+    public static ObjectMapper getMapper() {
+        return mapper;
     }
 
     public static <T> List<EsSearchHitResult<T>> json2result(String rawResult, JavaType type) throws JsonProcessingException {
@@ -257,7 +260,7 @@ public class EsRequest {
     }
 
     public String createDoc(String indexName, List<Document> docs) throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
+
 
         HttpEntityEnclosingRequestBase post = new HttpPost(host + "/" + EsQueryBuilder.ACTION_BULK);
         StringBuilder sb = new StringBuilder();
@@ -269,13 +272,39 @@ public class EsRequest {
             map2.put("_id", doc.id);
             map2.put("_type", "_doc");
             map1.put("index", map2);
-            sb.append(objectMapper.writeValueAsString(map1)).append("\n");
+            sb.append(mapper.writeValueAsString(map1)).append("\n");
 
-            sb.append(objectMapper.writeValueAsString(doc.values)).append("\n");
+            sb.append(mapper.writeValueAsString(doc.values)).append("\n");
         }
 
         return httpJson(post, sb.toString());
     }
+
+    public <T> String insertBatch(String indexName, List<T> docs, Function<T, String> getId) throws JsonProcessingException {
+
+        HttpEntityEnclosingRequestBase post = new HttpPost(host + "/" + EsQueryBuilder.ACTION_BULK);
+        StringBuilder sb = new StringBuilder();
+
+        for (T doc : docs) {
+            Map<String, Object> convert = Maps.newHashMap();
+            Map<String, Object> message = Maps.newHashMap();
+            message.put("_index", indexName);
+            if(getId!=null) {
+                String id = getId.apply(doc);
+                if(id!=null) {
+                    message.put("_id", id);
+                }
+            }
+            message.put("_type", "_doc");
+            convert.put("index", message);
+            sb.append(mapper.writeValueAsString(convert)).append("\n");
+
+            sb.append(mapper.writeValueAsString(doc)).append("\n");
+        }
+
+        return httpJson(post, sb.toString());
+    }
+
 
     public String createIndex(String indexName) {
 
