@@ -69,11 +69,11 @@ class ChejiahaoContentsManagerTest {
     @Test
     void testInsertBatch() {
         ChejiahaoContents info = new ChejiahaoContents();
-        info.setInfoId(1L);
-        info.setTitle("测试标题1！！！");
+        info.setInfoId(3L);
+        info.setTitle("测试标题1---！");
         ChejiahaoContents info1 = new ChejiahaoContents();
-        info1.setInfoId(2L);
-        info1.setTitle("测试标题2！！！");
+        info1.setInfoId(4L);
+        info1.setTitle("测试标题2---！");
         boolean result = chejiahaoContentsManager.saveBatch(List.of(info, info1));
         Assertions.assertEquals(true, result);
     }

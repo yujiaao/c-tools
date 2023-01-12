@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.github.yujiaao</groupId>
         <artifactId>c-tools-parent</artifactId>
-        <version>1.13.1.1</version>
+        <version>1.13.1.4</version>
     </parent>
 
     <artifactId>c-dbtools</artifactId>
@@ -206,6 +206,7 @@
             <version>${jakartaValidation.version}</version>
         </dependency>
 
+
         <dependency>
             <groupId>jakarta.el</groupId>
             <artifactId>jakarta.el-api</artifactId>
@@ -325,7 +326,7 @@
         <dependency>
             <groupId>com.github.yujiaao</groupId>
             <artifactId>common-utils</artifactId>
-            <version>1.13.1.1</version>
+            <version>1.13.1.4</version>
             <scope>compile</scope>
         </dependency>
 
@@ -370,6 +371,17 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>jakarta.el</artifactId>
+            <version>5.0.0-M1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.glassfish.expressly</groupId>
+            <artifactId>expressly</artifactId>
+            <version>5.0.0</version>
+        </dependency>
 
     </dependencies>
     <dependencyManagement>
