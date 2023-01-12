@@ -1,0 +1,28 @@
+package {{config.packageName}}{{viewModifier}}.cmd;
+
+
+
+
+import io.swagger.annotations.ApiParam;
+import lombok.Data;
+
+{{> [header-comment.java]}}
+
+/**
+* @author xwx
+*/
+@Data
+public class {{className}}SearchCmd {
+
+{{! field declaration }}
+{{#each fields as | field index | }}
+    {{log field level="info" }}
+    /**
+    * {{columnDescription this tableName}}
+    */
+    {{{columnAnnotation this tableName}}}
+    protected {{javaType}}  {{firstLow name}};
+{{/each}}
+
+
+}

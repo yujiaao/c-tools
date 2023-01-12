@@ -70,13 +70,13 @@ public class PagingTest  {
         assertEquals(" where id = ?", res.getCondition().toString());
         ar.clear();
 
-        p.searchBean.bModifiedTime= new Timestamp(System.currentTimeMillis());
+        p.searchBean.begin_ModifiedTime= new Timestamp(System.currentTimeMillis());
         ar = (ActiveRecordImpl<User, Integer>) p.toActiveRecordParams(ar, fields);
         res = ar.getCondStack().toCondition();
         assertEquals(" where id = ? and modifiedtime >= ?", res.getCondition().toString());
         ar.clear();
 
-        p.searchBean.eModifiedTime= new Timestamp(System.currentTimeMillis());
+        p.searchBean.end_ModifiedTime= new Timestamp(System.currentTimeMillis());
 
         ar = (ActiveRecordImpl<User, Integer>) p.toActiveRecordParams(ar, fields);
         res = ar.getCondStack().toCondition();

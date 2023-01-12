@@ -299,9 +299,12 @@ public class EasyTableTest {
     public void testJsonRangeFilter() throws SQLException, JsonProcessingException {
         String tableName = "test_gen";
         String baseSql = " select id, name, age,birth,edu_id from test_gen";
+        String jquery = "{\"exportType\":\"json\", \"maxRows\":10, \"filter\":[{\"key\":\"id\",\"comparison\":\"between\",\"value\":[1,3]}]}";
+        System.out.println(jquery);
+
         EasyTable et = new EasyTable(dbHelper, tableName, baseSql);
 
-        String res = et.json("{\"exportType\":\"json\", \"maxRows\":10, \"filter\":[{\"key\":\"id\",\"comparison\":\"between\",\"value\":[1,3]}]}");
+        String res = et.json(jquery);
         ObjectMapper mapper = new ObjectMapper();
         Map map= mapper.readValue(res, Map.class);
 

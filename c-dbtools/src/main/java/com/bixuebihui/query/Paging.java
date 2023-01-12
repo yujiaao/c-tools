@@ -121,8 +121,8 @@ public class Paging<S> {
     Long count=10L;
     List<SqlSort.Sort> sort;
     S searchBean;
-    String dateTimeRangeBeginPrefix = "b";
-    String dateTimeRangeEndPrefix = "e";
+    String dateTimeRangeBeginPrefix = "begin_";
+    String dateTimeRangeEndPrefix = "end_";
 
     public String getDateTimeRangeBeginPrefix() {
         return dateTimeRangeBeginPrefix;
@@ -175,6 +175,7 @@ public class Paging<S> {
     public <T> ActiveRecord<T> toActiveRecordParams(ActiveRecord<T> ar, Set<String> validFields) {
         BeanMap dest = new BeanMap(searchBean);
         Map<String, MutablePair<Object, Object>> dateRange = new HashMap<>(16);
+
         dest.forEach((k, v) -> {
             String key = ((String) k).toLowerCase();
             if (validFields.isEmpty() ||  validFields.contains(key)) {
@@ -205,7 +206,6 @@ public class Paging<S> {
 
         if(sort!=null) {
             this.sort.forEach(sort1 -> {
-
                         if (sort1.getOrder().equals(ASC)) {
                             ar.asc(sort1.getProperty());
                         } else {

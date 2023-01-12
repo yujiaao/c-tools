@@ -128,7 +128,11 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
     @Override
     public String getKeyName()
     {
+    {{#if hasKey}}
         return  F.{{constantName firstKeyName}};
+    {{else}}
+        return null;
+    {{/if ~}}
     }
 
 {{!    writeMapRow(tableName, colData); }}
@@ -137,7 +141,11 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
 {{! writeGetSetId(tableName, keyData, colData);}}
     @Override
     public {{firstKeyType}} getId({{pojoClassName}} info) {
+    {{#if hasKey}}
         return info.get{{firstUp firstKeyName}}();
+    {{else}}
+        return null;
+    {{/if ~}}
     }
 {{#unless tableInfo.isView}}
     @Override

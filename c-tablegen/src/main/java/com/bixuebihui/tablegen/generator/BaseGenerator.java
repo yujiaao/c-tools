@@ -317,4 +317,24 @@ public abstract class BaseGenerator implements Generator {
         }
         return keys;
     }
+
+
+    public static String getFirstKeyName(List<String> keyData2) {
+        if (isNotEmpty(keyData2)) {
+            return keyData2.get(0);
+        }
+        return null;
+    }
+
+
+    public static boolean containsVersion(List<ColumnData> cols, String versionColName) {
+        for (ColumnData col : cols) {
+            if (col.getName().equalsIgnoreCase(versionColName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
 }

@@ -4,8 +4,7 @@ package {{config.packageName}}{{viewModifier}}.service;
 
 import javax.sql.DataSource;
 import {{config.packageName}}{{viewModifier}}.dal.{{pojoClassName}}Manager;
-
-
+import {{config.packageName}}{{viewModifier}}.service.converters.Map{{pojoClassName}}Converter;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.processing.Generated;
@@ -17,7 +16,21 @@ public class {{className}}Service
     @Autowired
     {{pojoClassName}}Manager {{firstLow pojoClassName}}Manager;
 
+    @Override
+    public List<{{pojoClassName}}Dto> queryList(Paging<{{pojoClassName}}SearchCmd> searchCmd) {
+        List<{{pojoClassName}}> infos = {{firstLow pojoClassName}}Manager.query(searchCmd.)findAll();
 
 
+        List<{{pojoClassName}}Dto> collect = infos.stream().map(Map{{pojoClassName}}Converter.MAPPER::toDto).collect(toList());
+
+        // do some thing
+
+        return collect;
+    }
+
+    @Override
+    public long count({{pojoClassName}}SearchCmd searchCmd) {
+        return {{firstLow pojoClassName}}Manager.query(searchCmd).count();;
+    }
 
 }

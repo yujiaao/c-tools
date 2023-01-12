@@ -31,7 +31,15 @@ public class GenerateAll implements DiffHandler {
     private static final Logger LOG = LoggerFactory.getLogger(GenerateAll.class);
     boolean generateSuccess = true;
     Generator[] perTableGenerator = new Generator[]{
-           new PojoGenerator(), new DalGenerator(), new BusinessGenerator(),
+           new PojoGenerator(),
+            new DalGenerator(),
+            new BusinessGenerator(),
+
+            new SearchCmdGenerator(),
+            new MapperGenerator(),
+            new DtoGenerator(),
+            new ServiceGenerator(),
+            new ControllerGenerator(),
     };
 
     Generator[] perIndexGenerator = new Generator[]{
@@ -201,10 +209,7 @@ public class GenerateAll implements DiffHandler {
         for(Generator g: perTableGenerator){
             g.generateToFile(tableName, i++);
         }
-// view is not generated?
-///        for(Generator g: perViewGenerator){
-//            g.generate(tableName);
-//        }
+
 
     }
 

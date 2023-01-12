@@ -20,21 +20,6 @@ import static java.util.Collections.emptyList;
 public class DalGenerator extends BaseGenerator {
     protected final static String CLASS_SUFFIX = "List";
 
-    public static String getFirstKeyName(List<String> keyData2) {
-        if (isNotEmpty(keyData2)) {
-            return keyData2.get(0);
-        }
-        return null;
-    }
-
-    public static boolean containsVersion(List<ColumnData> cols, String versionColName) {
-        for (ColumnData col : cols) {
-            if (col.getName().equalsIgnoreCase(versionColName)) {
-                return true;
-            }
-        }
-        return false;
-    }
 
     public static String makeInsertObjects(boolean useAutoincrement, List<ColumnData> columnData, String versionColName) {
         return makeInsertObjects( false, emptyList(), useAutoincrement, false, columnData, versionColName);

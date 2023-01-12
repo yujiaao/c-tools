@@ -1,0 +1,73 @@
+package {{config.packageName}}{{viewModifier}}.pojo;
+
+{{> [header-comment.java]}}
+
+import java.sql.*;
+import java.io.Serializable;
+import jakarta.validation.constraints.*;
+import org.apache.commons.text.StringEscapeUtils;
+
+{{#if config.useSwagger}}
+import io.swagger.v3.oas.annotations.media.Schema;
+
+import javax.annotation.processing.Generated;
+
+@Generated("com.github.yujiaao:tablegen")
+@Schema(description ="{{tableInfo.comment}}")
+{{/if~}}
+public class {{className}} {{interface}} {
+{{! field declaration }}
+{{#each fields as | field index | }}
+    {{log field level="info" }}
+    /**
+    * {{columnDescription this tableName}}
+    */
+    {{{columnAnnotation this tableName}}}
+    protected {{javaType}}  {{firstLow name}};
+{{/each}}
+
+{{! setters & getters }}
+{{#each fields}}
+    public void set{{firstUp name}}({{javaType}} {{firstLow name}})
+    {
+      this.{{firstLow name}} = {{firstLow name}};
+    }
+    public {{javaType}} get{{firstUp name}}()
+    {
+      return this.{{firstLow name}};
+    }
+{{/each}}
+
+    {{! handle the constructor }}
+    public {{className}}()
+    {
+    {{#each fields~}}
+        {{#eq "String" type ~}}
+            {{#not field.nullable~}}
+                {{firstLow name}}="*";
+            {{/not~}}
+        {{else}} {{#let 'code'}}{{{typeDefaultValue javaType}}}{{/let}}
+            {{#neq code null~}}
+                {{firstLow name}}={{{code}}};
+            {{/neq~}}
+        {{/eq~}}
+    {{/each}}
+    }
+
+    public String toXml()
+    {
+        StringBuilder s= new StringBuilder();
+        String ln = System.getProperty("line.separator");
+        s.append("<{{tableName}} ");
+{{#each fields as | field index | }}
+        {{#eq "String" javaType~}}
+        s.append(" {{firstLow name}}=\"").append(StringEscapeUtils.escapeXml11(this.get{{firstUp  name }}())).append("\"");
+        {{~else~}}
+        s.append(" {{firstLow name}}=\"").append(this.get{{firstUp name}}()).append("\"");
+        {{/eq~}}
+{{/each~}}
+        s.append(" />");
+        s.append(ln);
+        return s.toString();
+    }
+}
