@@ -103,8 +103,12 @@ public abstract class BaseGenerator implements Generator {
 
     String getClassSuffix(){return "";}
 
+    protected String getSourceDir(){
+        return config.getBaseSrcDir();
+    }
+
     protected String getBaseDir() {
-        String baseDir = config.getBaseSrcDir();
+        String baseDir = getSourceDir();
         //相对路径则相对于配置文件所在目录，避免windows 与linux 的差异
         if(!baseDir.startsWith("/") && !baseDir.contains(":")){
             baseDir = config.getBaseDir() + baseDir;

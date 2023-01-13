@@ -6,8 +6,8 @@ package com.bixuebihui.test.view.pojo;
  * Notice! Automatically generated file!
  * Do not edit the pojo and dal packages,use `maven tablegen:gen`!
  * Code Generator originally by J.A.Carter
- * Modified by Xing Wanxiang 2008-2021
- * email: www@qsn.so
+ * Modified by Xing Wanxiang 2008-2022
+ * email: xwx@live.cn
  */
 
 
@@ -28,42 +28,42 @@ public class MyTestView  implements Serializable {
 
     
     /**
-    * id
+    * id id 
     */
     
     protected Integer  id;
 
     
     /**
-    * name
+    * name name 
     */
     @Size(max=100)
     protected String  name;
 
     
     /**
-    * age
+    * age age 
     */
     
     protected Short  age;
 
     
     /**
-    * birth
+    * birth birth 
     */
     
     protected Timestamp  birth;
 
     
     /**
-    * edu_id
+    * edu_id edu_id 
     */
     
     protected Integer  eduId;
 
     
     /**
-    * degree
+    * degree degree 
     */
     @Size(max=100)
     protected String  degree;

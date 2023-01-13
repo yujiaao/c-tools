@@ -6,12 +6,14 @@ package com.bixuebihui.test.dal;
  * Notice! Automatically generated file!
  * Do not edit the pojo and dal packages,use `maven tablegen:gen`!
  * Code Generator originally by J.A.Carter
- * Modified by Xing Wanxiang 2008-2021
- * email: www@qsn.so
+ * Modified by Xing Wanxiang 2008-2022
+ * email: xwx@live.cn
  */
 
 
 import java.sql.*;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import javax.sql.DataSource;
 import com.bixuebihui.test.business.*;
@@ -31,9 +33,9 @@ public class TEduList  extends BaseList<TEdu, Integer>
       * Don't direct use the TEduList, use TEduManager instead.
       */
 
-    protected TEduList(DataSource readWrite, DataSource readOnly)
+    protected TEduList(DataSource ds)
     {
-        super(readWrite,readOnly);
+        super(ds);
     }
 
 
@@ -47,6 +49,12 @@ public class TEduList  extends BaseList<TEdu, Integer>
             return new String[] { ID, DEGREE };
         }
     }
+
+    @Override
+    public List<String> getAllFields(){
+        return Arrays.asList(F.getAllFields());
+    }
+
 
     
     protected String getDeleteSql(){
@@ -94,6 +102,7 @@ return  "t_edu";
     @Override
     public String getKeyName()
     {
+    
         return  F.ID;
     }
 
@@ -118,6 +127,7 @@ return  "t_edu";
 
     @Override
     public Integer getId(TEdu info) {
+    
         return info.getId();
     }
 
@@ -136,8 +146,11 @@ return  "t_edu";
 
 
 
+
       
       
+          
+          
       
 
     

@@ -59,6 +59,9 @@ public class SearchCmdGenerator extends BaseGenerator {
     protected void additionalSetting(Handlebars handlebars) {
         super.additionalSetting(handlebars);
 
+        handlebars.registerHelper("isRangeType", (typeName, options) ->
+                List.of("Timestamp", "Date", "DateTime", "Time").contains((String)typeName));
+
         handlebars.registerHelper("columnAnnotation", (col, options) -> TableUtils.getColumnAnnotation(config, setInfo, options.param(0),(ColumnData) col));
 
         handlebars.registerHelper("columnDescription", (col, options) -> TableUtils.getColumnDescription(config,

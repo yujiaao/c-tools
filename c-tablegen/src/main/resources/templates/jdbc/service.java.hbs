@@ -1,36 +1,45 @@
 package {{config.packageName}}{{viewModifier}}.service;
 
 {{> [header-comment.java]}}
+import com.bixuebihui.query.Paging;
 
-import javax.sql.DataSource;
-import {{config.packageName}}{{viewModifier}}.dal.{{pojoClassName}}Manager;
-import {{config.packageName}}{{viewModifier}}.service.converters.Map{{pojoClassName}}Converter;
+import {{config.packageName}}{{viewModifier}}.business.{{pojoClassName}}Manager;
+import {{config.packageName}}{{viewModifier}}.cmd.{{pojoClassName}}SearchCmd;
+import {{config.packageName}}{{viewModifier}}.dto.{{pojoClassName}}Dto;
+import {{config.packageName}}{{viewModifier}}.pojo.{{pojoClassName}};
+import {{config.packageName}}{{viewModifier}}.converters.{{pojoClassName}}Converter;
+import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.processing.Generated;
+import java.util.List;
+
+import static java.util.stream.Collectors.toList;
 
 @Generated("com.github.yujiaao:tablegen")
 @Service
-public class {{className}}Service
-{
+public class {{className}} {
     @Autowired
     {{pojoClassName}}Manager {{firstLow pojoClassName}}Manager;
 
-    @Override
-    public List<{{pojoClassName}}Dto> queryList(Paging<{{pojoClassName}}SearchCmd> searchCmd) {
-        List<{{pojoClassName}}> infos = {{firstLow pojoClassName}}Manager.query(searchCmd.)findAll();
 
+    public Pair<Integer, List<{{pojoClassName}}Dto>> queryList(Paging<{{pojoClassName}}SearchCmd> searchCmd) {
+        List<{{pojoClassName}}> infos = {{firstLow pojoClassName}}Manager.ar()
+                    .query(searchCmd).findAll();
 
-        List<{{pojoClassName}}Dto> collect = infos.stream().map(Map{{pojoClassName}}Converter.MAPPER::toDto).collect(toList());
+        List<{{pojoClassName}}Dto> collect = infos.stream()
+                    .map({{pojoClassName}}Converter.MAPPER::toDto).collect(toList());
+
+        int count = {{firstLow pojoClassName}}Manager.ar()
+                    .query(searchCmd).count();
+
 
         // do some thing
 
-        return collect;
+        return Pair.of(count, collect);
     }
 
-    @Override
-    public long count({{pojoClassName}}SearchCmd searchCmd) {
-        return {{firstLow pojoClassName}}Manager.query(searchCmd).count();;
-    }
+
 
 }

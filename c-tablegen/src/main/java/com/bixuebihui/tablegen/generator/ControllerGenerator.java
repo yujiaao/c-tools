@@ -4,6 +4,7 @@ import com.bixuebihui.tablegen.TableGen;
 import com.bixuebihui.tablegen.entry.ColumnData;
 import com.github.jknack.handlebars.Handlebars;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -24,6 +25,15 @@ public class ControllerGenerator extends BaseGenerator {
     @Override
     String getTemplateFileName() {
         return "manager-controller.java";
+    }
+
+    protected String getSourceDir(){
+        return config.getBaseControllerDir();
+    }
+
+    @Override
+    public boolean wantToGenerate(String fileName) {
+        return super.wantToGenerate(fileName) && ! new File(fileName).exists();
     }
 
     @Override

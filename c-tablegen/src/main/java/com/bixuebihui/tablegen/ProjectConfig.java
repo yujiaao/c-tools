@@ -26,6 +26,9 @@ public class ProjectConfig {
     String testDir;
     String resourceDir;
     String jspDir;
+    private String serviceDir;
+    private String controllerDir;
+
     String schema;
     String addPrefix;
     String removePrefix;
@@ -80,6 +83,20 @@ public class ProjectConfig {
         LOG.debug("src_dir:" +  c.srcDir);
         c.resourceDir = baseDir + props.getProperty("resource_dir");
         LOG.debug("resource_dir:" +  c.resourceDir);
+
+        c.serviceDir = baseDir + props.getProperty("service_dir" );
+        LOG.debug("service_dir:" +  c.serviceDir);
+
+        c.controllerDir = baseDir + props.getProperty("controller_dir");
+        LOG.debug("controller_dir:" +  c.controllerDir);
+
+        if (StringUtils.isEmpty( c.serviceDir)) {
+            c.serviceDir =  c.srcDir;
+        }
+
+        if (StringUtils.isEmpty( c.controllerDir)) {
+            c.controllerDir =  c.serviceDir;
+        }
 
         if (StringUtils.isEmpty( c.resourceDir)) {
             c.resourceDir =  c.srcDir;
@@ -491,5 +508,13 @@ public class ProjectConfig {
 
     public boolean getR2dc() {
         return this.r2dbc;
+    }
+
+    public String getBaseControllerDir() {
+        return controllerDir + File.separator + packageName2Dir(packageName);
+    }
+
+    public String getBaseServiceDir() {
+        return serviceDir + File.separator + packageName2Dir(packageName);
     }
 }

@@ -6,8 +6,8 @@ package com.bixuebihui.test;
  * Notice! Automatically generated file!
  * Do not edit the pojo and dal packages,use `maven tablegen:gen`!
  * Code Generator originally by J.A.Carter
- * Modified by Xing Wanxiang 2008-2021
- * email: www@qsn.so
+ * Modified by Xing Wanxiang 2008-2022
+ * email: xwx@live.cn
  */
 
 
@@ -25,7 +25,7 @@ import javax.sql.DataSource;
 @Service
 public abstract class BaseList<T, V> extends BaseDao<T, V> {
 
-    public BaseList(DataSource readWrite, DataSource readOnly) {
-        super(readWrite,readOnly);
+    public BaseList(DataSource ds) {
+        super(ds,ds);
     }
 }

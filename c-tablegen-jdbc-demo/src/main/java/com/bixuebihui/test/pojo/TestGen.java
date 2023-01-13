@@ -6,8 +6,8 @@ package com.bixuebihui.test.pojo;
  * Notice! Automatically generated file!
  * Do not edit the pojo and dal packages,use `maven tablegen:gen`!
  * Code Generator originally by J.A.Carter
- * Modified by Xing Wanxiang 2008-2021
- * email: www@qsn.so
+ * Modified by Xing Wanxiang 2008-2022
+ * email: xwx@live.cn
  */
 
 
@@ -28,36 +28,36 @@ public class TestGen  implements Serializable {
 
     
     /**
-    * id
+    * id 这里是id! 
     */
     @Schema(title = "这里是id!")
     protected Integer  id;
 
     
     /**
-    * name
+    * name 这里是名称！ 
     */
     @Size(max=100)
-@Schema(title = "这里是名称！")
+    @Schema(title = "这里是名称！")
     protected String  name;
 
     
     /**
-    * age
+    * age 这里是年龄 
     */
     @Schema(title = "这里是年龄")
     protected Short  age;
 
     
     /**
-    * birth
+    * birth 这里是日期！ 
     */
     @Schema(title = "这里是日期！")
     protected Timestamp  birth;
 
     
     /**
-    * edu_id
+    * edu_id 教育程度 
     */
     @Schema(title = "教育程度")
     protected Integer  eduId;

@@ -6,8 +6,8 @@ package com.bixuebihui.test.business;
  * Notice! Automatically generated file!
  * Do not edit the pojo and dal packages,use `maven tablegen:gen`!
  * Code Generator originally by J.A.Carter
- * Modified by Xing Wanxiang 2008-2021
- * email: www@qsn.so
+ * Modified by Xing Wanxiang 2008-2022
+ * email: xwx@live.cn
  */
 
 
@@ -24,14 +24,18 @@ import javax.annotation.processing.Generated;
 public class HistoryHandlebarsTemplateManager  extends HistoryHandlebarsTemplateList
 {
     
-    /**
-     * @param ds datasource for injecting
-     */
 
-    public HistoryHandlebarsTemplateManager(@Qualifier("test") DataSource readWrite, @Qualifier("test_r") DataSource readOnly)
+    /**
+    * @param ds datasource for injecting
+    */
+    public HistoryHandlebarsTemplateManager(@Qualifier("test") DataSource ds)
     {
-        super(readWrite,readOnly);
+        super(ds);
     }
+
+
+
+
     // please write your code here!
 
 }

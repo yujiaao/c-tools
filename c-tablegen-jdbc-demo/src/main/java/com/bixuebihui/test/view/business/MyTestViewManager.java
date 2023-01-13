@@ -6,8 +6,8 @@ package com.bixuebihui.test.view.business;
  * Notice! Automatically generated file!
  * Do not edit the pojo and dal packages,use `maven tablegen:gen`!
  * Code Generator originally by J.A.Carter
- * Modified by Xing Wanxiang 2008-2021
- * email: www@qsn.so
+ * Modified by Xing Wanxiang 2008-2022
+ * email: xwx@live.cn
  */
 
 
@@ -23,14 +23,18 @@ import javax.annotation.processing.Generated;
 @Repository
 public class MyTestViewManager  extends MyTestViewList
 {
+    
 
     /**
-     * @param ds datasource for injecting
-     */
+    * @param ds datasource for injecting
+    */
     public MyTestViewManager(@Qualifier("test") DataSource ds)
     {
-        super(ds, ds);
+        super(ds);
     }
+
+
+
 
     // please write your code here!
 

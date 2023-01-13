@@ -6,12 +6,14 @@ package com.bixuebihui.test.dal;
  * Notice! Automatically generated file!
  * Do not edit the pojo and dal packages,use `maven tablegen:gen`!
  * Code Generator originally by J.A.Carter
- * Modified by Xing Wanxiang 2008-2021
- * email: www@qsn.so
+ * Modified by Xing Wanxiang 2008-2022
+ * email: xwx@live.cn
  */
 
 
 import java.sql.*;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import javax.sql.DataSource;
 import com.bixuebihui.test.business.*;
@@ -31,9 +33,9 @@ public class TestGenList  extends BaseList<TestGen, Integer>
       * Don't direct use the TestGenList, use TestGenManager instead.
       */
 
-    protected TestGenList(DataSource readWrite, DataSource readOnly)
+    protected TestGenList(DataSource ds)
     {
-        super(readWrite,readOnly);
+        super(ds);
     }
 
 
@@ -50,6 +52,12 @@ public class TestGenList  extends BaseList<TestGen, Integer>
             return new String[] { ID, NAME, AGE, BIRTH, EDU_ID };
         }
     }
+
+    @Override
+    public List<String> getAllFields(){
+        return Arrays.asList(F.getAllFields());
+    }
+
 
     
     protected String getDeleteSql(){
@@ -97,6 +105,7 @@ return  "test_gen";
     @Override
     public String getKeyName()
     {
+    
         return  F.ID;
     }
 
@@ -130,6 +139,7 @@ return  "test_gen";
 
     @Override
     public Integer getId(TestGen info) {
+    
         return info.getId();
     }
 
@@ -148,8 +158,11 @@ return  "test_gen";
 
 
 
+
       
       
+          
+          
       
 
     

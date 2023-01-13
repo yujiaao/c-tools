@@ -6,8 +6,8 @@ package com.bixuebihui.test.pojo;
  * Notice! Automatically generated file!
  * Do not edit the pojo and dal packages,use `maven tablegen:gen`!
  * Code Generator originally by J.A.Carter
- * Modified by Xing Wanxiang 2008-2021
- * email: www@qsn.so
+ * Modified by Xing Wanxiang 2008-2022
+ * email: xwx@live.cn
  */
 
 
@@ -28,93 +28,93 @@ public class HistoryHandlebarsTemplate  implements Serializable {
 
     
     /**
-    * history_id
+    * history_id  
     */
     
     protected Integer  historyId;
 
     
     /**
-    * template_id
+    * template_id 模板ID 
     */
     @NotNull
-@Schema(title = "模板ID")
+    @Schema(title = "模板ID")
     protected Integer  templateId;
 
     
     /**
-    * template_code
+    * template_code 模板code,需唯一 
     */
     @Size(max=32)
-@Schema(title = "模板code,需唯一")
+    @Schema(title = "模板code,需唯一")
     protected String  templateCode;
 
     
     /**
-    * description
+    * description 模板说明 
     */
     @Size(max=32)
-@Schema(title = "模板说明")
+    @Schema(title = "模板说明")
     protected String  description;
 
     
     /**
-    * datasource_id
+    * datasource_id json数据源id 
     */
     @Schema(title = "json数据源id")
     protected Integer  datasourceId;
 
     
     /**
-    * base_template_id
+    * base_template_id 继承模板id 
     */
     @Schema(title = "继承模板id")
     protected Integer  baseTemplateId;
 
     
     /**
-    * template_body
+    * template_body 模板主体 
     */
     @Size(max=65535)
-@Schema(title = "模板主体")
+    @Schema(title = "模板主体")
     protected String  templateBody;
 
     
     /**
-    * operator_id
+    * operator_id 操作用户id 
     */
     @NotNull
-@Schema(title = "操作用户id")
+    @Schema(title = "操作用户id")
     protected Integer  operatorId;
 
     
     /**
-    * version * NotNull, but has default value :0
-
+    * version 版本号 
+    * NotNull, default value: 0
     */
     @Schema(title = "版本号")
     protected Integer  version;
 
     
     /**
-    * is_del * NotNull, but has default value :0
-
+    * is_del 0：未删除；1：已删除 
+    * NotNull, default value: 0
     */
     @Schema(title = "0：未删除；1：已删除")
     protected Integer  isDel;
 
     
     /**
-    * created_stime * NotNull, but has default value :current_timestamp()
-
+    * created_stime 数据创建时间 
+    * NotNull, default value: current_timestamp()
     */
     @Schema(title = "数据创建时间")
     protected Timestamp  createdStime;
 
     
     /**
-    * modified_stime * NotNull, but has default value :current_timestamp()
-
+    * modified_stime 数据更新时间 
+    * NotNull, default value: current_timestamp()
     */
     @Schema(title = "数据更新时间")
     protected Timestamp  modifiedStime;

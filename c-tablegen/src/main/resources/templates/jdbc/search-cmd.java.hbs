@@ -1,6 +1,6 @@
 package {{config.packageName}}{{viewModifier}}.cmd;
 
-
+import java.sql.*;
 
 
 import io.swagger.annotations.ApiParam;
@@ -12,16 +12,29 @@ import lombok.Data;
 * @author xwx
 */
 @Data
-public class {{className}}SearchCmd {
+public class {{className}} {
 
 {{! field declaration }}
 {{#each fields as | field index | }}
-    {{log field level="info" }}
-    /**
-    * {{columnDescription this tableName}}
-    */
-    {{{columnAnnotation this tableName}}}
-    protected {{javaType}}  {{firstLow name}};
+    {{#if (isRangeType javaType) ~}}
+        /**
+        * left range of date/time type: {{columnDescription this tableName}}
+        */
+        protected {{javaType}}  begin_{{firstLow name}};
+
+        /**
+        * right range of date/time type:  {{columnDescription this tableName}}
+        */
+        protected {{javaType}}  end_{{firstLow name}};
+
+    {{else}}
+        /**
+        * {{columnDescription this tableName}}
+        */
+        protected {{javaType}}  {{firstLow name}};
+    {{/if~}}
+
+    {{!log field level="info" }}
 {{/each}}
 
 

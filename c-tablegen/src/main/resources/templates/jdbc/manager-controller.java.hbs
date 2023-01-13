@@ -1,12 +1,17 @@
-package {{config.packageName}}{{viewModifier}}.manager.controller;
+package {{config.packageName}}{{viewModifier}}.controller;
 
 import {{config.packageName}}{{viewModifier}}.dto.{{pojoClassName}}Dto;
+import {{config.packageName}}{{viewModifier}}.cmd.{{pojoClassName}}SearchCmd;
 import {{config.packageName}}{{viewModifier}}.service.{{pojoClassName}}Service;
+import org.apache.commons.lang3.tuple.Pair;
+
+import com.bixuebihui.query.Paging;
 import com.bixuebihui.BaseModel;
 import com.bixuebihui.PageModel;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import org.apache.commons.lang3.time.StopWatch;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,10 +36,10 @@ public class  {{className}} {
     @ApiOperation("取{{tableName}}列表")
     @GetMapping(value = "/list", produces = {"application/json;charset=UTF-8"})
     public BaseModel<PageModel<{{pojoClassName}}Dto>> list(@ApiParam(name = "pageSize", value = "一页大小")
-                                                                @RequestParam(value = "pageSize", defaultValue = "10") Integer pageSize,
+                                                                @RequestParam(value = "pageSize", defaultValue = "10") Long pageSize,
 
                                                                 @ApiParam(name = "pageNum", value = "页码")
-                                                                @RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
+                                                                @RequestParam(value = "pageNum", defaultValue = "1") Long pageNum,
 
                                                                 @Validated
                                                                 @ApiParam(value = "查询条件", required = true)
@@ -42,19 +47,21 @@ public class  {{className}} {
                                                                 HttpServletRequest request
     ) {
 
-        Paging<{{pojoClassName}}SearchCmd> searchBean = new Paging<{{pojoClassName}}SearchCmd>();
+        Paging<{{pojoClassName}}SearchCmd> searchBean = new Paging<>();
         searchBean.setSearchBean(searchCmd);
         searchBean.setStart(pageSize*pageNum);
-        searchBean.setTotal(pageSize);
+        searchBean.setCount(pageSize);
 
         StopWatch sw = new StopWatch();
         sw.start();
+        Pair<Integer, List<{{pojoClassName}}Dto>> p= {{firstLow pojoClassName}}Service.queryList(searchBean);
+
         PageModel<{{pojoClassName}}Dto> result = PageModel
-                .builder({{firstLow pojoClassName}}Service.queryList(searchBean))
-                .total({{firstLow pojoClassName}}Service.count(searchBean))
+                .builder(p.getRight())
+                .total(p.getLeft())
                 .build();
         sw.stop();
-        result.setTook(sw.get());
+        result.setTook(sw.getTime());
 
 
         BaseModel<PageModel<{{pojoClassName}}Dto>> res = new BaseModel<>();

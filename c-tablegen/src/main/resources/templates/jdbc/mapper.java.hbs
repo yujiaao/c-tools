@@ -1,18 +1,17 @@
-package {{config.packageName}}{{viewModifier}}.service.converters;
+package {{config.packageName}}{{viewModifier}}.converters;
 
-
-import {{config.packageName}}{{viewModifier}}.dao.pojo.*;
+import {{config.packageName}}{{viewModifier}}.pojo.*;
 import {{config.packageName}}{{viewModifier}}.dto.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
-
 
 /**
 * @author xwx
 */
 @Mapper
-public interface Map{{pojoClassName}}Converter {
-Map{{pojoClassName}}Converter MAPPER = Mappers.getMapper(Map{{pojoClassName}}Converter.class);
+public interface {{className}} {
+
+    {{className}} MAPPER = Mappers.getMapper({{className}}.class);
 
     //@Mapping(source = "status", target = "orderStatus")
     {{pojoClassName}}Dto toDto({{pojoClassName}} info);

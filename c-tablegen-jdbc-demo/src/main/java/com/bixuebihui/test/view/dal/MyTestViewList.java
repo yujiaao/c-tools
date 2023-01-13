@@ -6,12 +6,14 @@ package com.bixuebihui.test.view.dal;
  * Notice! Automatically generated file!
  * Do not edit the pojo and dal packages,use `maven tablegen:gen`!
  * Code Generator originally by J.A.Carter
- * Modified by Xing Wanxiang 2008-2021
- * email: www@qsn.so
+ * Modified by Xing Wanxiang 2008-2022
+ * email: xwx@live.cn
  */
 
 
 import java.sql.*;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import javax.sql.DataSource;
 import com.bixuebihui.test.view.business.*;
@@ -31,9 +33,9 @@ public class MyTestViewList  extends AbstractViewBaseDao<MyTestView, Integer>
       * Don't direct use the MyTestViewList, use MyTestViewManager instead.
       */
 
-    protected MyTestViewList(DataSource readWrite, DataSource readOnly)
+    protected MyTestViewList(DataSource ds)
     {
-        super(readWrite,readOnly);
+        super(ds);
     }
 
 
@@ -51,6 +53,12 @@ public class MyTestViewList  extends AbstractViewBaseDao<MyTestView, Integer>
             return new String[] { ID, NAME, AGE, BIRTH, EDU_ID, DEGREE };
         }
     }
+
+    @Override
+    public List<String> getAllFields(){
+        return Arrays.asList(F.getAllFields());
+    }
+
 
 
 
@@ -86,7 +94,8 @@ public class MyTestViewList  extends AbstractViewBaseDao<MyTestView, Integer>
     @Override
     public String getKeyName()
     {
-        return  F.ID;
+    
+        return null;
     }
 
 
@@ -122,7 +131,8 @@ public class MyTestViewList  extends AbstractViewBaseDao<MyTestView, Integer>
 
     @Override
     public Integer getId(MyTestView info) {
-        return info.getId();
+    
+        return null;
     }
 
 

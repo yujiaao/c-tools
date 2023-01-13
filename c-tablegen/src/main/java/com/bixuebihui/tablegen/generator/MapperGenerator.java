@@ -4,6 +4,7 @@ import com.bixuebihui.tablegen.TableGen;
 import com.bixuebihui.tablegen.entry.ColumnData;
 import com.github.jknack.handlebars.Handlebars;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -25,6 +26,16 @@ public class MapperGenerator extends BaseGenerator {
     String getTemplateFileName() {
         return "mapper.java";
     }
+
+    protected String getSourceDir(){
+        return config.getBaseServiceDir();
+    }
+
+    @Override
+    public boolean wantToGenerate(String fileName) {
+        return super.wantToGenerate(fileName) && ! new File(fileName).exists();
+    }
+
 
     @Override
     protected Map<String, Object> getContextMap(String tableName) {
@@ -62,7 +73,7 @@ public class MapperGenerator extends BaseGenerator {
 
     @Override
     String getClassName(String tableName) {
-        return "Mapper"+getPojoClassName(tableName) + CLASS_SUFFIX;
+        return getPojoClassName(tableName) + CLASS_SUFFIX;
     }
 
     @Override
