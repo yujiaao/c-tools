@@ -3,6 +3,7 @@ package com.bixuebihui.query;
 import com.bixuebihui.db.ActiveRecord;
 import com.bixuebihui.jdbc.SqlSort;
 import org.apache.commons.beanutils.BeanMap;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 
 import java.util.*;
@@ -117,6 +118,7 @@ import static com.bixuebihui.jdbc.SqlSort.Sort.ASC;
  * 成功为pojo赋值，包括级联属性address。
  */
 public class Paging<S> {
+    public static final String ORDER_SPLITER = ":";
     Long start=0L;
     Long count=10L;
     List<SqlSort.Sort> sort;
@@ -251,4 +253,22 @@ public class Paging<S> {
         dateRange.putIfAbsent(key, pair);
     }
 
+    /**
+     * 排序 sortBy=abc:asc,def:desc
+     * @param sortBy
+     */
+    public void parseSort(String sortBy) {
+        if(!StringUtils.isEmpty(sortBy)) {
+            sort = new ArrayList<>();
+            Arrays.stream(sortBy.split(",")).forEach( sub ->{
+                if(sub.contains(ORDER_SPLITER)){
+                    String[] pair = sub.split(ORDER_SPLITER);
+                    sort.add(new SqlSort.Sort(pair[0], pair[1]));
+                }else{
+                    sort.add(new SqlSort.Sort(sub, ASC));
+                }
+            });
+        }
+
+    }
 }

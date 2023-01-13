@@ -35,22 +35,27 @@ public class  {{className}} {
 
     @ApiOperation("取{{tableName}}列表")
     @GetMapping(value = "/list", produces = {"application/json;charset=UTF-8"})
-    public BaseModel<PageModel<{{pojoClassName}}Dto>> list(@ApiParam(name = "pageSize", value = "一页大小")
-                                                                @RequestParam(value = "pageSize", defaultValue = "10") Long pageSize,
+    public BaseModel<PageModel<{{pojoClassName}}Dto>> list(
+                            @ApiParam(name = "maxRows", value = "一页大小")
+                            @RequestParam(value = "maxRows", defaultValue = "10") Long maxRows,
 
-                                                                @ApiParam(name = "pageNum", value = "页码")
-                                                                @RequestParam(value = "pageNum", defaultValue = "1") Long pageNum,
+                            @ApiParam(name = "page", value = "页码")
+                            @RequestParam(value = "page", defaultValue = "1") Long page,
 
-                                                                @Validated
-                                                                @ApiParam(value = "查询条件", required = true)
-                                                                {{pojoClassName}}SearchCmd  searchCmd,
-                                                                HttpServletRequest request
+                            @ApiParam(name = "sortBy", value = "排序 sortBy=abc:asc,def:desc")
+                            @RequestParam(value = "sortBy", defaultValue = "") String sortBy,
+
+                            @Validated
+                            @ApiParam(value = "查询条件", required = true)
+                            {{pojoClassName}}SearchCmd  searchCmd,
+                            HttpServletRequest request
     ) {
 
         Paging<{{pojoClassName}}SearchCmd> searchBean = new Paging<>();
         searchBean.setSearchBean(searchCmd);
-        searchBean.setStart(pageSize*pageNum);
-        searchBean.setCount(pageSize);
+        searchBean.setStart(maxRows*(page-1));
+        searchBean.setCount(maxRows);
+        searchBean.parseSort(sortBy);
 
         StopWatch sw = new StopWatch();
         sw.start();

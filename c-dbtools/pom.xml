@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.github.yujiaao</groupId>
         <artifactId>c-tools-parent</artifactId>
-        <version>1.13.2</version>
+        <version>1.13.2.1</version>
     </parent>
 
     <artifactId>c-dbtools</artifactId>
@@ -326,7 +326,7 @@
         <dependency>
             <groupId>com.github.yujiaao</groupId>
             <artifactId>common-utils</artifactId>
-            <version>1.13.2</version>
+            <version>1.13.2.1</version>
             <scope>compile</scope>
         </dependency>
 

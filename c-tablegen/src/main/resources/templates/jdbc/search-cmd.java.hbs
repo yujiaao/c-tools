@@ -10,6 +10,7 @@ import lombok.Data;
 
 /**
 * @author xwx
+* https://stackoverflow.com/questions/26612404/spring-map-get-request-parameters-to-pojo-automatically/26612778#26612778
 */
 @Data
 public class {{className}} {
@@ -30,7 +31,9 @@ public class {{className}} {
     {{else}}
         /**
         * {{columnDescription this tableName}}
+        *  change type of {{javaType}} to List<{{javaType}}> will generate 'in' sql condition.
         */
+        {{{columnAnnotation this tableName}}}
         protected {{javaType}}  {{firstLow name}};
     {{/if~}}
 
