@@ -32,7 +32,7 @@ public class DalGenerator extends BaseGenerator {
 
     private static String makeInsertObjects(boolean skipKey,List<String>keys,  boolean useAutoincrement, boolean skipVersionColumn, List<ColumnData> columnData, String versionColName) {
         StringBuilder objs = new StringBuilder();
-        boolean useVersion = skipVersionColumn && containsVersion(columnData, versionColName);
+        boolean useVersion = skipVersionColumn && containsColName(columnData, versionColName);
         Iterator<ColumnData> iterator = columnData.iterator();
         while (iterator.hasNext()) {
             ColumnData cd = iterator.next();
@@ -244,8 +244,11 @@ public class DalGenerator extends BaseGenerator {
             keys.add(cols.get(0).getName());
         }
 
-        v.put("hasVersionCol", containsVersion(cols
+        v.put("hasVersionCol", containsColName(cols
                 , config.getVersionColName()));
+        v.put("hasLogicDelCol", containsColName(cols
+                , config.getDelColName()));
+
 
         v.put("insertObjects", makeInsertObjects( config.isUseAutoincrement(), cols, config.getVersionColName()));
         v.put("updateObjects", makeUpdateObjects(keys, cols, config.isUseAutoincrement(), config.getVersionColName()));

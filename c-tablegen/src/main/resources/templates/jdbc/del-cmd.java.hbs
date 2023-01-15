@@ -1,0 +1,22 @@
+package {{config.packageName}}{{viewModifier}}.cmd;
+
+import java.sql.*;
+import java.util.List;
+
+
+import io.swagger.annotations.ApiParam;
+import lombok.Data;
+
+{{> [header-comment.java]}}
+
+/**
+* @author xwx
+*/
+@Data
+public class {{className}} {
+
+{{#if hasKey}}
+       List<{{firstKeyType}}> Ids ;
+{{/if}}
+
+}

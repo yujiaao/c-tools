@@ -244,7 +244,7 @@ public class SqlHelper {
 	 * @param value a {@link java.util.Collection} object.
 	 * @return a {@link SqlHelper} object.
 	 */
-	public SqlHelper in(String field, Collection<Object> value) {
+	public SqlHelper in(String field, Collection<?> value) {
 		filters.add(new InFilter(field, value));
 		return this;
 	}
@@ -476,6 +476,18 @@ public class SqlHelper {
 		return this;
 	}
 
+	/**
+	 * <p> not in</p>
+	 *
+	 * @param field a {@link java.lang.String} object.
+	 * @param values an array of {@link java.lang.Object} objects.
+	 * @return a {@link SqlHelper} object.
+	 */
+	public SqlHelper notIn(String field, Collection<?> values) {
+		filters.add(new NotInFilter(field, values));
+		return this;
+	}
+
 
 	protected abstract static class BaseFilter {
 		protected final String property;
@@ -496,7 +508,7 @@ public class SqlHelper {
 	}
 
 	protected static class NotInFilter extends InFilter {
-		public NotInFilter(String property, Collection<Object> value) {
+		public NotInFilter(String property, Collection<?> value) {
 			super(property, new HashSet<>(value)); //use Hashset to reduce duplicated values
 			op = "not in";
 		}
@@ -510,7 +522,7 @@ public class SqlHelper {
 
 	protected static class InFilter extends BaseFilter {
 		String op ="in";
-		public InFilter(String property, Collection<Object> value) {
+		public InFilter(String property, Collection<?> value) {
 			super(property, new HashSet<>(value)); //use Hashset to reduce duplicated values
 		}
 

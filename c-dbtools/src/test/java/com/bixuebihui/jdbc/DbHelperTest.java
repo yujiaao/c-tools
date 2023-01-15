@@ -3,6 +3,7 @@ package com.bixuebihui.jdbc;
 import com.bixuebihui.datasource.BitmechanicDataSource;
 import com.bixuebihui.datasource.DataSourceTest;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -15,36 +16,34 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 
-public class DbHelperTest  {
+public class DbHelperTest {
 
 
     DbHelper h = new DbHelper();
 
 
     @Test
-    public void testExecuteNoQueryBatch2() throws Exception {
+    public void testExecuteNoQueryBatch2() {
 
         String sql = "insert into t_log(lid, uid, content)values(?,?,?)";
         h.executeNoQuery("delete from t_log where lid<100000");
-        int res = h.executeNoQueryBatch(sql, 100, index -> new Object[]{index, index, "test" + index}, null);
+        int total=10;
+        int res = h.executeNoQueryBatch(sql, total, index -> new Object[]{index+1, index+1, "test" + index}, null);
 
         long a = (long) h.executeScalar("select count(*) from t_log where lid<1000");
-        assertTrue(a == 100);
+        Assertions.assertEquals(total, a);
     }
 
     @Test
     public void testInsertAndFetchId() throws Exception {
-
         String sql = "insert into t_log( uid, content)values(?,?)";
         h.executeNoQuery("delete from t_log where lid<100000");
-        long res = h.insertAndFetchLastId(sql, new Object[]{10000, "test10000" },null, null);
-        assertTrue(res>1);
-        System.out.println(res);
+        long res = h.insertAndFetchLastId(sql, new Object[]{10000, "test10000"}, null, null);
+        Assertions.assertTrue(res > 1);
 
-        long a = (long) h.executeScalar("select count(*) from t_log where lid<1000");
-        assertTrue(a == 1);
+        long a = (long) h.executeScalar("select count(*) from t_log where lid="+res);
+        Assertions.assertEquals(1, a);
     }
-
 
 
     @BeforeEach
@@ -75,7 +74,7 @@ public class DbHelperTest  {
     public void testDbHelperConnection() throws SQLException {
         Connection cn = h.getConnection();
         IDbHelper h1 = new DbHelper(cn);
-        assertEquals(cn, h1.getConnection());
+        Assertions.assertEquals(cn, h1.getConnection());
 
     }
 
@@ -89,22 +88,19 @@ public class DbHelperTest  {
     }
 
 
-
     @Test
     public void testExecuteScalarString() throws SQLException {
         String strSql = "select 1+2 from dual";
         String v = h.executeScalar(strSql).toString();
-        assertEquals(v, "3");
+        Assertions.assertEquals(v, "3");
     }
-
-
 
 
     @Test
     public void testExeQuery() throws SQLException {
         String strSql = "select 1+2 from dual";
         List<Map<String, Object>> v = h.exeQuery(strSql);
-        assertEquals(1, v.size());
+        Assertions.assertEquals(1, v.size());
     }
 
 

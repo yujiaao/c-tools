@@ -116,12 +116,26 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 		return this;
 	}
 
+	@Override
+	public ActiveRecord<T> in(String field, List<?> values) {
+		 filterStack.in(field, values);
+		 return this;
+	}
+
 	/** {@inheritDoc} */
 	@Override
 	public ActiveRecord<T> notIn(String field, Object[] values) {
 		filterStack.notIn(field, values);
 		return this;
 	}
+
+	/** {@inheritDoc} */
+	@Override
+	public ActiveRecord<T> notIn(String field,  List<?>  values) {
+		filterStack.notIn(field, values);
+		return this;
+	}
+
 
 
 	@Override

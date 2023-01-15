@@ -10,10 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import static com.bixuebihui.tablegen.NameUtils.columnNameToConstantName;
 import static com.bixuebihui.tablegen.NameUtils.firstUp;
-import static com.bixuebihui.tablegen.TableGen.INDENT;
-import static java.util.Collections.emptyList;
 
 /**
  * @author xwx
@@ -61,7 +58,7 @@ public class DtoGenerator extends BaseGenerator {
             keys.add(cols.get(0).getName());
         }
 
-        v.put("hasVersionCol", containsVersion(cols
+        v.put("hasVersionCol", containsColName(cols
                 , config.getVersionColName()));
 
 

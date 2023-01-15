@@ -331,9 +331,9 @@ public abstract class BaseGenerator implements Generator {
     }
 
 
-    public static boolean containsVersion(List<ColumnData> cols, String versionColName) {
+    public static boolean containsColName(List<ColumnData> cols, String colName) {
         for (ColumnData col : cols) {
-            if (col.getName().equalsIgnoreCase(versionColName)) {
+            if (col.getName().equalsIgnoreCase(colName)) {
                 return true;
             }
         }

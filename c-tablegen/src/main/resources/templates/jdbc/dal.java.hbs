@@ -187,6 +187,15 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
           {{/eq}}
       {{/eq}}
 
+    {{#if hasLogicDelCol}}
+        public boolean logicDeleteByIds(List<{{firstKeyType}}>  keys)
+        {
+            return this.ar()
+                .in(F.{{constantName firstKeyName}}, keys)
+                .update(F.{{config.delColName}}, 1) == keys.size();
+        }
+    {{/if}}
+
     {{#if hasVersionCol}}
     {{! writeUpdate(tableName, keyData, "updateByKeyAndVersion", false, withVersion, colData); }}
 

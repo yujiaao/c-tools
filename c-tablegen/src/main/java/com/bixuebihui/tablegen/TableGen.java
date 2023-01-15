@@ -54,9 +54,6 @@ import java.io.*;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.*;
 
 import static com.bixuebihui.tablegen.NameUtils.*;
@@ -985,7 +982,7 @@ public class TableGen implements DiffHandler {
             if (isNotEmpty(keyData)) {
 
                 /* optimistic lock update ! */
-                if (containsVersion(colData, config.versionColName)) {
+                if (containsColName(colData, config.versionColName)) {
                     boolean withVersion = true;
                     writeUpdate(tableName, keyData, "updateByKeyAndVersion", false, withVersion, colData);
                     writeUpdate(tableName, keyData, "updateByKeyAndVersion", true, withVersion, colData);

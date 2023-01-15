@@ -5,6 +5,7 @@ import com.bixuebihui.query.Paging;
 
 import {{config.packageName}}{{viewModifier}}.business.{{pojoClassName}}Manager;
 import {{config.packageName}}{{viewModifier}}.cmd.{{pojoClassName}}SearchCmd;
+import {{config.packageName}}{{viewModifier}}.cmd.{{pojoClassName}}DelCmd;
 import {{config.packageName}}{{viewModifier}}.dto.{{pojoClassName}}Dto;
 import {{config.packageName}}{{viewModifier}}.pojo.{{pojoClassName}};
 import {{config.packageName}}{{viewModifier}}.converters.{{pojoClassName}}Converter;
@@ -28,8 +29,7 @@ public class {{className}} {
         List<{{pojoClassName}}> infos = {{firstLow pojoClassName}}Manager.ar()
                     .query(searchCmd).findAll();
 
-        List<{{pojoClassName}}Dto> collect = infos.stream()
-                    .map({{pojoClassName}}Converter.MAPPER::toDto).collect(toList());
+        List<{{pojoClassName}}Dto> collect = {{pojoClassName}}Converter.MAPPER.toDtoList(infos);
 
         int count = {{firstLow pojoClassName}}Manager.ar()
                     .query(searchCmd).count();
@@ -40,6 +40,21 @@ public class {{className}} {
         return Pair.of(count, collect);
     }
 
+    public Boolean del({{pojoClassName}}DelCmd delCmd) {
+    {{#if hasLogicDelCol}}
+        return {{firstLow pojoClassName}}Manager.logicDeleteByIds(delCmd.get{{firstUp firstKeyName}}());
+    {{~ else }}
+        return {{firstLow pojoClassName}}Manager.deleteByKeys(delCmd.get{{firstUp firstKeyName}}s()
+                .toArray(new {{firstKeyType}}[0]));
+    {{/if}}
+    }
+
+    public {{pojoClassName}}Dto save({{pojoClassName}}Dto dto)
+    {
+        {{pojoClassName}} info = {{pojoClassName}}Converter.MAPPER.toDao(dto);
+        {{firstLow pojoClassName}}Manager.save(info);
+        return dto;
+    }
 
 
 }

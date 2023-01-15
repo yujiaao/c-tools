@@ -26,24 +26,20 @@ public class ProjectConfig {
     String testDir;
     String resourceDir;
     String jspDir;
-    private String serviceDir;
-    private String controllerDir;
-
     String schema;
     String addPrefix;
     String removePrefix;
     String versionColName = "version";
+    String delColName = "is_del";
     boolean indexes;
     boolean overWriteAll = false;
     boolean useCustomMetaTable = false;
     boolean useAnnotation = false;
     boolean useSwagger = true;
     boolean useAutoincrement = false;
-
     boolean generateProcedures = true;
     boolean generateAll=false;
     boolean r2dbc=false;
-
     boolean readWriteSeparate=false;
     /**
      * additional settings, used for comments, data checking, interfaces, etc.
@@ -68,6 +64,8 @@ public class ProjectConfig {
     Map<String, String> tablesList;
     Map<String, String> viewList;
     Map<String, String> excludeTablesList;
+    private String serviceDir;
+    private String controllerDir;
 
     public static ProjectConfig readFrom(Properties props, String baseDir) {
         ProjectConfig c = new ProjectConfig();
@@ -132,8 +130,6 @@ public class ProjectConfig {
 
         c.parseTableNames(props.getProperty("table_list"));
         c.parseViewNames(props.getProperty("view_list"));
-
-
         c.parseExcludeTableNames(props.getProperty("exclude_table_list"));
 
         // 有扩展表时用以下interface的设置值
@@ -516,5 +512,13 @@ public class ProjectConfig {
 
     public String getBaseServiceDir() {
         return serviceDir + File.separator + packageName2Dir(packageName);
+    }
+
+    public String getDelColName() {
+        return delColName;
+    }
+
+    public void setDelColName(String delColName) {
+        this.delColName = delColName;
     }
 }

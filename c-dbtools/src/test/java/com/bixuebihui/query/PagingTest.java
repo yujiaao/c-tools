@@ -1,7 +1,6 @@
 package com.bixuebihui.query;
 
 import com.bixuebihui.datasource.H2DataSource;
-import com.bixuebihui.db.ActiveRecord;
 import com.bixuebihui.db.ActiveRecordImpl;
 import com.bixuebihui.db.SqlPocket;
 import com.bixuebihui.jdbc.AbstractViewBaseDao;
@@ -16,10 +15,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.junit.Assert.assertEquals;
-
 public class PagingTest  {
-    class MyAr extends  AbstractViewBaseDao<User, Integer> {
+    static class MyAr extends  AbstractViewBaseDao<User, Integer> {
         MyAr(DataSource cp){
             super(cp);
         }
@@ -67,13 +64,13 @@ public class PagingTest  {
 
         ar = (ActiveRecordImpl<User, Integer>) p.toActiveRecordParams(ar, fields);
         res = ar.getCondStack().toCondition();
-        assertEquals(" where id = ?", res.getCondition().toString());
+        Assertions.assertEquals(" where id = ?", res.getCondition().toString());
         ar.clear();
 
         p.searchBean.begin_ModifiedTime= new Timestamp(System.currentTimeMillis());
         ar = (ActiveRecordImpl<User, Integer>) p.toActiveRecordParams(ar, fields);
         res = ar.getCondStack().toCondition();
-        assertEquals(" where id = ? and modifiedtime >= ?", res.getCondition().toString());
+        Assertions.assertEquals(" where id = ? and modifiedtime >= ?", res.getCondition().toString());
         ar.clear();
 
         p.searchBean.end_ModifiedTime= new Timestamp(System.currentTimeMillis());

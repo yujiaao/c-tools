@@ -5,17 +5,30 @@ import {{config.packageName}}{{viewModifier}}.dto.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
 
+import java.util.List;
+
 /**
 * @author xwx
 */
 @Mapper
 public interface {{className}} {
-
     {{className}} MAPPER = Mappers.getMapper({{className}}.class);
 
     //@Mapping(source = "status", target = "orderStatus")
     {{pojoClassName}}Dto toDto({{pojoClassName}} info);
+
     {{pojoClassName}} toDao({{pojoClassName}}Dto info);
 
+    List<{{pojoClassName}}Dto> toDtoList(List<{{pojoClassName}}> info);
+
+    List<{{pojoClassName}}> toDaoList(List<{{pojoClassName}}Dto> info);
+
+    /*
+        @AfterMapping
+        public void doAfter(ShopDTO shopDTO, @MappingTarget ShopVo shopVo){
+        List<FruitDTO> fruitDTOS = shopDTO.getFruitDTOS();
+            shopVo.setHasFruit(fruitDTOS!=null&&!fruitDTOS.isEmpty());
+            }
+    */
 }
 

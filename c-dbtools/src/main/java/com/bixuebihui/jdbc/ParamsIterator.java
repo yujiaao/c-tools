@@ -11,23 +11,26 @@ import java.util.NoSuchElementException;
  */
 public class ParamsIterator implements Iterable<Object[]> {
 
+    private final int total;
+
     public interface CurrentParameters {
         Object[] getCurrent(int index);
     }
 
-    int total = 0;
-    int index = 0;
-    CurrentParameters cur;
+    private final  CurrentParameters cur;
 
     /**
      * {@inheritDoc}
      */
     @Override
     public Iterator<Object[]> iterator() {
-        return new Iterator<Object[]>() {
+        return new Iterator<>() {
+            final int count = total;
+            int index = 0;
+
             @Override
             public boolean hasNext() {
-                return index < total;
+                return index < count;
             }
 
             @Override

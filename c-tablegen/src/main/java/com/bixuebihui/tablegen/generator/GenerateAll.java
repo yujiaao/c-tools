@@ -36,6 +36,8 @@ public class GenerateAll implements DiffHandler {
             new BusinessGenerator(),
 
             new SearchCmdGenerator(),
+            new DelCmdGenerator(),
+
             new MapperGenerator(),
             new DtoGenerator(),
             new ServiceGenerator(),

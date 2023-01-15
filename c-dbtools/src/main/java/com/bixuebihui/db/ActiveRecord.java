@@ -5,6 +5,8 @@ import com.bixuebihui.query.Paging;
 import org.apache.commons.lang3.StringUtils;
 
 import java.sql.SQLException;
+import java.util.Collection;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -51,6 +53,9 @@ public interface ActiveRecord<T> extends Record<T> {
      */
     ActiveRecord<T> in(String field, Object[] values);
 
+    ActiveRecord<T> in(String field, List<?> values);
+
+
     /**
      * <p>not in</p>
      * condition
@@ -60,6 +65,8 @@ public interface ActiveRecord<T> extends Record<T> {
      * @return a {@link ActiveRecord} object.
      */
     ActiveRecord<T> notIn(String field, Object[] values);
+
+    ActiveRecord<T> notIn(String field, List<?> values);
 
     /**
      * Call this method will reject empty string as where condition value
