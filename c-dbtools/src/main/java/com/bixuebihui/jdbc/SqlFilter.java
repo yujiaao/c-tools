@@ -3,10 +3,7 @@ package com.bixuebihui.jdbc;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
@@ -277,6 +274,19 @@ public class SqlFilter {
 		return this;
 	}
 
+	public SqlFilter addFilter(String property, Comparison comparison,List<?> value) {
+		if(!useNullAsCondition && value==null) {
+			return this;
+		}
+		if(filters==null) {
+			filters = new ArrayList<>();
+		}
+
+		filters.add(new Filter(property, comparison, value));
+
+		return this;
+	}
+
 	/**
 	 * 增加
 	 *
@@ -369,18 +379,26 @@ public class SqlFilter {
 	}
 
 	public SqlFilter isNull(String field){
-		return this.addFilter(field, Comparison.IS_NULL, null);
+		return this.addFilter(field, Comparison.IS_NULL, Collections.emptyList());
 	}
 
 	public SqlFilter isNotNull(String field){
-		return this.addFilter(field, Comparison.IS_NOT_NULL, null);
+		return this.addFilter(field, Comparison.IS_NOT_NULL,  Collections.emptyList());
 	}
 
 	public SqlFilter in(String field, Object[] value){
 		return this.addFilter(field, Comparison.IN, value);
 	}
 
+	public SqlFilter in(String field, List<?> value){
+		return this.addFilter(field, Comparison.IN, value);
+	}
+
 	public SqlFilter notIn(String field, Object[] value){
+		return this.addFilter(field, Comparison.NOT_IN, value);
+	}
+
+	public SqlFilter notIn(String field, List<?> value){
 		return this.addFilter(field, Comparison.NOT_IN, value);
 	}
 
@@ -539,6 +557,12 @@ public class SqlFilter {
 			this.property = property;
 			this.comparison = comparison;
 			this.value = value;
+		}
+
+		public Filter(String property,  Comparison comparison, List<?> value) {
+			this.property = property;
+			this.comparison = comparison;
+			this.value = value.toArray();
 		}
 
 		public String getProperty() {

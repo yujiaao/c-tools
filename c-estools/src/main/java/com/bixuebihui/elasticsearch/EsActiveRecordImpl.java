@@ -89,13 +89,23 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     /** {@inheritDoc} */
     @Override
     public EsActiveRecord<T> in(String field, Object values) {
-
         filterStack.in(field, (Object[]) values);
-
-
         return this;
     }
 
+    /** {@inheritDoc} */
+    @Override
+    public EsActiveRecord<T> in(String field, List<?> values) {
+        filterStack.in(field, values);
+        return this;
+    }
+
+    /** {@inheritDoc} */
+    @Override
+    public EsActiveRecord<T> notIn(String field, List<?> values) {
+        filterStack.notIn(field, values);
+        return this;
+    }
 
     /** {@inheritDoc} */
     @Override
