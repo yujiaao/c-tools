@@ -2,8 +2,9 @@ package {{config.packageName}}{{viewModifier}}.cmd;
 
 import java.sql.*;
 
-
 import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 
 {{> [header-comment.java]}}

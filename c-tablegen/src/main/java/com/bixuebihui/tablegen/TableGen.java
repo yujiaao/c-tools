@@ -51,6 +51,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
@@ -102,7 +104,8 @@ public class TableGen implements DiffHandler {
         TableGen us = new TableGen();
 
         if (argv.length >= 1) {
-            if ("--help".equals(argv[0])) {
+            if ("--help".equals(argv[0])
+                    || !Files.exists(Path.of(argv[0]))) {
                 usageAndExit(0);
                 return;
             }

@@ -162,6 +162,12 @@ public class ColumnData implements Serializable {
                 type = 24;
                 break;
 
+            case -16:
+                // SQL Server
+                // ntext
+                type = 25;
+                break;
+
 
             case 1111:
                 // PostGres
@@ -195,7 +201,7 @@ public class ColumnData implements Serializable {
                 break;
         }
 
-        if ((type < 1) || (type > 24)) {
+        if ((type < 1) || (type > 25)) {
             System.err.println("Warning! - column name : " + name +
                     " is of a type not recognised. Value : " + type);
             System.err.println("Defaulting to string");
