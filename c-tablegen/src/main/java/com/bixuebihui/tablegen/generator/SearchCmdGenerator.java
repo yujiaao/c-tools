@@ -55,6 +55,9 @@ public class SearchCmdGenerator extends BaseGenerator {
         return getPojoClassName(tableName) + CLASS_SUFFIX;
     }
 
+    protected String getSourceDir(){
+        return config.getBaseCmdDir();
+    }
     @Override
     protected void additionalSetting(Handlebars handlebars) {
         super.additionalSetting(handlebars);

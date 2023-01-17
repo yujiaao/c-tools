@@ -24,6 +24,9 @@ public class DtoGenerator extends BaseGenerator {
         return "dto.java";
     }
 
+    protected String getSourceDir(){
+        return config.getBaseDtoDir();
+    }
 
     public static String createKeyObjects(List<String> params) {
         StringBuilder objs = new StringBuilder();

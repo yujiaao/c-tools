@@ -66,6 +66,8 @@ public class ProjectConfig {
     Map<String, String> excludeTablesList;
     private String serviceDir;
     private String controllerDir;
+    private String dtoDir;
+    private String cmdDir;
 
     public static ProjectConfig readFrom(Properties props, String baseDir) {
         ProjectConfig c = new ProjectConfig();
@@ -88,8 +90,22 @@ public class ProjectConfig {
         c.controllerDir = baseDir + props.getProperty("controller_dir");
         LOG.debug("controller_dir:" +  c.controllerDir);
 
+        c.dtoDir = baseDir + props.getProperty("dto_dir");
+        LOG.debug("dto_dir:" +  c.dtoDir);
+
+        c.cmdDir = baseDir + props.getProperty("cmd_dir");
+        LOG.debug("cmd_dir:" +  c.cmdDir);
+
         if (StringUtils.isEmpty( c.serviceDir)) {
             c.serviceDir =  c.srcDir;
+        }
+
+        if (StringUtils.isEmpty( c.dtoDir)) {
+            c.dtoDir =  c.srcDir;
+        }
+
+        if (StringUtils.isEmpty( c.cmdDir)) {
+            c.cmdDir =  c.srcDir;
         }
 
         if (StringUtils.isEmpty( c.controllerDir)) {
@@ -165,6 +181,22 @@ public class ProjectConfig {
             res.addAll(Arrays.asList(property.trim().split(",")));
         }
         return res;
+    }
+
+    public String getDtoDir() {
+        return dtoDir;
+    }
+
+    public void setDtoDir(String dtoDir) {
+        this.dtoDir = dtoDir;
+    }
+
+    public String getCmdDir() {
+        return cmdDir;
+    }
+
+    public void setCmdDir(String cmdDir) {
+        this.cmdDir = cmdDir;
     }
 
     public Map<String, String> getViewList() {
@@ -508,6 +540,12 @@ public class ProjectConfig {
 
     public String getBaseControllerDir() {
         return controllerDir + File.separator + packageName2Dir(packageName);
+    }
+    public String getBaseCmdDir() {
+        return cmdDir + File.separator + packageName2Dir(packageName);
+    }
+    public String getBaseDtoDir() {
+        return dtoDir + File.separator + packageName2Dir(packageName);
     }
 
     public String getBaseServiceDir() {

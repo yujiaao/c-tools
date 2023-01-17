@@ -20,6 +20,9 @@ public class DelCmdGenerator extends BaseGenerator {
         return "del-cmd.java";
     }
 
+    protected String getSourceDir(){
+        return config.getBaseCmdDir();
+    }
 
     @Override
     protected Map<String, Object> getContextMap(String tableName) {
