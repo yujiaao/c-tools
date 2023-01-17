@@ -13,48 +13,21 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.processing.Generated;
 import java.util.List;
 
-import static java.util.stream.Collectors.toList;
 
-@Generated("com.github.yujiaao:tablegen")
-@Service
-public class {{className}} {
-    @Autowired
-    {{pojoClassName}}Manager {{firstLow pojoClassName}}Manager;
+public interface {{className}} {
 
-
-    public Pair<Integer, List<{{pojoClassName}}Dto>> queryList(Paging<{{pojoClassName}}SearchCmd> searchCmd) {
-        List<{{pojoClassName}}> infos = {{firstLow pojoClassName}}Manager.ar()
-                    .query(searchCmd).findAll();
-
-        List<{{pojoClassName}}Dto> collect = {{pojoClassName}}Converter.MAPPER.toDtoList(infos);
-
-        int count = {{firstLow pojoClassName}}Manager.ar()
-                    .query(searchCmd).count();
-
-
-        // do some thing
-
-        return Pair.of(count, collect);
-    }
-
-    public Boolean del({{pojoClassName}}DelCmd delCmd) {
-    {{#if hasLogicDelCol}}
-        return {{firstLow pojoClassName}}Manager.logicDeleteByIds(delCmd.get{{firstUp firstKeyName}}s());
-    {{~ else }}
-        return {{firstLow pojoClassName}}Manager.deleteByKeys(delCmd.get{{firstUp firstKeyName}}s()
-                .toArray(new {{firstKeyType}}[0]));
-    {{/if}}
-    }
-
-    public {{pojoClassName}}Dto save({{pojoClassName}}Dto dto)
-    {
-        {{pojoClassName}} info = {{pojoClassName}}Converter.MAPPER.toDao(dto);
-        {{firstLow pojoClassName}}Manager.save(info);
-        return dto;
-    }
-
-
+    /**
+     * 查询
+     */
+    Pair<Integer, List<{{pojoClassName}}Dto>> queryList(Paging<{{pojoClassName}}SearchCmd> searchCmd);
+    /**
+    * 删除
+    */
+    Boolean del({{pojoClassName}}DelCmd delCmd);
+    /**
+    * 新增、修改
+    */
+    {{pojoClassName}}Dto save({{pojoClassName}}Dto dto);
 }

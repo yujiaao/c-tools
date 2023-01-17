@@ -79,38 +79,25 @@ public class ProjectConfig {
         c.catalog = props.getProperty("catalog");
         LOG.debug("catalog:" +  c.catalog);
 
-        c.srcDir = baseDir + props.getProperty("src_dir");
+        String baseSrc = props.getProperty("src_dir");
+
+        c.srcDir = baseDir + baseSrc;
         LOG.debug("src_dir:" +  c.srcDir);
         c.resourceDir = baseDir + props.getProperty("resource_dir");
         LOG.debug("resource_dir:" +  c.resourceDir);
 
-        c.serviceDir = baseDir + props.getProperty("service_dir" );
+        c.serviceDir = baseDir + props.getProperty("service_dir",baseSrc );
         LOG.debug("service_dir:" +  c.serviceDir);
 
-        c.controllerDir = baseDir + props.getProperty("controller_dir");
+        c.controllerDir = baseDir + props.getProperty("controller_dir", baseSrc);
         LOG.debug("controller_dir:" +  c.controllerDir);
 
-        c.dtoDir = baseDir + props.getProperty("dto_dir");
+        c.dtoDir = baseDir + props.getProperty("dto_dir", baseSrc);
         LOG.debug("dto_dir:" +  c.dtoDir);
 
-        c.cmdDir = baseDir + props.getProperty("cmd_dir");
+        c.cmdDir = baseDir + props.getProperty("cmd_dir", baseSrc);
         LOG.debug("cmd_dir:" +  c.cmdDir);
 
-        if (StringUtils.isEmpty( c.serviceDir)) {
-            c.serviceDir =  c.srcDir;
-        }
-
-        if (StringUtils.isEmpty( c.dtoDir)) {
-            c.dtoDir =  c.srcDir;
-        }
-
-        if (StringUtils.isEmpty( c.cmdDir)) {
-            c.cmdDir =  c.srcDir;
-        }
-
-        if (StringUtils.isEmpty( c.controllerDir)) {
-            c.controllerDir =  c.serviceDir;
-        }
 
         if (StringUtils.isEmpty( c.resourceDir)) {
             c.resourceDir =  c.srcDir;
@@ -549,6 +536,9 @@ public class ProjectConfig {
     }
 
     public String getBaseServiceDir() {
+        return serviceDir + File.separator + packageName2Dir(packageName);
+    }
+    public String getBaseServiceImplDir() {
         return serviceDir + File.separator + packageName2Dir(packageName);
     }
 

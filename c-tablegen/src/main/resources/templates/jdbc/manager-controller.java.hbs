@@ -45,7 +45,7 @@ public class  {{className}} {
                             @RequestParam(value = "page", defaultValue = "1") Long page,
 
                             @ApiParam(name = "sortBy", value = "排序 sortBy=abc:asc,def:desc")
-                            @RequestParam(value = "sortBy", defaultValue = "") String sortBy,
+                            @RequestParam(value = "sortBy", defaultValue = "{{firstKeyName}}:desc") String sortBy,
 
                             @Validated
                             @ApiParam(value = "查询条件", required = true)

@@ -41,6 +41,7 @@ public class GenerateAll implements DiffHandler {
             new MapperGenerator(),
             new DtoGenerator(),
             new ServiceGenerator(),
+            new ServiceImplGenerator(),
             new ControllerGenerator(),
     };
 
