@@ -91,4 +91,8 @@ public class NameUtils {
 		return  propertiesFilename.substring(0, i);
 	}
 
+	public static String toSnakeCase(String p){
+		return CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_HYPHEN, p);
+	}
+
 }

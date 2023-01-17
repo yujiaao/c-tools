@@ -42,7 +42,7 @@ public class {{className}} {
 
     public Boolean del({{pojoClassName}}DelCmd delCmd) {
     {{#if hasLogicDelCol}}
-        return {{firstLow pojoClassName}}Manager.logicDeleteByIds(delCmd.get{{firstUp firstKeyName}}());
+        return {{firstLow pojoClassName}}Manager.logicDeleteByIds(delCmd.get{{firstUp firstKeyName}}s());
     {{~ else }}
         return {{firstLow pojoClassName}}Manager.deleteByKeys(delCmd.get{{firstUp firstKeyName}}s()
                 .toArray(new {{firstKeyType}}[0]));
