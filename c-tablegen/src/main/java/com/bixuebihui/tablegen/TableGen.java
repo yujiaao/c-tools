@@ -43,6 +43,7 @@ import com.bixuebihui.tablegen.generator.PojoGenerator;
 import com.bixuebihui.util.DbUtils;
 import com.bixuebihui.util.other.CMyFile;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.text.CaseUtils;
@@ -51,6 +52,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 
 import java.io.*;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
@@ -121,6 +124,13 @@ public class TableGen implements DiffHandler {
      */
     public static void usageAndExit(int code) {
         System.err.println("Usage: java com.bixuebihui.tablegen.TableGen properties_file_name");
+
+        try {
+            System.out.println(IOUtils.resourceToString("/usage.md", StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
         System.exit(code);
     }
 
