@@ -57,20 +57,20 @@ public class {{className}} {{interface}} {
     {{! handle the constructor }}
     public {{className}}()
     {
-    {{#each fields~}}
-        {{#eq name config.delColName ~}}
-            {{else~}}
-        {{#eq "String" type ~}}
-            {{#not field.nullable~}}
-                {{firstLow name}}="*";
-            {{/not~}}
-        {{else}} {{#let 'code'}}{{{typeDefaultValue javaType}}}{{/let}}
-            {{#neq code null~}}
-                {{firstLow name}}={{{code}}};
-            {{/neq~}}
-        {{/eq~}}
-        {{/eq~}}
-    {{/each}}
+{{#each fields~}}
+{{#eq name config.delColName ~}}
+{{else~}}
+    {{#eq "String" type ~}}
+        {{#not field.nullable~}}
+            {{firstLow name}}="*";
+        {{/not~}}
+    {{else}} {{#let 'code'}}{{{typeDefaultValue javaType}}}{{/let}}
+        {{#neq code null~}}
+            {{firstLow name}}={{{code}}};
+        {{/neq~}}
+    {{/eq~}}
+{{/eq~}}
+{{/each}}
     }
 
     public String toXml()
@@ -86,8 +86,9 @@ public class {{className}} {{interface}} {
         {{~else~}}
         s.append(" {{firstLow name}}=\"").append(this.get{{firstUp name}}()).append("\"");
         {{/eq~}}
-{{/each~}}
 {{/eq}}
+{{/each~}}
+
         s.append(" />");
         s.append(ln);
         return s.toString();
