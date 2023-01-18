@@ -107,7 +107,8 @@ public class DtoGenerator extends BaseGenerator {
         });
 
 
-        handlebars.registerHelper("columnAnnotation", (col, options) -> TableUtils.getColumnAnnotation(config, setInfo, options.param(0),(ColumnData) col));
+        handlebars.registerHelper("columnAnnotation", (col, options) ->
+                TableUtils.getColumnAnnotation(config, setInfo, options.param(0),(ColumnData) col, false));
 
         handlebars.registerHelper("columnDescription", (col, options) -> TableUtils.getColumnDescription(config,
                 setInfo.getColumnsExtInfo(options.param(0)), options.param(0), (ColumnData)col));

@@ -9,9 +9,19 @@ import org.apache.commons.lang3.tuple.Pair;
 import com.bixuebihui.query.Paging;
 import com.bixuebihui.BaseModel;
 import com.bixuebihui.PageModel;
+{{#eq config.swaggerVersion "2" }}
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+{{else}}
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.info.Info;
+{{/eq}}
+
+
 import org.apache.commons.lang3.time.StopWatch;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,27 +40,44 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/{{snakeCase tableName}}")
+{{#eq config.swaggerVersion "2" }}
 @Api(tags = "{{tableInfo.comment}}")
+{{else}}
+@OpenAPIDefinition(info = @Info(description = "{{tableInfo.comment}}"))
+{{/eq}}
 public class  {{className}} {
     @Autowired
     {{pojoClassName}}Service {{firstLow pojoClassName}}Service;
 
-    @ApiOperation("取{{tableName}}列表")
+    {{#eq config.swaggerVersion "2" }}@ApiOperation({{else}}@Operation(summary ={{/eq~}}"取{{tableName}}列表")
     @GetMapping(value = "/list", produces = {"application/json;charset=UTF-8"})
     public BaseModel<PageModel<{{pojoClassName}}Dto>> list(
-                            @ApiParam(name = "maxRows", value = "一页大小")
-                            @RequestParam(value = "maxRows", defaultValue = "10") Long maxRows,
-
-                            @ApiParam(name = "page", value = "页码")
-                            @RequestParam(value = "page", defaultValue = "1") Long page,
-
-                            @ApiParam(name = "sortBy", value = "排序 sortBy=abc:asc,def:desc")
-                            @RequestParam(value = "sortBy", defaultValue = "{{firstKeyName}}:desc") String sortBy,
-
-                            @Validated
-                            @ApiParam(value = "查询条件", required = true)
-                            {{pojoClassName}}SearchCmd  searchCmd,
-                            HttpServletRequest request) {
+    {{#eq config.swaggerVersion "2" }}
+        @ApiParam(name = "maxRows", value = "一页大小")
+    {{else}}
+        @Parameter(name ="maxRows", description = "一页大小")
+    {{/eq}}
+        @RequestParam(value = "maxRows", defaultValue = "10") Long maxRows,
+    {{#eq config.swaggerVersion "2" }}
+        @ApiParam(name = "page", value = "页码")
+    {{else}}
+        @Parameter(name ="page", description = "页码")
+    {{/eq}}
+        @RequestParam(value = "page", defaultValue = "1") Long page,
+    {{#eq config.swaggerVersion "2" }}
+        @ApiParam(name = "sortBy", value = "排序 sortBy=abc:asc,def:desc")
+    {{else}}
+        @Parameter(name ="sortBy", description = "排序 sortBy=abc:asc,def:desc")
+    {{/eq}}
+        @RequestParam(value = "sortBy", defaultValue = "{{firstKeyName}}:desc") String sortBy,
+        @Validated
+    {{#eq config.swaggerVersion "2" }}
+        @ApiParam(value = "查询条件", required = true)
+    {{else}}
+        @Parameter(required ="true", description = "查询条件")
+    {{/eq}}
+        {{pojoClassName}}SearchCmd  searchCmd,
+        HttpServletRequest request) {
 
         Paging<{{pojoClassName}}SearchCmd> searchBean = new Paging<>();
         searchBean.setSearchBean(searchCmd);
@@ -77,12 +104,16 @@ public class  {{className}} {
         return res;
     }
 
-
-    @ApiOperation("按主键删除{tableName}}记录")
+    {{#eq config.swaggerVersion "2" }}@ApiOperation({{else}}@Operation(summary ={{/eq~}}
+    "按主键删除{tableName}}记录")
     @PostMapping(value = "/del", produces = {"application/json;charset=UTF-8"})
     public BaseModel<Boolean> del(
         @Validated
+    {{#eq config.swaggerVersion "2" }}
         @ApiParam(value = "主键", required = true)
+    {{else}}
+        @Parameter(required ="true", description = "主键")
+    {{/eq}}
         {{pojoClassName}}DelCmd  delCmd,
         HttpServletRequest request) {
 
@@ -93,13 +124,16 @@ public class  {{className}} {
         return res;
     }
 
-    @ApiOperation("保存{tableName}}记录")
+    {{#eq config.swaggerVersion "2" }}@ApiOperation({{else}}@Operation(summary ={{/eq~}} "保存{tableName}}记录")
     @PostMapping(value = "/save", produces = {"application/json;charset=UTF-8"})
     public BaseModel<{{pojoClassName}}Dto> save(
         @Validated
-        @ApiParam(value = "主键", required = true)
-        {{pojoClassName}}Dto  dto,
-        HttpServletRequest request) {
+        {{#eq config.swaggerVersion "2" }}
+            @ApiParam(value = "{{tableName}} 数据对象", required = true)
+        {{else}}
+            @Parameter(required ="true", description = "{{tableName}} 数据对象")
+        {{/eq}}
+            {{pojoClassName}}Dto  dto, HttpServletRequest request) {
 
         BaseModel<{{pojoClassName}}Dto> res = new BaseModel<>();
             res.setResult( {{firstLow pojoClassName}}Service.save(dto));

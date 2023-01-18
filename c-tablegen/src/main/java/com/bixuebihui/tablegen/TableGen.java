@@ -1369,7 +1369,7 @@ public class TableGen implements DiffHandler {
     }
 
     String getColumnAnnotation(String tableName, ColumnData cd) {
-        return TableUtils.getColumnAnnotation(config, setInfo, tableName, cd);
+        return TableUtils.getColumnAnnotation(config, setInfo, tableName, cd, true);
     }
 
     /**

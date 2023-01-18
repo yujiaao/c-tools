@@ -25,7 +25,7 @@ public class {{className}} implements  {{pojoClassName}}Service{
     @Autowired
     {{pojoClassName}}Manager {{firstLow pojoClassName}}Manager;
 
-
+    @Override
     public Pair<Integer, List<{{pojoClassName}}Dto>> queryList(Paging<{{pojoClassName}}SearchCmd> searchCmd) {
         List<{{pojoClassName}}> infos = {{firstLow pojoClassName}}Manager.ar()
                     .query(searchCmd).findAll();
@@ -41,6 +41,7 @@ public class {{className}} implements  {{pojoClassName}}Service{
         return Pair.of(count, collect);
     }
 
+    @Override
     public Boolean del({{pojoClassName}}DelCmd delCmd) {
 {{#if hasKey}}
     {{#if hasLogicDelCol}}
@@ -54,6 +55,7 @@ public class {{className}} implements  {{pojoClassName}}Service{
 {{/if}}
     }
 
+    @Override
     public {{pojoClassName}}Dto save({{pojoClassName}}Dto dto)
     {
         {{pojoClassName}} info = {{pojoClassName}}Converter.MAPPER.toDao(dto);

@@ -68,6 +68,10 @@ public class ProjectConfig {
     private String controllerDir;
     private String dtoDir;
     private String cmdDir;
+    /**
+     * Swagger Version 2  或 3
+     */
+    private String swaggerVersion;
 
     public static ProjectConfig readFrom(Properties props, String baseDir) {
         ProjectConfig c = new ProjectConfig();
@@ -83,7 +87,7 @@ public class ProjectConfig {
 
         c.srcDir = baseDir + baseSrc;
         LOG.debug("src_dir:" +  c.srcDir);
-        c.resourceDir = baseDir + props.getProperty("resource_dir");
+        c.resourceDir = baseDir + props.getProperty("resource_dir", baseSrc);
         LOG.debug("resource_dir:" +  c.resourceDir);
 
         c.serviceDir = baseDir + props.getProperty("service_dir",baseSrc );
@@ -99,14 +103,16 @@ public class ProjectConfig {
         LOG.debug("cmd_dir:" +  c.cmdDir);
 
 
-        if (StringUtils.isEmpty( c.resourceDir)) {
-            c.resourceDir =  c.srcDir;
-        }
+        c.delColName = props.getProperty("del_col_name", c.delColName);
+
+        c.versionColName = props.getProperty("del_col_name", c.versionColName);
+
 
         c.testDir = baseDir + props.getProperty("test_dir");
         LOG.debug("test_dir:" +  c.testDir);
         c.jspDir = baseDir + props.getProperty("jsp_dir");
         LOG.debug("jsp_dir:" +  c.jspDir);
+
         c.packageName = props.getProperty("package_name");
         LOG.debug("package_name:" +  c.packageName);
 
@@ -150,6 +156,10 @@ public class ProjectConfig {
 
         c.overWriteAll = getBooleanCfg(props, "over_write_all");
         c.useAnnotation = getBooleanCfg(props, "use_annotation");
+
+        c.swaggerVersion = props.getProperty("swagger_version", "2");
+
+
         c.useAutoincrement = getBooleanCfg(props, "use_autoincrement");
         c.generateAll = getBooleanCfg(props, "generate_all");
 
@@ -168,6 +178,14 @@ public class ProjectConfig {
             res.addAll(Arrays.asList(property.trim().split(",")));
         }
         return res;
+    }
+
+    public String getSwaggerVersion() {
+        return swaggerVersion;
+    }
+
+    public void setSwaggerVersion(String swaggerVersion) {
+        this.swaggerVersion = swaggerVersion;
     }
 
     public String getDtoDir() {

@@ -830,32 +830,34 @@ public class TableUtils {
     }
 
 
-    public static String getColumnAnnotation(ProjectConfig config, TableSetInfo setInfo, String tableName, ColumnData cd) {
+    public static String getColumnAnnotation(ProjectConfig config, TableSetInfo setInfo, String tableName, ColumnData cd, boolean genConstraint) {
         StringBuilder sb = new StringBuilder();
         if (config.useAnnotation) {
 
-            if (setInfo.getTableDataExt()  != null && setInfo.getTableDataExt().get(tableName) != null) {
-                Map<String, T_metacolumn> cols = setInfo.getTableDataExt().get(tableName).getColumns();
-                if (cols != null && cols.get(cd.getName()) != null) {
-                    T_metacolumn col = cols.get(cd.getName());
-                    sb.append(col.getAnnotation() == null ? "" : col.getAnnotation() + "\n");
-                } else {
-                    LOG.info("There NO settings for table columns:" + tableName);
-                }
-            }
-
-            if ("String".equals(cd.getJavaType())) {
-                //if columns is JSON type, there is no column size.
-                if (sb.indexOf("@Size") < 0 && cd.getColumns()>0) {
-                    sb.append("@Size(max=").append(cd.getColumns()).append(")\n");
-                }
-            }
-            if (isNeedNotNullAnnotation(config, cd)) {
-                if (sb.indexOf("@NotNull") < 0) {
-                    if(sb.length()>0){
-                        sb.append("    ");
+            if(genConstraint) {
+                if (setInfo.getTableDataExt() != null && setInfo.getTableDataExt().get(tableName) != null) {
+                    Map<String, T_metacolumn> cols = setInfo.getTableDataExt().get(tableName).getColumns();
+                    if (cols != null && cols.get(cd.getName()) != null) {
+                        T_metacolumn col = cols.get(cd.getName());
+                        sb.append(col.getAnnotation() == null ? "" : col.getAnnotation() + "\n");
+                    } else {
+                        LOG.info("There NO settings for table columns:" + tableName);
                     }
-                    sb.append("@NotNull\n");
+                }
+
+                if ("String".equals(cd.getJavaType())) {
+                    //if columns is JSON type, there is no column size.
+                    if (sb.indexOf("@Size") < 0 && cd.getColumns() > 0) {
+                        sb.append("@Size(max=").append(cd.getColumns()).append(")\n");
+                    }
+                }
+                if (isNeedNotNullAnnotation(config, cd)) {
+                    if (sb.indexOf("@NotNull") < 0) {
+                        if (sb.length() > 0) {
+                            sb.append("    ");
+                        }
+                        sb.append("@NotNull\n");
+                    }
                 }
             }
 
@@ -863,7 +865,11 @@ public class TableUtils {
                 if(sb.length()>0){
                     sb.append("    ");
                 }
-                sb.append("@Schema(title = \"").append(cd.getComment()).append("\")");
+                if(config.getSwaggerVersion().equals("2")) {
+                    sb.append("@ApiModelProperty(\"").append(cd.getComment()).append("\")");
+                }else{
+                    sb.append("@Schema(description = \"").append(cd.getComment()).append("\")");
+                }
             }
         }
 
