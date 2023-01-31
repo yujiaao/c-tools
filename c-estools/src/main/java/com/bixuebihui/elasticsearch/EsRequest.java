@@ -578,6 +578,21 @@ public class EsRequest {
         return resCount;
     }
 
+    public int deleteByQuery(Query query, boolean conflictsProceed) throws JsonProcessingException {
+
+        String q = EsQueryBuilder.buildUpdateByQuery(query, emptyMap());
+
+        String action = EsQueryBuilder.ACTION_DELETE_BY_QUERY + (conflictsProceed ? "?conflicts=proceed" : "");
+
+        String res =  post(q, action);
+        JsonNode result = mapper.readTree(res);
+        int resCount = result.path("deleted").asInt();
+        if (resCount == 0) {
+            logger.error("删除记录为0, action={} \n q={}\n result=\n{}\n", action, q, result.toPrettyString());
+        }
+        return resCount;
+    }
+
     static class Document {
         String id;
         Map<String, Object> values;

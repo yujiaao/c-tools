@@ -391,8 +391,13 @@ public abstract class BaseEsOperator<T,V> implements Record<T>{
         return toObjectList(res, clz);
     }
 
-    public int deleteByQuery(Query sql) {
-        throw new NotImplementedException();
+    public int deleteByQuery(Query query) {
+        try {
+            return request.deleteByQuery(query, true);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            throw new DbException(e.getMessage());
+        }
     }
 
 
