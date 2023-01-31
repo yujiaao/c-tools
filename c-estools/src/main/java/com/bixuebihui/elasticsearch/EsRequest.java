@@ -72,9 +72,11 @@ public class EsRequest {
                     // doc id
                     "_id: hits.hits[*]._id," +
                     // rows
-                    "data:hits.hits[*]._source," +
+                    "items:hits.hits[*]._source," +
                     // paging
-                    "paging:{totalRows:hits.total.value}}");
+                    "paging:{totalRows:hits.total}, "+
+                    "total: hits.total} "
+            );
     private final String username;
     private final String password;
     /**
@@ -179,13 +181,14 @@ public class EsRequest {
      * "C _key",
      * "c_name",
      * "c_value"],
-     * "data": [{
+     * "items": [{
      * "c_key":"key1",
      * "c_name":"name1",
      * "c_value":"value1"}
      * ],
      * <p>
-     * "paging":{"page":2,"maxRows":1,"rowEnd":2,"rowStart":1,"totalRows":3}}
+     * "paging":{"page":2,"maxRows":1,"rowEnd":2,"rowStart":1,"totalRows":3}},
+     * "total":3
      *
      * @param esJson
      * @return json string
