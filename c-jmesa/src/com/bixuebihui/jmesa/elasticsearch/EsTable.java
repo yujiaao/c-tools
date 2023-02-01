@@ -20,7 +20,7 @@ import static java.util.Collections.emptySet;
  * @author xwx
  */
 public class EsTable extends EasyTable {
-    EsRequest request;
+    protected EsRequest request;
     public EsTable(String  host,String username, String password,String tableCaption, String indexName) {
         super();
         request =  new EsRequest(host, username, password, indexName);
@@ -42,7 +42,7 @@ public class EsTable extends EasyTable {
 
             String query = filter.toEsObject(filter.toQuery(), rowSelect.getRowStart(),
                     rowSelect.getRowEnd() - rowSelect.getRowStart(), emptySet(),emptySet(), sort, scriptSource, scriptParams);
-            return EsRequest.esJsonToTableJson(request.search(query), rowSelect.getMaxRows(),rowSelect.getRowStart(), rowSelect.getRowEnd(), rowSelect.getTotalRows(), rowSelect.getPage() );
+            return request.esJsonToTableJson(request.search(query), rowSelect.getMaxRows(),rowSelect.getRowStart(), rowSelect.getRowEnd(), rowSelect.getTotalRows(), rowSelect.getPage() );
         }catch (Exception e){
             throw new SQLException(e);
         }

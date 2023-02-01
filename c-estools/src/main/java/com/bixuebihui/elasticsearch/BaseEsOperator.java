@@ -180,7 +180,7 @@ public abstract class BaseEsOperator<T,V> implements Record<T>{
     public Wrapper<T> toObjectWrapper(String jsonString) {
         try {
 
-           String json =  EsRequest.esJsonToTableJson(jsonString, 0,0,0,0,0);
+           String json =  request.esJsonToTableJson(jsonString, 0,0,0,0,0);
             JsonWapper wapper = builder();
             JavaType type = wapper.getObjectMapper().getTypeFactory().constructParametricType(Wrapper.class, getType());
             Wrapper<T> res=  wapper.getObjectMapper().readValue(json, type);
@@ -212,7 +212,7 @@ public abstract class BaseEsOperator<T,V> implements Record<T>{
 
     public <K> List<K> toObjectList(String jsonString, Class<K> clz) {
         try {
-            JsonNode node = EsRequest.getTableJsonNode(jsonString, 0,0,0,0,0);
+            JsonNode node = request.getTableJsonNode(jsonString, 0,0,0,0,0);
             if(node==null){
                 return Collections.emptyList();
             }
