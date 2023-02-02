@@ -35,12 +35,8 @@ public class ControllerGenerator extends BaseGenerator {
     @Override
     protected Map<String, Object> getContextMap(String tableName) {
         Map<String, Object> v = super.getContextMap(tableName);
-        List<ColumnData> cols = isView ? this.setInfo.getViewCols(tableName) : this.setInfo.getTableCols(tableName);
-        List<String> keys = getKeyData(tableName);
-        if(keys.isEmpty() && isView){
-            keys = new ArrayList<>();
-            keys.add(cols.get(0).getName());
-        }
+        List<ColumnData> cols = getColsInfo(tableName);
+        List<String> keys = getKeysInfo(cols, tableName);
 
         v.put("hasVersionCol", containsColName(cols
                 , config.getVersionColName()));
@@ -52,7 +48,7 @@ public class ControllerGenerator extends BaseGenerator {
         v.put("whereNoLike", TableGen.createPreparedWhereClause(keys,
                 false, cols));
 
-        v.put("isView", isView);
+        v.put("isView", isView());
         return v;
     }
 

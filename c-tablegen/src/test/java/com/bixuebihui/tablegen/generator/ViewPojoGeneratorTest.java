@@ -10,11 +10,11 @@ import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class ViewGeneratorTest {
+class ViewPojoGeneratorTest {
 
     @Test
     void getTargetFileName() {
-        ViewGenerator gen = new ViewGenerator();
+        ViewPojoGenerator gen = new ViewPojoGenerator();
         gen.init(this.getClass().getResource("/tablegen.properties").getPath());
         String res = gen.getTargetFileName("Test");
         assertThat(res, StringEndsWith.endsWith("view/Test.java"));
@@ -27,7 +27,7 @@ class ViewGeneratorTest {
 
     @Test
     void testGenerate() throws IOException {
-        ViewGenerator gen = new ViewGenerator();
+        ViewPojoGenerator gen = new ViewPojoGenerator();
         gen.init(this.getClass().getResource("/tablegen.properties").getPath());
         String res = gen.generate("my_test_view", 0);
 
@@ -36,7 +36,7 @@ class ViewGeneratorTest {
 
     @Test
     void testGenerateViewAsField() throws IOException {
-        ViewGenerator gen = new ViewGenerator();
+        ViewPojoGenerator gen = new ViewPojoGenerator();
         gen.init(this.getClass().getResource("/tablegen.properties").getPath());
         String res = gen.generate("my_test_view",0);
         assertThat("contains as field", res, containsString("DegreePlus"));

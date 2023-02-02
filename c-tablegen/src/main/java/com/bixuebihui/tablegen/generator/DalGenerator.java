@@ -237,12 +237,8 @@ public class DalGenerator extends BaseGenerator {
     @Override
     protected Map<String, Object> getContextMap(String tableName) {
         Map<String, Object> v = super.getContextMap(tableName);
-        List<ColumnData> cols = isView ? this.setInfo.getViewCols(tableName) : this.setInfo.getTableCols(tableName);
-        List<String> keys = getKeyData(tableName);
-        if(keys.isEmpty() && isView){
-            keys = new ArrayList<>();
-            keys.add(cols.get(0).getName());
-        }
+        List<ColumnData> cols = getColsInfo(tableName);
+        List<String> keys = getKeysInfo(cols, tableName);
 
         v.put("hasVersionCol", containsColName(cols
                 , config.getVersionColName()));
@@ -260,7 +256,7 @@ public class DalGenerator extends BaseGenerator {
                 false, cols));
         v.put("keyObjects", createKeyObjects(keys));
 
-        v.put("isView", isView);
+        v.put("isView", isView());
         v.put("mapRow", mapRow(cols, this.getPojoClassName(tableName)));
         if(config.getR2dc()) {
             v.put("mapRow", mapRowR2dbc(cols, this.getPojoClassName(tableName)));

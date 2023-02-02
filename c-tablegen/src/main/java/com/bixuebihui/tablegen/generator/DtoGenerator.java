@@ -5,7 +5,7 @@ import com.bixuebihui.tablegen.TableUtils;
 import com.bixuebihui.tablegen.entry.ColumnData;
 import com.github.jknack.handlebars.Handlebars;
 
-import java.util.ArrayList;
+import java.io.File;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +23,12 @@ public class DtoGenerator extends BaseGenerator {
     String getTemplateFileName() {
         return "dto.java";
     }
+
+    @Override
+    public boolean wantToGenerate(String fileName) {
+        return super.wantToGenerate(fileName) && ! new File(fileName).exists();
+    }
+
 
     protected String getSourceDir(){
         return config.getBaseDtoDir();
@@ -54,12 +60,8 @@ public class DtoGenerator extends BaseGenerator {
     @Override
     protected Map<String, Object> getContextMap(String tableName) {
         Map<String, Object> v = super.getContextMap(tableName);
-        List<ColumnData> cols = isView ? this.setInfo.getViewCols(tableName) : this.setInfo.getTableCols(tableName);
-        List<String> keys = getKeyData(tableName);
-        if(keys.isEmpty() && isView){
-            keys = new ArrayList<>();
-            keys.add(cols.get(0).getName());
-        }
+        List<ColumnData> cols = getColsInfo(tableName);
+        List<String> keys = getKeysInfo(cols, tableName);
 
         v.put("hasVersionCol", containsColName(cols
                 , config.getVersionColName()));
@@ -72,7 +74,7 @@ public class DtoGenerator extends BaseGenerator {
                 false, cols));
         v.put("keyObjects", createKeyObjects(keys));
 
-        v.put("isView", isView);
+        v.put("isView", isView());
 
         return v;
     }

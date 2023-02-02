@@ -192,7 +192,7 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
         {
             return this.ar()
                 .in(F.{{constantName firstKeyName}}, keys)
-                .update(F.{{config.delColName}}, 1) == keys.size();
+                .update(F.{{constantName config.delColName}}, 1) == keys.size();
         }
     {{/if}}
 

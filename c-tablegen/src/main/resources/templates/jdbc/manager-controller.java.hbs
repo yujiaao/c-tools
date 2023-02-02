@@ -1,6 +1,8 @@
 package {{config.packageName}}{{viewModifier}}.controller;
 
+{{#unless tableInfo.isView}}
 import {{config.packageName}}{{viewModifier}}.cmd.{{pojoClassName}}DelCmd;
+{{/unless}}
 import {{config.packageName}}{{viewModifier}}.dto.{{pojoClassName}}Dto;
 import {{config.packageName}}{{viewModifier}}.cmd.{{pojoClassName}}SearchCmd;
 import {{config.packageName}}{{viewModifier}}.service.{{pojoClassName}}Service;
@@ -103,7 +105,7 @@ public class  {{className}} {
         res.setMessage("success");
         return res;
     }
-
+{{#unless tableInfo.isView}}
     {{#eq config.swaggerVersion "2" }}@ApiOperation({{else}}@Operation(summary ={{/eq~}}
     "按主键删除{tableName}}记录")
     @PostMapping(value = "/del", produces = {"application/json;charset=UTF-8"})
@@ -141,4 +143,5 @@ public class  {{className}} {
             res.setMessage("success");
         return res;
     }
+{{/unless}}
 }

@@ -50,7 +50,16 @@ public class GenerateAll implements DiffHandler {
     };
 
     Generator[] perViewGenerator = new Generator[]{
-            new ViewGenerator(), new DalViewGenerator(), new BusinessViewGenerator(),
+            new ViewPojoGenerator(),
+            new ViewDalGenerator(),
+            new ViewBusinessGenerator(),
+
+            new ViewSearchCmdGenerator(),
+            new ViewMapperGenerator(),
+            new ViewDtoGenerator(),
+            new ViewServiceGenerator(),
+            new ViewServiceImplGenerator(),
+            new ViewControllerGenerator(),
     };
 
     Generator[] onceGenerator = new Generator[]{

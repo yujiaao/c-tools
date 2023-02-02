@@ -52,7 +52,9 @@ public abstract class BaseGenerator implements Generator {
 
     Properties esConfig;
 
-    protected boolean isView = false;
+    protected boolean isView(){
+        return this instanceof IView;
+    }
 
     public BaseGenerator() {
         config = new ProjectConfig();
@@ -101,6 +103,22 @@ public abstract class BaseGenerator implements Generator {
         this.esConfig = prop;
     }
 
+    protected List<ColumnData> getColsInfo(String tableName) {
+        List<ColumnData> cols = isView() ? this.setInfo.getViewCols(tableName) :
+                this.setInfo.getTableCols(tableName);
+
+        return cols;
+    }
+
+    protected List<String> getKeysInfo(List<ColumnData> cols, String tableName){
+        List<String> keys = getKeyData(tableName);
+        if(keys.isEmpty() && isView()){
+            keys = new ArrayList<>();
+            keys.add(cols.get(0).getName());
+        }
+        return keys;
+    }
+
     String getClassSuffix(){return "";}
 
     protected String getSourceDir(){
@@ -119,7 +137,7 @@ public abstract class BaseGenerator implements Generator {
 
     String getTargetFileName(String subDir, String tableName) {
         return
-                getBaseDir() + File.separator + subDir + File.separator + getPojoClassName(tableName)
+                getBaseDir() + (isView() ?  File.separator + VIEW_DIR : "")+ File.separator + subDir + File.separator + getPojoClassName(tableName)
                         + getClassSuffix() + ".java";
     }
 
@@ -250,7 +268,7 @@ public abstract class BaseGenerator implements Generator {
         v.put("setInfo", setInfo);
         v.put("config", config);
 
-        if(isView) {
+        if(isView()) {
             setViewContext(v, tableName);
         }
         return v;
@@ -308,14 +326,14 @@ public abstract class BaseGenerator implements Generator {
     }
 
     private List<ColumnData> getColumnData(String tableName) {
-        List<ColumnData> columnData = isView ? setInfo.getViewInfos().get(tableName).getFields() :
+        List<ColumnData> columnData = isView() ? setInfo.getViewInfos().get(tableName).getFields() :
                 setInfo.getTableInfos().get(tableName).getFields();
         return columnData;
     }
 
     protected List<String> getKeyData(String tableName) {
         List<String> keys =  setInfo.getTableKeys(tableName);
-        if(keys.isEmpty() && isView){
+        if(keys.isEmpty() && isView()){
             keys = new ArrayList<>();
             keys.add(getColumnData(tableName).get(0).getName());
         }

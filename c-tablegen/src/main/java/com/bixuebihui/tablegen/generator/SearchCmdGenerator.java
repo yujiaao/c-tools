@@ -1,19 +1,12 @@
 package com.bixuebihui.tablegen.generator;
 
-import com.bixuebihui.tablegen.TableGen;
 import com.bixuebihui.tablegen.TableUtils;
 import com.bixuebihui.tablegen.entry.ColumnData;
 import com.github.jknack.handlebars.Handlebars;
 
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.io.File;
 import java.util.List;
 import java.util.Map;
-
-import static com.bixuebihui.tablegen.NameUtils.columnNameToConstantName;
-import static com.bixuebihui.tablegen.NameUtils.firstUp;
-import static com.bixuebihui.tablegen.TableGen.INDENT;
-import static java.util.Collections.emptyList;
 
 /**
  * @author xwx
@@ -27,16 +20,16 @@ public class SearchCmdGenerator extends BaseGenerator {
         return "search-cmd.java";
     }
 
+    @Override
+    public boolean wantToGenerate(String fileName) {
+        return super.wantToGenerate(fileName) && ! new File(fileName).exists();
+    }
+
 
     @Override
     protected Map<String, Object> getContextMap(String tableName) {
         Map<String, Object> v = super.getContextMap(tableName);
-        List<ColumnData> cols = isView ? this.setInfo.getViewCols(tableName) : this.setInfo.getTableCols(tableName);
-        List<String> keys = getKeyData(tableName);
-        if(keys.isEmpty() && isView){
-            keys = new ArrayList<>();
-            keys.add(cols.get(0).getName());
-        }
+        getColsInfo(tableName);
         return v;
     }
 

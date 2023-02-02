@@ -7,7 +7,9 @@ import com.bixuebihui.tablegen.entry.TableInfo;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static java.sql.ResultSetMetaData.columnNullable;
 import static com.bixuebihui.db.Dialect.*;
@@ -30,19 +32,14 @@ public class OnFlyViewUtils {
         boolean isAutoIncrement;
         String remarks;
 
+        Set<String> existsFields = new HashSet<>();
+
         try {
             for (int i=1; i<=rs.getColumnCount(); i++) {
 
                 String colName = rs.getColumnLabel(i);
 
-                boolean existsCol = false;
-                for (ColumnData dt : colData) {
-                    if (dt.getName().equalsIgnoreCase(colName)) {
-                        existsCol = true;
-                        break;
-                    }
-                }
-                if (existsCol) {
+                if(existsFields.contains(colName.toLowerCase())){
                     continue;
                 }
 
@@ -69,6 +66,8 @@ public class OnFlyViewUtils {
                 cd = new ColumnData(colName, colType, colCols, isNullable,
                         isAutoIncrement, decimalDigits, null, remarks, isR2dbc);
                 colData.add(cd);
+
+                existsFields.add(cd.getName().toLowerCase());
             }
         } catch (SQLException e) {
             System.err.println("Table name:" );

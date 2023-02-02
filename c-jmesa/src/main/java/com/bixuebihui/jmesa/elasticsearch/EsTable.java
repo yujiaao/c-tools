@@ -4,6 +4,9 @@ package com.bixuebihui.jmesa.elasticsearch;
 import com.bixuebihui.elasticsearch.ElasticSearchFilter;
 import com.bixuebihui.elasticsearch.EsRequest;
 import com.bixuebihui.jmesa.EasyTable;
+import com.bixuebihui.jmesa.entry.Query;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jmesa.limit.Limit;
 import org.jmesa.limit.LimitFactory;
 import org.jmesa.limit.RowSelect;
@@ -47,6 +50,16 @@ public class EsTable extends EasyTable {
             throw new SQLException(e);
         }
     }
+
+    public String json(Query jsonQuery) throws SQLException {
+        try {
+            //TODO must accept JSON object directly, avoid using String conversion!
+            return json(new ObjectMapper().writeValueAsString(jsonQuery));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 
     private LinkedHashMap<String,String> toEsSort(SortSet sortSet) {
         LinkedHashMap<String,String> res = new LinkedHashMap<>();

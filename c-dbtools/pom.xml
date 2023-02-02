@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.github.yujiaao</groupId>
         <artifactId>c-tools-parent</artifactId>
-        <version>1.13.2.22</version>
+        <version>1.13.3.0</version>
     </parent>
 
     <artifactId>c-dbtools</artifactId>
@@ -326,7 +326,7 @@
         <dependency>
             <groupId>com.github.yujiaao</groupId>
             <artifactId>common-utils</artifactId>
-            <version>1.13.2.22</version>
+            <version>1.13.3.0</version>
             <scope>compile</scope>
         </dependency>
 
@@ -350,6 +350,15 @@
             <version>${junitVersion}</version>
             <scope>test</scope>
         </dependency>
+
+        <!-- Parameterized Tests -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+            <version>${junitVersion}</version>
+            <scope>test</scope>
+        </dependency>
+
         <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest-library</artifactId>

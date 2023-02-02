@@ -7,6 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.bixuebihui.jdbc.SqlSort.Sort.ASC;
 
@@ -178,24 +179,32 @@ public class Paging<S> {
         BeanMap dest = new BeanMap(searchBean);
         Map<String, MutablePair<Object, Object>> dateRange = new HashMap<>(16);
 
+        Map<String, String> fields = validFields.stream().collect(Collectors.toMap(x -> unifyField(x), y -> y, (x,y) -> x));
+
         dest.forEach((k, v) -> {
-            String key = ((String) k).toLowerCase();
-            if (validFields.isEmpty() ||  validFields.contains(key)) {
+
+            String key = unifyField(((String) k));
+
+
+            if (fields.isEmpty() ||  fields.containsKey(key)) {
+                String originalKey = fields.get(key);
                 if (v instanceof Number || v instanceof Boolean || v instanceof Enum) {
-                    ar.eq(key, v);
+                    ar.eq(originalKey, v);
                 } else if (v instanceof Object[] || v instanceof Collection) {
-                    ar.in(key, v);
+                    ar.in(originalKey, v);
                 } else if (v instanceof String) {
-                    ar.like(key, (String) v);
+                    ar.like(originalKey, (String) v);
                 }
             }
             if (v instanceof Date) {
-                if (hasKey(validFields, key, dateTimeRangeBeginPrefix)) {
+                if (hasKey(fields.keySet(), key, dateTimeRangeBeginPrefix)) {
                     String keyWithoutPrefix = key.substring(dateTimeRangeBeginPrefix.length());
-                    pushLeft(dateRange, keyWithoutPrefix, v);
-                } else if (hasKey(validFields, key, dateTimeRangeEndPrefix)) {
+                    String originalKey = fields.get(keyWithoutPrefix);
+                    pushLeft(dateRange, originalKey, v);
+                } else if (hasKey(fields.keySet(), key, dateTimeRangeEndPrefix)) {
                     String keyWithoutPrefix = key.substring(dateTimeRangeEndPrefix.length());
-                    pushRight(dateRange, keyWithoutPrefix, v);
+                    String originalKey = fields.get(keyWithoutPrefix);
+                    pushRight(dateRange, originalKey, v);
                 }
             }
         });
@@ -218,6 +227,15 @@ public class Paging<S> {
         }
 
         return ar;
+    }
+
+    String unifyField(String s) {
+        if(s.startsWith(dateTimeRangeBeginPrefix)) {
+            return dateTimeRangeBeginPrefix +  s.substring(dateTimeRangeBeginPrefix.length()).toLowerCase().replace("_", "");
+        }else if(s.startsWith(dateTimeRangeEndPrefix)){
+            return dateTimeRangeEndPrefix + s.substring(dateTimeRangeEndPrefix.length()).toLowerCase().replace("_", "");
+        }
+        return s.toLowerCase().replace("_", "");
     }
 
 

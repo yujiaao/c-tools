@@ -5,7 +5,9 @@ import com.bixuebihui.query.Paging;
 
 import {{config.packageName}}{{viewModifier}}.business.{{pojoClassName}}Manager;
 import {{config.packageName}}{{viewModifier}}.cmd.{{pojoClassName}}SearchCmd;
+{{#unless tableInfo.isView}}
 import {{config.packageName}}{{viewModifier}}.cmd.{{pojoClassName}}DelCmd;
+{{/unless}}
 import {{config.packageName}}{{viewModifier}}.converter.{{pojoClassName}}Converter;
 import {{config.packageName}}{{viewModifier}}.dto.{{pojoClassName}}Dto;
 import {{config.packageName}}{{viewModifier}}.pojo.{{pojoClassName}};
@@ -40,7 +42,7 @@ public class {{className}} implements  {{pojoClassName}}Service{
 
         return Pair.of(count, collect);
     }
-
+{{#unless tableInfo.isView}}
     @Override
     public Boolean del({{pojoClassName}}DelCmd delCmd) {
 {{#if hasKey}}
@@ -62,6 +64,6 @@ public class {{className}} implements  {{pojoClassName}}Service{
         {{firstLow pojoClassName}}Manager.save(info);
         return dto;
     }
-
+{{/unless}}
 
 }

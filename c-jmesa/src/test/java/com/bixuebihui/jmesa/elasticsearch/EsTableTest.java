@@ -56,5 +56,8 @@ public class EsTableTest {
         Object obj = map.get("data");
         assertEquals(size, ((List)obj).size());
 
+
+
     }
+
 }

@@ -8,7 +8,7 @@
     <parent>
         <groupId>com.github.yujiaao</groupId>
         <artifactId>c-tools-parent</artifactId>
-        <version>1.13.2.22</version>
+        <version>1.13.3.0</version>
     </parent>
     <properties>
         <handlebars-version>4.3.0</handlebars-version>
@@ -176,6 +176,12 @@
         <dependency>
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-commons</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- Parameterized Tests -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
             <scope>test</scope>
         </dependency>
 

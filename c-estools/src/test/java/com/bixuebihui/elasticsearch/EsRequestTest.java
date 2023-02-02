@@ -10,6 +10,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -156,18 +158,22 @@ public class EsRequestTest {
                 "  \"caption\" : \"my-index-000001\",\n" +
                 "  \"titles\" : [ \"color\" ],\n" +
                 "  \"_id\" : [ \"1\", \"2\" ],\n" +
-                "  \"data\" : [ {\n" +
+                "  \"items\" : [ {\n" +
                 "    \"color\" : [ \"blue\", \"green\" ]\n" +
                 "  }, {\n" +
                 "    \"color\" : \"blue\"\n" +
                 "  } ],\n" +
                 "  \"paging\" : {\n" +
-                "    \"totalRows\" : 2,\n" +
+                "    \"totalRows\" : {\n" +
+                "      \"value\" : 2,\n" +
+                "      \"relation\" : \"eq\"\n" +
+                "    },\n" +
                 "    \"maxRows\" : 10000,\n" +
                 "    \"rowEnd\" : 50,\n" +
                 "    \"rowStart\" : 0,\n" +
                 "    \"page\" : 1\n" +
-                "  }\n" +
+                "  },\n" +
+                "  \"total\" : 2\n" +
                 "}", result);
 
     }
@@ -185,16 +191,35 @@ public class EsRequestTest {
         System.out.println(json);
     }
 
-    @Test
-    void getTableJsonNode() throws IOException, URISyntaxException {
-        String json = IOUtils.toString(this.getClass().getResource("/es_result_paging_es6.json").toURI(), StandardCharsets.UTF_8);
 
-        JsonNode res = new EsRequest("","","").getTableJsonNode(json, 10, 10, 10, 1, 100);
 
+    @ParameterizedTest
+    @CsvSource({
+            "/es_result_paging_es7.json,7.0",
+            "/es_result_paging_es6.json,6.0"
+    })
+    void getTableJsonNode(String fileName, String version) throws IOException, URISyntaxException {
+        String json = IOUtils.toString(this.getClass().getResource(fileName).toURI(), StandardCharsets.UTF_8);
+
+        EsRequest esRequest1 = new EsRequest("", "", "");
+
+        esRequest1.version =version;
+
+        JsonNode res = esRequest1.getTableJsonNode(json, 10, 10, 10, 1, 100);
+
+        if(version.startsWith("7")){
         assertEquals("{\"caption\":\"all-content-info\",\"titles\":[\"author_level\",\"pv\",\"author_img\",\"year_ids\",\"source\",\"community_status\",\"qa_author_img\",\"koubei_label_names\",\"publish_time\",\"price\",\"bbs_name\",\"brand_ids\",\"media_id\",\"verify_status\",\"pc_url\",\"height\",\"like_count\",\"label_ids\",\"qa_author_id\",\"bbs_image\",\"factory_ids\",\"global_id\",\"expire_time\",\"reply_count\",\"content_level\",\"city_ids\",\"attribute_ids\",\"m_url\"],\"_id\":[\"1998367890176217088\"]," +
                         "\"items\":[{\"author_level\":null,\"pv\":174439,\"author_img\":\"https://test.com/abc.jpg\",\"year_ids\":null,\"source\":2,\"community_status\":null,\"qa_author_img\":null,\"koubei_label_names\":null,\"publish_time\":\"2022/07/07 19:00:00\",\"price\":null,\"bbs_name\":null,\"brand_ids\":[331],\"media_id\":null,\"verify_status\":null,\"pc_url\":\"http://localhost/\",\"height\":null,\"like_count\":19,\"label_ids\":null,\"qa_author_id\":null,\"bbs_image\":null,\"factory_ids\":[4],\"global_id\":1998367890176217088,\"expire_time\":null,\"reply_count\":2095,\"content_level\":null,\"city_ids\":[],\"attribute_ids\":null,\"m_url\":\"http://m.url.com/\"}]," +
-                        "\"paging\":{\"totalRows\":1,\"maxRows\":10,\"rowEnd\":10,\"rowStart\":10,\"page\":1},"+
-                            "\"total\":1}",
+                        "\"paging\":{\"totalRows\":{\"value\":1,\"relation\":\"eq\"},\"maxRows\":10,\"rowEnd\":10,\"rowStart\":10,\"page\":1},"+
+                        "\"total\":1}",
                 res.toString());
+        }else {
+            assertEquals("{\"caption\":\"all-content-info\",\"titles\":[\"author_level\",\"pv\",\"author_img\",\"year_ids\",\"source\",\"community_status\",\"qa_author_img\",\"koubei_label_names\",\"publish_time\",\"price\",\"bbs_name\",\"brand_ids\",\"media_id\",\"verify_status\",\"pc_url\",\"height\",\"like_count\",\"label_ids\",\"qa_author_id\",\"bbs_image\",\"factory_ids\",\"global_id\",\"expire_time\",\"reply_count\",\"content_level\",\"city_ids\",\"attribute_ids\",\"m_url\"],\"_id\":[\"1998367890176217088\"]," +
+                            "\"items\":[{\"author_level\":null,\"pv\":174439,\"author_img\":\"https://test.com/abc.jpg\",\"year_ids\":null,\"source\":2,\"community_status\":null,\"qa_author_img\":null,\"koubei_label_names\":null,\"publish_time\":\"2022/07/07 19:00:00\",\"price\":null,\"bbs_name\":null,\"brand_ids\":[331],\"media_id\":null,\"verify_status\":null,\"pc_url\":\"http://localhost/\",\"height\":null,\"like_count\":19,\"label_ids\":null,\"qa_author_id\":null,\"bbs_image\":null,\"factory_ids\":[4],\"global_id\":1998367890176217088,\"expire_time\":null,\"reply_count\":2095,\"content_level\":null,\"city_ids\":[],\"attribute_ids\":null,\"m_url\":\"http://m.url.com/\"}]," +
+                            "\"paging\":{\"totalRows\":1,\"maxRows\":10,\"rowEnd\":10,\"rowStart\":10,\"page\":1}," +
+                            "\"total\":1}",
+
+                    res.toString());
+        }
     }
 }
