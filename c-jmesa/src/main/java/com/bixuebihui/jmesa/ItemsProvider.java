@@ -1,9 +1,6 @@
 package com.bixuebihui.jmesa;
 
-import com.bixuebihui.jdbc.IReaderService;
-import com.bixuebihui.jdbc.SqlFilter;
-import com.bixuebihui.jdbc.SqlObject;
-import com.bixuebihui.jdbc.SqlSort;
+import com.bixuebihui.jdbc.*;
 import org.apache.commons.lang3.StringUtils;
 import org.jmesa.limit.Limit;
 import org.jmesa.model.PageItems;
@@ -34,6 +31,7 @@ public class ItemsProvider<T> implements PageItems {
         int totalRows = 0;
         try {
             SqlObject obj = filter.toSqlObject();
+
             totalRows = service.countWhere(obj.getSqlString(), obj.getParameters());
         } catch (SQLException e) {
             e.printStackTrace();

@@ -10,7 +10,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 {{/eq}}
 
 import jakarta.validation.constraints.*;
-import lombok.Data;
 
 {{> [header-comment.java]}}
 
@@ -18,7 +17,6 @@ import lombok.Data;
 * @author xwx
 * https://stackoverflow.com/questions/26612404/spring-map-get-request-parameters-to-pojo-automatically/26612778#26612778
 */
-@Data
 public class {{className}} {
 
 {{! field declaration }}
@@ -42,8 +40,39 @@ public class {{className}} {
         {{{columnAnnotation this tableName}}}
         protected {{javaType}}  {{firstLow name}};
     {{/if~}}
+{{/each}}
+{{! setters & getters }}
+{{#each fields as | field index | }}
+{{#if (isRangeType javaType) }}
+    public void setBegin_{{firstLow name}}({{javaType}} {{firstLow name}})
+    {
+        this.begin_{{firstLow name}} = {{firstLow name}};
+    }
+    public {{javaType}} getBegin_{{firstLow name}}()
+    {
+        return this.begin_{{firstLow name}};
+    }
+    public void setEnd_{{firstLow name}}({{javaType}} {{firstLow name}})
+    {
+        this.end_{{firstLow name}} = {{firstLow name}};
+    }
+    public {{javaType}} getEnd_{{firstLow name}}()
+    {
+        return this.end_{{firstLow name}};
+    }
 
-    {{!log field level="info" }}
+{{else}}
+    public void set{{firstUp name}}({{javaType}} {{firstLow name}})
+    {
+        this.{{firstLow name}} = {{firstLow name}};
+    }
+    public {{javaType}} get{{firstUp name}}()
+    {
+        return this.{{firstLow name}};
+    }
+{{/if~}}
+
+{{!log field level="info" }}
 {{/each}}
 
 

@@ -109,7 +109,7 @@ public class EasyTableTest {
         String tableName = "t_config";
         String pkName = "c_key";
         String baseSql = " select c_key, c_name , c_value from t_config";
-        EasyTable et = new EasyTable(dbHelper, tableName, baseSql, pkName, null,"c_key,c_name,c_value");
+        EasyTable et = new EasyTable(dbHelper, tableName, baseSql,null, pkName, null,"c_key,c_name,c_value");
 
 
         String[] cols = et.getColNames();
@@ -215,7 +215,7 @@ public class EasyTableTest {
 
     @Test void testSetColNames(){
         EasyTable et = new EasyTable(dbHelper, "站内系统私信",
-                "select * from t_config where c_key =0","a","表名",  "a,b,c" );
+                "select * from t_config where c_key =0",null,"a","表名",  "a,b,c" );
        assertEquals( "a,b,c", et.getColsList());
 
     }
@@ -314,6 +314,30 @@ public class EasyTableTest {
 
 
     }
+
+
+
+    @Test
+    public void testInnerGroupBy() throws SQLException, JsonProcessingException {
+        String tableName = "test_gen";
+        String baseSql = " select id, name, age,birth,edu_id from test_gen where age< ? group by id, name, age, birth, edu_id ";
+        String jquery = "{\"exportType\":\"json\", \"maxRows\":10, \"filter\":[{\"key\":\"id\",\"comparison\":\"between\",\"value\":[1,30000]}]}";
+        System.out.println(jquery);
+
+        EasyTable et = new EasyTable(dbHelper, tableName, baseSql, new Object[]{100});
+
+        String res = et.json(jquery);
+        ObjectMapper mapper = new ObjectMapper();
+        Map map= mapper.readValue(res, Map.class);
+
+        Object obj = map.get("paging");
+        assertEquals(5, ((Map)obj).size());
+        System.out.println(res);
+
+
+    }
+
+
 
 
 }

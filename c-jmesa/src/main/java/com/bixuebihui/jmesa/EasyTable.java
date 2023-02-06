@@ -2,9 +2,12 @@ package com.bixuebihui.jmesa;
 
 import com.bixuebihui.DbException;
 import com.bixuebihui.jdbc.IDbHelper;
+import com.bixuebihui.jmesa.entry.Query;
 import com.bixuebihui.jmesa.mock.SimpleHttpServletRequest;
 import com.bixuebihui.jmesa.mock.SimpleHttpServletResponse;
 import com.bixuebihui.util.DbUtils;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.foundationdb.sql.StandardException;
 import com.foundationdb.sql.parser.*;
 import org.apache.commons.lang3.StringUtils;
@@ -30,15 +33,19 @@ public class EasyTable extends BasicWebUI {
     private boolean onePage = true;
 
     public EasyTable(IDbHelper dbhelper, String tableCaption, String baseSql) {
-        this(dbhelper, tableCaption, baseSql, null, null);
+        this(dbhelper, tableCaption, baseSql, null,null, null);
+    }
+
+    public EasyTable(IDbHelper dbhelper, String tableCaption, String baseSql, Object[] parameters) {
+        this(dbhelper, tableCaption, baseSql, parameters,null, null);
     }
 
     /**
      * @deprecated use constructor with  colNames
      */
     @Deprecated
-    public EasyTable(IDbHelper dbhelper, String tableCaption, String baseSql, @Nullable String pkName, @Nullable String tableId) {
-        this(dbhelper, tableCaption, baseSql, pkName,tableId, null);
+    public EasyTable(IDbHelper dbhelper, String tableCaption, String baseSql, Object[] parameters, @Nullable String pkName, @Nullable String tableId) {
+        this(dbhelper, tableCaption, baseSql,parameters, pkName,tableId, null);
     }
 
         /**
@@ -51,11 +58,12 @@ public class EasyTable extends BasicWebUI {
          * @param tableId      表名
          * @param pkName       主键名
          */
-    public EasyTable(IDbHelper dbhelper, String tableCaption, String baseSql, @Nullable String pkName, @Nullable String tableId, String colNames) {
+    public EasyTable(IDbHelper dbhelper, String tableCaption, String baseSql, Object[] sqlParameters,
+                     @Nullable String pkName, @Nullable String tableId, String colNames) {
         this.id = tableId;
         super.setTableCaption(tableCaption);
 
-        init(dbhelper, baseSql);
+        init(dbhelper, baseSql, sqlParameters);
 
         if (pkName != null) {
             this.setUniquePropertyName(pkName);
@@ -80,7 +88,7 @@ public class EasyTable extends BasicWebUI {
 
     }
 
-    protected void init(IDbHelper dbHelper, String baseSql) {
+    protected void init(IDbHelper dbHelper, String baseSql, Object[] params) {
         this.service = new BasicListService(dbHelper);
         if (isOnePage()) {
             this.maxRows = 500;
@@ -88,6 +96,7 @@ public class EasyTable extends BasicWebUI {
             LOG.debug("maxRows=" + maxRows + "  maxRowsIncrements[0]=" + this.maxRowsIncrements[0]);
         }
         ((BasicListService) this.service).setCoreSql(baseSql);
+        ((BasicListService) this.service).setSqlParams(params);
     }
 
 
@@ -134,7 +143,8 @@ public class EasyTable extends BasicWebUI {
      * use LimitActionFactoryJsonImpl
      * request json format:
      *     { "id": "table-id", "action": "", "maxRows": 500, "page": 123,
-     *     "filter": { "property1":value1, "property2":value2, "property3": [fromValue, toValue] },
+     * "filter": { "property1":value1, "property2":value2, "property3": [fromValue, toValue]},
+
      *     "sort":{ "property1":"asc", "property2":"desc", }, "exportType":"json", }
      * response:
      *    {
@@ -163,9 +173,9 @@ public class EasyTable extends BasicWebUI {
 
     /**
      * use @see LimitActionFactoryJsonImpl
-     * json format { "id": "table-id", "action": "", "maxRows": 500, "page": 123,
-     * "filter": { "property1":value1, "property2":value2, "property3": [fromValue, toValue]},
-     * "sort":{ "property1":"asc", "property2":"desc", },
+     * json format { "id": "table-id", "action": "", "maxRows": 500, "page": 123,     *
+     *     "filter": :[{"key":"id","comparison":"between","value":[1,30000]}],
+     *     * "sort":{ "property1":"asc", "property2":"desc", },
      * "exportType":"json", }
      */
     public String json(String jsonQuery) throws SQLException {
@@ -204,6 +214,15 @@ public class EasyTable extends BasicWebUI {
 
     public void setOnePage(boolean onePage) {
         this.onePage = onePage;
+    }
+
+    public String json(Query jsonQuery) throws SQLException {
+        try {
+            //TODO must accept JSON object directly, avoid using String conversion!
+            return json(new ObjectMapper().writeValueAsString(jsonQuery));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 
