@@ -1,0 +1,27 @@
+Configuration:
+  status: TRACE
+  Properties:
+    Property:
+      - name: APP_NAME
+        value: 'jmesa-test'
+  Appenders:
+    Console:
+      name: CONSOLE
+      target: SYSTEM_OUT
+      ThresholdFilter:
+        level: debug
+        onMatch: ACCEPT
+        onMismatch: DENY
+      PatternLayout:
+        pattern: "%d{yyyy-MM-dd HH:mm:ss,SSS}:%4p %t (%F:%L) - %m%n"
+  Loggers:
+    Root:
+      level: DEBUG
+      AppenderRef:
+        - ref: CONSOLE
+    Logger:
+      - name: com.bixuebihui
+        level: DEBUG
+        additivity: false
+        AppenderRef:
+          - ref: CONSOLE

@@ -1,29 +1,23 @@
 package com.bixuebihui.jmesa;
 
 import com.bixuebihui.BeanFactory;
-import com.bixuebihui.cache.DictionaryCache;
-import com.bixuebihui.cache.DictionaryItem;
 import com.bixuebihui.jdbc.IDbHelper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.foundationdb.sql.StandardException;
+import net.sf.jsqlparser.JSQLParserException;
 import org.hamcrest.collection.ArrayMatching;
 import org.hamcrest.core.StringContains;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockHttpServletResponse;
-
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 
 public class EasyTableTest {
@@ -204,7 +198,7 @@ public class EasyTableTest {
 
 
     @Test
-    public void testParser() throws StandardException {
+    public void testParser() throws JSQLParserException {
         EasyTable.MiniSqlParser mp = EasyTable.MiniSqlParser.parse("select count(*) from article");
         assertNull(mp.uniquePropertyName);
 
@@ -321,7 +315,7 @@ public class EasyTableTest {
     public void testInnerGroupBy() throws SQLException, JsonProcessingException {
         String tableName = "test_gen";
         String baseSql = " select id, name, age,birth,edu_id from test_gen where age< ? group by id, name, age, birth, edu_id ";
-        String jquery = "{\"exportType\":\"json\", \"maxRows\":10, \"filter\":[{\"key\":\"id\",\"comparison\":\"between\",\"value\":[1,30000]}]}";
+        String jquery = "{\"exportType\":\"json\", \"maxRows\":10,\"page\":1, \"filter\":[{\"key\":\"id\",\"comparison\":\"between\",\"value\":[1,30000]}]}";
         System.out.println(jquery);
 
         EasyTable et = new EasyTable(dbHelper, tableName, baseSql, new Object[]{100});

@@ -544,6 +544,18 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
 
         detectDbType();
 
+        return getPagingSql(selectSql, startNum, endNum, dbtype);
+
+    }
+    public static String getPagingSql(String driverName, String selectSql, int startNum, int endNum) {
+
+        int dbtype = detectDbType(driverName);
+
+        return getPagingSql(selectSql, startNum, endNum, dbtype);
+
+    }
+
+    private static String getPagingSql(String selectSql, int startNum, int endNum, int dbtype) {
         if (dbtype == DERBY) {
             return getPagingSqlDerby(selectSql, startNum, endNum);
         } else if (dbtype == SQLSERVER) {
@@ -558,10 +570,8 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         } else if (dbtype == ACCESS) {
             return getPagingSqlSqlServer(selectSql, startNum, endNum);
         } else {
-
             return getPagingSqlOracle(selectSql, startNum, endNum);
         }
-
     }
 
     private String getDateTimeSql(String dt, boolean isTimestamp) {

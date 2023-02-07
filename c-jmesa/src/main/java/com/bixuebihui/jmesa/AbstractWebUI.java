@@ -161,7 +161,7 @@ public abstract class AbstractWebUI<T, V> implements WorksheetSaver {
             try {
                 key = bundle.getString(tableName + "." + colNames[i]);
             } catch (Exception e) {
-                LOG.warn(e.getMessage());
+                LOG.info(e.getMessage());
             }
             table.getRow().getColumn(colNames[i]).setTitle(key);
         }
