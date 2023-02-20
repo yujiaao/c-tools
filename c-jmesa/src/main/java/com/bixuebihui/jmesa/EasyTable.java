@@ -350,11 +350,16 @@ public class EasyTable extends BasicWebUI {
                             public void visit(SelectExpressionItem selectExpressionItem) {
 
                                 if(selectExpressionItem.getAlias()!=null) {
-                                    labelList.add(selectExpressionItem.getAlias().getName());
-                                    nameList.add(selectExpressionItem.getAlias().getName());
+                                    String name = selectExpressionItem.getAlias().getName();
+                                    labelList.add(name);
+                                    nameList.add(name);
                                 }else {
-                                    labelList.add(selectExpressionItem.getExpression().toString());
-                                    nameList.add(selectExpressionItem.getExpression().toString());
+                                    String name =  selectExpressionItem.getExpression().toString();
+                                    if(name.contains(".")){
+                                        name = name.substring(name.indexOf(".")+1);
+                                    }
+                                    labelList.add(name);
+                                    nameList.add(name);
                                 }
 
                             }

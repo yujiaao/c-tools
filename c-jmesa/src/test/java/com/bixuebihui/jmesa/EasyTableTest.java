@@ -327,11 +327,23 @@ public class EasyTableTest {
         Object obj = map.get("paging");
         assertEquals(5, ((Map)obj).size());
         System.out.println(res);
-
-
     }
 
 
+    @Test
+    public void testInnerGroupByCSV() throws SQLException, JsonProcessingException {
+        String tableName = "test_gen";
+        String baseSql = " select id, name, age,birth,edu_id from test_gen where age< ? group by id, name, age, birth, edu_id ";
+        String jquery = "{\"exportType\":\"csv\", \"maxRows\":10,\"page\":1, \"filter\":[{\"key\":\"id\",\"comparison\":\"between\",\"value\":[1,30000]}]}";
+        System.out.println(jquery);
+
+        EasyTable et = new EasyTable(dbHelper, tableName, baseSql, new Object[]{100});
+
+        String res = et.json(jquery);
+
+        assertEquals(11, res.split("\n").length);
+        System.out.println(res);
+    }
 
 
 }

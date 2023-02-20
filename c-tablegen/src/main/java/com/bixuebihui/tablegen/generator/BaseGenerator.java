@@ -2,6 +2,7 @@ package com.bixuebihui.tablegen.generator;
 
 
 import com.bixuebihui.dbcon.DatabaseConfig;
+import com.bixuebihui.jdbc.BaseDao;
 import com.bixuebihui.jdbc.IDbHelper;
 import com.bixuebihui.tablegen.GenException;
 import com.bixuebihui.tablegen.NameUtils;
@@ -32,6 +33,8 @@ import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.*;
 
+import static com.bixuebihui.db.Dialect.SQLSERVER;
+import static com.bixuebihui.db.Dialect.SQLSERVER_2005_AND_UP;
 import static com.bixuebihui.tablegen.NameUtils.firstUp;
 import static com.bixuebihui.tablegen.NameUtils.getConfigBaseDir;
 import static com.bixuebihui.tablegen.TableGenConfig.PROPERTIES_FILENAME;
@@ -281,6 +284,26 @@ public abstract class BaseGenerator implements Generator {
         map.put("viewModifier","."+ VIEW_DIR);
     }
 
+
+    public boolean isInsertAndUpdatableField(String tableName, String fieldName){
+        // int type = BaseDao.detectDbType(this.dbConfig.getDburl());
+        List<ColumnData> cols = setInfo.getTableCols(tableName);
+
+        return isInsertAndUpdatableField(cols, fieldName, config.isUseAutoincrement());
+    }
+    public static boolean isInsertAndUpdatableField(List<ColumnData> cols, String fieldName, boolean useAutoIncrement){
+        for(ColumnData col : cols){
+            if(col.getName().equals(fieldName) && isInsertAndUpdatableField(col, useAutoIncrement)){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static boolean isInsertAndUpdatableField(ColumnData col, boolean useAutoIncrement){
+        return  col.getType()!= 18 && !( col.isAutoIncrement() && useAutoIncrement);
+    }
+
     protected Handlebars getHandlebars() {
         TemplateLoader loader = new ClassPathTemplateLoader();
         loader.setPrefix(getTemplateDir());
@@ -291,9 +314,13 @@ public abstract class BaseGenerator implements Generator {
         handlebars.registerHelper("getPojoClassName", (tableName, options) -> this.getPojoClassName((String) tableName));
         handlebars.registerHelper("constantName", (name, options) -> NameUtils.columnNameToConstantName((String) name));
         handlebars.registerHelper("firstLow", (name, options) -> NameUtils.firstLow((String) name));
+
         handlebars.registerHelper("join", (items, options) -> StringUtils.join((Object[]) items, options.param(0)));
         handlebars.registerHelper("typeDefaultValue", (typeName, options) -> TableGen.defaultTypeValue().get(typeName));
         handlebars.registerHelper("unboxType", (type, options) -> TableGen.unboxType((String) type));
+
+//        handlebars.registerHelper("isInsertAndUpdatableField", (col, options) ->
+//                isInsertAndUpdatableField((ColumnData) col, config.isUseAutoincrement()));
 
         handlebars.registerHelpers(ConditionalHelpers.class);
 

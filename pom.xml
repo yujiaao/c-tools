@@ -11,7 +11,7 @@
     <groupId>com.github.yujiaao</groupId>
     <artifactId>c-tools-parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.13.3.7</version>
+    <version>1.13.4.0</version>
 
     <modules>
         <module>c-tools-bom</module>
@@ -42,6 +42,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <mysql.version>8.0.31</mysql.version>
         <slf4j.version>2.0.6</slf4j.version>
+<!--        <slf4j.version>1.7.36</slf4j.version>-->
         <validator.version>8.0.0.Final</validator.version>
         <jakartaValidation.version>3.0.2</jakartaValidation.version>
         <hamcrest.version>2.2</hamcrest.version>

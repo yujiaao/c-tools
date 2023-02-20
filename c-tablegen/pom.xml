@@ -8,7 +8,7 @@
     <parent>
         <groupId>com.github.yujiaao</groupId>
         <artifactId>c-tools-parent</artifactId>
-        <version>1.13.3.7</version>
+        <version>1.13.4.0</version>
     </parent>
     <properties>
         <handlebars-version>4.3.0</handlebars-version>
@@ -129,18 +129,7 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>c-jmesa</artifactId>
-            <exclusions>
-                <exclusion>
-                    <artifactId>slf4j-api</artifactId>
-                    <groupId>org.slf4j</groupId>
-                </exclusion>
-                <exclusion>
-                    <artifactId>slf4j-log4j12</artifactId>
-                    <groupId>org.slf4j</groupId>
-                </exclusion>
-            </exclusions>
         </dependency>
-
 
 
         <dependency>
@@ -238,6 +227,7 @@
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
         </dependency>
+
         <dependency>
             <groupId>com.github.yujiaao</groupId>
             <artifactId>c-jsongen</artifactId>
