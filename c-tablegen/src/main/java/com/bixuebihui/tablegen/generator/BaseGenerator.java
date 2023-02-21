@@ -360,9 +360,19 @@ public abstract class BaseGenerator implements Generator {
 
     protected List<String> getKeyData(String tableName) {
         List<String> keys =  setInfo.getTableKeys(tableName);
-        if(keys.isEmpty() && isView()){
+        if(keys.isEmpty() ){
+            List<ColumnData> cols = getColumnData(tableName);
             keys = new ArrayList<>();
-            keys.add(getColumnData(tableName).get(0).getName());
+            if(isView()) {
+                keys.add(cols.get(0).getName());
+            }else{
+                for (ColumnData column: cols){
+                    if(column.isAutoIncrement()){
+                        keys.add(column.getName());
+                        break;
+                    }
+                }
+            }
         }
         return keys;
     }
