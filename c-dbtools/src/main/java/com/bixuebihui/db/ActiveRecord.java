@@ -24,7 +24,7 @@ import static java.util.Collections.emptySet;
  * @author xingwx
  * @version $Id: $Id
  */
-public interface ActiveRecord<T> extends Record<T> {
+public interface ActiveRecord<T> extends Record<T>, Customizer<T> {
 
     /**
      * Constant <code>ORDER_ASC=0</code>

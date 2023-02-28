@@ -52,7 +52,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 
 import java.io.*;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -286,7 +285,7 @@ public class TableGen implements DiffHandler {
         try {
             Map<String, String> beans = new HashMap<>(16);
             for (TableInfo table : setInfo.getTableInfos().values()) {
-                beans.put(NameUtils.firstLow(table.getName())
+                beans.put(firstLow(table.getName())
                         + MANAGER_SUFFIX, getBusFullClassName(table.getName()));
             }
             File f = new File(fileName);

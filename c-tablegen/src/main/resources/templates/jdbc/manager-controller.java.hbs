@@ -107,7 +107,7 @@ public class  {{className}} {
     }
 {{#unless tableInfo.isView}}
     {{#eq config.swaggerVersion "2" }}@ApiOperation({{else}}@Operation(summary ={{/eq~}}
-    "按主键删除{tableName}}记录")
+    "按主键删除{{tableName}}记录")
     @PostMapping(value = "/del", produces = {"application/json;charset=UTF-8"})
     public BaseModel<Boolean> del(
         @Validated
@@ -126,7 +126,7 @@ public class  {{className}} {
         return res;
     }
 
-    {{#eq config.swaggerVersion "2" }}@ApiOperation({{else}}@Operation(summary ={{/eq~}} "保存{tableName}}记录")
+    {{#eq config.swaggerVersion "2" }}@ApiOperation({{else}}@Operation(summary ={{/eq~}} "保存{{tableName}}记录")
     @PostMapping(value = "/save", produces = {"application/json;charset=UTF-8"})
     public BaseModel<{{pojoClassName}}Dto> save(
         @Validated

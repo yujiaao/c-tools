@@ -2,7 +2,7 @@ package com.bixuebihui.tablegen;
 
 import com.bixuebihui.cache.DictionaryCache;
 import com.bixuebihui.cache.DictionaryItem;
-import com.bixuebihui.db.Dialect;
+import com.bixuebihui.db.KeywordsUtils;
 import com.bixuebihui.generated.tablegen.pojo.T_metacolumn;
 import com.bixuebihui.jdbc.*;
 import com.bixuebihui.tablegen.entry.ColumnData;
@@ -10,12 +10,10 @@ import com.bixuebihui.tablegen.entry.TableInfo;
 import com.bixuebihui.tablegen.entry.TableSetInfo;
 import com.bixuebihui.util.DbUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StopWatch;
 
-import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -685,11 +683,11 @@ public class TableUtils {
                 }
 
                 // 17
-                isNullable = NameUtils.isYes(rs.getString("IS_NULLABLE"));
+                isNullable = KeywordsUtils.isYes(rs.getString("IS_NULLABLE"));
 
                 //Access driver have not a column named IS_AUTOINCREMENT
                 // 23
-                isAutoIncrement = (dbType != ACCESS) && NameUtils.isYes(rs.getString("IS_AUTOINCREMENT"));
+                isAutoIncrement = (dbType != ACCESS) && KeywordsUtils.isYes(rs.getString("IS_AUTOINCREMENT"));
 
                 String digits = rs.getString("DECIMAL_DIGITS");
                 if (StringUtils.isNumeric(digits)) {

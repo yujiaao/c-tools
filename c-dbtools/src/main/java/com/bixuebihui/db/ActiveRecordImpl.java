@@ -16,6 +16,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
 
+import java.util.function.Function;
+
 import static com.bixuebihui.db.Dialect.*;
 
 /**
@@ -34,6 +36,10 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	SqlSort orderStack;
 	SqlHelper filterStack;
 	private boolean keepNullForNumberField = false;
+	private Function<SqlHelper, SqlHelper> filterInterceptor = it -> it;
+	private Function<SqlHelper, SqlHelper>  havingInterceptor = it -> it;
+	private Function<SqlSort, SqlSort> sortInterceptor= it -> it;
+	private Function<SqlGroup, SqlGroup> groupInterceptor= it -> it;
 
 	public SqlLimit getLimit() {
 		return limit;
@@ -305,7 +311,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	public List<T> findAll() throws DbException {
 		try {
 			sqlPocket = this.getSql();
-			SqlPocket having = havingStack.toCondition();
+			SqlPocket having = parseHaving();
 			String where = formWhereClause()+parseGroupBy()+having.getCondition();
 			List<Object> list = Arrays.asList(getParams().toArray());
 			list.addAll(having.getParams());
@@ -332,7 +338,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	public <K> List<K> findAll(Class<K> clz) throws DbException {
 		try {
 			sqlPocket = this.getSql();
-			SqlPocket having = havingStack.toCondition();
+			SqlPocket having = parseHaving();
 			String where = formWhereClause()+parseGroupBy()+having.getCondition();
 			List<Object> list = Arrays.asList(getParams().toArray());
 			list.addAll(having.getParams());
@@ -382,7 +388,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	public T find() throws DbException {
 		try {
 			sqlPocket = this.getSql();
-			SqlPocket having = havingStack.toCondition();
+			SqlPocket having = parseHaving();
 			String where = formWhereClause()+parseGroupBy()+having.getCondition();
 			List<Object> list = Arrays.asList(getParams().toArray());
 			list.addAll(having.getParams());
@@ -405,7 +411,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	public boolean delete() throws DbException {
 		try {
 			sqlPocket = this.getSql();
-			SqlPocket having = havingStack.toCondition();
+			SqlPocket having = parseHaving();
 			String where = formWhereClause()+parseGroupBy()+having.getCondition();
 			List<Object> list = Arrays.asList(getParams().toArray());
 			list.addAll(having.getParams());
@@ -498,7 +504,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 		field = SqlFilter.transactSQLInjection(field);
 		sqlPocket = this.getSql();
 		String where = formWhereClause();
-		where += " " +groupByClause.toString();
+		where += " " +parseGroupBy();
 		where += " " + parseOrder();
 		where += " " + parseLimitSql();
 
@@ -514,20 +520,20 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 		if (useLast && sqlPocket != null) {
 			return sqlPocket;
 		}
-		sqlPocket = filterStack.build();
+		sqlPocket = filterInterceptor.apply(filterStack).build();
 		return sqlPocket;
 	}
 
 	public String parseOrder() {
-		return this.orderStack.toString();
+		return sortInterceptor.apply(this.orderStack).toString();
 	}
 
 	public String parseGroupBy() {
-		return this.groupByClause.toString();
+		return groupInterceptor.apply(this.groupByClause).toString();
 	}
 
 	public SqlPocket parseHaving() {
-		return this.havingStack.toCondition();
+		return havingInterceptor.apply(this.havingStack).toCondition();
 	}
 
 
@@ -553,7 +559,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	public boolean exists() throws DbException {
 		try {
 			sqlPocket = this.getSql();
-			SqlPocket having = havingStack.toCondition();
+			SqlPocket having = parseHaving();
 			String where = formWhereClause()+parseGroupBy()+having.getCondition();
 			List<Object> list = Arrays.asList(getParams().toArray());
 			list.addAll(having.getParams());
@@ -685,14 +691,14 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 
 			String where = formWhereClause();
 
-			SqlPocket sqlPocket = havingStack.toCondition();
+			SqlPocket sqlPocket = parseHaving();
 
 			List<Object> list = Arrays.asList(getParams().toArray());
 			list.addAll(sqlPocket.getParams());
 
 			Object[] params = list.toArray();
 			List<CountValue> res = operator.countGroupValue(field, fun.toString(), where,
-					sqlPocket.getCondition().toString(), groupByClause.toArray(), params);
+					sqlPocket.getCondition().toString(), groupInterceptor.apply(groupByClause).toArray(), params);
 
 			return res.size() == 0 ? new CountValue() : res.get(0);
 		} finally {
@@ -776,12 +782,12 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 			 {
 		try {
 			sqlPocket = this.getSql();
-			SqlPocket having = havingStack.toCondition();
+			SqlPocket having = parseHaving();
 			String where = formWhereClause();
 			List<Object> list = Arrays.asList(getParams().toArray());
 			list.addAll(having.getParams());
 			List<CountObject<K>> res =  operator.countGroupObject(field, fun.toString(), where,
-					having.getCondition().toString(), groupByClause.toArray(), objectType, list.toArray());
+					having.getCondition().toString(), groupInterceptor.apply(groupByClause).toArray(), objectType, list.toArray());
 
 			return res.size() == 0 ? new CountObject<>() : res.get(0);
 		} finally {
@@ -807,4 +813,27 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 	}
 
 
+	@Override
+	public ActiveRecord<T> filterInterceptor(Function<SqlHelper, SqlHelper> filterInterceptor) {
+		this.filterInterceptor = filterInterceptor;
+		return this;
+	}
+
+	@Override
+	public ActiveRecord<T> havingInterceptor(Function<SqlHelper, SqlHelper> havingInterceptor) {
+		this.havingInterceptor = havingInterceptor;
+		return this;
+	}
+
+	@Override
+	public ActiveRecord<T> sortInterceptor(Function<SqlSort, SqlSort> sortInterceptor) {
+		this.sortInterceptor = sortInterceptor;
+		return this;
+	}
+
+	@Override
+	public ActiveRecord<T> groupInterceptor(Function<SqlGroup, SqlGroup> groupInterceptor) {
+		this.groupInterceptor = groupInterceptor;
+		return this;
+	}
 }

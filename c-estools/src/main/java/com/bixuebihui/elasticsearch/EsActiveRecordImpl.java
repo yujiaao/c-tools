@@ -647,4 +647,24 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
             throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public ActiveRecord<T> filterInterceptor(Function<SqlHelper, SqlHelper> filterInterceptor) {
+        return null;
+    }
+
+    @Override
+    public ActiveRecord<T> havingInterceptor(Function<SqlHelper, SqlHelper> havingInterceptor) {
+        return null;
+    }
+
+    @Override
+    public ActiveRecord<T> sortInterceptor(Function<SqlSort, SqlSort> sortInterceptor) {
+        return null;
+    }
+
+    @Override
+    public ActiveRecord<T> groupInterceptor(Function<SqlGroup, SqlGroup> groupInterceptor) {
+        return null;
+    }
 }

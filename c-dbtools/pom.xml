@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.github.yujiaao</groupId>
         <artifactId>c-tools-parent</artifactId>
-        <version>1.13.4.1</version>
+        <version>1.13.5.5</version>
     </parent>
 
     <artifactId>c-dbtools</artifactId>
@@ -270,6 +270,7 @@
             <version>5.1.0</version>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
@@ -305,12 +306,14 @@
             <artifactId>slf4j-api</artifactId>
             <version>${slf4j.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
             <version>${slf4j.version}</version>
             <scope>test</scope>
         </dependency>
+
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
@@ -326,7 +329,7 @@
         <dependency>
             <groupId>com.github.yujiaao</groupId>
             <artifactId>common-utils</artifactId>
-            <version>1.13.4.1</version>
+            <version>1.13.5.5</version>
             <scope>compile</scope>
         </dependency>
 

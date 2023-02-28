@@ -1,9 +1,7 @@
 package com.bixuebihui.tablegen.generator;
 
 import com.bixuebihui.jsongen.GenEs;
-import com.bixuebihui.tablegen.NameUtils;
 import com.bixuebihui.tablegen.entry.EsKeyInfo;
-import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

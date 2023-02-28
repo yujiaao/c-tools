@@ -1,11 +1,12 @@
 package com.bixuebihui.tablegen.dbinfo;
 
-import com.bixuebihui.tablegen.NameUtils;
 import com.bixuebihui.tablegen.entry.ColumnData;
 import org.apache.commons.lang3.StringUtils;
 
 import java.sql.DatabaseMetaData;
 import java.util.List;
+
+import static com.bixuebihui.tablegen.NameUtils.firstUp;
 
 /**
  * @author xwx
@@ -54,7 +55,7 @@ public class ProcedureGen {
             } else if ("byte[]".equals(type)) {
                 type = "Bytes";
             } else {
-                type = NameUtils.firstUp(type);
+                type = firstUp(type);
             }
             sb.append("    cstmt.set" + type + "(" + i + "," + normalizeArgName(info.getSimpleName()) + ");\n");
             i++;

@@ -1,5 +1,6 @@
 package com.bixuebihui.jdbc;
 
+import com.bixuebihui.db.KeywordsUtils;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 
@@ -186,7 +187,7 @@ public class SqlFilter {
 
 
 	private void buildSqlObject(StringBuilder criteria, List<Object> params, Filter filter) {
-		criteria.append(AND).append(filter.getProperty());
+		criteria.append(AND).append(KeywordsUtils.decorFieldIfIsKeyword(filter.getProperty(), this.databaseType));
 		switch (filter.comparison){
 			case IS:
 				criteria.append(" = ? ");

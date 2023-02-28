@@ -1,7 +1,6 @@
 package com.bixuebihui.tablegen.generator;
 
 import com.bixuebihui.dbcon.DatabaseConfig;
-import com.bixuebihui.tablegen.NameUtils;
 import com.bixuebihui.tablegen.ProjectConfig;
 import com.bixuebihui.tablegen.entry.TableSetInfo;
 import org.apache.commons.io.IOUtils;

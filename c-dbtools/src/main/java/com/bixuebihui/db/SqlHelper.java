@@ -77,7 +77,10 @@ public class SqlHelper {
 	 */
     public SqlPocket toCondition() {
 		SqlPocket criteria = new SqlPocket();
-		if (filters == null || filters.size() <= 0) {
+
+
+
+		if (filters == null || filters.size() == 0) {
 			return criteria;
 		}
 		for (BaseFilter filter : filters) {

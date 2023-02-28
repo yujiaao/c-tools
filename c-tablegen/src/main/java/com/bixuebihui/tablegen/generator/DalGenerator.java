@@ -10,10 +10,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.bixuebihui.db.KeywordsUtils.*;
 import static com.bixuebihui.tablegen.NameUtils.columnNameToConstantName;
 import static com.bixuebihui.tablegen.NameUtils.firstUp;
 import static com.bixuebihui.tablegen.TableGen.INDENT;
-import static com.bixuebihui.tablegen.TableGen.getDbHelper;
 import static java.util.Collections.emptyList;
 
 /**
@@ -279,9 +279,12 @@ public class DalGenerator extends BaseGenerator {
         return
         "update "+tableName+" set \"\n    +\"" +
         cols.stream().filter(c -> !this.setInfo.getTableKeys(tableName).contains(c.getName()) && isInsertAndUpdatableField(c, useAutoincrement))
-                .map(columnData ->
-                    columnData.getName().equals(versionColName) ? columnData.getName() +"=" + columnData.getName()+"+1"
-                            :  columnData.getName() +"=?"
+                .map(columnData ->{
+
+                    String columnName = decorFieldIfIsKeyword(columnData.getName(), this.getDbType());
+
+                    return columnData.getName().equals(versionColName) ? columnName +"=" + columnName+"+1"
+                            :  columnName +"=?";}
                 ).collect(Collectors.joining(","));
 
     }
@@ -290,7 +293,7 @@ public class DalGenerator extends BaseGenerator {
     private String makeInsertSql(String tableName, boolean useAutoincrement, List<ColumnData> cols) {
         return  "insert into "+tableName+"\"\n    +\" ( "+
         cols.stream().filter(it -> isInsertAndUpdatableField(it, useAutoincrement))
-                .map(ColumnData::getName).collect(Collectors.joining(", "))
+                .map(it -> decorFieldIfIsKeyword(it.getName(), this.getDbType())).collect(Collectors.joining(", "))
                         +")\"\n    +\" values (\"\n    +\""
                         +cols.stream().filter(it -> isInsertAndUpdatableField(it, useAutoincrement))
                 .map(column -> "?").collect(Collectors.joining(","))+")";

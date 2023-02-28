@@ -12,6 +12,7 @@ import java.util.Map;
 
 import static com.bixuebihui.tablegen.NameUtils.firstUp;
 
+
 /**
  * @author xwx
  */

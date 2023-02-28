@@ -33,8 +33,6 @@ import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.*;
 
-import static com.bixuebihui.db.Dialect.SQLSERVER;
-import static com.bixuebihui.db.Dialect.SQLSERVER_2005_AND_UP;
 import static com.bixuebihui.tablegen.NameUtils.firstUp;
 import static com.bixuebihui.tablegen.NameUtils.getConfigBaseDir;
 import static com.bixuebihui.tablegen.TableGenConfig.PROPERTIES_FILENAME;
@@ -54,6 +52,12 @@ public abstract class BaseGenerator implements Generator {
     TableSetInfo setInfo;
 
     Properties esConfig;
+
+    int dbType =0;
+
+    public int getDbType(){
+        return dbType;
+    }
 
     protected boolean isView(){
         return this instanceof IView;
@@ -104,6 +108,7 @@ public abstract class BaseGenerator implements Generator {
         this.dbConfig = dbConfig;
         this.setInfo = setInfo;
         this.esConfig = prop;
+        this.dbType = BaseDao.detectDbType(dbConfig.getDburl());
     }
 
     protected List<ColumnData> getColsInfo(String tableName) {

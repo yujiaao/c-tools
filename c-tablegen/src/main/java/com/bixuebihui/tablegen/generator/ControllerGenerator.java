@@ -1,15 +1,14 @@
 package com.bixuebihui.tablegen.generator;
 
-import com.bixuebihui.tablegen.NameUtils;
 import com.bixuebihui.tablegen.TableGen;
 import com.bixuebihui.tablegen.entry.ColumnData;
 import com.github.jknack.handlebars.Handlebars;
-import org.apache.commons.text.CaseUtils;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
+import static com.bixuebihui.tablegen.NameUtils.toSnakeCase;
 
 /**
  * @author xwx
@@ -73,7 +72,7 @@ public class ControllerGenerator extends BaseGenerator {
         // usage: {{type tableName colName}}
         handlebars.registerHelper("colType", (tableName, options) -> getColType(options.param(0), this.setInfo.getTableCols((String) tableName)));
         handlebars.registerHelper("isKey", (tableName, options) -> this.setInfo.getTableKeys((String) tableName).contains(options.param(0)));
-        handlebars.registerHelper("snakeCase", (tableName, options) -> NameUtils.toSnakeCase((String) tableName));
+        handlebars.registerHelper("snakeCase", (tableName, options) -> toSnakeCase((String) tableName));
 
         // usage: {{where tableName}}
         handlebars.registerHelper("where", (tableName, options) ->
