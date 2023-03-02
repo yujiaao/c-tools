@@ -2,6 +2,7 @@ package com.bixuebihui.jmesa;
 
 import com.bixuebihui.BeanFactory;
 import com.bixuebihui.jdbc.IDbHelper;
+import com.bixuebihui.jmesa.entry.Query;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.foundationdb.sql.StandardException;
@@ -239,13 +240,13 @@ public class EasyTableTest {
         ObjectMapper mapper = new ObjectMapper();
         Map map= mapper.readValue(res, Map.class);
 
-        Object obj = map.get("data");
+        Object obj = map.get("items");
         assertEquals(size, ((List)obj).size());
 
         res = et.json("{\"exportType\":\"json\", \"maxRows\":1, \"page\":2}");
         Map map2= mapper.readValue(res, Map.class);
 
-        Object obj2 = map2.get("data");
+        Object obj2 = map2.get("items");
         assertEquals(1, ((List)obj2).size());
 
     }
@@ -345,5 +346,34 @@ public class EasyTableTest {
         System.out.println(res);
     }
 
+
+
+    @Test
+    public void testJsonQuery() throws SQLException, JsonProcessingException {
+        String tableName = "t_config";
+        String baseSql = " select c_key, c_name , c_value from t_config";
+        EasyTable et = new EasyTable(dbHelper, tableName, baseSql);
+
+        long size=2;
+        Query query = new Query();
+        //        "{\"exportType\":\"json\", \"maxRows\":"+size+"}"
+        query.setExportType("json");
+        query.setMaxRows(size);
+        String res = et.json(query);
+        ObjectMapper mapper = new ObjectMapper();
+        Map map= mapper.readValue(res, Map.class);
+
+        Object obj = map.get("items");
+        assertEquals(size, ((List)obj).size());
+
+        query.setPage(2L);
+        query.setMaxRows(1L);
+        res = et.json(query);
+        Map map2= mapper.readValue(res, Map.class);
+
+        Object obj2 = map2.get("items");
+        assertEquals(1, ((List)obj2).size());
+
+    }
 
 }

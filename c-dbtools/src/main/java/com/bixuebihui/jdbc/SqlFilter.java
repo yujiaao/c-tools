@@ -1,6 +1,7 @@
 package com.bixuebihui.jdbc;
 
 import com.bixuebihui.db.KeywordsUtils;
+import com.bixuebihui.db.SqlString;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 
@@ -188,70 +189,76 @@ public class SqlFilter {
 
 	private void buildSqlObject(StringBuilder criteria, List<Object> params, Filter filter) {
 		criteria.append(AND).append(KeywordsUtils.decorFieldIfIsKeyword(filter.getProperty(), this.databaseType));
+
+		String sub;
 		switch (filter.comparison){
 			case IS:
-				criteria.append(" = ? ");
+				sub=" = ? ";
 				break;
 			case IS_NOT:
-				criteria.append(" != ? ");
+				sub=" != ? ";
 				break;
 			case BETWEEN:
-				criteria.append(" between ? and ? ");
+				sub=" between ? and ? ";
 				break;
 			case NOT_BETWEEN:
-				criteria.append(" not between ? and ? ");
+				sub=" not between ? and ? ";
 				break;
 			case IS_NULL:
-				criteria.append(" is null ");
+				sub=" is null ";
 				break;
 			case IS_NOT_NULL:
-				criteria.append(" is not null ");
+				sub=" is not null ";
 				break;
 			case GT:
-				criteria.append(" > ? ");
+				sub=" > ? ";
 				break;
 			case GTE:
-				criteria.append(" >= ? ");
+				sub=" >= ? ";
 				break;
 			case LT:
-				criteria.append(" < ? ");
+				sub=" < ? ";
 				break;
 			case LTE:
-				criteria.append(" <= ? ");
+				sub=" <= ? ";
 				break;
 
 			case NOT_IN:
-				criteria.append(" not ");
-				criteria.append(" in (").append(StringUtils.repeat("?", ",", filter.value.length)).append(") ");
+				sub=" not in ("+StringUtils.repeat("?", ",", filter.value.length)+") ";
 				break;
 			case IN:
-				criteria.append(" in (").append(StringUtils.repeat("?", ",", filter.value.length)).append(") ");
+				sub=" in ("+StringUtils.repeat("?", ",", filter.value.length)+") ";
 				break;
 
 			case NOT_EXISTS:
-				criteria.append(" not ");
-				criteria.append(" exist (").append(filter.value[0]).append(") ");
-
+				sub=" not exist ("+transactSQLInjection((String) filter.value[0])+") ";
 				break;
 			case EXISTS:
-				//todo filter filter.value
-				criteria.append(" exist (").append(filter.value[0]).append(") ");
+				sub=" exist ("+transactSQLInjection((String) filter.value[0])+") ";
 				break;
 			case CONTAIN:
-				criteria.append(" like concat('%', ?, '%') ");
+				sub=" like concat('%', ?, '%') ";
 				break;
 			case START_WITH:
-				criteria.append(" like concat(?, '%') ");
+				sub=" like concat(?, '%') ";
 				break;
 
 			default:
+				sub="";
+		}
 
+
+
+		if(filter.value!=null && filter.value.length>0) {
+			if (filter.value[0] instanceof SqlString) {
+				sub = sub.replace("?", filter.value[0].toString());
+			} else if (filter.comparison != Comparison.EXISTS
+					&& filter.comparison != Comparison.NOT_EXISTS) {
+				params.addAll(Lists.newArrayList(filter.value));
+			}
 		}
-		if(filter.value!=null && filter.value.length>0
-				&& filter.comparison!=Comparison.EXISTS
-				&& filter.comparison!=Comparison.NOT_EXISTS) {
-			params.addAll(Lists.newArrayList(filter.value));
-		}
+
+		criteria.append(sub);
 	}
 
 	/**

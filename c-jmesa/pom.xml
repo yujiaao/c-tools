@@ -9,7 +9,7 @@
     <parent>
         <groupId>com.github.yujiaao</groupId>
         <artifactId>c-tools-parent</artifactId>
-        <version>1.13.5.5</version>
+        <version>1.13.5.8</version>
     </parent>
 
     <properties>
@@ -101,27 +101,27 @@
             </plugin>
 
 
-            <plugin>
-                <groupId>org.jsonschema2pojo</groupId>
-                <artifactId>jsonschema2pojo-maven-plugin</artifactId>
-                <version>1.1.1</version>
-                <configuration>
-                    <sourceDirectory>${basedir}/src/test/resources/schemas</sourceDirectory>
-                    <serializable>true</serializable>
-                    <includeAdditionalProperties>false</includeAdditionalProperties>
-                    <targetPackage>com.bixuebihui.jmesa.entry</targetPackage>
-                    <useLongIntegers>true</useLongIntegers>
-                    <sourceType>json</sourceType>
-                    <outputDirectory>${basedir}/src/main/java</outputDirectory>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
+<!--            <plugin>-->
+<!--                <groupId>org.jsonschema2pojo</groupId>-->
+<!--                <artifactId>jsonschema2pojo-maven-plugin</artifactId>-->
+<!--                <version>1.1.1</version>-->
+<!--                <configuration>-->
+<!--                    <sourceDirectory>${basedir}/src/test/resources/schemas</sourceDirectory>-->
+<!--                    <serializable>true</serializable>-->
+<!--                    <includeAdditionalProperties>false</includeAdditionalProperties>-->
+<!--                    <targetPackage>com.bixuebihui.jmesa.entry</targetPackage>-->
+<!--                    <useLongIntegers>true</useLongIntegers>-->
+<!--                    <sourceType>json</sourceType>-->
+<!--                    <outputDirectory>${basedir}/src/main/java</outputDirectory>-->
+<!--                </configuration>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <goals>-->
+<!--                            <goal>generate</goal>-->
+<!--                        </goals>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--            </plugin>-->
 
 
         </plugins>
@@ -137,7 +137,7 @@
         <dependency>
             <groupId>com.github.yujiaao</groupId>
             <artifactId>jmesa</artifactId>
-            <version>4.5.6</version>
+            <version>4.5.8</version>
             <exclusions>
                 <exclusion>
                     <artifactId>spring-core</artifactId>
@@ -257,7 +257,7 @@
         <dependency>
             <groupId>com.github.yujiaao</groupId>
             <artifactId>c-estools</artifactId>
-            <version>1.13.5.5</version>
+            <version>1.13.5.8</version>
         </dependency>
 
 

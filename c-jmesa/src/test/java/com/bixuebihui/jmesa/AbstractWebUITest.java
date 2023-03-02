@@ -1,5 +1,6 @@
 package com.bixuebihui.jmesa;
 
+import com.bixuebihui.jmesa.entry.Query;
 import org.jmesa.worksheet.WorksheetColumn;
 import org.junit.jupiter.api.Test;
 
@@ -27,6 +28,11 @@ public class AbstractWebUITest {
             protected void validateColumn(WorksheetColumn worksheetColumn,
                                           String changedValue) {
 
+            }
+
+            @Override
+            protected String render(Query query) {
+                return null;
             }
 
             @Override

@@ -3,7 +3,9 @@ package com.bixuebihui.jmesa;
 
 import com.bixuebihui.cache.DictionaryCache;
 import com.bixuebihui.jdbc.*;
+import com.bixuebihui.jmesa.entry.Query;
 import com.bixuebihui.jsp.TimeSpan;
+import com.bixuebihui.util.ParameterUtils;
 import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.beanutils.ConvertUtilsBean;
 import org.apache.commons.beanutils.PropertyUtils;
@@ -33,6 +35,8 @@ import jakarta.servlet.http.HttpSession;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author xwx
@@ -40,10 +44,10 @@ import java.util.*;
 public abstract class AbstractWebUI<T, V> implements WorksheetSaver {
 
     public static final String VAR_NAME = "row";
-    private static final String TABLE_I18N = "tables";
     public static final String CHECK_BOX_ID = "chkbox";
     public static final String SAVE_WORKSHEET_ACTION = "save_worksheet";
     public static final String ADD_WORKSHEET_ROW_ACTION = "add_worksheet_row";
+    private static final String TABLE_I18N = "tables";
     protected static ConvertUtilsBean converter = new ConvertUtilsBean();
     protected static Logger LOG = LoggerFactory.getLogger(BasicWebUI.class);
     /**
@@ -97,7 +101,6 @@ public abstract class AbstractWebUI<T, V> implements WorksheetSaver {
             } else if (NumberRange.isNumberRange(value.toString())){
                 NumberRange numberRange = NumberRange.build(value.toString());
                 sqlFilter.between(prop, numberRange.getBegin(), numberRange.getEnd());
-
             }else {
                 sqlFilter.addFilter(prop, SqlFilter.Comparison.valueOf(filter.getComparison().toString()), value);
             }
@@ -141,6 +144,8 @@ public abstract class AbstractWebUI<T, V> implements WorksheetSaver {
         return sqlSort;
     }
 
+    protected abstract String render(Query query);
+
     /**
      * 取表列名
      * @return
@@ -151,17 +156,21 @@ public abstract class AbstractWebUI<T, V> implements WorksheetSaver {
                           String tableName, String[] colNames, boolean skipFirst) {
 
         table.setCaption(this.getTableCaption(tableName));
-
-
-        ResourceBundle bundle = ResourceBundle.getBundle(TABLE_I18N);
-
+            ResourceBundle bundle =null;
+            try {
+                bundle = ResourceBundle.getBundle(TABLE_I18N);
+            } catch (Exception e){
+                LOG.info(e.getMessage());
+            }
         int start = skipFirst ? 1 : 0;
         for (int i = start; i < colNames.length; i++) {
             String key = colNames[i];
-            try {
-                key = bundle.getString(tableName + "." + colNames[i]);
-            } catch (Exception e) {
-                LOG.info(e.getMessage());
+            if(bundle!=null) {
+                try {
+                    key = bundle.getString(tableName + "." + colNames[i]);
+                } catch (Exception e) {
+                    LOG.info(e.getMessage());
+                }
             }
             table.getRow().getColumn(colNames[i]).setTitle(key);
         }
@@ -193,6 +202,26 @@ public abstract class AbstractWebUI<T, V> implements WorksheetSaver {
                 "true".equals(request.getParameter(editableParam)), ac,
                 getKeys(request));
     }
+
+
+
+    protected String render(Map<String, Object> request,
+                            Map<String, Object> response) {
+        TableModel tableModel = new TableModel(id, request, response);
+
+        String ac = request.get(actionParam).toString();
+        LOG.debug("AbstractWebUI " + actionParam + " = " + ac);
+
+        return baseRender(tableModel,
+                "true".equals(request.get(editableParam)), ac,
+                (V[]) getKeys(request));
+    }
+
+    Long[] getKeys(Map<String, Object> request) {
+        return Stream.of(request.get(checkboxName).toString().split(","))
+                .map(Long::parseLong).toArray(Long[]::new);
+    }
+
 
     protected void onSetCustomToolBar(CustomToolbar toolbar) {
         toolbar.addButton(CustomToolbar.RUN);
@@ -263,13 +292,13 @@ public abstract class AbstractWebUI<T, V> implements WorksheetSaver {
         }
     }
 
-    protected void exportRender(TableModel tableModel) {
+    protected Object exportRender(TableModel tableModel) {
         if (ExportTypes.EXCEL.equals(tableModel.getExportType())) {
             tableModel.setExportFileName(tableCaption + ".xls");
         }
 
         LOG.debug("Exporting - " + tableModel.getExportType() + ": " + tableCaption + ".xls");
-        tableModel.render();
+        return tableModel.render();
     }
 
     public String getTableCaption(String tableName) {
@@ -310,7 +339,7 @@ public abstract class AbstractWebUI<T, V> implements WorksheetSaver {
     }
 
     public String handleRequestInternal(HttpServletRequest request,
-                                        HttpServletResponse response) throws SQLException {
+                                        HttpServletResponse response) {
         String mv = successView;
         String html = render(request, response);
         if (html == null) {
@@ -457,6 +486,9 @@ public abstract class AbstractWebUI<T, V> implements WorksheetSaver {
         this.colsTemplate = colsTemplate;
     }
 
+    protected Map<String, Object> getContext(Map<String, Object> request) {
+        return request;
+    }
     protected Map<String, Object> getContext(HttpServletRequest request) {
         if (request == null) {
             return Collections.emptyMap();

@@ -23,6 +23,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -225,12 +226,7 @@ public class EasyTable extends BasicWebUI {
     }
 
     public String json(Query jsonQuery) throws SQLException {
-        try {
-            //TODO must accept JSON object directly, avoid using String conversion!
-            return json(new ObjectMapper().writeValueAsString(jsonQuery));
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
+            return render(jsonQuery);
     }
 
 
