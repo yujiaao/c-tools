@@ -8,6 +8,7 @@ import jakarta.validation.constraints.*;
 import org.apache.commons.text.StringEscapeUtils;
 
 import javax.annotation.processing.Generated;
+import dz.jtsgen.annotations.TypeScript;
 
 {{#if config.useSwagger}}
 {{#eq config.swaggerVersion "2" }}
@@ -16,14 +17,14 @@ import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiModelProperty;
 
 @Api(tags="{{tableInfo.comment}}")
-{{else}}
+{{~else~}}
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description ="{{tableInfo.comment}}")
 {{/eq}}
 
-
 @Generated("com.github.yujiaao:tablegen")
+@TypeScript
 {{/if~}}
 public class {{className}} {{interface}} {
 {{! field declaration }}
@@ -33,8 +34,8 @@ public class {{className}} {{interface}} {
     {{else}}
     {{log field level="info" }}
     /**
-    * {{columnDescription this tableName}}
-    */
+     * {{columnDescription this tableName}}
+     */
     {{{columnAnnotation this tableName}}}
     protected {{javaType}}  {{firstLow name}};
     {{/eq}}
@@ -42,17 +43,25 @@ public class {{className}} {{interface}} {
 
 {{! setters & getters }}
 {{#each fields}}
+    {{#eq name 'RV'}}
+    {{else}}
     {{#eq name config.delColName }}
     {{else}}
+    /**
+     * {{columnDescription this tableName}}
+     */
     public void set{{firstUp name}}({{javaType}} {{firstLow name}})
     {
       this.{{firstLow name}} = {{firstLow name}};
     }
+    /**
+     * {{columnDescription this tableName}}
+     */
     public {{javaType}} get{{firstUp name}}()
     {
       return this.{{firstLow name}};
     }
-    {{/eq}}
+    {{/eq}}{{/eq}}
 {{/each}}
 
     {{! handle the constructor }}

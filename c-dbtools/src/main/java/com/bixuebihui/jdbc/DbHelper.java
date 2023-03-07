@@ -1,5 +1,6 @@
 package com.bixuebihui.jdbc;
 
+import com.alibaba.druid.DbType;
 import com.bixuebihui.DbException;
 import com.bixuebihui.util.DbUtils;
 import jakarta.validation.constraints.NotNull;
@@ -465,13 +466,15 @@ public class DbHelper implements IDbHelper {
             }
             int[] updateCounts = p.executeBatch();
 
-            if(LOG.isDebugEnabled()) {
-                ResultSet resultSet = p.getGeneratedKeys();
-                List<Map<String, Object>> list = resultSet2Vector(resultSet);
-                if(!list.isEmpty()) {
-                    LOG.debug(list.toString());
-                }
-            }
+//            if(LOG.isDebugEnabled()) {
+//                //COMMENT OUT:  sqlserver并不会自动返回插入数据自动生成的自增主键
+//
+//                ResultSet resultSet = p.getGeneratedKeys();
+//                List<Map<String, Object>> list = resultSet2Vector(resultSet);
+//                if(!list.isEmpty()) {
+//                    LOG.debug(list.toString());
+//                }
+//            }
 
             return Arrays.stream(updateCounts).sum();
             // updateCounts[0] A number greater than or equal to zero -- indicates that the

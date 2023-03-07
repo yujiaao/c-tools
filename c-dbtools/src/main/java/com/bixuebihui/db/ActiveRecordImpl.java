@@ -421,7 +421,8 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 			String sql = "delete from " + this.getTableName() + " " + where;
 
 			if (limit != null && limit.getBegin()==0 && limit.getEnd()>0) {
-				sql +=" limit "+limit.getEnd();
+				//sql +=" limit "+limit.getEnd();
+				LOG.warn("DELETE operation with not limit, please make sure this is correct:\n"+sql);
 			}
 			if(cn==null) {
 				return 0 < operator.getDbHelper().executeNoQuery(sql, list.toArray());

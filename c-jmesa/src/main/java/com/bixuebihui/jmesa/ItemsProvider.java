@@ -26,6 +26,10 @@ public class ItemsProvider<T> implements PageItems {
 
     @Override
     public int getTotalRows(Limit limit) {
+        if(service == null){
+            // this is not valid for Elasticsearch
+            return 0;
+        }
 
         SqlFilter filter = AbstractWebUI.getFilter(limit);
         int totalRows = 0;
