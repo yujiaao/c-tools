@@ -11,12 +11,20 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.supercsv.io.CsvBeanWriter;
+import org.supercsv.io.ICsvBeanWriter;
+import org.supercsv.prefs.CsvPreference;
 
+import java.io.IOException;
+import java.io.StringWriter;
+import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
 
 import java.util.function.Function;
+import java.util.function.IntFunction;
+import java.util.stream.Collectors;
 
 import static com.bixuebihui.db.Dialect.*;
 
@@ -323,7 +331,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 		}
 	}
 
-	protected List<Object> getParams(){
+		protected List<Object> getParams(){
 		List<Object> res = sqlPocket.getParams();
 		if(operator.getDbType()!= DERBY) {
 			res.addAll(orderStack.getParams());

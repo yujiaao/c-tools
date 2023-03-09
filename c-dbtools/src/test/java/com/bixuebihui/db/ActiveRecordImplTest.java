@@ -18,7 +18,15 @@ import java.util.List;
 import java.util.Set;
 
 public class ActiveRecordImplTest extends TestCase {
-	class T {
+	public static class T {
+		public Long getId() {
+			return id;
+		}
+
+		public String getName() {
+			return name;
+		}
+
 		Long id;
 		String name;
 		public String toString(){
@@ -87,6 +95,25 @@ public class ActiveRecordImplTest extends TestCase {
 	public void testFields() {
 		Object obj = bd.ar().alias("t1").fields("name,id").eq("t1.id", 123).find();
 		assertEquals("bac", ((T) obj).name);
+	}
+
+	public void testCsv() {
+		bd.getDbHelper().executeNoQuery("insert into test(id,name)values(234,'ba\"c')");
+
+		String s = bd.ar().alias("t1").fields("name,id").eq("t1.id", 234).findAllToCsv("何人,ID");
+		assertEquals("何人,ID\n" +
+				"234,bac\n" +
+				"234,\"ba\"\"c\"\n", s);
+	}
+
+
+	public void testCsvWithFieldNames() {
+		bd.getDbHelper().executeNoQuery("insert into test(id,name)values(234,'ba\"c')");
+
+		String s = bd.ar().alias("t1").fields("name,id").eq("t1.id", 234).findAllToCsv("何人,ID","name,id");
+		assertEquals("何人,ID\n" +
+				"bac,234\n" +
+				"\"ba\"\"c\",234\n", s);
 	}
 
 	public void testInc() {

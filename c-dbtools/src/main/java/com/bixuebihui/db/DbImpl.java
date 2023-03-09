@@ -1,5 +1,6 @@
 package com.bixuebihui.db;
 
+import com.bixuebihui.DbException;
 import com.bixuebihui.jdbc.BaseDao;
 import com.bixuebihui.jdbc.SqlFilter;
 import com.bixuebihui.jdbc.SqlGroup;

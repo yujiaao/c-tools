@@ -7,7 +7,9 @@ import com.bixuebihui.jdbc.aop.DbHelperAroundAdvice;
 import com.bixuebihui.jdbc.entity.CountObject;
 import com.bixuebihui.jdbc.entity.CountValue;
 import com.bixuebihui.jdbc.event.AfterChangeEventHandler;
+import com.bixuebihui.jdbc.event.ChangeEventConsumer;
 import com.bixuebihui.jdbc.event.ChangeType;
+import com.bixuebihui.jdbc.event.LogAfterChangeEventHandler;
 import com.bixuebihui.sequence.SequenceUtils;
 import com.bixuebihui.shardingjdbc.core.api.HintManager;
 import com.bixuebihui.sql.SQLUtil;
@@ -23,6 +25,8 @@ import org.springframework.aop.framework.ProxyFactory;
 
 import javax.sql.DataSource;
 import jakarta.validation.constraints.NotNull;
+import org.springframework.beans.factory.annotation.Autowired;
+
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -84,6 +88,13 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
 
     public AfterChangeEventHandler<T, ID> getAfterChangeEventHandler() {
         return afterChangeEventHandler;
+    }
+
+    @Autowired(required = false)
+    public void setChangeEventConsumer(ChangeEventConsumer<ID> changeEvent) {
+        LogAfterChangeEventHandler<T, ID> eventHandler = new LogAfterChangeEventHandler<>(this);
+        eventHandler.setHandler(changeEvent);
+        this.afterChangeEventHandler = eventHandler;
     }
 
     public void setAfterChangeEventHandler(AfterChangeEventHandler<T, ID> afterChangeEventHandler) {
