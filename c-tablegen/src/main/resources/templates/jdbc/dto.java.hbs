@@ -8,7 +8,7 @@ import jakarta.validation.constraints.*;
 import org.apache.commons.text.StringEscapeUtils;
 
 import javax.annotation.processing.Generated;
-import dz.jtsgen.annotations.TypeScript;
+
 
 {{#if config.useSwagger}}
 {{#eq config.swaggerVersion "2" }}
@@ -24,7 +24,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 {{/eq}}
 
 @Generated("com.github.yujiaao:tablegen")
-@TypeScript
 {{/if~}}
 public class {{className}} {{interface}} {
 {{! field declaration }}

@@ -12,9 +12,9 @@ public interface AfterChangeEventHandler<T, ID> {
 
     void afterChange(T[] infos, ChangeType changeType);
 
-    void afterChange(String query, Object[] param, ChangeType changeType);
+    void afterChange(String query, Object[] param, ChangeType changeType, int influenceRecordCount);
 
-    void afterChange(String query, Object[] param, ChangeType changeType, String shardTableName);
+    void afterChange(String query, Object[] param, ChangeType changeType, String shardTableName, int influenceRecordCount);
 
     void afterChangeByKey(ID id, ChangeType changeType);
 

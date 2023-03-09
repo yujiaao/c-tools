@@ -193,9 +193,9 @@ public abstract class BaseDao<T, ID> {
 
 
 
-    private void afterUpdate(Object[] params, String query, int res) {
+    private void afterUpdate(String query, Object[] params,  int res) {
         if(res >0 && afterChangeEventHandler!=null){
-            afterChangeEventHandler.afterChange(query, params, ChangeType.UPDATE);
+            afterChangeEventHandler.afterChange(query, params, ChangeType.UPDATE, res);
         }
     }
 
