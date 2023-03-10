@@ -97,6 +97,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     public BaseDao(IDbHelper dbHelper) {
         this.dbHelper = dbHelper;
     }
+
     public BaseDao(DataSource ds) {
         this(ds, ds);
     }
@@ -821,8 +822,8 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
             }
         }
 
-        if(sb.lastIndexOf(",") == sb.length()-1){
-            sb.deleteCharAt(sb.length()-1);
+        if (sb.lastIndexOf(",") == sb.length() - 1) {
+            sb.deleteCharAt(sb.length() - 1);
         }
 
         allParams.addAll(params);
@@ -1002,7 +1003,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     }
 
     /**
-     * <p>convertCaseInsensitive.</p>
+     * <p>convertCaseSensitive.</p>
      *
      * @param <K>      期待类型
      * @param h        源数据
@@ -1021,7 +1022,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
             Object o = h.get(e.getKey());
             values.put(e.getKey(), o);
         }
-        BeanUtils.populate(receiver, values);
+        PropertyUtils.copyProperties(receiver, values);
         return receiver;
     }
 
@@ -1033,7 +1034,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @param receiver 目标对象
      * @return 目标对象
      * @throws java.lang.IllegalAccessException 无法拷贝属性
-     * @deprecated use convertCaseInsensitive
+     * @deprecated use convertCaseSensitive
      */
     @Deprecated
     protected <K> K convert(Map<String, Object> h, K receiver) throws IllegalAccessException {
@@ -1084,6 +1085,11 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      */
     public @NotNull <K> List<K> select(String select, String whereClause, String orderBy, Object[] params, int rowStart,
                                        int rowEnd, Class<K> clz) {
+        return select(select, whereClause, orderBy, params, rowStart, rowEnd, clz, false);
+    }
+
+    public @NotNull <K> List<K> select(String select, String whereClause, String orderBy, Object[] params, int rowStart,
+                                       int rowEnd, Class<K> clz, boolean keepCase) {
 
         String selectSql = select + " " + whereClause + " " + orderBy;
 
@@ -1098,7 +1104,11 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         } else {
             for (Map<String, Object> h : v) {
                 try {
-                    v1.add(convert(h, clz.getConstructor().newInstance()));
+                    if (keepCase) {
+                        v1.add(convertCaseSensitive(h, clz.getConstructor().newInstance()));
+                    } else {
+                        v1.add(convert(h, clz.getConstructor().newInstance()));
+                    }
                 } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException |
                          InstantiationException e) {
                     throw new DbException(e);
@@ -1294,8 +1304,9 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
             afterChangeEventHandler.afterChangeByKey(id, ChangeType.DELETE);
         }
     }
-    private void afterDelete(String query,Object[] params,  int res) {
-        if (res>0 && afterChangeEventHandler != null) {
+
+    private void afterDelete(String query, Object[] params, int res) {
+        if (res > 0 && afterChangeEventHandler != null) {
             afterChangeEventHandler.afterChange(query, params, ChangeType.DELETE, res);
         }
     }
@@ -1305,7 +1316,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     }
 
     private String getDeleteWhere(String where) {
-        return "delete from " + getTableName() +" "+ where;
+        return "delete from " + getTableName() + " " + where;
     }
 
 
@@ -1313,13 +1324,13 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         String sql = getDeleteWhere(where);
         int res;
         if (cn == null) {
-             res = getDbHelper().executeNoQuery(sql, whereParams);
-        }else {
+            res = getDbHelper().executeNoQuery(sql, whereParams);
+        } else {
             res = getDbHelper().executeNoQuery(sql, whereParams, cn);
         }
 
         afterDelete(where, whereParams, res);
-        return res>0;
+        return res > 0;
     }
 
     /**

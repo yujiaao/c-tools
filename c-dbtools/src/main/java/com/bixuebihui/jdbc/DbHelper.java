@@ -713,22 +713,17 @@ public class DbHelper implements IDbHelper {
                 if (a.scale() > 0
                         || a.compareTo(new BigDecimal(
                         Integer.MAX_VALUE)) > 0) {
-                    columnMap.put(colName,
-                            rset.getObject(i));
+                    columnMap.put(colName, rset.getObject(i));
                 } else {
-                    columnMap.put(colName,
-                            rset.getInt(i));
+                    columnMap.put(colName, rset.getInt(i));
                 }
-            } else if (rsmdQuery.getPrecision(i) > 9) {
-                columnMap.put(colName,
-                        rset.getLong(i));
+            } else if (rsmdQuery.getPrecision(i) > 10) {
+                columnMap.put(colName, rset.getLong(i));
             } else {
-                columnMap.put(colName,
-                        rset.getInt(i));
+                columnMap.put(colName, rset.getInt(i));
             }
         } else {
-            columnMap.put(colName,
-                    rset.getDouble(i));
+            columnMap.put(colName, rset.getDouble(i));
 
         }
     }
