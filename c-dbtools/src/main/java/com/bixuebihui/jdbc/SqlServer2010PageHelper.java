@@ -1,8 +1,6 @@
 package com.bixuebihui.jdbc;
 
 
-import com.bixuebihui.DbException;
-
 import java.sql.SQLException;
 
 /**
@@ -37,10 +35,17 @@ import java.sql.SQLException;
  * union
  * select top 1 * from dbo.[user] order by age
  * ) Q order by id
+ *
+ * SELECT DepartmentID, Name, GroupName
+ * FROM HumanResources.Department
+ * ORDER BY DepartmentID ASC
+ *     OFFSET @StartingRowNumber - 1 ROWS
+ *     FETCH NEXT @RowCountPerPage ROWS ONLY;
+ *
  */
-public class SqlServer2005PageHepler extends SqlServer2000PageHepler {
+public class SqlServer2010PageHelper extends SqlServer2000PageHelper {
 
-    private SqlServer2005PageHepler() throws IllegalAccessException {
+    private SqlServer2010PageHelper() throws IllegalAccessException {
         super();
     }
 
@@ -52,27 +57,20 @@ public class SqlServer2005PageHepler extends SqlServer2000PageHepler {
      * @param offset      offset from start
      * @param querySelect select clause
      * @return select clause with pagination
-     * {@link SqlServer2000PageHepler#getLimitString }
+     * {@link SqlServer2000PageHelper#getLimitString }
      */
     public static String getLimitString(String querySelect, int offset, int limit) {
+        querySelect = getLineText(querySelect);
 
         try {
-            querySelect = getLineText(querySelect);
-            int orderIndex = getLastOrderInsertPoint(querySelect);
-
-            return "select * from (select *,ROW_NUMBER() OVER (" +
-                    querySelect.substring(orderIndex).replaceAll("[^\\s,]+\\.", "") +
-                    ") _row_num from (" +
-                    querySelect.substring(0, orderIndex) + ") _t" +
-                    ") _t where _t._row_num > " +
-                    (offset == -1 ? "?" : offset) +
-                    " and _t._row_num <=  " +
-                    (limit == -1 ? "?" : limit);
-        } catch (SQLException ex) {
-            throw new DbException(ex);
+            getLastOrderInsertPoint(querySelect);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
-    }
 
+        return querySelect + " OFFSET " + offset + " ROWS " +
+                "FETCH NEXT " + limit + " ROWS ONLY";
+    }
 
     /**
      * 得到最后一个order By的插入点位置

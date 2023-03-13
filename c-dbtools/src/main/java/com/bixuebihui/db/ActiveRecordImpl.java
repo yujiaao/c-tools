@@ -371,7 +371,11 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
             String where = formWhereClause() + parseGroupBy() + having.getCondition();
             List<Object> list = Arrays.asList(getParams().toArray());
             list.addAll(having.getParams());
-            String select = "select " + resultFields + " from " + this.getTableName() + " ";
+
+            String select = operator.useTablenameOrSelect(resultFields, this.getTableName());
+
+            //String select = "select " + resultFields + " from " + this.getTableName() + " ";
+
             return operator.select(select, where, parseOrder(), list.toArray(), limit.getBegin(),
                     limit.getEnd(), clz);
         } finally {

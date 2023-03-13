@@ -9,6 +9,8 @@ import com.bixuebihui.jdbc.IDbHelper;
 import com.bixuebihui.jdbc.entity.CountObject;
 import com.bixuebihui.jdbc.entity.CountValue;
 import junit.framework.TestCase;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -56,6 +58,7 @@ public class ActiveRecordImplTest extends TestCase {
 	Connection cn;
 	AbstractBaseDao bd;
 
+	@BeforeEach
 	public void setUp() {
 		DbcpDataSource ds = new DbcpDataSource();
 		ds.setDatabaseConfig(DataSourceTest.getConfigDerby());
@@ -270,5 +273,46 @@ public class ActiveRecordImplTest extends TestCase {
 				ar.getSql().getCondition().toString());
 
 	}*/
+
+//	@Test
+//	void testGroupBy() throws SQLException{
+////		SELECT
+////				[GroupName],
+////					[Content],
+////					[SendType],
+////					[Remark],
+////		COUNT (0) AS GroupCount,
+////					[SendTime]
+////		FROM
+////				[PhoneMessage] T WITH (NOLOCK)
+////				WHERE
+////		Recycled = 0 { 0 }
+////		GROUP BY
+////					[GroupName],
+////					[Content],
+////					[SendType],
+////					[Remark],
+////					[SendTime]
+//		ActiveRecord<Object> ar = bd.ar().tableName("\t\t(SELECT\n" +
+//						"\t\t\t\t[GroupName],\n" +
+//						"\t\t\t\t\t[Content],\n" +
+//						"\t\t\t\t\t[SendType],\n" +
+//						"\t\t\t\t\t[Remark],\n" +
+//						"\t\tCOUNT (0) AS GroupCount,\n" +
+//						"\t\t\t\t\t[SendTime]\n" +
+//						"\t\tFROM\n" +
+//						"\t\t\t\t[PhoneMessage] T WITH (NOLOCK) ) as tab")
+//				.eq("Recycled", 0)
+//				.ne("GroupName", "aaaaa")
+//				.groupBy("[GroupName]",
+//						"[Content]",
+//						"[SendType]",
+//						"[Remark]",
+//						"[SendTime]")
+//				.limit(10, 20)
+//				;
+//		System.out.println(ar.getSql().getCondition().toString());
+//		System.out.println(ar.findAll());
+//	}
 
 }

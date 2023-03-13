@@ -655,7 +655,7 @@ public class TableUtils {
         int dbType = BaseDao.detectDbType(metaData.getDriverName());
 
         Map<String, String > columnComment= new HashMap<>();
-        if(dbHelper!=null && dbType == SQLSERVER|| dbType==SQLSERVER_2005_AND_UP){
+        if(dbHelper!=null && dbType == SQLSERVER|| dbType==SQLSERVER_2005_AND_UP || dbType==SQLSERVER_2010_AND_UP){
             columnComment = getColumnComment(dbHelper, tableName);
         }
 
@@ -696,7 +696,7 @@ public class TableUtils {
 
                 // REMARKS String => 描述列的注释（可为 null）
                 remarks = rs.getString("REMARKS");
-                if(remarks==null && (dbType == SQLSERVER_2005_AND_UP || dbType==SQLSERVER)){
+                if(remarks==null && (dbType == SQLSERVER_2010_AND_UP || dbType == SQLSERVER_2005_AND_UP || dbType==SQLSERVER)){
                     remarks = columnComment.get(colName);
                 }
 

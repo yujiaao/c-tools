@@ -112,7 +112,7 @@ public class KeywordsUtils {
 		if(!isSqlKeyword(str)){
 			return str;
 		}
-		if (dbType==SQLSERVER || dbType==SQLSERVER_2005_AND_UP){
+		if (dbType==SQLSERVER || dbType==SQLSERVER_2005_AND_UP|| dbType==SQLSERVER_2010_AND_UP){
 			return "["+str+"]";
 
 		}else if(dbType==MYSQL){

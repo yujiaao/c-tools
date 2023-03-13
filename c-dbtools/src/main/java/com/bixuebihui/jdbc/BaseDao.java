@@ -163,7 +163,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @return 完整分页SQL
      */
     private static String getPagingSqlSqlServer(String selectSql, int startNum, int endNum) {
-        return SqlServer2000PageHepler.getLimitString(selectSql, startNum, endNum - startNum + 1);
+        return SqlServer2000PageHelper.getLimitString(selectSql, startNum, endNum - startNum + 1);
     }
 
     /**
@@ -194,9 +194,12 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         } else if (name.contains("SQLSERVER")) {
             // sqlserver 2000
             res = SQLSERVER;
+        //} else if (name.contains("SQL SERVER 201") || name.contains("SQL SERVER 202")) {
+
         } else if (name.contains("SQL SERVER")) {
+            res = SQLSERVER_2010_AND_UP; //2010 ~ 2029
             // sql server 2005
-            res = SQLSERVER_2005_AND_UP;
+          //  res = SQLSERVER_2005_AND_UP;
         } else if (name.contains("POSTGRESQL")) {
             res = POSTGRESQL;
         } else if (name.contains("H2")) {
@@ -216,9 +219,10 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @return 完整分页SQL
      */
     public static String getPagingSqlSqlServer2005(String selectSql, int startNum, int endNum) {
-
-        return SqlServer2005PageHepler.getLimitString(selectSql, startNum, endNum);
-
+        return SqlServer2005PageHelper.getLimitString(selectSql, startNum, endNum);
+    }
+    public static String getPagingSqlSqlServer2010(String selectSql, int startNum, int endNum) {
+        return SqlServer2010PageHelper.getLimitString(selectSql, startNum, endNum);
     }
 
     /**
@@ -462,7 +466,8 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
             return getPagingSqlSqlServer(selectSql, startNum, endNum);
         } else if (dbtype == SQLSERVER_2005_AND_UP) {
             return getPagingSqlSqlServer2005(selectSql, startNum, endNum);
-
+        } else if (dbtype == SQLSERVER_2010_AND_UP) {
+            return getPagingSqlSqlServer2010(selectSql, startNum, endNum);
         } else if (dbtype == MYSQL || dbtype == H2) {
             return getPagingSqlMySql(selectSql, startNum, endNum);
         } else if (dbtype == POSTGRESQL) {
@@ -588,7 +593,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
                 return getTimestampSqlDerby(dt);
             }
             return getDateSqlDerby(dt);
-        } else if (dbtype == SQLSERVER || dbtype == SQLSERVER_2005_AND_UP || dbtype == ACCESS) {
+        } else if (dbtype == SQLSERVER || dbtype == SQLSERVER_2005_AND_UP || dbtype == SQLSERVER_2010_AND_UP || dbtype == ACCESS) {
             return getDateSqlServer(dt);
         } else if (dbtype == MYSQL) {
             return getDateSqlMySql(dt);
@@ -627,7 +632,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         detectDbType();
         if (dbtype == DERBY) {
             return getDateSqlDerby(dt);
-        } else if (dbtype == SQLSERVER || dbtype == SQLSERVER_2005_AND_UP || dbtype == ACCESS) {
+        } else if (dbtype == SQLSERVER || dbtype == SQLSERVER_2005_AND_UP|| dbtype == SQLSERVER_2010_AND_UP || dbtype == ACCESS) {
             return getDateSqlServer(dt);
         } else if (dbtype == MYSQL) {
             return getDateSqlMySql(dt);
@@ -1202,13 +1207,23 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     public @NotNull
     List<T> selectWithJoin(String fieldList, String whereClause, Object[] params, String orderByClause,
                            int beginNum, int endNum, String tableName) {
-        String query = "select " + fieldList + " from " + getTableName(tableName) + " " + whereClause;
+        String tableNameOrSelect = useTablenameOrSelect(fieldList, tableName);
+
+        String query =  tableNameOrSelect+ " " + whereClause;
         if (this.getDbType() != DERBY) {
             query += orderByClause;
         }
         query = getPagingSql(query, beginNum, endNum);
         return getDbHelper().executeQuery(query, params, new RowMapperResultReader<>(this), ActiveRecord.toFieldsSet(fieldList));
 
+    }
+
+    public String useTablenameOrSelect(String fieldList, String tableName) {
+        String tableNameOrSelect = getTableName(tableName);
+        if (!tableNameOrSelect.toUpperCase().startsWith("SELECT ")) {
+            tableNameOrSelect = "select " + fieldList + " from " + tableNameOrSelect;
+        }
+        return tableNameOrSelect;
     }
 
     public @NotNull
@@ -1555,7 +1570,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         detectDbType();
         if (dbtype == DERBY) {
             return "select last_insert_id()";
-        } else if (dbtype == SQLSERVER || dbtype == SQLSERVER_2005_AND_UP || dbtype == ACCESS) {
+        } else if (dbtype == SQLSERVER || dbtype == SQLSERVER_2005_AND_UP || dbtype == SQLSERVER_2010_AND_UP || dbtype == ACCESS) {
             return "select scope_identity()";
         } else if (dbtype == MYSQL) {
             return "select last_insert_id()";
