@@ -374,10 +374,8 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 
             String select = operator.useTablenameOrSelect(resultFields, this.getTableName());
 
-            //String select = "select " + resultFields + " from " + this.getTableName() + " ";
-
             return operator.select(select, where, parseOrder(), list.toArray(), limit.getBegin(),
-                    limit.getEnd(), clz);
+                    limit.getEnd(), clz, true);
         } finally {
             clear();
         }
@@ -571,9 +569,19 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
     public int count() throws DbException {
         try {
             sqlPocket = this.getSql();
-            String where = formWhereClause();
-            Object[] params = getParams().toArray();
-            return operator.countWhere(where, params);
+            SqlPocket having = parseHaving();
+            String where = formWhereClause() + parseGroupBy() + having.getCondition();
+            List<Object> list = Arrays.asList(getParams().toArray());
+            list.addAll(having.getParams());
+
+            String tableNameAlias = getTableName();
+            boolean innerSelect = false;
+            if (tableNameAlias!=null && tableNameAlias.toUpperCase().startsWith("SELECT ")) {
+                tableNameAlias = "(" + tableNameAlias+" "+where+ ") as counting_table";
+                innerSelect = true;
+            }
+
+            return operator.countWhere(tableNameAlias,  innerSelect? "": where, list.toArray());
         } finally {
             clear();
         }

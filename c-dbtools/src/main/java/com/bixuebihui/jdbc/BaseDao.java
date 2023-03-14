@@ -222,7 +222,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         return SqlServer2005PageHelper.getLimitString(selectSql, startNum, endNum);
     }
     public static String getPagingSqlSqlServer2010(String selectSql, int startNum, int endNum) {
-        return SqlServer2010PageHelper.getLimitString(selectSql, startNum, endNum);
+        return SqlServer2010PageHelper.getLimitString(selectSql, startNum, endNum-startNum);
     }
 
     /**
@@ -722,7 +722,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         return countWhere(null, where, params);
     }
 
-    protected int countWhere(String tableName, String where, Object[] params) {
+    public int countWhere(String tableName, String where, Object[] params) {
         String query = SELECT_COUNT_FROM + getTableName(tableName) + " " + where;
         Object o = this.getDbHelper().executeScalar(query, params);
         return o == null ? 0 : Integer.parseInt(o.toString());

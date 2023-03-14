@@ -11,7 +11,7 @@
     <groupId>com.github.yujiaao</groupId>
     <artifactId>c-tools-parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.13.7.10</version>
+    <version>1.13.7.17</version>
 
     <modules>
         <module>c-tools-bom</module>

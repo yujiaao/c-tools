@@ -234,6 +234,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
             // sqlserver 2000
             res = SQLSERVER;
         } else if (driverName.contains("SQL SERVER")) {
+            //JDBC Driver SQL Server 10.2 以上版本兼容 sql server 2012 以上版本
             res = SQLSERVER_2010_AND_UP; //2010 ~ 2029
        // } else if (driverName.contains("SQL SERVER")) {
         // sql server 2005
@@ -261,7 +262,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     }
 
     private static String getPagingSqlSqlServer2010(String selectSql, int startNum, int endNum) {
-        return SqlServer2010PageHelper.getLimitString(selectSql, startNum, endNum);
+        return SqlServer2010PageHelper.getLimitString(selectSql, startNum, endNum-startNum);
 
     }
 

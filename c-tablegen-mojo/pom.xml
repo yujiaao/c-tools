@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.github.yujiaao</groupId>
         <artifactId>c-tools-parent</artifactId>
-        <version>1.13.7.10</version>
+        <version>1.13.7.17</version>
     </parent>
     <artifactId>tablegen-maven-plugin</artifactId>
     <packaging>maven-plugin</packaging>

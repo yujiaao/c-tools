@@ -45,10 +45,10 @@ public class BasicListService extends AbstractBaseDao {
 
     private Object[] merge(Object[] parameters, Object[] params) {
         List<Object> res = new ArrayList<>();
-        if(parameters!=null) {
+        if(parameters!=null&& parameters.length>0) {
             res.addAll(List.of(parameters));
         }
-        if(params != null) {
+        if(params != null && params.length >0) {
             res.addAll(List.of(params));
         }
         return res.toArray();
