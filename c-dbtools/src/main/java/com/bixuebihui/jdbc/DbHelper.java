@@ -457,17 +457,25 @@ public class DbHelper implements IDbHelper {
             cn = this.getConnection(false);
             needRelease = true;
         }
-        int n;
-        try (PreparedStatement p = cn.prepareStatement(sql)) {
+
+        try (PreparedStatement p = cn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             for (Object[] param : params) {
                 this.fillParameter(p, param, null);
                 p.addBatch();
             }
             int[] updateCounts = p.executeBatch();
 
-            p.getGeneratedKeys();
+//            if(LOG.isDebugEnabled()) {
+//                //COMMENT OUT:  sqlserver并不会自动返回插入数据自动生成的自增主键
+//
+//                ResultSet resultSet = p.getGeneratedKeys();
+//                List<Map<String, Object>> list = resultSet2Vector(resultSet);
+//                if(!list.isEmpty()) {
+//                    LOG.debug(list.toString());
+//                }
+//            }
 
-            n = updateCounts.length;
+            return Arrays.stream(updateCounts).sum();
             // updateCounts[0] A number greater than or equal to zero -- indicates that the
             //     * command was processed successfully and is an update count giving the
             //     * number of rows in the database that were affected by the command's
@@ -482,7 +490,7 @@ public class DbHelper implements IDbHelper {
                 close(cn);
             }
         }
-        return n;
+
     }
 
     /**
@@ -704,22 +712,17 @@ public class DbHelper implements IDbHelper {
                 if (a.scale() > 0
                         || a.compareTo(new BigDecimal(
                         Integer.MAX_VALUE)) > 0) {
-                    columnMap.put(colName,
-                            rset.getObject(i));
+                    columnMap.put(colName, rset.getObject(i));
                 } else {
-                    columnMap.put(colName,
-                            rset.getInt(i));
+                    columnMap.put(colName, rset.getInt(i));
                 }
-            } else if (rsmdQuery.getPrecision(i) > 9) {
-                columnMap.put(colName,
-                        rset.getLong(i));
+            } else if (rsmdQuery.getPrecision(i) > 10) {
+                columnMap.put(colName, rset.getLong(i));
             } else {
-                columnMap.put(colName,
-                        rset.getInt(i));
+                columnMap.put(colName, rset.getInt(i));
             }
         } else {
-            columnMap.put(colName,
-                    rset.getDouble(i));
+            columnMap.put(colName, rset.getDouble(i));
 
         }
     }
