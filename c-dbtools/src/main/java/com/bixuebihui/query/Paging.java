@@ -3,9 +3,11 @@ package com.bixuebihui.query;
 import com.bixuebihui.db.ActiveRecord;
 import com.bixuebihui.jdbc.SqlSort;
 import org.apache.commons.beanutils.BeanMap;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.bixuebihui.jdbc.SqlSort.Sort.ASC;
 
@@ -117,12 +119,13 @@ import static com.bixuebihui.jdbc.SqlSort.Sort.ASC;
  * 成功为pojo赋值，包括级联属性address。
  */
 public class Paging<S> {
+    public static final String ORDER_SPLITER = ":";
     Long start=0L;
     Long count=10L;
     List<SqlSort.Sort> sort;
     S searchBean;
-    String dateTimeRangeBeginPrefix = "b";
-    String dateTimeRangeEndPrefix = "e";
+    String dateTimeRangeBeginPrefix = "begin_";
+    String dateTimeRangeEndPrefix = "end_";
 
     public String getDateTimeRangeBeginPrefix() {
         return dateTimeRangeBeginPrefix;
@@ -175,24 +178,33 @@ public class Paging<S> {
     public <T> ActiveRecord<T> toActiveRecordParams(ActiveRecord<T> ar, Set<String> validFields) {
         BeanMap dest = new BeanMap(searchBean);
         Map<String, MutablePair<Object, Object>> dateRange = new HashMap<>(16);
+
+        Map<String, String> fields = validFields.stream().collect(Collectors.toMap(x -> unifyField(x), y -> y, (x,y) -> x));
+
         dest.forEach((k, v) -> {
-            String key = ((String) k).toLowerCase();
-            if (validFields.isEmpty() ||  validFields.contains(key)) {
+
+            String key = unifyField(((String) k));
+
+
+            if (fields.isEmpty() ||  fields.containsKey(key)) {
+                String originalKey = fields.get(key);
                 if (v instanceof Number || v instanceof Boolean || v instanceof Enum) {
-                    ar.eq(key, v);
+                    ar.eq(originalKey, v);
                 } else if (v instanceof Object[] || v instanceof Collection) {
-                    ar.in(key, v);
+                    ar.in(originalKey, v);
                 } else if (v instanceof String) {
-                    ar.like(key, (String) v);
+                    ar.like(originalKey, (String) v);
                 }
             }
             if (v instanceof Date) {
-                if (hasKey(validFields, key, dateTimeRangeBeginPrefix)) {
+                if (hasKey(fields.keySet(), key, dateTimeRangeBeginPrefix)) {
                     String keyWithoutPrefix = key.substring(dateTimeRangeBeginPrefix.length());
-                    pushLeft(dateRange, keyWithoutPrefix, v);
-                } else if (hasKey(validFields, key, dateTimeRangeEndPrefix)) {
+                    String originalKey = fields.get(keyWithoutPrefix);
+                    pushLeft(dateRange, originalKey, v);
+                } else if (hasKey(fields.keySet(), key, dateTimeRangeEndPrefix)) {
                     String keyWithoutPrefix = key.substring(dateTimeRangeEndPrefix.length());
-                    pushRight(dateRange, keyWithoutPrefix, v);
+                    String originalKey = fields.get(keyWithoutPrefix);
+                    pushRight(dateRange, originalKey, v);
                 }
             }
         });
@@ -205,7 +217,6 @@ public class Paging<S> {
 
         if(sort!=null) {
             this.sort.forEach(sort1 -> {
-
                         if (sort1.getOrder().equals(ASC)) {
                             ar.asc(sort1.getProperty());
                         } else {
@@ -216,6 +227,15 @@ public class Paging<S> {
         }
 
         return ar;
+    }
+
+    String unifyField(String s) {
+        if(s.startsWith(dateTimeRangeBeginPrefix)) {
+            return dateTimeRangeBeginPrefix +  s.substring(dateTimeRangeBeginPrefix.length()).toLowerCase().replace("_", "");
+        }else if(s.startsWith(dateTimeRangeEndPrefix)){
+            return dateTimeRangeEndPrefix + s.substring(dateTimeRangeEndPrefix.length()).toLowerCase().replace("_", "");
+        }
+        return s.toLowerCase().replace("_", "");
     }
 
 
@@ -251,4 +271,22 @@ public class Paging<S> {
         dateRange.putIfAbsent(key, pair);
     }
 
+    /**
+     * 排序 sortBy=abc:asc,def:desc
+     * @param sortBy
+     */
+    public void parseSort(String sortBy) {
+        if(!StringUtils.isEmpty(sortBy)) {
+            sort = new ArrayList<>();
+            Arrays.stream(sortBy.split(",")).forEach( sub ->{
+                if(sub.contains(ORDER_SPLITER)){
+                    String[] pair = sub.split(ORDER_SPLITER);
+                    sort.add(new SqlSort.Sort(pair[0], pair[1]));
+                }else{
+                    sort.add(new SqlSort.Sort(sub, ASC));
+                }
+            });
+        }
+
+    }
 }

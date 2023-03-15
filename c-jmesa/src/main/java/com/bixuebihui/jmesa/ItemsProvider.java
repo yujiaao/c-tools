@@ -1,18 +1,13 @@
 package com.bixuebihui.jmesa;
 
-import com.bixuebihui.jdbc.IReaderService;
-import com.bixuebihui.jdbc.SqlFilter;
-import com.bixuebihui.jdbc.SqlObject;
-import com.bixuebihui.jdbc.SqlSort;
-import org.apache.commons.lang.StringUtils;
+import com.bixuebihui.jdbc.*;
+import org.apache.commons.lang3.StringUtils;
 import org.jmesa.limit.Limit;
 import org.jmesa.model.PageItems;
 
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author xwx
@@ -31,11 +26,16 @@ public class ItemsProvider<T> implements PageItems {
 
     @Override
     public int getTotalRows(Limit limit) {
+        if(service == null){
+            // this is not valid for Elasticsearch
+            return 0;
+        }
 
         SqlFilter filter = AbstractWebUI.getFilter(limit);
         int totalRows = 0;
         try {
             SqlObject obj = filter.toSqlObject();
+
             totalRows = service.countWhere(obj.getSqlString(), obj.getParameters());
         } catch (SQLException e) {
             e.printStackTrace();

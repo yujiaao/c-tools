@@ -1,7 +1,9 @@
 package com.bixuebihui.db;
 
+import com.bixuebihui.DbException;
 import com.bixuebihui.jdbc.BaseDao;
 import com.bixuebihui.jdbc.SqlFilter;
+import com.bixuebihui.jdbc.SqlGroup;
 import com.bixuebihui.jdbc.SqlSort;
 import com.bixuebihui.jdbc.entity.CountObject;
 import com.bixuebihui.jdbc.entity.CountValue;
@@ -13,6 +15,7 @@ import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 import static java.util.Collections.emptySet;
 
@@ -50,7 +53,19 @@ public class DbImpl<T, V> extends BaseDao<T, V> implements ActiveRecord<T>,
 	}
 
 	@Override
+	public ActiveRecord<T> in(String field, List<?> values) {
+		filterStack.in(field, values);
+		return this;
+	}
+
+	@Override
 	public ActiveRecord<T> notIn(String field, Object[] values) {
+		filterStack.notIn(field, values);
+		return this;
+	}
+
+	@Override
+	public ActiveRecord<T> notIn(String field, List<?> values) {
 		filterStack.notIn(field, values);
 		return this;
 	}
@@ -645,5 +660,25 @@ public class DbImpl<T, V> extends BaseDao<T, V> implements ActiveRecord<T>,
 	@Override
 	public T mapRow(ResultSet rs, int index, Set<String> fields)  {
 		throw new NotImplementedException();
+	}
+
+	@Override
+	public ActiveRecord<T> filterInterceptor(Function<SqlHelper, SqlHelper> filterInterceptor) {
+		return null;
+	}
+
+	@Override
+	public ActiveRecord<T> havingInterceptor(Function<SqlHelper, SqlHelper> havingInterceptor) {
+		return null;
+	}
+
+	@Override
+	public ActiveRecord<T> sortInterceptor(Function<SqlSort, SqlSort> sortInterceptor) {
+		return null;
+	}
+
+	@Override
+	public ActiveRecord<T> groupInterceptor(Function<SqlGroup, SqlGroup> groupInterceptor) {
+		return null;
 	}
 }

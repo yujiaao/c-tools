@@ -5,24 +5,26 @@ import java.sql.Timestamp;
 public class User {
     Integer id;
     String name;
-    Timestamp bModifiedTime;
-    Timestamp eModifiedTime;
 
-    public Timestamp getbModifiedTime() {
-        return bModifiedTime;
+    public Timestamp getBegin_ModifiedTime() {
+        return begin_ModifiedTime;
     }
 
-    public void setbModifiedTime(Timestamp bModifiedTime) {
-        this.bModifiedTime = bModifiedTime;
+    public void setBegin_ModifiedTime(Timestamp begin_ModifiedTime) {
+        this.begin_ModifiedTime = begin_ModifiedTime;
     }
 
-    public Timestamp geteModifiedTime() {
-        return eModifiedTime;
+    public Timestamp getEnd_ModifiedTime() {
+        return end_ModifiedTime;
     }
 
-    public void seteModifiedTime(Timestamp eModifiedTime) {
-        this.eModifiedTime = eModifiedTime;
+    public void setEnd_ModifiedTime(Timestamp end_ModifiedTime) {
+        this.end_ModifiedTime = end_ModifiedTime;
     }
+
+    Timestamp begin_ModifiedTime;
+    Timestamp end_ModifiedTime;
+
 
     public Integer getId() {
         return id;

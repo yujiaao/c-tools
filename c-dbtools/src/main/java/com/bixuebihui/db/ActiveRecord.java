@@ -1,12 +1,18 @@
 package com.bixuebihui.db;
 
+import com.bixuebihui.DbException;
 import com.bixuebihui.jdbc.BaseDao;
 import com.bixuebihui.query.Paging;
 import org.apache.commons.lang3.StringUtils;
+import org.supercsv.io.CsvBeanWriter;
+import org.supercsv.io.ICsvBeanWriter;
+import org.supercsv.prefs.CsvPreference;
 
+import java.io.IOException;
+import java.io.StringWriter;
+import java.lang.reflect.Field;
 import java.sql.SQLException;
-import java.util.Locale;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -22,7 +28,7 @@ import static java.util.Collections.emptySet;
  * @author xingwx
  * @version $Id: $Id
  */
-public interface ActiveRecord<T> extends Record<T> {
+public interface ActiveRecord<T> extends Record<T>, Customizer<T> {
 
     /**
      * Constant <code>ORDER_ASC=0</code>
@@ -51,6 +57,9 @@ public interface ActiveRecord<T> extends Record<T> {
      */
     ActiveRecord<T> in(String field, Object[] values);
 
+    ActiveRecord<T> in(String field, List<?> values);
+
+
     /**
      * <p>not in</p>
      * condition
@@ -60,6 +69,8 @@ public interface ActiveRecord<T> extends Record<T> {
      * @return a {@link ActiveRecord} object.
      */
     ActiveRecord<T> notIn(String field, Object[] values);
+
+    ActiveRecord<T> notIn(String field, List<?> values);
 
     /**
      * Call this method will reject empty string as where condition value
@@ -355,5 +366,48 @@ public interface ActiveRecord<T> extends Record<T> {
     }
 
     <S> ActiveRecord<T> query(Paging<S> searchBean);
+
+
+    default String findAllToCsv(String titles) throws DbException {
+        return findAllToCsv(titles, null);
+    }
+    /**
+     * export to CSV format with excel preferences
+     * @param titles  i18n titles
+     * @param onlyFields field names of POJO type T
+     * @return
+     * @throws DbException
+     */
+    default String findAllToCsv(String titles, String onlyFields) throws DbException {
+        List<T> list =  findAll();
+        return findAllToCsv(list, titles, onlyFields);
+    }
+
+    static   <T> String findAllToCsv(List<T> list, String titles, String onlyFields) throws DbException {
+
+        if(list.isEmpty()) return "";
+
+        String[] fields = onlyFields!=null ? onlyFields.split(",")
+                : Arrays.stream(list.get(0).getClass().getDeclaredFields())
+                .map(Field::getName).filter(name -> !name.contains("$")).toArray(String[]::new);
+
+        StringWriter sb = new StringWriter(10_000);
+        ICsvBeanWriter beanWriter = new CsvBeanWriter(sb,
+                CsvPreference.EXCEL_PREFERENCE);
+
+        String[] header = titles.split(",");
+
+        try {
+            beanWriter.writeHeader(header);
+            for (T pojo : list) {
+                beanWriter.write(pojo, fields);
+            }
+            beanWriter.close();
+        } catch (IOException e) {
+            throw new DbException(e);
+        }
+
+        return sb.toString();
+    }
 }
 

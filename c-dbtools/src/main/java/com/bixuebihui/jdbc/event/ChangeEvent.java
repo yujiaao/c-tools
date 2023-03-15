@@ -11,6 +11,8 @@ public class ChangeEvent<V> {
     String tableName;
     String keyName;
     List<V> key;
+    int influenceRecordCount;
+    String conditionSummary;
 
     public ChangeEvent(String databaseName, String tableName, String keyName, List<V> id, ChangeType changeType) {
         this.dbName = databaseName;
@@ -18,6 +20,40 @@ public class ChangeEvent<V> {
         this.keyName =  keyName;
         this.changeType = changeType;
         this.key = id;
+        this.influenceRecordCount = id.size();
+    }
+
+    public ChangeEvent(String databaseName, String tableName, String keyName,ChangeType changeType, int influenceRecordCount, String conditionSummary) {
+        this.dbName = databaseName;
+        this.tableName = tableName;
+        this.keyName =  keyName;
+        this.changeType = changeType;
+        this.influenceRecordCount = influenceRecordCount;
+        this.conditionSummary = conditionSummary;
+    }
+
+    public String getKeyName() {
+        return keyName;
+    }
+
+    public void setKeyName(String keyName) {
+        this.keyName = keyName;
+    }
+
+    public int getInfluenceRecordCount() {
+        return influenceRecordCount;
+    }
+
+    public void setInfluenceRecordCount(int influenceRecordCount) {
+        this.influenceRecordCount = influenceRecordCount;
+    }
+
+    public String getConditionSummary() {
+        return conditionSummary;
+    }
+
+    public void setConditionSummary(String conditionSummary) {
+        this.conditionSummary = conditionSummary;
     }
 
     public ChangeType getChangeType() {
@@ -60,6 +96,8 @@ public class ChangeEvent<V> {
                 ", tableName='" + tableName + '\'' +
                 ", keyName='" + keyName + '\'' +
                 ", key=" + key +
+                ", influenceRecordCount=" + influenceRecordCount +
+                ", conditionSummary='" + conditionSummary + '\'' +
                 '}';
     }
 }

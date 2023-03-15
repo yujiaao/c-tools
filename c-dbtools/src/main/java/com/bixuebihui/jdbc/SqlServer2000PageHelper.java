@@ -15,9 +15,9 @@ import java.util.regex.Pattern;
  * @author xingwx
  * @version 0.1
  */
-public class SqlServer2000PageHepler {
+public class SqlServer2000PageHelper {
 
-    SqlServer2000PageHepler() throws IllegalAccessException {
+    SqlServer2000PageHelper() throws IllegalAccessException {
         throw new IllegalAccessException("util class");
     }
 

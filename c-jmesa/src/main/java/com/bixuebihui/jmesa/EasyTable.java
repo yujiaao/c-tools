@@ -1,18 +1,30 @@
 package com.bixuebihui.jmesa;
 
 import com.bixuebihui.DbException;
+import com.bixuebihui.jdbc.BaseDao;
 import com.bixuebihui.jdbc.IDbHelper;
+import com.bixuebihui.jmesa.entry.Query;
 import com.bixuebihui.jmesa.mock.SimpleHttpServletRequest;
 import com.bixuebihui.jmesa.mock.SimpleHttpServletResponse;
 import com.bixuebihui.util.DbUtils;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.foundationdb.sql.StandardException;
 import com.foundationdb.sql.parser.*;
-import org.apache.commons.lang.StringUtils;
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.select.*;
+import net.sf.jsqlparser.statement.values.ValuesStatement;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nullable;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -30,15 +42,19 @@ public class EasyTable extends BasicWebUI {
     private boolean onePage = true;
 
     public EasyTable(IDbHelper dbhelper, String tableCaption, String baseSql) {
-        this(dbhelper, tableCaption, baseSql, null, null);
+        this(dbhelper, tableCaption, baseSql, null,null, null);
+    }
+
+    public EasyTable(IDbHelper dbhelper, String tableCaption, String baseSql, Object[] parameters) {
+        this(dbhelper, tableCaption, baseSql, parameters,null, null);
     }
 
     /**
      * @deprecated use constructor with  colNames
      */
     @Deprecated
-    public EasyTable(IDbHelper dbhelper, String tableCaption, String baseSql, @Nullable String pkName, @Nullable String tableId) {
-        this(dbhelper, tableCaption, baseSql, pkName,tableId, null);
+    public EasyTable(IDbHelper dbhelper, String tableCaption, String baseSql, Object[] parameters, @Nullable String pkName, @Nullable String tableId) {
+        this(dbhelper, tableCaption, baseSql,parameters, pkName,tableId, null);
     }
 
         /**
@@ -51,11 +67,12 @@ public class EasyTable extends BasicWebUI {
          * @param tableId      表名
          * @param pkName       主键名
          */
-    public EasyTable(IDbHelper dbhelper, String tableCaption, String baseSql, @Nullable String pkName, @Nullable String tableId, String colNames) {
+    public EasyTable(IDbHelper dbhelper, String tableCaption, String baseSql, Object[] sqlParameters,
+                     @Nullable String pkName, @Nullable String tableId, String colNames) {
         this.id = tableId;
         super.setTableCaption(tableCaption);
 
-        init(dbhelper, baseSql);
+        init(dbhelper, baseSql, sqlParameters);
 
         if (pkName != null) {
             this.setUniquePropertyName(pkName);
@@ -80,7 +97,7 @@ public class EasyTable extends BasicWebUI {
 
     }
 
-    protected void init(IDbHelper dbHelper, String baseSql) {
+    protected void init(IDbHelper dbHelper, String baseSql, Object[] params) {
         this.service = new BasicListService(dbHelper);
         if (isOnePage()) {
             this.maxRows = 500;
@@ -88,13 +105,14 @@ public class EasyTable extends BasicWebUI {
             LOG.debug("maxRows=" + maxRows + "  maxRowsIncrements[0]=" + this.maxRowsIncrements[0]);
         }
         ((BasicListService) this.service).setCoreSql(baseSql);
+        ((BasicListService) this.service).setSqlParams(params);
     }
 
 
     protected MiniSqlParser initMeta(String baseSql) {
         try {
             return MiniSqlParser.parse(baseSql);
-        } catch (StandardException |RuntimeException e) {
+        } catch (RuntimeException | JSQLParserException e) {
             LOG.warn("sql can't be parsed:" + baseSql);
             LOG.warn(e.getMessage());
         }
@@ -134,7 +152,8 @@ public class EasyTable extends BasicWebUI {
      * use LimitActionFactoryJsonImpl
      * request json format:
      *     { "id": "table-id", "action": "", "maxRows": 500, "page": 123,
-     *     "filter": { "property1":value1, "property2":value2, "property3": [fromValue, toValue] },
+     * "filter": { "property1":value1, "property2":value2, "property3": [fromValue, toValue]},
+
      *     "sort":{ "property1":"asc", "property2":"desc", }, "exportType":"json", }
      * response:
      *    {
@@ -163,9 +182,9 @@ public class EasyTable extends BasicWebUI {
 
     /**
      * use @see LimitActionFactoryJsonImpl
-     * json format { "id": "table-id", "action": "", "maxRows": 500, "page": 123,
-     * "filter": { "property1":value1, "property2":value2, "property3": [fromValue, toValue]},
-     * "sort":{ "property1":"asc", "property2":"desc", },
+     * json format { "id": "table-id", "action": "", "maxRows": 500, "page": 123,     *
+     *     "filter": :[{"key":"id","comparison":"between","value":[1,30000]}],
+     *     * "sort":{ "property1":"asc", "property2":"desc", },
      * "exportType":"json", }
      */
     public String json(String jsonQuery) throws SQLException {
@@ -206,6 +225,10 @@ public class EasyTable extends BasicWebUI {
         this.onePage = onePage;
     }
 
+    public String json(Query jsonQuery) throws SQLException {
+            return render(jsonQuery);
+    }
+
 
     public static class MiniSqlParser {
         public String[] colNames;
@@ -214,8 +237,11 @@ public class EasyTable extends BasicWebUI {
         public String uniquePropertyName;
         public String[] colTypes;
 
-        public static MiniSqlParser parse(String sql) throws StandardException {
+        public static MiniSqlParser parseOld(String sql) throws StandardException {
             MiniSqlParser sp = new MiniSqlParser();
+
+            //TODO may be change to use https://github.com/JSQLParser/JSqlParser
+
             SQLParser parser = new SQLParser();
 
             StatementNode stmt = parser.parseStatement(sql);
@@ -257,6 +283,113 @@ public class EasyTable extends BasicWebUI {
             return sp;
         }
 
+        public static MiniSqlParser parse(String sql) throws JSQLParserException {
+            MiniSqlParser sp = new MiniSqlParser();
+
+            //TODO may be change to use https://github.com/JSQLParser/JSqlParser
+
+            List<String> labelList = new ArrayList<>();
+            List<String> nameList = new ArrayList<>();
+
+            Select select = (Select) CCJSqlParserUtil.parse(sql);
+
+
+            SelectVisitor sv = new SelectVisitor(){
+                @Override
+                public void visit(PlainSelect plainSelect) {
+
+                     plainSelect.getFromItem().accept(new    FromItemVisitor (){
+                         @Override
+                         public void visit(Table tableName) {
+                             if(sp.tableName==null) {
+                                 sp.tableName = tableName.getName();
+                             }
+                         }
+
+                         @Override
+                         public void visit(SubSelect subSelect) {
+                         }
+
+                         @Override
+                         public void visit(SubJoin subjoin) {
+                         }
+
+                         @Override
+                         public void visit(LateralSubSelect lateralSubSelect) {
+                         }
+
+                         @Override
+                         public void visit(ValuesList valuesList) {
+                         }
+
+                         @Override
+                         public void visit(TableFunction tableFunction) {
+                         }
+
+                         @Override
+                         public void visit(ParenthesisFromItem aThis) {
+
+                         }
+                     });
+
+                    plainSelect.getSelectItems().forEach(it -> {
+                        SelectItemVisitor sv1 = new SelectItemVisitor(){
+                            @Override
+                            public void visit(AllColumns allColumns) {
+                            }
+
+                            @Override
+                            public void visit(AllTableColumns allTableColumns) {
+                            }
+
+                            @Override
+                            public void visit(SelectExpressionItem selectExpressionItem) {
+
+                                if(selectExpressionItem.getAlias()!=null) {
+                                    String name = selectExpressionItem.getAlias().getName();
+                                    labelList.add(name);
+                                    nameList.add(name);
+                                }else {
+                                    String name =  selectExpressionItem.getExpression().toString();
+                                    if(name.contains(".")){
+                                        name = name.substring(name.indexOf(".")+1);
+                                    }
+                                    labelList.add(name);
+                                    nameList.add(name);
+                                }
+
+                            }
+                        };
+                        it.accept(sv1);
+                    });
+                }
+
+                @Override
+                public void visit(SetOperationList setOperationList) {
+                }
+
+                @Override
+                public void visit(WithItem withItem) {
+                }
+
+                @Override
+                public void visit(ValuesStatement valuesStatement) {
+                }
+            };
+            select.getSelectBody().accept(sv);
+
+            sp.colLabels = labelList.toArray(new String[labelList.size()]);
+            sp.colNames = nameList.toArray(new String[nameList.size()]);
+
+
+
+            if (sp.colNames.length > 0) {
+                sp.uniquePropertyName = sp.colNames[0];
+            }
+
+            return sp;
+        }
+
         public static MiniSqlParser getByDb(Connection cn, String sql)
                 throws DbException {
             MiniSqlParser sp = new MiniSqlParser();
@@ -264,9 +397,13 @@ public class EasyTable extends BasicWebUI {
             ResultSet rs = null;
             ResultSetMetaData rsmd;
             try {
+                String sqlWithLimit = BaseDao.getPagingSql(cn.getMetaData().getDriverName(), sql, 0,0);
+
                 stmt = cn.createStatement(ResultSet.TYPE_FORWARD_ONLY,
                         ResultSet.CONCUR_READ_ONLY);
-                rs = stmt.executeQuery(sql + " limit 0,0");
+
+                rs = stmt.executeQuery(sqlWithLimit);
+
                 rsmd = rs.getMetaData();
                 sp.colNames = new String[rsmd.getColumnCount()];
                 sp.colLabels = new String[rsmd.getColumnCount()];

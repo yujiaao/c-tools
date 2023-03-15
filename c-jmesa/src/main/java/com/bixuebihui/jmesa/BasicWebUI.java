@@ -1,6 +1,7 @@
 package com.bixuebihui.jmesa;
 
 import com.bixuebihui.jdbc.IBaseListService;
+import com.bixuebihui.jmesa.entry.Query;
 import com.bixuebihui.util.ParameterUtils;
 import org.jmesa.core.preference.Preferences;
 import org.jmesa.limit.Limit;
@@ -54,7 +55,17 @@ public class BasicWebUI extends AbstractWebUI<Object, Long> {
     }
 
     protected TableModel createTableModel(String id, HttpServletRequest request,
-                     HttpServletResponse response ){
+                                          HttpServletResponse response) {
+
+        TableModel model = new TableModel(id, request, response);
+
+        // use Database filter & sort, so don't need java custom filter match
+        model.autoFilterAndSort(false);
+        return model;
+    }
+
+    protected TableModel createTableModel(String id, Map<String, Object> request,
+                                          Map<String, Object> response) {
 
         TableModel model = new TableModel(id, request, response);
 
@@ -79,6 +90,28 @@ public class BasicWebUI extends AbstractWebUI<Object, Long> {
 
         tableFacade.setExportTypes(ExportTypes.CSV, ExportTypes.EXCEL);
 
+        return getRenderResult(tableFacade, getContext(request), false);
+    }
+
+
+    @Override
+    protected String render(Query query) {
+        Map<String, Object> request = new HashMap<>();
+        Map<String, Object> response = new HashMap<>();
+
+        TableModel tableFacade = createTableModel(id, request, response);
+
+        if (query != null) {
+            LimitFactory limitFactory = new LimitFactory(id, query);
+            Limit limit = limitFactory.createLimit();
+            tableFacade.setLimit(limit);
+        }
+        tableFacade.setExportTypes(ExportTypes.CSV, ExportTypes.JSON);
+
+        return getRenderResult(tableFacade, getContext(request), true);
+    }
+
+    private String getRenderResult(TableModel tableFacade, Map<String, Object> request, boolean direct) {
         Preferences preferences = null;
         tableFacade.setPreferences(preferences);
 
@@ -106,7 +139,7 @@ public class BasicWebUI extends AbstractWebUI<Object, Long> {
 
         List<Column> cols = row.getColumns();
 
-        Map<String, Object> context = getContext(request);
+        Map<String, Object> context = request;
 
         for (Column col : cols) {
             prepareCellEditor(col, context);
@@ -115,13 +148,19 @@ public class BasicWebUI extends AbstractWebUI<Object, Long> {
 
         if (tableFacade.isExporting()) {
             // Will write the export data out to the response.
-            exportRender(tableFacade);
+            if (direct) {
+                return (String) exportRender(tableFacade);
+            } else {
+                exportRender(tableFacade);
+                return null;
+            }
             // In Spring return null tells the controller not to do anything.
-            return null;
+
         } else {
             return tableFacade.render();
         }
     }
+
 
     public String getColsList() {
         return colsList;

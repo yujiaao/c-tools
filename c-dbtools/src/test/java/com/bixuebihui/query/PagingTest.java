@@ -1,12 +1,13 @@
 package com.bixuebihui.query;
 
 import com.bixuebihui.datasource.H2DataSource;
-import com.bixuebihui.db.ActiveRecord;
 import com.bixuebihui.db.ActiveRecordImpl;
 import com.bixuebihui.db.SqlPocket;
 import com.bixuebihui.jdbc.AbstractViewBaseDao;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import javax.sql.DataSource;
 import java.sql.ResultSet;
@@ -16,10 +17,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class PagingTest  {
-    class MyAr extends  AbstractViewBaseDao<User, Integer> {
+    static class MyAr extends  AbstractViewBaseDao<User, Integer> {
         MyAr(DataSource cp){
             super(cp);
         }
@@ -59,7 +60,7 @@ public class PagingTest  {
 
         res = ar.getCondStack().toCondition();
 
-        Assertions.assertEquals("", res.getCondition().toString());
+        assertEquals("", res.getCondition().toString());
         ar.clear();
 
         p.searchBean.id=1;
@@ -70,18 +71,32 @@ public class PagingTest  {
         assertEquals(" where id = ?", res.getCondition().toString());
         ar.clear();
 
-        p.searchBean.bModifiedTime= new Timestamp(System.currentTimeMillis());
+        p.searchBean.begin_ModifiedTime= new Timestamp(System.currentTimeMillis());
         ar = (ActiveRecordImpl<User, Integer>) p.toActiveRecordParams(ar, fields);
         res = ar.getCondStack().toCondition();
         assertEquals(" where id = ? and modifiedtime >= ?", res.getCondition().toString());
         ar.clear();
 
-        p.searchBean.eModifiedTime= new Timestamp(System.currentTimeMillis());
+        p.searchBean.end_ModifiedTime= new Timestamp(System.currentTimeMillis());
 
         ar = (ActiveRecordImpl<User, Integer>) p.toActiveRecordParams(ar, fields);
         res = ar.getCondStack().toCondition();
-        Assertions.assertEquals(" where id = ? and modifiedtime between ? and ?", res.getCondition().toString());
+        assertEquals(" where id = ? and modifiedtime between ? and ?", res.getCondition().toString());
         ar.clear();
 
+    }
+
+
+
+    @ParameterizedTest
+    @CsvSource({"users,users",
+            "Field,field",  // 统一小写
+            "user_s,users",  //  去下划线
+            "Create_STime,createstime",  //  去下划线
+            "begin_end,begin_end", // begin_ end_ 例外
+            "end_date,end_date"
+    })
+    void unifyField(String field, String result){
+        assertEquals(result, new Paging().unifyField(field));
     }
 }

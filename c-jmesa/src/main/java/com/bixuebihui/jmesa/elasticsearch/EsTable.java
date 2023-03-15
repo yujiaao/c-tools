@@ -4,12 +4,15 @@ package com.bixuebihui.jmesa.elasticsearch;
 import com.bixuebihui.elasticsearch.ElasticSearchFilter;
 import com.bixuebihui.elasticsearch.EsRequest;
 import com.bixuebihui.jmesa.EasyTable;
+import com.bixuebihui.jmesa.entry.Query;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.jmesa.limit.Limit;
 import org.jmesa.limit.LimitFactory;
 import org.jmesa.limit.RowSelect;
 import org.jmesa.limit.SortSet;
 
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -20,7 +23,7 @@ import static java.util.Collections.emptySet;
  * @author xwx
  */
 public class EsTable extends EasyTable {
-    EsRequest request;
+    protected EsRequest request;
     public EsTable(String  host,String username, String password,String tableCaption, String indexName) {
         super();
         request =  new EsRequest(host, username, password, indexName);
@@ -32,21 +35,37 @@ public class EsTable extends EasyTable {
     public String json( String jsonQuery) throws SQLException {
         try {
             Limit limit = getLimit(tableCaption, jsonQuery);
-            ElasticSearchFilter filter = new ElasticSearchFilter();
-            getFilter(filter, limit, id);
-            RowSelect rowSelect = limit.getRowSelect();
-            LinkedHashMap<String,String> sort = toEsSort(limit.getSortSet());
-
-            String scriptSource = null;
-            Map<String, Object> scriptParams = emptyMap();
-
-            String query = filter.toEsObject(filter.toQuery(), rowSelect.getRowStart(),
-                    rowSelect.getRowEnd() - rowSelect.getRowStart(), emptySet(),emptySet(), sort, scriptSource, scriptParams);
-            return EsRequest.esJsonToTableJson(request.search(query), rowSelect.getMaxRows(),rowSelect.getRowStart(), rowSelect.getRowEnd(), rowSelect.getTotalRows(), rowSelect.getPage() );
+            return getSearchResult(limit);
         }catch (Exception e){
             throw new SQLException(e);
         }
     }
+
+    private String getSearchResult(Limit limit) throws ParseException, JsonProcessingException {
+        ElasticSearchFilter filter = new ElasticSearchFilter();
+        getFilter(filter, limit, id);
+        RowSelect rowSelect = limit.getRowSelect();
+        LinkedHashMap<String,String> sort = toEsSort(limit.getSortSet());
+
+        String scriptSource = null;
+        Map<String, Object> scriptParams = emptyMap();
+
+        String query = filter.toEsObject(filter.toQuery(), rowSelect.getRowStart(),
+                rowSelect.getRowEnd() - rowSelect.getRowStart(), emptySet(),emptySet(), sort, scriptSource, scriptParams);
+        return request.esJsonToTableJson(request.search(query), rowSelect.getMaxRows(), rowSelect.getRowStart(), rowSelect.getRowEnd(), rowSelect.getTotalRows(), rowSelect.getPage());
+    }
+
+    @Override
+    public String json( Query jsonQuery) throws SQLException {
+        try {
+            Limit limit = getLimit(tableCaption, jsonQuery);
+            return getSearchResult(limit);
+        }catch (Exception e){
+            throw new SQLException(e);
+        }
+    }
+
+
 
     private LinkedHashMap<String,String> toEsSort(SortSet sortSet) {
         LinkedHashMap<String,String> res = new LinkedHashMap<>();
@@ -61,8 +80,11 @@ public class EsTable extends EasyTable {
 
 
     public Limit getLimit(String id, String json) {
-        LimitFactory limitFactory = new LimitFactory(id, json);
-        return  limitFactory.createLimit();
+        return new LimitFactory(id, json).createLimit();
+    }
+
+    public Limit getLimit(String id, Query json) {
+        return  new LimitFactory(id, json).createLimit();
     }
 
 }

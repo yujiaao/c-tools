@@ -1,0 +1,30 @@
+{
+  "maxRows": 20,
+  "page": 1,
+  "exportType": "json",
+  "sort": [
+    {
+      "field": "property1",
+      "order": "desc"
+    },
+    {
+      "field": "property1",
+      "order": "desc"
+    }
+  ],
+  "filter": [
+    {
+      "key": "property1",
+      "comparison": "in",
+      "value": [
+        "abc","def"
+      ]
+    },{
+      "key": "property2",
+      "comparison": "between",
+      "value": [
+        123,456
+      ]
+    }
+  ]
+}

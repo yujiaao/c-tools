@@ -38,21 +38,39 @@ public class BasicListService extends AbstractBaseDao {
         return Integer.parseInt(this.getDbHelper().executeScalar(sql, sqlObj.getParameters()).toString());
     }
 
+    @Override
+    public int countWhere(String where, Object[] params) {
+        return super.countWhere(where, merge(sqlObj.getParameters(), params));
+    }
+
+    private Object[] merge(Object[] parameters, Object[] params) {
+        List<Object> res = new ArrayList<>();
+        if(parameters!=null&& parameters.length>0) {
+            res.addAll(List.of(parameters));
+        }
+        if(params != null && params.length >0) {
+            res.addAll(List.of(params));
+        }
+        return res.toArray();
+    }
+
 
     @Override
-    public List<Object> select(String whereClause, Object[] params, String orderBy, int rowStart, int rowEnd)
-             {
+    public List<Object> select(String whereClause, Object[] params, String orderBy, int rowStart, int rowEnd) {
+
+        Object[] allParam = merge(sqlObj.getParameters(), params);
 
         boolean needOrderBy = true;
         String tableName = getTableName();
-        if (this.getDbType() == DERBY || tableName.toUpperCase().indexOf("ORDER BY") > 0) {
+        if (this.getDbType() == DERBY){
+            // || tableName.toUpperCase().indexOf("ORDER BY") > 0) {
             needOrderBy = false;
         }
 
         String selectSql = "select * from " + tableName + " " + whereClause + " "
                 + (needOrderBy ? orderBy : "");
 
-        List<Map<String, Object>> v = getDbHelper().executeQuery(this.getPagingSql(selectSql, rowStart, rowEnd), params);
+        List<Map<String, Object>> v = getDbHelper().executeQuery(this.getPagingSql(selectSql, rowStart, rowEnd), allParam);
         ArrayList<Object> list = new ArrayList<>();
         list.addAll(v);
         return list;
@@ -61,13 +79,12 @@ public class BasicListService extends AbstractBaseDao {
 
 
     @Override
-    public Map<String, Object> selectByIds(String arg0, List<String> arg1)
-             {
+    public Map<String, Object> selectByIds(String arg0, List<String> arg1) {
         throw new DbException("not implement!");
     }
 
     @Override
-    public boolean updateByKey(Object arg0)  {
+    public boolean updateByKey(Object arg0) {
         throw new DbException("not implement!");
     }
 

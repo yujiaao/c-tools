@@ -7,11 +7,14 @@ import com.bixuebihui.jdbc.aop.DbHelperAroundAdvice;
 import com.bixuebihui.jdbc.entity.CountObject;
 import com.bixuebihui.jdbc.entity.CountValue;
 import com.bixuebihui.jdbc.event.AfterChangeEventHandler;
+import com.bixuebihui.jdbc.event.ChangeEventConsumer;
 import com.bixuebihui.jdbc.event.ChangeType;
+import com.bixuebihui.jdbc.event.LogAfterChangeEventHandler;
 import com.bixuebihui.sequence.SequenceUtils;
 import com.bixuebihui.shardingjdbc.core.api.HintManager;
 import com.bixuebihui.sql.SQLUtil;
 import com.bixuebihui.util.DbUtils;
+import javax.validation.constraints.NotNull;
 import org.apache.commons.beanutils.*;
 import org.apache.commons.beanutils.converters.*;
 import org.apache.commons.lang3.NotImplementedException;
@@ -20,6 +23,7 @@ import org.apache.commons.text.CaseUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.ProxyFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.sql.DataSource;
 import javax.validation.constraints.NotNull;
@@ -81,25 +85,9 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     }
 
     protected final PojoValidator<T> pojoValidator = new PojoValidator<>();
-
-    public AfterChangeEventHandler<T, ID> getAfterChangeEventHandler() {
-        return afterChangeEventHandler;
-    }
-
-    public void setAfterChangeEventHandler(AfterChangeEventHandler<T, ID> afterChangeEventHandler) {
-        this.afterChangeEventHandler = afterChangeEventHandler;
-    }
-
-    AfterChangeEventHandler<T, ID> afterChangeEventHandler;
-
     protected IDbHelper dbHelper = null;
+    AfterChangeEventHandler<T, ID> afterChangeEventHandler;
     private int dbtype = UNKNOWN;
-
-    @Override
-    public String getDatabaseName() {
-        return databaseName;
-    }
-
     private String databaseName;
 
     /**
@@ -157,7 +145,6 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         return fields;
     }
 
-
     /**
      * <p>params.</p>
      *
@@ -177,7 +164,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @return 完整分页SQL
      */
     private static String getPagingSqlSqlServer(String selectSql, int startNum, int endNum) {
-        return SqlServer2000PageHepler.getLimitString(selectSql, startNum, endNum - startNum + 1);
+        return SqlServer2000PageHelper.getLimitString(selectSql, startNum, endNum - startNum + 1);
     }
 
     /**
@@ -208,9 +195,12 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         } else if (name.contains("SQLSERVER")) {
             // sqlserver 2000
             res = SQLSERVER;
+        //} else if (name.contains("SQL SERVER 201") || name.contains("SQL SERVER 202")) {
+
         } else if (name.contains("SQL SERVER")) {
+            res = SQLSERVER_2010_AND_UP; //2010 ~ 2029
             // sql server 2005
-            res = SQLSERVER_2005_AND_UP;
+          //  res = SQLSERVER_2005_AND_UP;
         } else if (name.contains("POSTGRESQL")) {
             res = POSTGRESQL;
         } else if (name.contains("H2")) {
@@ -230,9 +220,10 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @return 完整分页SQL
      */
     public static String getPagingSqlSqlServer2005(String selectSql, int startNum, int endNum) {
-
-        return SqlServer2005PageHepler.getLimitString(selectSql, startNum, endNum);
-
+        return SqlServer2005PageHelper.getLimitString(selectSql, startNum, endNum);
+    }
+    public static String getPagingSqlSqlServer2010(String selectSql, int startNum, int endNum) {
+        return SqlServer2010PageHelper.getLimitString(selectSql, startNum, endNum-startNum);
     }
 
     /**
@@ -461,6 +452,54 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         return field;
     }
 
+    public static String getPagingSql(String driverName, String selectSql, int startNum, int endNum) {
+
+        int dbtype = detectDbType(driverName);
+
+        return getPagingSql(selectSql, startNum, endNum, dbtype);
+
+    }
+
+    private static String getPagingSql(String selectSql, int startNum, int endNum, int dbtype) {
+        if (dbtype == DERBY) {
+            return getPagingSqlDerby(selectSql, startNum, endNum);
+        } else if (dbtype == SQLSERVER) {
+            return getPagingSqlSqlServer(selectSql, startNum, endNum);
+        } else if (dbtype == SQLSERVER_2005_AND_UP) {
+            return getPagingSqlSqlServer2005(selectSql, startNum, endNum);
+        } else if (dbtype == SQLSERVER_2010_AND_UP) {
+            return getPagingSqlSqlServer2010(selectSql, startNum, endNum);
+        } else if (dbtype == MYSQL || dbtype == H2) {
+            return getPagingSqlMySql(selectSql, startNum, endNum);
+        } else if (dbtype == POSTGRESQL) {
+            return getPagingSqlPostgresql(selectSql, startNum, endNum);
+        } else if (dbtype == ACCESS) {
+            return getPagingSqlSqlServer(selectSql, startNum, endNum);
+        } else {
+            return getPagingSqlOracle(selectSql, startNum, endNum);
+        }
+    }
+
+    public AfterChangeEventHandler<T, ID> getAfterChangeEventHandler() {
+        return afterChangeEventHandler;
+    }
+
+    public void setAfterChangeEventHandler(AfterChangeEventHandler<T, ID> afterChangeEventHandler) {
+        this.afterChangeEventHandler = afterChangeEventHandler;
+    }
+
+    @Autowired(required = false)
+    public void setChangeEventConsumer(ChangeEventConsumer<ID> changeEvent) {
+        LogAfterChangeEventHandler<T, ID> eventHandler = new LogAfterChangeEventHandler<>(this);
+        eventHandler.setHandler(changeEvent);
+        this.afterChangeEventHandler = eventHandler;
+    }
+
+    @Override
+    public String getDatabaseName() {
+        return databaseName;
+    }
+
     public List<String> getAllFields() {
         return emptyList();
     }
@@ -544,23 +583,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
 
         detectDbType();
 
-        if (dbtype == DERBY) {
-            return getPagingSqlDerby(selectSql, startNum, endNum);
-        } else if (dbtype == SQLSERVER) {
-            return getPagingSqlSqlServer(selectSql, startNum, endNum);
-        } else if (dbtype == SQLSERVER_2005_AND_UP) {
-            return getPagingSqlSqlServer2005(selectSql, startNum, endNum);
-
-        } else if (dbtype == MYSQL || dbtype == H2) {
-            return getPagingSqlMySql(selectSql, startNum, endNum);
-        } else if (dbtype == POSTGRESQL) {
-            return getPagingSqlPostgresql(selectSql, startNum, endNum);
-        } else if (dbtype == ACCESS) {
-            return getPagingSqlSqlServer(selectSql, startNum, endNum);
-        } else {
-
-            return getPagingSqlOracle(selectSql, startNum, endNum);
-        }
+        return getPagingSql(selectSql, startNum, endNum, dbtype);
 
     }
 
@@ -571,7 +594,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
                 return getTimestampSqlDerby(dt);
             }
             return getDateSqlDerby(dt);
-        } else if (dbtype == SQLSERVER || dbtype == SQLSERVER_2005_AND_UP || dbtype == ACCESS) {
+        } else if (dbtype == SQLSERVER || dbtype == SQLSERVER_2005_AND_UP || dbtype == SQLSERVER_2010_AND_UP || dbtype == ACCESS) {
             return getDateSqlServer(dt);
         } else if (dbtype == MYSQL) {
             return getDateSqlMySql(dt);
@@ -610,7 +633,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         detectDbType();
         if (dbtype == DERBY) {
             return getDateSqlDerby(dt);
-        } else if (dbtype == SQLSERVER || dbtype == SQLSERVER_2005_AND_UP || dbtype == ACCESS) {
+        } else if (dbtype == SQLSERVER || dbtype == SQLSERVER_2005_AND_UP|| dbtype == SQLSERVER_2010_AND_UP || dbtype == ACCESS) {
             return getDateSqlServer(dt);
         } else if (dbtype == MYSQL) {
             return getDateSqlMySql(dt);
@@ -700,7 +723,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         return countWhere(null, where, params);
     }
 
-    protected int countWhere(String tableName, String where, Object[] params) {
+    public int countWhere(String tableName, String where, Object[] params) {
         String query = SELECT_COUNT_FROM + getTableName(tableName) + " " + where;
         Object o = this.getDbHelper().executeScalar(query, params);
         return o == null ? 0 : Integer.parseInt(o.toString());
@@ -710,44 +733,46 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * 通用更新函数
      *
      * @param fieldNames  字段名
+     * @param values      参数对象数组，因无参数类型判断，不建议用空值
      * @param whereClause 条件语句，可以加“?”形参数
-     * @param params      参数对象数组，因无参数类型判断，不建议用空值
+     * @param whereParams 条件语句中包含的参数
      * @param cn          用于事务处理的数据库连接
      * @return 更新记录数
      */
-    public int update(String[] fieldNames, String whereClause, Object[] params, Connection cn) {
+    public int update(String[] fieldNames, Object[] values, String whereClause, Object[] whereParams, Connection cn) {
         // 如何获取更新数据？
         // 可能需要二次查询，通过 where 查主键id?
-
-        String query = getUpdateSql(fieldNames, whereClause);
+        List<Object> allParams = new ArrayList<>();
+        String query = getUpdateSql(fieldNames, values, whereClause, whereParams, allParams);
         int res;
+        Object[] params = allParams.toArray();
+
         if (cn == null) {
-            res= getDbHelper().executeNoQuery(query, params);
+            res = getDbHelper().executeNoQuery(query, params);
         } else {
-            res= getDbHelper().executeNoQuery(query, params, cn);
+            res = getDbHelper().executeNoQuery(query, params, cn);
         }
         afterUpdate(params, query, res);
         return res;
     }
 
     private void afterUpdate(Object[] params, String query, int res) {
-        if(res >0 && afterChangeEventHandler!=null){
-            afterChangeEventHandler.afterChange(query, params, ChangeType.UPDATE);
+        if (res > 0 && afterChangeEventHandler != null) {
+            afterChangeEventHandler.afterChange(query, params, ChangeType.UPDATE, res);
         }
     }
 
     private void afterUpdate(T[] infos, boolean res) {
-        if(res && afterChangeEventHandler!=null){
+        if (res && afterChangeEventHandler != null) {
             afterChangeEventHandler.afterChange(infos, ChangeType.UPDATE);
         }
     }
 
     private void afterUpdate(T infos, boolean res) {
-        if(res && afterChangeEventHandler!=null){
+        if (res && afterChangeEventHandler != null) {
             afterChangeEventHandler.afterChange(infos, ChangeType.UPDATE);
         }
     }
-
 
 
     /**
@@ -759,7 +784,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @return a int.
      */
     public int update(String[] fieldNames, String whereClause, Object[] params) {
-        return update(fieldNames, whereClause, params, null);
+        return update(fieldNames, params, whereClause, new Object[]{}, null);
     }
 
     /**
@@ -768,7 +793,9 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @param fieldNames  an array of {@link java.lang.String} objects.
      * @param whereClause a {@link java.lang.String} object.
      * @return a {@link java.lang.String} object.
+     * @deprecated Use {@link #getUpdateSql with params} instead
      */
+    @Deprecated
     protected String getUpdateSql(String[] fieldNames, String whereClause) {
         if (fieldNames == null || fieldNames.length == 0) {
             throw new DbException("参数fieldNames不能为空");
@@ -777,6 +804,38 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         String res = StringUtils.join(fieldNames, "=?, ") + "=? ";
 
         return "update " + this.getTableName() + " set " + res + whereClause;
+    }
+
+    protected String getUpdateSql(String[] fields, Object[] values, String whereClause, Object[] whereParams, List<Object> allParams) {
+        if (fields == null || fields.length == 0) {
+            throw new DbException("参数fieldNames不能为空");
+        }
+
+        List<Object> params = new ArrayList<>();
+        StringBuilder sb = new StringBuilder();
+        int i = 0;
+        for (String field : fields) {
+            Object val = values[i];
+            if (val instanceof SqlString) {
+                sb.append(field).append(" = ").append(val);
+            } else {
+                sb.append(field).append(" = ? ");
+                params.add(val);
+            }
+            i++;
+            if (i < fields.length) {
+                sb.append(",");
+            }
+        }
+
+        if (sb.lastIndexOf(",") == sb.length() - 1) {
+            sb.deleteCharAt(sb.length() - 1);
+        }
+
+        allParams.addAll(params);
+        Collections.addAll(allParams, whereParams);
+
+        return "update " + this.getTableName() + " set " + sb + whereClause;
     }
 
     /**
@@ -950,7 +1009,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     }
 
     /**
-     * <p>convertCaseInsensitive.</p>
+     * <p>convertCaseSensitive.</p>
      *
      * @param <K>      期待类型
      * @param h        源数据
@@ -969,7 +1028,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
             Object o = h.get(e.getKey());
             values.put(e.getKey(), o);
         }
-        BeanUtils.populate(receiver, values);
+        PropertyUtils.copyProperties(receiver, values);
         return receiver;
     }
 
@@ -981,7 +1040,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @param receiver 目标对象
      * @return 目标对象
      * @throws java.lang.IllegalAccessException 无法拷贝属性
-     * @deprecated use convertCaseInsensitive
+     * @deprecated use convertCaseSensitive
      */
     @Deprecated
     protected <K> K convert(Map<String, Object> h, K receiver) throws IllegalAccessException {
@@ -1032,6 +1091,11 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      */
     public @NotNull <K> List<K> select(String select, String whereClause, String orderBy, Object[] params, int rowStart,
                                        int rowEnd, Class<K> clz) {
+        return select(select, whereClause, orderBy, params, rowStart, rowEnd, clz, false);
+    }
+
+    public @NotNull <K> List<K> select(String select, String whereClause, String orderBy, Object[] params, int rowStart,
+                                       int rowEnd, Class<K> clz, boolean keepCase) {
 
         String selectSql = select + " " + whereClause + " " + orderBy;
 
@@ -1046,7 +1110,11 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         } else {
             for (Map<String, Object> h : v) {
                 try {
-                    v1.add(convert(h, clz.getConstructor().newInstance()));
+                    if (keepCase) {
+                        v1.add(convertCaseSensitive(h, clz.getConstructor().newInstance()));
+                    } else {
+                        v1.add(convert(h, clz.getConstructor().newInstance()));
+                    }
                 } catch (InvocationTargetException | NoSuchMethodException | IllegalAccessException |
                          InstantiationException e) {
                     throw new DbException(e);
@@ -1140,13 +1208,23 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     public @NotNull
     List<T> selectWithJoin(String fieldList, String whereClause, Object[] params, String orderByClause,
                            int beginNum, int endNum, String tableName) {
-        String query = "select " + fieldList + " from " + getTableName(tableName) + " " + whereClause;
+        String tableNameOrSelect = useTablenameOrSelect(fieldList, tableName);
+
+        String query =  tableNameOrSelect+ " " + whereClause;
         if (this.getDbType() != DERBY) {
             query += orderByClause;
         }
         query = getPagingSql(query, beginNum, endNum);
         return getDbHelper().executeQuery(query, params, new RowMapperResultReader<>(this), ActiveRecord.toFieldsSet(fieldList));
 
+    }
+
+    public String useTablenameOrSelect(String fieldList, String tableName) {
+        String tableNameOrSelect = getTableName(tableName);
+        if (!tableNameOrSelect.toUpperCase().startsWith("SELECT ")) {
+            tableNameOrSelect = "select " + fieldList + " from " + tableNameOrSelect;
+        }
+        return tableNameOrSelect;
     }
 
     public @NotNull
@@ -1225,26 +1303,50 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      */
     public boolean deleteByKey(ID id, Connection cn) {
         String query = getDeleteWhere() + getKeyName() + "=?";
-        boolean res= 1 <= getDbHelper().executeNoQuery(query, new Object[]{id}, cn);
+        boolean res = 1 <= getDbHelper().executeNoQuery(query, new Object[]{id}, cn);
 
         afterDelete(id, res);
         return res;
     }
 
     private void afterDelete(ID id, boolean res) {
-        if(res && afterChangeEventHandler!=null){
-            afterChangeEventHandler.afterChangeByKey(id, ChangeType.DELETE);
-        }
-    }
-    private void afterDelete(ID[] id, boolean res) {
-        if(res && afterChangeEventHandler!=null){
+        if (res && afterChangeEventHandler != null) {
             afterChangeEventHandler.afterChangeByKey(id, ChangeType.DELETE);
         }
     }
 
+    private void afterDelete(ID[] id, boolean res) {
+        if (res && afterChangeEventHandler != null) {
+            afterChangeEventHandler.afterChangeByKey(id, ChangeType.DELETE);
+        }
+    }
+
+    private void afterDelete(String query, Object[] params, int res) {
+        if (res > 0 && afterChangeEventHandler != null) {
+            afterChangeEventHandler.afterChange(query, params, ChangeType.DELETE, res);
+        }
+    }
 
     private String getDeleteWhere() {
         return "delete from " + getTableName() + WHERE;
+    }
+
+    private String getDeleteWhere(String where) {
+        return "delete from " + getTableName() + " " + where;
+    }
+
+
+    public boolean delete(String where, Object[] whereParams, Connection cn) {
+        String sql = getDeleteWhere(where);
+        int res;
+        if (cn == null) {
+            res = getDbHelper().executeNoQuery(sql, whereParams);
+        } else {
+            res = getDbHelper().executeNoQuery(sql, whereParams, cn);
+        }
+
+        afterDelete(where, whereParams, res);
+        return res > 0;
     }
 
     /**
@@ -1257,7 +1359,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     @Override
     public boolean deleteByKey(ID id) {
         String query = getDeleteWhere() + getKeyName() + "=?";
-        boolean res =  1 <= getDbHelper().executeNoQuery(query, new Object[]{id});
+        boolean res = 1 <= getDbHelper().executeNoQuery(query, new Object[]{id});
 
         afterDelete(id, res);
         return res;
@@ -1469,7 +1571,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         detectDbType();
         if (dbtype == DERBY) {
             return "select last_insert_id()";
-        } else if (dbtype == SQLSERVER || dbtype == SQLSERVER_2005_AND_UP || dbtype == ACCESS) {
+        } else if (dbtype == SQLSERVER || dbtype == SQLSERVER_2005_AND_UP || dbtype == SQLSERVER_2010_AND_UP || dbtype == ACCESS) {
             return "select scope_identity()";
         } else if (dbtype == MYSQL) {
             return "select last_insert_id()";
@@ -1594,10 +1696,10 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     public boolean updateByKey(T info) {
         beforeChange(info);
 
-        boolean res =  1 == getDbHelper().executeNoQuery(getUpdateSql(), getUpdateObjs(info));
+        boolean res = 1 == getDbHelper().executeNoQuery(getUpdateSql(), getUpdateObjs(info));
         afterUpdate(info, res);
 
-        return  res;
+        return res;
     }
 
     public boolean updateByKey(T info, String shardTableName) {
@@ -1646,33 +1748,33 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     @Override
     public boolean insert(T info) {
         beforeChange(info);
-        boolean res =  1 == getDbHelper().executeNoQuery(getInsertSql(), getInsertObjs(info));
+        boolean res = 1 == getDbHelper().executeNoQuery(getInsertSql(), getInsertObjs(info));
 
         afterInsert(info, res);
         return res;
     }
 
     private void afterInsert(T info, boolean res) {
-        if(res && afterChangeEventHandler!=null){
+        if (res && afterChangeEventHandler != null) {
             afterChangeEventHandler.afterChange(info, ChangeType.INSERT);
         }
     }
 
     private void afterInsert(T[] info, boolean res) {
-        if(res && afterChangeEventHandler!=null){
+        if (res && afterChangeEventHandler != null) {
             afterChangeEventHandler.afterChange(info, ChangeType.INSERT);
         }
     }
 
     private void afterInsert(T info, boolean res, String shardTableName) {
-        if(res && afterChangeEventHandler!=null){
+        if (res && afterChangeEventHandler != null) {
             afterChangeEventHandler.afterChange(info, ChangeType.INSERT, shardTableName);
         }
     }
 
     public boolean insert(T info, String tableShardName) {
         beforeChange(info);
-        boolean res =  1 == getDbHelper().executeNoQuery(shardNameStrategy(getInsertSql(), tableShardName), getInsertObjs(info));
+        boolean res = 1 == getDbHelper().executeNoQuery(shardNameStrategy(getInsertSql(), tableShardName), getInsertObjs(info));
 
         afterInsert(info, res);
         return res;
@@ -1708,7 +1810,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     public boolean insertBatch(T[] infos) {
         beforeChange(infos);
 
-        boolean res=  insertBatch(infos, null);
+        boolean res = insertBatch(infos, null);
         afterInsert(infos, res);
         return res;
     }
@@ -1764,7 +1866,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
 
         List<Object[]> a = Arrays.stream(infos).map(this::getUpdateObjs).collect(Collectors.toList());
 
-        boolean res =  infos.length == getDbHelper().executeNoQueryBatch(getUpdateSql(), a, cn);
+        boolean res = infos.length == getDbHelper().executeNoQueryBatch(getUpdateSql(), a, cn);
 
         afterUpdate(infos, res);
         return res;
@@ -1974,7 +2076,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         setIdLong(info, getDbHelper().insertAndFetchLastId(this.getInsertSql(),
                 getInsertObjs(info), null, null));
 
-        afterInsert(info,  getId(info)!=null);
+        afterInsert(info, getId(info) != null);
         return true;
     }
 
@@ -1982,7 +2084,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         beforeChange(info);
         setIdLong(info, getDbHelper().insertAndFetchLastId(shardNameStrategy(this.getInsertSql(), shardTableName),
                 getInsertObjs(info), null, null));
-        afterInsert(info,  getId(info)!=null, shardTableName);
+        afterInsert(info, getId(info) != null, shardTableName);
         return true;
     }
 

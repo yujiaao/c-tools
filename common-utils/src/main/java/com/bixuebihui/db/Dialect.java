@@ -17,6 +17,7 @@ public class Dialect {
     public static final int SQLSERVER = 4;
     /** Constant <code>SQLSERVER_2005_AND_UP=7</code> */
     public static final int SQLSERVER_2005_AND_UP = 7;
+    public static final int SQLSERVER_2010_AND_UP = 9;
     /** Constant <code>POSTGRESQL=5</code> // POSTGRESQL NATIVE DRIVER*/
     public static final int POSTGRESQL = 5;
     /** Constant <code>ACCESS=6</code> */
