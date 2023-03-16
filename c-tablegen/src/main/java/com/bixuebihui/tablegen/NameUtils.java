@@ -56,7 +56,7 @@ public class NameUtils {
 	}
 
 	public static String toSnakeCase(String p){
-		return CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_HYPHEN, p);
+		return CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_HYPHEN, CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_HYPHEN, p));
 	}
 
 }

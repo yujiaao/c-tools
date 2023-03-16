@@ -56,4 +56,11 @@ class NameUtilsTest {
         }
 
     }
+
+    @Test
+    void toSnakeCase() {
+        assertEquals("my-view", NameUtils.toSnakeCase("my-view"));
+        assertEquals("my-view", NameUtils.toSnakeCase("MyView"));
+        assertEquals("my-view", NameUtils.toSnakeCase("my_view"));
+    }
 }
