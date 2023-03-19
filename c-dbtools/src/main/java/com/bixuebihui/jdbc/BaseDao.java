@@ -35,6 +35,7 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.bixuebihui.db.Dialect.*;
@@ -1524,10 +1525,15 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      */
     public void processAllByStep(String where, String orderBy, int stepMax, ProcessHandler<T> handler,
                                  Object[] params, boolean alwaysFromBeginning) {
+        processAllByStep(where, orderBy, stepMax, handler, params,  alwaysFromBeginning, List::isEmpty);
+    }
+
+    public void processAllByStep(String where, String orderBy, int stepMax, ProcessHandler<T> handler,
+                                 Object[] params, boolean alwaysFromBeginning, Function<List<T>, Boolean> finished ) {
         List<T> list;
         int beginNum = 0;
         for (list = select(where, params, orderBy, beginNum, beginNum + stepMax);
-             !list.isEmpty();
+             !finished.apply(list);
              list = select(where, params, orderBy, beginNum, beginNum + stepMax)) {
             if (!alwaysFromBeginning) {
                 beginNum = beginNum + stepMax;

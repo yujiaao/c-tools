@@ -58,7 +58,7 @@ public class ControllerGenerator extends BaseGenerator {
 
     @Override
     public String getTargetFileName(String tableName) {
-        return getTargetFileName("controller", tableName);
+        return getTargetFileName("controller"+File.separator+"autogenerate", tableName);
     }
 
     @Override

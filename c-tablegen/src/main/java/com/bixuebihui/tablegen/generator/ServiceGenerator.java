@@ -56,7 +56,7 @@ public class ServiceGenerator extends BaseGenerator {
 
     @Override
     public String getTargetFileName(String tableName) {
-        return getTargetFileName("service", tableName);
+        return getTargetFileName("service/autogenerate", tableName);
     }
 
     @Override

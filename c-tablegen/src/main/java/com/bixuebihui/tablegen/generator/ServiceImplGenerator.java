@@ -56,7 +56,7 @@ public class ServiceImplGenerator extends BaseGenerator {
 
     @Override
     public String getTargetFileName(String tableName) {
-        return getTargetFileName("service"+File.separator+"impl", tableName);
+        return getTargetFileName("service"+File.separator+"autogenerate"+File.separator+"impl", tableName);
     }
 
     @Override

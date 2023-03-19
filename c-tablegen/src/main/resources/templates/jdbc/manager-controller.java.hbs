@@ -1,11 +1,11 @@
-package {{config.packageName}}{{viewModifier}}.controller;
+package {{config.packageName}}{{viewModifier}}.autogenerate.controller;
 
 {{#unless tableInfo.isView}}
 import {{config.packageName}}{{viewModifier}}.cmd.{{pojoClassName}}DelCmd;
 {{/unless}}
 import {{config.packageName}}{{viewModifier}}.dto.{{pojoClassName}}Dto;
 import {{config.packageName}}{{viewModifier}}.cmd.{{pojoClassName}}SearchCmd;
-import {{config.packageName}}{{viewModifier}}.service.{{pojoClassName}}Service;
+import {{config.packageName}}{{viewModifier}}.service.autogenerate.{{pojoClassName}}Service;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.bixuebihui.query.Paging;
