@@ -1691,6 +1691,15 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         throw new IllegalArgumentException("this method must override!");
     }
 
+    public boolean insertKeepKey(T info){
+        List<Object> insertObjects = new ArrayList<>(List.of(this.getInsertObjs(info)));
+        insertObjects.add(this.getId(info));
+        String insertSql = this.getInsertSql().replace(") values (",","+this.getKeyName()+") values (?,");
+        beforeChange(info);
+        boolean res = 1 == this.getDbHelper().executeNoQuery(insertSql, insertObjects.toArray());
+        afterInsert(info, res);
+        return res;
+    }
     /**
      * Updates the current object values into the database.
      *

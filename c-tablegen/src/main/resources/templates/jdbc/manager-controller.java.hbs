@@ -41,7 +41,7 @@ import java.util.List;
  * @author generated
  */
 @RestController
-@RequestMapping("/{{snakeCase tableName}}")
+@RequestMapping("/{{snakeCase pojoClassName}}")
 {{#eq config.swaggerVersion "2" }}
 @Api(tags = "{{tableInfo.comment}}")
 {{else}}
