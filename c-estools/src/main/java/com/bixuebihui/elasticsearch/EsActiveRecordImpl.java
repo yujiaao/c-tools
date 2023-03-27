@@ -627,10 +627,18 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
         return insertBatch(indexName, List.of(info), getId);
     }
 
+
+    public boolean insert(String indexName, T info, Function<T, String> getId, boolean refresh) {
+        return insertBatch(indexName, List.of(info), getId, refresh);
+    }
+
     public boolean insertBatch(String indexName, List<T> infos, Function<T, String> getId) {
+        return insertBatch( indexName,infos,getId, false);
+    }
+    public boolean insertBatch(String indexName, List<T> infos, Function<T, String> getId, boolean refresh) {
         try {
             String response =  operator.request.insertBatch(indexName, infos,
-                    (t) -> (getId!=null) ? StringUtils.trimToNull(getId.apply(t)):null);
+                    (t) -> (getId!=null) ? StringUtils.trimToNull(getId.apply(t)):null, refresh);
 
             ObjectMapper mapper = EsRequest.getMapper();
 

@@ -95,6 +95,8 @@ public class EsRequest {
     );
     private final String username;
     private final String password;
+
+    private final String refresh = "refresh=true";
     /**
      * index name to search
      * 需要检索的索引
@@ -143,6 +145,20 @@ public class EsRequest {
 
     public static <T> List<EsSearchHitResult<T>> json2result(String rawResult, JavaType type) throws JsonProcessingException {
         return mapper.readerFor(type).at("/hits/hits").readValue(rawResult);
+    }
+
+    public static long getHits(String esJson) {
+        JsonNode input;
+        try {
+            input = mapper.readTree(esJson);
+            if (input == null || (input.at("/hits/total") instanceof MissingNode)) {
+                return 0;
+            }
+            return input.at("/hits/total").asLong();
+        } catch (JsonProcessingException e) {
+            logger.error("查询结果json格式错误", e);
+        }
+        return 0;
     }
 
     /**
@@ -210,11 +226,11 @@ public class EsRequest {
      * @return json string
      */
     public String esJsonToTableJson(String esJson,
-                                           int maxRows,
-                                           int rowStart,
-                                           int rowEnd,
-                                           int page,
-                                           int totalRows) throws JsonProcessingException {
+                                    int maxRows,
+                                    int rowStart,
+                                    int rowEnd,
+                                    int page,
+                                    int totalRows) throws JsonProcessingException {
         JsonNode resultTotal = getTableJsonNode(esJson,
                 maxRows,
                 rowEnd,
@@ -227,34 +243,19 @@ public class EsRequest {
         return resultTotal.toPrettyString();
     }
 
-
-    public static long getHits(String esJson) {
-        JsonNode input;
-        try {
-            input = mapper.readTree(esJson);
-            if (input == null || (input.at("/hits/total") instanceof MissingNode)) {
-                return 0;
-            }
-            return input.at("/hits/total").asLong();
-        } catch (JsonProcessingException e) {
-            logger.error("查询结果json格式错误", e);
-        }
-        return 0;
-    }
-
     public JsonNode getTableJsonNode(String esJson,
-                                            int maxRows,
-                                            int rowEnd,
-                                            int rowStart,
-                                            int page,
-                                            int totalRows) throws JsonProcessingException {
+                                     int maxRows,
+                                     int rowEnd,
+                                     int rowStart,
+                                     int page,
+                                     int totalRows) throws JsonProcessingException {
         JsonNode input = mapper.readTree(esJson);
         // https://datatracker.ietf.org/doc/html/rfc6901
         if (input == null || (input.at("/hits/hits/0/_source") instanceof MissingNode)) {
             return null;
         }
         // Finally this is how you search a structure. There's really not much more to it.
-        JsonNode resultTotal = (version!=null &&  version.startsWith("6.")) ? exp6.search(input) : exp7.search(input);
+        JsonNode resultTotal = (version != null && version.startsWith("6.")) ? exp6.search(input) : exp7.search(input);
         JsonNode paging = resultTotal.path("paging");
         if (maxRows != 0) {
             ((ObjectNode) paging).put("maxRows", maxRows);
@@ -298,8 +299,12 @@ public class EsRequest {
     }
 
     public <T> String insertBatch(String indexName, List<T> docs, Function<T, String> getId) throws JsonProcessingException {
+        return insertBatch(indexName, docs, getId, false);
+    }
 
-        HttpEntityEnclosingRequestBase post = new HttpPost(host + "/" + EsQueryBuilder.ACTION_BULK);
+    public <T> String insertBatch(String indexName, List<T> docs, Function<T, String> getId, boolean refresh) throws JsonProcessingException {
+
+        HttpEntityEnclosingRequestBase post = new HttpPost(host + "/" + EsQueryBuilder.ACTION_BULK + (refresh ? "?" + this.refresh : ""));
         StringBuilder sb = new StringBuilder();
 
         for (T doc : docs) {
@@ -532,13 +537,13 @@ public class EsRequest {
         return sb.toString();
     }
 
-    public int update(String id, Map<String, Object> map) throws JsonProcessingException {
+    public int update(String id, Map<String, Object> map, boolean refresh) throws JsonProcessingException {
         String res;
         if (version != null && version.startsWith("6")) {
             //TODO routing problem
-            res = post(EsQueryBuilder.buildUpdate(map), "_doc", id + "/" + EsQueryBuilder.ACTION_UPDATE);
+            res = post(EsQueryBuilder.buildUpdate(map), "_doc", id + "/" + EsQueryBuilder.ACTION_UPDATE+(refresh? "?"+this.refresh:""));
         } else {
-            res = post(EsQueryBuilder.buildUpdate(map), EsQueryBuilder.ACTION_UPDATE, id);
+            res = post(EsQueryBuilder.buildUpdate(map), EsQueryBuilder.ACTION_UPDATE+(refresh? "?"+this.refresh:""), id);
         }
         /**
          * {

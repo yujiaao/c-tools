@@ -56,7 +56,12 @@ public class DtoGenerator extends BaseGenerator {
         return objs == null ? null : objs.toString();
     }
 
-
+    protected String getInterface(String tableName) {
+        //DTO keep lightweight interface
+        StringBuilder sb = new StringBuilder();
+        sb.append(" implements Serializable");
+        return sb.toString();
+    }
 
     @Override
     protected Map<String, Object> getContextMap(String tableName) {

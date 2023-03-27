@@ -274,14 +274,17 @@ public abstract class BaseDao<T, ID> {
      * @param info pojo
      * @return true if success
      */
-
     public boolean save(T info) {
+        return save(info, false);
+    }
+
+    public boolean save(T info, boolean refresh) {
         beforeChange(info);
 
         boolean res = ar().insert(getIndexName(),info, (t) -> {
             ID v = getId(t);
             return v==null?null: v.toString();
-        });
+        }, refresh);
 
         afterInsert(info, res);
         return res;
@@ -306,6 +309,9 @@ public abstract class BaseDao<T, ID> {
     }
 
     public boolean save(T info, String tableShardName) {
+        return save(info, tableShardName, false);
+    }
+    public boolean save(T info, String tableShardName, boolean refresh) {
         beforeChange(info);
         boolean res =  ar().insert(tableShardName, info);
 
@@ -320,11 +326,14 @@ public abstract class BaseDao<T, ID> {
      * @return a boolean.
      */
     public boolean saveBatch(List<T> infos) {
+        return saveBatch(infos, false);
+    }
+    public boolean saveBatch(List<T> infos, boolean refresh) {
 
         boolean res=  ar().insertBatch(getIndexName(), infos, (t) ->{
             ID v  = getId(t);
             return v != null ? v.toString() : null;
-        });
+        }, refresh);
 
         return res;
     }
