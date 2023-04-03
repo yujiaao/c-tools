@@ -16,7 +16,7 @@ import com.bixuebihui.jmesa.AbstractWebUI;
 import com.bixuebihui.jmesa.entry.Query;
 import org.jmesa.worksheet.WorksheetColumn;
 
-import jakarta.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequest;
 
 public class T_metacolumnWebUI extends AbstractWebUI<T_metacolumn, Long> {
 

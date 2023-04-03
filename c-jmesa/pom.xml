@@ -113,7 +113,7 @@
         <dependency>
             <groupId>com.github.yujiaao</groupId>
             <artifactId>jmesa</artifactId>
-            <version>4.4.2.1</version>
+            <version>4.4.3</version>
             <exclusions>
                 <exclusion>
                     <artifactId>spring-core</artifactId>
@@ -182,6 +182,13 @@
             <artifactId>fdb-sql-parser</artifactId>
             <version>1.6.1</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.github.jsqlparser</groupId>
+            <artifactId>jsqlparser</artifactId>
+            <version>4.5</version>
+        </dependency>
+
         <dependency>
             <groupId>javax.el</groupId>
             <artifactId>javax.el-api</artifactId>

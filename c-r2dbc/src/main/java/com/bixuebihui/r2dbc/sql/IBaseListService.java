@@ -2,7 +2,7 @@ package com.bixuebihui.r2dbc.sql;
 
 import reactor.core.publisher.Mono;
 
-import jakarta.validation.constraints.NotNull;
+import javax.validation.constraints.NotNull;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;

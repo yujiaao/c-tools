@@ -2,7 +2,7 @@ package com.bixuebihui.jmesa;
 
 import org.junit.jupiter.api.Test;
 
-import jakarta.el.FunctionMapper;
+import javax.el.FunctionMapper;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
