@@ -36,10 +36,11 @@ public abstract class BaseAfterChangeEventHandler<T,V> implements AfterChangeEve
                 changeType));
     }
     void formEvent(ChangeType changeType, String tableName, T info){
+        V id = dbOperator.getId(info);
         sendEvent( new ChangeEvent<>(dbOperator.getDatabaseName(),
                 dbOperator.getTableName(tableName),
                 dbOperator.getKeyName(),
-                List.of(dbOperator.getId(info)),
+                id==null? emptyList(): List.of(id),
                 changeType));
     }
 
