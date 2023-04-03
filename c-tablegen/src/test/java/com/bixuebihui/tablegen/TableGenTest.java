@@ -22,16 +22,25 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class TableGenTest {
 
 	@Test
-	public void testRun() throws SQLException {
+	public void testRunEs() throws SQLException {
 		TableGen tg = new TableGen(System.out);
-		System.out.println(this.getClass().getResource("/tablegen.properties")
+		System.out.println(this.getClass().getResource("/es.properties")
 			.getFile());
 
-		tg.run(this.getClass().getResource("/tablegen.properties").getFile());
+		tg.run(this.getClass().getResource("/es.properties").getFile());
 
 	}
 
 
+	@Test
+	public void testRun() throws SQLException {
+		TableGen tg = new TableGen(System.out);
+		System.out.println(this.getClass().getResource("/tablegen.properties")
+				.getFile());
+
+		tg.run(this.getClass().getResource("/tablegen.properties").getFile());
+
+	}
 
     @Test
 	public void testRunDiff() throws SQLException {

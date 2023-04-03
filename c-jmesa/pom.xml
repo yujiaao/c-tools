@@ -176,18 +176,17 @@
             <scope>provided</scope>
         </dependency>
 
-
         <!-- sql parser from derby -->
         <dependency>
             <groupId>com.foundationdb</groupId>
             <artifactId>fdb-sql-parser</artifactId>
             <version>1.6.1</version>
         </dependency>
-
         <dependency>
-            <groupId>com.github.jsqlparser</groupId>
-            <artifactId>jsqlparser</artifactId>
-            <version>4.5</version>
+            <groupId>javax.el</groupId>
+            <artifactId>javax.el-api</artifactId>
+            <version>3.0.0</version>
+            <scope>provided</scope>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.eclipse.jetty/jetty-jsp-2.1 -->
@@ -263,11 +262,13 @@
             <scope>test</scope>
         </dependency>
 
+
         <dependency>
             <groupId>org.junit.platform</groupId>
             <artifactId>junit-platform-suite-engine</artifactId>
             <scope>test</scope>
         </dependency>
+
 
     </dependencies>
 

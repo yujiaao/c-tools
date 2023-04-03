@@ -1,0 +1,26 @@
+package {{config.packageName}}{{viewModifier}}.cmd;
+
+import java.sql.*;
+import java.util.List;
+
+
+{{> [header-comment.java]}}
+
+/**
+* @author xwx
+*/
+public class {{className}} {
+
+{{#if hasKey}}
+       List<{{firstKeyType}}> {{firstLow firstKeyName}}s ;
+
+       public List<{{firstKeyType}}> get{{firstUp firstKeyName}}s(){
+            return this.{{firstLow firstKeyName}}s;
+       }
+
+       public void set{{firstUp firstKeyName}}s(List<{{firstKeyType}}> {{firstLow firstKeyName}}s){
+            this.{{firstLow firstKeyName}}s =  {{firstLow firstKeyName}}s;
+       }
+{{/if}}
+
+}

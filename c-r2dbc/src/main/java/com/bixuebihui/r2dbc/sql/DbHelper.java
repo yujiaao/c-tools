@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -254,7 +254,7 @@ public class DbHelper implements IDbHelper {
      * <p>executeNoQuery.</p>
      *
      * @param sqls an array of {@link String} objects.
-     * @param cn     a {@link Connection} object.
+     * @param cn   a {@link Connection} object.
      * @return a int.
      */
     @Override
@@ -289,7 +289,7 @@ public class DbHelper implements IDbHelper {
      */
     @Override
     public Mono<Integer> executeNoQueryBatch(String sql, Iterable<Object[]> params,
-                                             Mono<Connection> cn) {
+                                          Mono<Connection> cn) {
 
         return Mono.from(cn.flatMapMany(connection -> {
             Statement p = connection.createStatement(sql);
@@ -514,7 +514,7 @@ public class DbHelper implements IDbHelper {
      */
     @Override
     public Mono<Integer> executeNoQuery(String sql, Object[] params,
-                              Class[] targetSqlTypes, Mono<Connection> cn) {
+                                        Class[] targetSqlTypes, Mono<Connection> cn) {
         return Mono.usingWhen(cn != null ? cn : getConnection(), connection -> {
             Statement p = connection.createStatement(sql);
             fillParameter(p, params, targetSqlTypes);

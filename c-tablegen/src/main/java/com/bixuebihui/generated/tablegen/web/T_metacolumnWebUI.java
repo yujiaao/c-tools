@@ -13,9 +13,10 @@ package com.bixuebihui.generated.tablegen.web;
 import com.bixuebihui.generated.tablegen.business.T_metacolumnManager;
 import com.bixuebihui.generated.tablegen.pojo.T_metacolumn;
 import com.bixuebihui.jmesa.AbstractWebUI;
+import com.bixuebihui.jmesa.entry.Query;
 import org.jmesa.worksheet.WorksheetColumn;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 public class T_metacolumnWebUI extends AbstractWebUI<T_metacolumn, Long> {
 
@@ -51,6 +52,12 @@ public class T_metacolumnWebUI extends AbstractWebUI<T_metacolumn, Long> {
 			worksheetColumn.removeError();
 		}
 	}
+
+	@Override
+	protected String render(Query query) {
+		return null;
+	}
+
 	@Override
 	protected String[] getColNames() {
 		String[] colNames = { "chkbox", "cid", "tid", "cname", "type",

@@ -8,8 +8,9 @@ import com.bixuebihui.db.PojoValidator;
 import com.bixuebihui.db.SqlPocket;
 import com.bixuebihui.db.SqlString;
 import com.bixuebihui.jdbc.SqlObject;
-import com.bixuebihui.jdbc.SqlServer2000PageHepler;
-import com.bixuebihui.jdbc.SqlServer2005PageHepler;
+import com.bixuebihui.jdbc.SqlServer2000PageHelper;
+import com.bixuebihui.jdbc.SqlServer2005PageHelper;
+import com.bixuebihui.jdbc.SqlServer2010PageHelper;
 import com.bixuebihui.jdbc.aop.DbHelperAroundAdvice;
 import com.bixuebihui.jdbc.entity.CountObject;
 import com.bixuebihui.jdbc.entity.CountValue;
@@ -30,7 +31,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.ProxyFactory;
 import reactor.core.publisher.Mono;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.sql.SQLException;
@@ -198,7 +199,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @return 完整分页SQL
      */
     private static String getPagingSqlSqlServer(String selectSql, int startNum, int endNum) {
-        return SqlServer2000PageHepler.getLimitString(selectSql, startNum, endNum - startNum + 1);
+        return SqlServer2000PageHelper.getLimitString(selectSql, startNum, endNum - startNum + 1);
     }
 
     /**
@@ -233,8 +234,11 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
             // sqlserver 2000
             res = SQLSERVER;
         } else if (driverName.contains("SQL SERVER")) {
-            // sql server 2005
-            res = SQLSERVER_2005_AND_UP;
+            //JDBC Driver SQL Server 10.2 以上版本兼容 sql server 2012 以上版本
+            res = SQLSERVER_2010_AND_UP; //2010 ~ 2029
+       // } else if (driverName.contains("SQL SERVER")) {
+        // sql server 2005
+         //   res = SQLSERVER_2005_AND_UP;
         } else if (driverName.contains("POSTGRESQL")) {
             res = POSTGRESQL;
         } else if (driverName.contains("H2")) {
@@ -254,8 +258,11 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @return 完整分页SQL
      */
     private static String getPagingSqlSqlServer2005(String selectSql, int startNum, int endNum) {
+        return SqlServer2005PageHelper.getLimitString(selectSql, startNum, endNum);
+    }
 
-        return SqlServer2005PageHepler.getLimitString(selectSql, startNum, endNum);
+    private static String getPagingSqlSqlServer2010(String selectSql, int startNum, int endNum) {
+        return SqlServer2010PageHelper.getLimitString(selectSql, startNum, endNum-startNum);
 
     }
 
@@ -328,6 +335,8 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
                 sql = getPagingSqlSqlServer(selectSql, startNum, endNum);
             } else if (type == SQLSERVER_2005_AND_UP) {
                 sql = getPagingSqlSqlServer2005(selectSql, startNum, endNum);
+            } else if (type == SQLSERVER_2010_AND_UP) {
+                sql = getPagingSqlSqlServer2010(selectSql, startNum, endNum);
             } else if (type == MYSQL || type == H2) {
                 sql = getPagingSqlMySql(selectSql, startNum, endNum);
             } else if (type == POSTGRESQL) {
@@ -407,7 +416,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
                 } else {
                     sql = getDateSqlDerby(dt);
                 }
-            } else if (type == SQLSERVER || type == SQLSERVER_2005_AND_UP || type == ACCESS) {
+            } else if (type == SQLSERVER || type == SQLSERVER_2005_AND_UP || type == ACCESS || type == SQLSERVER_2010_AND_UP) {
                 sql = getDateSqlServer(dt);
             } else if (type == MYSQL) {
                 sql = getDateSqlMySql(dt);
@@ -471,7 +480,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
             String sql;
             if (type == DERBY) {
                 sql = getDateSqlDerby(dt);
-            } else if (type == SQLSERVER || type == SQLSERVER_2005_AND_UP || type == ACCESS) {
+            } else if (type == SQLSERVER || type == SQLSERVER_2005_AND_UP  || type == SQLSERVER_2010_AND_UP || type == ACCESS) {
                 sql = getDateSqlServer(dt);
             } else if (type == MYSQL) {
                 sql = getDateSqlMySql(dt);
@@ -1384,7 +1393,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
             dbtype = type;
             if (type == DERBY) {
                 return Mono.just("select last_insert_id()");
-            } else if (type == SQLSERVER || type == SQLSERVER_2005_AND_UP || type == ACCESS) {
+            } else if (type == SQLSERVER || type == SQLSERVER_2005_AND_UP || type == SQLSERVER_2010_AND_UP || type == ACCESS) {
                 return Mono.just("select scope_identity()");
             } else if (type == MYSQL) {
                 return Mono.just("select last_insert_id()");

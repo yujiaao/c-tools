@@ -69,7 +69,7 @@ public class SqlServer2010PageHelper extends SqlServer2000PageHelper {
         }
 
         return querySelect + " OFFSET " + offset + " ROWS " +
-                "FETCH NEXT " + limit + " ROWS ONLY";
+                "FETCH NEXT " + Math.max(limit,1) + " ROWS ONLY";
     }
 
     /**

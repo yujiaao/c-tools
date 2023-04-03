@@ -43,6 +43,7 @@ import com.bixuebihui.tablegen.generator.PojoGenerator;
 import com.bixuebihui.util.DbUtils;
 import com.bixuebihui.util.other.CMyFile;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.text.CaseUtils;
@@ -51,12 +52,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.*;
 
 import static com.bixuebihui.tablegen.NameUtils.*;
@@ -105,7 +106,8 @@ public class TableGen implements DiffHandler {
         TableGen us = new TableGen();
 
         if (argv.length >= 1) {
-            if ("--help".equals(argv[0])) {
+            if ("--help".equals(argv[0])
+                    || !Files.exists(Path.of(argv[0]))) {
                 usageAndExit(0);
                 return;
             }
@@ -121,6 +123,13 @@ public class TableGen implements DiffHandler {
      */
     public static void usageAndExit(int code) {
         System.err.println("Usage: java com.bixuebihui.tablegen.TableGen properties_file_name");
+
+        try {
+            System.out.println(IOUtils.resourceToString("/usage.md", StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
         System.exit(code);
     }
 
@@ -276,7 +285,7 @@ public class TableGen implements DiffHandler {
         try {
             Map<String, String> beans = new HashMap<>(16);
             for (TableInfo table : setInfo.getTableInfos().values()) {
-                beans.put(NameUtils.firstLow(table.getName())
+                beans.put(firstLow(table.getName())
                         + MANAGER_SUFFIX, getBusFullClassName(table.getName()));
             }
             File f = new File(fileName);
@@ -985,7 +994,7 @@ public class TableGen implements DiffHandler {
             if (isNotEmpty(keyData)) {
 
                 /* optimistic lock update ! */
-                if (containsVersion(colData, config.versionColName)) {
+                if (containsColName(colData, config.versionColName)) {
                     boolean withVersion = true;
                     writeUpdate(tableName, keyData, "updateByKeyAndVersion", false, withVersion, colData);
                     writeUpdate(tableName, keyData, "updateByKeyAndVersion", true, withVersion, colData);
@@ -1255,7 +1264,7 @@ public class TableGen implements DiffHandler {
         }
 
         if ("pojo".equals(subPackage) && config.useAnnotation) {
-            out("import javax.validation.constraints.*;");
+            out("import jakarta.validation.constraints.*;");
             out("import org.apache.commons.text.StringEscapeUtils;");
             if (config.useSwagger) {
                 out("import io.swagger.annotations.ApiModel;");
@@ -1293,7 +1302,7 @@ public class TableGen implements DiffHandler {
                 out("import " + config.packageName + ".business." + this.getPojoClassName(table.getName()) + "Manager;");
 
                 out("import org.jmesa.worksheet.WorksheetColumn;");
-                out("import javax.servlet.http.HttpServletRequest;");
+                out("importjakarta.servlet.http.HttpServletRequest;");
 
                 out("import org.apache.commons.beanutils.ConvertUtilsBean;");
             }
@@ -1369,7 +1378,7 @@ public class TableGen implements DiffHandler {
     }
 
     String getColumnAnnotation(String tableName, ColumnData cd) {
-        return TableUtils.getColumnAnnotation(config, setInfo, tableName, cd);
+        return TableUtils.getColumnAnnotation(config, setInfo, tableName, cd, true);
     }
 
     /**

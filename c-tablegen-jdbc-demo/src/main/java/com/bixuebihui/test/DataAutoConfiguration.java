@@ -19,7 +19,7 @@ import javax.sql.DataSource;
 public class DataAutoConfiguration {
 
     @Bean(name = "test")
-    @ConfigurationProperties(prefix = "spring.datasource.db-test")
+    @ConfigurationProperties(prefix = "spring.datasource.test")
     public DataSource mysqlDataSource() {
         return DataSourceBuilder.create().build();
     }

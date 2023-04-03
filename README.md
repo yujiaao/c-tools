@@ -48,4 +48,9 @@ use dependencies:
  - mysql:mysql-connector-java:8.0.26
  - org.hibernate.validator:hibernate-validator:6.2.0.Final
 
+## version 1.13.x.x
+ 
+ - org.hibernate.validator:hibernate-validator:8.0.0.Final
+ - javax -> jakarta
+
 

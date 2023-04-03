@@ -2,6 +2,9 @@ package com.bixuebihui.tablegen.generator;
 
 import java.io.IOException;
 
+/**
+ * @author xwx
+ */
 public class PomGenerator extends BaseGenerator implements Generator {
 
 
@@ -21,7 +24,7 @@ public class PomGenerator extends BaseGenerator implements Generator {
     }
 
     @Override
-    public String generate(String tableName) throws IOException {
+    public String generate(String tableName, int index) throws IOException {
         return "pom.xml";
     }
 }

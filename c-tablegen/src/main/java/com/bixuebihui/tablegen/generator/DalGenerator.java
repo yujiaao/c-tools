@@ -8,7 +8,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import static com.bixuebihui.db.KeywordsUtils.*;
 import static com.bixuebihui.tablegen.NameUtils.columnNameToConstantName;
 import static com.bixuebihui.tablegen.NameUtils.firstUp;
 import static com.bixuebihui.tablegen.TableGen.INDENT;
@@ -20,21 +22,6 @@ import static java.util.Collections.emptyList;
 public class DalGenerator extends BaseGenerator {
     protected final static String CLASS_SUFFIX = "List";
 
-    public static String getFirstKeyName(List<String> keyData2) {
-        if (isNotEmpty(keyData2)) {
-            return keyData2.get(0);
-        }
-        return null;
-    }
-
-    public static boolean containsVersion(List<ColumnData> cols, String versionColName) {
-        for (ColumnData col : cols) {
-            if (col.getName().equalsIgnoreCase(versionColName)) {
-                return true;
-            }
-        }
-        return false;
-    }
 
     public static String makeInsertObjects(boolean useAutoincrement, List<ColumnData> columnData, String versionColName) {
         return makeInsertObjects( false, emptyList(), useAutoincrement, false, columnData, versionColName);
@@ -45,14 +32,18 @@ public class DalGenerator extends BaseGenerator {
         return "dal.java";
     }
 
-    private static String makeInsertObjects(boolean skipKey,List<String>keys,  boolean useAutoincrement, boolean skipVersionColumn, List<ColumnData> columnData, String versionColName) {
+    private static String makeInsertObjects(boolean skipKey, List<String>keys,
+                                            boolean useAutoincrement, boolean skipVersionColumn,
+                                            List<ColumnData> columnData, String versionColName) {
         StringBuilder objs = new StringBuilder();
-        boolean useVersion = skipVersionColumn && containsVersion(columnData, versionColName);
+        boolean useVersion = skipVersionColumn && containsColName(columnData, versionColName);
         Iterator<ColumnData> iterator = columnData.iterator();
         while (iterator.hasNext()) {
             ColumnData cd = iterator.next();
             if (useAutoincrement && cd.isAutoIncrement()
-                    || (useVersion && cd.getName().equalsIgnoreCase(versionColName))) {
+                    || (useVersion && cd.getName().equalsIgnoreCase(versionColName))
+                    || !isInsertAndUpdatableField(cd, useAutoincrement)
+            ) {
                 continue;
             }
             if(skipKey && keys.contains(cd.getName())){
@@ -252,18 +243,20 @@ public class DalGenerator extends BaseGenerator {
     @Override
     protected Map<String, Object> getContextMap(String tableName) {
         Map<String, Object> v = super.getContextMap(tableName);
-        List<ColumnData> cols = isView ? this.setInfo.getViewCols(tableName) : this.setInfo.getTableCols(tableName);
-        List<String> keys = getKeyData(tableName);
-        if(keys.isEmpty() && isView){
-            keys = new ArrayList<>();
-            keys.add(cols.get(0).getName());
-        }
+        List<ColumnData> cols = getColsInfo(tableName);
+        List<String> keys = getKeysInfo(cols, tableName);
 
-        v.put("hasVersionCol", containsVersion(cols
+        v.put("hasVersionCol", containsColName(cols
                 , config.getVersionColName()));
+        v.put("hasLogicDelCol", containsColName(cols
+                , config.getDelColName()));
+
 
         v.put("insertObjects", makeInsertObjects( config.isUseAutoincrement(), cols, config.getVersionColName()));
         v.put("updateObjects", makeUpdateObjects(keys, cols, config.isUseAutoincrement(), config.getVersionColName()));
+        v.put("insertSql", makeInsertSql(tableName, config.isUseAutoincrement(), cols));
+        v.put("updateSql", makeUpdateSql(tableName, keys, cols, config.isUseAutoincrement(), config.getVersionColName()));
+
 
         v.put("firstKeyType", this.getFirstKeyType(tableName));
         v.put("firstKeyName", this.getFirstKeyName(tableName));
@@ -272,7 +265,7 @@ public class DalGenerator extends BaseGenerator {
                 false, cols));
         v.put("keyObjects", createKeyObjects(keys));
 
-        v.put("isView", isView);
+        v.put("isView", isView());
         v.put("mapRow", mapRow(cols, this.getPojoClassName(tableName)));
         if(config.getR2dc()) {
             v.put("mapRow", mapRowR2dbc(cols, this.getPojoClassName(tableName)));
@@ -280,6 +273,30 @@ public class DalGenerator extends BaseGenerator {
             v.put("mapRow", mapRow(cols, this.getPojoClassName(tableName)));
         }
         return v;
+    }
+
+    private Object makeUpdateSql(String tableName, List<String> keys, List<ColumnData> cols, boolean useAutoincrement, String versionColName) {
+        return
+        "update "+tableName+" set \"\n    +\"" +
+        cols.stream().filter(c -> !this.setInfo.getTableKeys(tableName).contains(c.getName()) && isInsertAndUpdatableField(c, useAutoincrement))
+                .map(columnData ->{
+
+                    String columnName = decorFieldIfIsKeyword(columnData.getName(), this.getDbType());
+
+                    return columnData.getName().equals(versionColName) ? columnName +"=" + columnName+"+1"
+                            :  columnName +"=?";}
+                ).collect(Collectors.joining(","));
+
+    }
+
+
+    private String makeInsertSql(String tableName, boolean useAutoincrement, List<ColumnData> cols) {
+        return  "insert into "+tableName+"\"\n    +\" ( "+
+        cols.stream().filter(it -> isInsertAndUpdatableField(it, useAutoincrement))
+                .map(it -> decorFieldIfIsKeyword(it.getName(), this.getDbType())).collect(Collectors.joining(", "))
+                        +")\"\n    +\" values (\"\n    +\""
+                        +cols.stream().filter(it -> isInsertAndUpdatableField(it, useAutoincrement))
+                .map(column -> "?").collect(Collectors.joining(","))+")";
     }
 
     @Override

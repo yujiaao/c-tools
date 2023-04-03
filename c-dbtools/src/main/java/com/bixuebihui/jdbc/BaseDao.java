@@ -26,7 +26,6 @@ import org.springframework.aop.framework.ProxyFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.sql.DataSource;
-import javax.validation.constraints.NotNull;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.sql.Connection;
@@ -36,6 +35,7 @@ import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.bixuebihui.db.Dialect.*;
@@ -533,6 +533,12 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
             beforeChange(info, time);
         }
     }
+    private void beforeChange(List<T> infos) {
+        long time = System.currentTimeMillis();
+        for (T info : infos) {
+            beforeChange(info, time);
+        }
+    }
 
     /**
      * <p>Getter for the field <code>dbHelper</code>.</p>
@@ -763,6 +769,12 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     }
 
     private void afterUpdate(T[] infos, boolean res) {
+        if (res && afterChangeEventHandler != null) {
+            afterChangeEventHandler.afterChange(infos, ChangeType.UPDATE);
+        }
+    }
+
+    private void afterUpdate(List<T> infos, boolean res) {
         if (res && afterChangeEventHandler != null) {
             afterChangeEventHandler.afterChange(infos, ChangeType.UPDATE);
         }
@@ -1525,10 +1537,15 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      */
     public void processAllByStep(String where, String orderBy, int stepMax, ProcessHandler<T> handler,
                                  Object[] params, boolean alwaysFromBeginning) {
+        processAllByStep(where, orderBy, stepMax, handler, params,  alwaysFromBeginning, List::isEmpty);
+    }
+
+    public void processAllByStep(String where, String orderBy, int stepMax, ProcessHandler<T> handler,
+                                 Object[] params, boolean alwaysFromBeginning, Function<List<T>, Boolean> finished ) {
         List<T> list;
         int beginNum = 0;
         for (list = select(where, params, orderBy, beginNum, beginNum + stepMax);
-             !list.isEmpty();
+             !finished.apply(list);
              list = select(where, params, orderBy, beginNum, beginNum + stepMax)) {
             if (!alwaysFromBeginning) {
                 beginNum = beginNum + stepMax;
@@ -1686,6 +1703,15 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         throw new IllegalArgumentException("this method must override!");
     }
 
+    public boolean insertKeepKey(T info){
+        List<Object> insertObjects = new ArrayList<>(List.of(this.getInsertObjs(info)));
+        insertObjects.add(this.getId(info));
+        String insertSql = this.getInsertSql().replace(") values (",","+this.getKeyName()+") values (?,");
+        beforeChange(info);
+        boolean res = 1 == this.getDbHelper().executeNoQuery(insertSql, insertObjects.toArray());
+        afterInsert(info, res);
+        return res;
+    }
     /**
      * Updates the current object values into the database.
      *
@@ -1824,7 +1850,9 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     public boolean updateBatch(T[] infos) {
         return updateBatch(infos, null);
     }
-
+    public boolean updateBatch(List<T> infos) {
+        return updateBatch(infos, null);
+    }
     /**
      * Inserts the Agent object values into the database.
      *
@@ -1838,6 +1866,20 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         List<Object[]> a = Arrays.stream(infos).map(this::getInsertObjs).collect(Collectors.toList());
 
         boolean res = infos.length == getDbHelper().executeNoQueryBatch(getInsertSql(), a, cn);
+
+        afterUpdate(infos, res);
+        return res;
+    }
+
+    public boolean insertBatch(List<T> infos) {
+        return insertBatch(infos, null);
+    }
+    public boolean insertBatch(List<T> infos, Connection cn) {
+        beforeChange(infos);
+
+        List<Object[]> a = infos.stream().map(this::getInsertObjs).collect(Collectors.toList());
+
+        boolean res = infos.size() == getDbHelper().executeNoQueryBatch(getInsertSql(), a, cn);
 
         afterUpdate(infos, res);
         return res;
@@ -1871,6 +1913,17 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         afterUpdate(infos, res);
         return res;
     }
+    public boolean updateBatch(List<T> infos, Connection cn) {
+        beforeChange(infos);
+
+        List<Object[]> a = infos.stream().map(this::getUpdateObjs).collect(Collectors.toList());
+
+        boolean res = infos.size() == getDbHelper().executeNoQueryBatch(getUpdateSql(), a, cn);
+
+        afterUpdate(infos, res);
+        return res;
+    }
+
 
     public boolean updateBatch(T[] infos, Connection cn, String shardTableName) {
         beforeChange(infos);

@@ -2,7 +2,7 @@ package com.bixuebihui.tablegen;
 
 import com.bixuebihui.cache.DictionaryCache;
 import com.bixuebihui.cache.DictionaryItem;
-import com.bixuebihui.db.Dialect;
+import com.bixuebihui.db.KeywordsUtils;
 import com.bixuebihui.generated.tablegen.pojo.T_metacolumn;
 import com.bixuebihui.jdbc.*;
 import com.bixuebihui.tablegen.entry.ColumnData;
@@ -10,12 +10,10 @@ import com.bixuebihui.tablegen.entry.TableInfo;
 import com.bixuebihui.tablegen.entry.TableSetInfo;
 import com.bixuebihui.util.DbUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StopWatch;
 
-import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -657,7 +655,7 @@ public class TableUtils {
         int dbType = BaseDao.detectDbType(metaData.getDriverName());
 
         Map<String, String > columnComment= new HashMap<>();
-        if(dbHelper!=null && dbType == SQLSERVER|| dbType==SQLSERVER_2005_AND_UP){
+        if(dbHelper!=null && dbType == SQLSERVER|| dbType==SQLSERVER_2005_AND_UP || dbType==SQLSERVER_2010_AND_UP){
             columnComment = getColumnComment(dbHelper, tableName);
         }
 
@@ -685,11 +683,11 @@ public class TableUtils {
                 }
 
                 // 17
-                isNullable = NameUtils.isYes(rs.getString("IS_NULLABLE"));
+                isNullable = KeywordsUtils.isYes(rs.getString("IS_NULLABLE"));
 
                 //Access driver have not a column named IS_AUTOINCREMENT
                 // 23
-                isAutoIncrement = (dbType != ACCESS) && NameUtils.isYes(rs.getString("IS_AUTOINCREMENT"));
+                isAutoIncrement = (dbType != ACCESS) && KeywordsUtils.isYes(rs.getString("IS_AUTOINCREMENT"));
 
                 String digits = rs.getString("DECIMAL_DIGITS");
                 if (StringUtils.isNumeric(digits)) {
@@ -698,7 +696,7 @@ public class TableUtils {
 
                 // REMARKS String => 描述列的注释（可为 null）
                 remarks = rs.getString("REMARKS");
-                if(remarks==null && (dbType == SQLSERVER_2005_AND_UP || dbType==SQLSERVER)){
+                if(remarks==null && (dbType == SQLSERVER_2010_AND_UP || dbType == SQLSERVER_2005_AND_UP || dbType==SQLSERVER)){
                     remarks = columnComment.get(colName);
                 }
 
@@ -830,32 +828,34 @@ public class TableUtils {
     }
 
 
-    public static String getColumnAnnotation(ProjectConfig config, TableSetInfo setInfo, String tableName, ColumnData cd) {
+    public static String getColumnAnnotation(ProjectConfig config, TableSetInfo setInfo, String tableName, ColumnData cd, boolean genConstraint) {
         StringBuilder sb = new StringBuilder();
         if (config.useAnnotation) {
 
-            if (setInfo.getTableDataExt()  != null && setInfo.getTableDataExt().get(tableName) != null) {
-                Map<String, T_metacolumn> cols = setInfo.getTableDataExt().get(tableName).getColumns();
-                if (cols != null && cols.get(cd.getName()) != null) {
-                    T_metacolumn col = cols.get(cd.getName());
-                    sb.append(col.getAnnotation() == null ? "" : col.getAnnotation() + "\n");
-                } else {
-                    LOG.info("There NO settings for table columns:" + tableName);
-                }
-            }
-
-            if ("String".equals(cd.getJavaType())) {
-                //if columns is JSON type, there is no column size.
-                if (sb.indexOf("@Size") < 0 && cd.getColumns()>0) {
-                    sb.append("@Size(max=").append(cd.getColumns()).append(")\n");
-                }
-            }
-            if (isNeedNotNullAnnotation(config, cd)) {
-                if (sb.indexOf("@NotNull") < 0) {
-                    if(sb.length()>0){
-                        sb.append("    ");
+            if(genConstraint) {
+                if (setInfo.getTableDataExt() != null && setInfo.getTableDataExt().get(tableName) != null) {
+                    Map<String, T_metacolumn> cols = setInfo.getTableDataExt().get(tableName).getColumns();
+                    if (cols != null && cols.get(cd.getName()) != null) {
+                        T_metacolumn col = cols.get(cd.getName());
+                        sb.append(col.getAnnotation() == null ? "" : col.getAnnotation() + "\n");
+                    } else {
+                        LOG.info("There NO settings for table columns:" + tableName);
                     }
-                    sb.append("@NotNull\n");
+                }
+
+                if ("String".equals(cd.getJavaType())) {
+                    //if columns is JSON type, there is no column size.
+                    if (sb.indexOf("@Size") < 0 && cd.getColumns() > 0) {
+                        sb.append("@Size(max=").append(cd.getColumns()).append(")\n");
+                    }
+                }
+                if (isNeedNotNullAnnotation(config, cd)) {
+                    if (sb.indexOf("@NotNull") < 0) {
+                        if (sb.length() > 0) {
+                            sb.append("    ");
+                        }
+                        sb.append("@NotNull\n");
+                    }
                 }
             }
 
@@ -863,7 +863,11 @@ public class TableUtils {
                 if(sb.length()>0){
                     sb.append("    ");
                 }
-                sb.append("@Schema(title = \"").append(cd.getComment()).append("\")");
+                if(config.getSwaggerVersion().equals("2")) {
+                    sb.append("@ApiModelProperty(\"").append(cd.getComment()).append("\")");
+                }else{
+                    sb.append("@Schema(description = \"").append(cd.getComment()).append("\")");
+                }
             }
         }
 

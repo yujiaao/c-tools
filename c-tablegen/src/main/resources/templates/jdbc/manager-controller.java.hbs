@@ -1,0 +1,147 @@
+package {{config.packageName}}{{viewModifier}}.autogenerate.controller;
+
+{{#unless tableInfo.isView}}
+import {{config.packageName}}{{viewModifier}}.cmd.{{pojoClassName}}DelCmd;
+{{/unless}}
+import {{config.packageName}}{{viewModifier}}.dto.{{pojoClassName}}Dto;
+import {{config.packageName}}{{viewModifier}}.cmd.{{pojoClassName}}SearchCmd;
+import {{config.packageName}}{{viewModifier}}.service.autogenerate.{{pojoClassName}}Service;
+import org.apache.commons.lang3.tuple.Pair;
+
+import com.bixuebihui.query.Paging;
+import com.bixuebihui.BaseModel;
+import com.bixuebihui.PageModel;
+{{#eq config.swaggerVersion "2" }}
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+{{else}}
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.info.Info;
+{{/eq}}
+
+
+import org.apache.commons.lang3.time.StopWatch;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import org.springframework.validation.annotation.Validated;
+
+import jakarta.servlet.http.HttpServletRequest;
+import java.util.List;
+
+/**
+ * @author generated
+ */
+@RestController
+@RequestMapping("/{{snakeCase pojoClassName}}")
+{{#eq config.swaggerVersion "2" }}
+@Api(tags = "{{tableInfo.comment}}")
+{{else}}
+@OpenAPIDefinition(info = @Info(description = "{{tableInfo.comment}}"))
+{{/eq}}
+public class  {{className}} {
+    @Autowired
+    {{pojoClassName}}Service {{firstLow pojoClassName}}Service;
+
+    {{#eq config.swaggerVersion "2" }}@ApiOperation({{else}}@Operation(summary ={{/eq~}}"取{{tableName}}列表")
+    @GetMapping(value = "/list", produces = {"application/json;charset=UTF-8"})
+    public BaseModel<PageModel<{{pojoClassName}}Dto>> list(
+    {{#eq config.swaggerVersion "2" }}
+        @ApiParam(name = "maxRows", value = "一页大小")
+    {{else}}
+        @Parameter(name ="maxRows", description = "一页大小")
+    {{/eq}}
+        @RequestParam(value = "maxRows", defaultValue = "10") Long maxRows,
+    {{#eq config.swaggerVersion "2" }}
+        @ApiParam(name = "page", value = "页码")
+    {{else}}
+        @Parameter(name ="page", description = "页码")
+    {{/eq}}
+        @RequestParam(value = "page", defaultValue = "1") Long page,
+    {{#eq config.swaggerVersion "2" }}
+        @ApiParam(name = "sortBy", value = "排序 sortBy=abc:asc,def:desc")
+    {{else}}
+        @Parameter(name ="sortBy", description = "排序 sortBy=abc:asc,def:desc")
+    {{/eq}}
+        @RequestParam(value = "sortBy", defaultValue = "{{firstKeyName}}:desc") String sortBy,
+        @Validated
+    {{#eq config.swaggerVersion "2" }}
+        @ApiParam(value = "查询条件", required = true)
+    {{else}}
+        @Parameter(required ="true", description = "查询条件")
+    {{/eq}}
+        {{pojoClassName}}SearchCmd  searchCmd,
+        HttpServletRequest request) {
+
+        Paging<{{pojoClassName}}SearchCmd> searchBean = new Paging<>();
+        searchBean.setSearchBean(searchCmd);
+        searchBean.setStart(maxRows*(page-1));
+        searchBean.setCount(maxRows);
+        searchBean.parseSort(sortBy);
+
+        StopWatch sw = new StopWatch();
+        sw.start();
+        Pair<Integer, List<{{pojoClassName}}Dto>> p= {{firstLow pojoClassName}}Service.queryList(searchBean);
+
+        PageModel<{{pojoClassName}}Dto> result = PageModel
+                .builder(p.getRight())
+                .total(p.getLeft())
+                .build();
+        sw.stop();
+        result.setTook(sw.getTime());
+
+
+        BaseModel<PageModel<{{pojoClassName}}Dto>> res = new BaseModel<>();
+        res.setResult(result);
+        res.setReturncode(0);
+        res.setMessage("success");
+        return res;
+    }
+{{#unless tableInfo.isView}}
+    {{#eq config.swaggerVersion "2" }}@ApiOperation({{else}}@Operation(summary ={{/eq~}}
+    "按主键删除{{tableName}}记录")
+    @PostMapping(value = "/del", produces = {"application/json;charset=UTF-8"})
+    public BaseModel<Boolean> del(
+        @Validated
+    {{#eq config.swaggerVersion "2" }}
+        @ApiParam(value = "主键", required = true)
+    {{else}}
+        @Parameter(required ="true", description = "主键")
+    {{/eq}}
+        {{pojoClassName}}DelCmd  delCmd,
+        HttpServletRequest request) {
+
+        BaseModel<Boolean> res = new BaseModel<>();
+            res.setResult( {{firstLow pojoClassName}}Service.del(delCmd));
+            res.setReturncode(0);
+            res.setMessage("success");
+        return res;
+    }
+
+    {{#eq config.swaggerVersion "2" }}@ApiOperation({{else}}@Operation(summary ={{/eq~}} "保存{{tableName}}记录")
+    @PostMapping(value = "/save", produces = {"application/json;charset=UTF-8"})
+    public BaseModel<{{pojoClassName}}Dto> save(
+        @Validated
+        {{#eq config.swaggerVersion "2" }}
+            @ApiParam(value = "{{tableName}} 数据对象", required = true)
+        {{else}}
+            @Parameter(required ="true", description = "{{tableName}} 数据对象")
+        {{/eq}}
+            {{pojoClassName}}Dto  dto, HttpServletRequest request) {
+
+        BaseModel<{{pojoClassName}}Dto> res = new BaseModel<>();
+            res.setResult( {{firstLow pojoClassName}}Service.save(dto));
+            res.setReturncode(0);
+            res.setMessage("success");
+        return res;
+    }
+{{/unless}}
+}

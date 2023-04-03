@@ -3,6 +3,8 @@ package com.bixuebihui.jmesa;
 import com.bixuebihui.jdbc.IBaseListService;
 import com.bixuebihui.jmesa.entry.Query;
 import com.bixuebihui.util.ParameterUtils;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.jmesa.core.preference.Preferences;
 import org.jmesa.limit.Limit;
 import org.jmesa.limit.LimitFactory;
@@ -13,8 +15,7 @@ import org.jmesa.view.component.Column;
 import org.jmesa.view.component.Row;
 import org.jmesa.view.component.Table;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 

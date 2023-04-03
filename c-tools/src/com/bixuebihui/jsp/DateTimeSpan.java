@@ -1,18 +1,11 @@
 package com.bixuebihui.jsp;
 
-import com.bixuebihui.jdbc.BaseDao;
 import com.bixuebihui.jdbc.ISqlConditionType;
-import com.bixuebihui.util.ParameterUtils;
-import com.bixuebihui.util.Util;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import javax.servlet.http.HttpServletRequest;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
 
 /**
  * 年月日时间段的HTML控件，前后端及数据库的支持

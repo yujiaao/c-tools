@@ -30,17 +30,16 @@ public class ProjectConfig {
     String addPrefix;
     String removePrefix;
     String versionColName = "version";
+    String delColName = "is_del";
     boolean indexes;
     boolean overWriteAll = false;
     boolean useCustomMetaTable = false;
     boolean useAnnotation = false;
     boolean useSwagger = true;
     boolean useAutoincrement = false;
-
     boolean generateProcedures = true;
     boolean generateAll=false;
     boolean r2dbc=false;
-
     boolean readWriteSeparate=false;
     /**
      * additional settings, used for comments, data checking, interfaces, etc.
@@ -65,6 +64,14 @@ public class ProjectConfig {
     Map<String, String> tablesList;
     Map<String, String> viewList;
     Map<String, String> excludeTablesList;
+    private String serviceDir;
+    private String controllerDir;
+    private String dtoDir;
+    private String cmdDir;
+    /**
+     * Swagger Version 2  或 3
+     */
+    private String swaggerVersion;
 
     public static ProjectConfig readFrom(Properties props, String baseDir) {
         ProjectConfig c = new ProjectConfig();
@@ -76,19 +83,36 @@ public class ProjectConfig {
         c.catalog = props.getProperty("catalog");
         LOG.debug("catalog:" +  c.catalog);
 
-        c.srcDir = baseDir + props.getProperty("src_dir");
+        String baseSrc = props.getProperty("src_dir");
+
+        c.srcDir = baseDir + baseSrc;
         LOG.debug("src_dir:" +  c.srcDir);
-        c.resourceDir = baseDir + props.getProperty("resource_dir");
+        c.resourceDir = baseDir + props.getProperty("resource_dir", baseSrc);
         LOG.debug("resource_dir:" +  c.resourceDir);
 
-        if (StringUtils.isEmpty( c.resourceDir)) {
-            c.resourceDir =  c.srcDir;
-        }
+        c.serviceDir = baseDir + props.getProperty("service_dir",baseSrc );
+        LOG.debug("service_dir:" +  c.serviceDir);
+
+        c.controllerDir = baseDir + props.getProperty("controller_dir", baseSrc);
+        LOG.debug("controller_dir:" +  c.controllerDir);
+
+        c.dtoDir = baseDir + props.getProperty("dto_dir", baseSrc);
+        LOG.debug("dto_dir:" +  c.dtoDir);
+
+        c.cmdDir = baseDir + props.getProperty("cmd_dir", baseSrc);
+        LOG.debug("cmd_dir:" +  c.cmdDir);
+
+
+        c.delColName = props.getProperty("del_col_name", c.delColName);
+
+        c.versionColName = props.getProperty("del_col_name", c.versionColName);
+
 
         c.testDir = baseDir + props.getProperty("test_dir");
         LOG.debug("test_dir:" +  c.testDir);
         c.jspDir = baseDir + props.getProperty("jsp_dir");
         LOG.debug("jsp_dir:" +  c.jspDir);
+
         c.packageName = props.getProperty("package_name");
         LOG.debug("package_name:" +  c.packageName);
 
@@ -115,7 +139,6 @@ public class ProjectConfig {
 
         c.parseTableNames(props.getProperty("table_list"));
         c.parseViewNames(props.getProperty("view_list"));
-
         c.parseExcludeTableNames(props.getProperty("exclude_table_list"));
 
         // 有扩展表时用以下interface的设置值
@@ -133,6 +156,10 @@ public class ProjectConfig {
 
         c.overWriteAll = getBooleanCfg(props, "over_write_all");
         c.useAnnotation = getBooleanCfg(props, "use_annotation");
+
+        c.swaggerVersion = props.getProperty("swagger_version", "2");
+
+
         c.useAutoincrement = getBooleanCfg(props, "use_autoincrement");
         c.generateAll = getBooleanCfg(props, "generate_all");
 
@@ -151,6 +178,30 @@ public class ProjectConfig {
             res.addAll(Arrays.asList(property.trim().split(",")));
         }
         return res;
+    }
+
+    public String getSwaggerVersion() {
+        return swaggerVersion;
+    }
+
+    public void setSwaggerVersion(String swaggerVersion) {
+        this.swaggerVersion = swaggerVersion;
+    }
+
+    public String getDtoDir() {
+        return dtoDir;
+    }
+
+    public void setDtoDir(String dtoDir) {
+        this.dtoDir = dtoDir;
+    }
+
+    public String getCmdDir() {
+        return cmdDir;
+    }
+
+    public void setCmdDir(String cmdDir) {
+        this.cmdDir = cmdDir;
     }
 
     public Map<String, String> getViewList() {
@@ -490,5 +541,30 @@ public class ProjectConfig {
 
     public boolean getR2dc() {
         return this.r2dbc;
+    }
+
+    public String getBaseControllerDir() {
+        return controllerDir + File.separator + packageName2Dir(packageName);
+    }
+    public String getBaseCmdDir() {
+        return cmdDir + File.separator + packageName2Dir(packageName);
+    }
+    public String getBaseDtoDir() {
+        return dtoDir + File.separator + packageName2Dir(packageName);
+    }
+
+    public String getBaseServiceDir() {
+        return serviceDir + File.separator + packageName2Dir(packageName);
+    }
+    public String getBaseServiceImplDir() {
+        return serviceDir + File.separator + packageName2Dir(packageName);
+    }
+
+    public String getDelColName() {
+        return delColName;
+    }
+
+    public void setDelColName(String delColName) {
+        this.delColName = delColName;
     }
 }

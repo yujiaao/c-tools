@@ -7,7 +7,7 @@ import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Map;
 
@@ -111,7 +111,7 @@ public interface IDbHelper {
      *
      * @param strSql a {@link String} object.
      * @param params an array of {@link Object} objects.
-     * @param cn a {@link Connection} object.
+     * @param cn     a {@link Connection} object.
      * @return a int.
      */
     Mono<Integer> executeNoQuery(String strSql, Object[] params, Connection cn);
@@ -119,20 +119,20 @@ public interface IDbHelper {
     /**
      * <p>executeNoQuery.</p>
      *
-     * @param sql a {@link String} object.
-     * @param params an array of {@link Object} objects.
+     * @param sql            a {@link String} object.
+     * @param params         an array of {@link Object} objects.
      * @param targetSqlTypes an array of int.
      * @return a int.
      */
-    Mono<Integer>  executeNoQuery(String sql, Object[] params, Class[] targetSqlTypes);
+    Mono<Integer> executeNoQuery(String sql, Object[] params, Class[] targetSqlTypes);
 
     /**
      * <p>executeNoQuery.</p>
      *
-     * @param sql a {@link String} object.
-     * @param params an array of {@link Object} objects.
+     * @param sql            a {@link String} object.
+     * @param params         an array of {@link Object} objects.
      * @param targetSqlTypes an array of int.
-     * @param conn a {@link Connection} object.
+     * @param conn           a {@link Connection} object.
      * @return a int.
      */
     Mono<Integer> executeNoQuery(String sql, Object[] params, Class[] targetSqlTypes, Mono<Connection> conn);
@@ -159,7 +159,7 @@ public interface IDbHelper {
     /**
      * <p>executeNoQuery.</p>
      *
-     * @param sql a {@link String} object.
+     * @param sql    a {@link String} object.
      * @param params an array of {@link Object} objects.
      * @return a int.
      */
@@ -177,7 +177,7 @@ public interface IDbHelper {
      * <p>executeNoQuery.</p>
      *
      * @param strSql an array of {@link String} objects.
-     * @param cn a {@link Connection} object.
+     * @param cn     a {@link Connection} object.
      * @return a int.
      */
     Mono<Integer> executeNoQuery(String[] strSql, Mono<Connection> cn);
@@ -186,12 +186,9 @@ public interface IDbHelper {
     /**
      * 批处里数组, 用于Insert, delete或update
      *
-     * @param strSql
-     *            参数化SQL语句
-     * @param params
-     *            参数数组列表
-     * @param cn
-     *            数据库连接,如为空,则自动获得
+     * @param strSql 参数化SQL语句
+     * @param params 参数数组列表
+     * @param cn     数据库连接,如为空,则自动获得
      * @return 成功执行数量
      */
     Mono<Integer> executeNoQueryBatch(String strSql, Iterable<Object[]> params, Mono<Connection> cn);

@@ -9,8 +9,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.util.*;
 
-import javax.servlet.*;
-import javax.servlet.http.*;
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
 import java.io.*;
 import java.security.Principal;
 import java.text.ParseException;
@@ -19,7 +19,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Mock implementation of the {@link javax.servlet.http.HttpServletRequest} interface.
+ * Mock implementation of the {@link jakarta.servlet.http.HttpServletRequest} interface.
  *
  * <p>The default, preferred {@link Locale} for the <em>server</em> mocked by this request
  * is {@link Locale#ENGLISH}. This value can be changed via {@link #addPreferredLocale}
@@ -691,7 +691,7 @@ public class SimpleHttpServletRequest implements HttpServletRequest {
      * does <strong>not</strong> take into consideration any locales
      * specified via the {@code Accept-Language} header.
      *
-     * @see javax.servlet.ServletRequest#getLocale()
+     * @see jakarta.servlet.ServletRequest#getLocale()
      * @see #addPreferredLocale(Locale)
      * @see #setPreferredLocales(List)
      */
@@ -710,7 +710,6 @@ public class SimpleHttpServletRequest implements HttpServletRequest {
      * does <strong>not</strong> take into consideration any locales
      * specified via the {@code Accept-Language} header.
      *
-     * @see javax.servlet.ServletRequest#getLocales()
      * @see #addPreferredLocale(Locale)
      * @see #setPreferredLocales(List)
      */
@@ -723,7 +722,6 @@ public class SimpleHttpServletRequest implements HttpServletRequest {
      * Return {@code true} if the {@link #setSecure secure} flag has been set
      * to {@code true} or if the {@link #getScheme scheme} is {@code https}.
      *
-     * @see javax.servlet.ServletRequest#isSecure()
      */
     @Override
     public boolean isSecure() {
@@ -747,7 +745,6 @@ public class SimpleHttpServletRequest implements HttpServletRequest {
         throw new NotImplementedException();
     }
 
-    @Override
     @Deprecated
     public String getRealPath(String path) {
         return this.servletContext.getRealPath(path);
@@ -1180,7 +1177,6 @@ public class SimpleHttpServletRequest implements HttpServletRequest {
         this.requestedSessionIdFromURL = requestedSessionIdFromURL;
     }
 
-    @Override
     @Deprecated
     public boolean isRequestedSessionIdFromUrl() {
         return isRequestedSessionIdFromURL();

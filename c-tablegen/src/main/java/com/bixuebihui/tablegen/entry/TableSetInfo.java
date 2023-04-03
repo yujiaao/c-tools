@@ -25,7 +25,7 @@ import static com.bixuebihui.tablegen.TableUtils.isSQLServer;
 /**
  * @author xwx
  */
-public class TableSetInfo {
+public class TableSetInfo implements KeyInfo {
     public static final String DB_ERROR = "[GEN]Error setup database";
     private static final Logger LOG = LoggerFactory.getLogger(TableSetInfo.class);
     private final Map<String, List<ForeignKeyDefinition>> foreignKeyImCache = new LRULinkedHashMap<>(
@@ -167,6 +167,7 @@ public class TableSetInfo {
         return foreignKeyImCache;
     }
 
+    @Override
     public Map<String, List<String>> getKeyCache() {
         return keyCache;
     }
@@ -584,12 +585,34 @@ public class TableSetInfo {
         if(dbType==MYSQL){
            sql =  sql.contains("limit") ? sql :sql + " limit 1";
         }else if(dbType==SQLSERVER_2005_AND_UP){
-            sql =  sql.contains(" top ") ? sql : sql.toLowerCase().replaceFirst("select", "select top 1 ");
+            sql =
+                    insertTop1(sql);
 
             // sql  = getPagingSqlSqlServer2005(sql, 0,1);
         }
 
         return sql;
+    }
+
+    static String insertTop1(String sql) {
+        if(sql.contains(" top ") || sql.contains(" TOP ")){
+            return sql;
+        }
+
+        StringTokenizer tokenizer = new StringTokenizer(sql);
+        StringBuilder sb  = new StringBuilder();
+        boolean first = true;
+        while (tokenizer.hasMoreElements()) {
+            String next = tokenizer.nextElement().toString();
+            if(first && next.toLowerCase().equals("select")){
+                sb.append("select top 1 ");
+                first = false;
+            }else{
+                sb.append(next).append(" ");
+            }
+        }
+        sb.deleteCharAt(sb.length() - 1);
+        return sb.toString();
     }
 
     private  void initImportKeys(ProjectConfig config, IDbHelper dbHelper, DatabaseMetaData metaData, String tableName) throws SQLException {
@@ -612,6 +635,7 @@ public class TableSetInfo {
     /**
      * Selects the primary keys for a particular table.
      */
+    @Override
     public  List<String> getTableKeys(String tableName){
         return getKeyCache().getOrDefault(tableName, Collections.emptyList());
     }

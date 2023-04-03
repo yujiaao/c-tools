@@ -4,17 +4,23 @@ package {{config.packageName}}{{viewModifier}}.pojo;
 
 import java.sql.*;
 import java.io.Serializable;
-import javax.validation.constraints.*;
+import jakarta.validation.constraints.*;
 import org.apache.commons.text.StringEscapeUtils;
-
-{{#if config.useSwagger}}
-import io.swagger.v3.oas.annotations.media.Schema;
-
 import javax.annotation.processing.Generated;
 
-@Generated("com.github.yujiaao:tablegen")
+{{#if config.useSwagger}}
+{{#eq config.swaggerVersion "2" }}
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiModelProperty;
+
+@Api(tags="{{tableInfo.comment}}")
+{{else}}
+import io.swagger.v3.oas.annotations.media.Schema;
+
 @Schema(description ="{{tableInfo.comment}}")
-{{/if~}}
+{{/eq}}
+{{/if}}
+@Generated("com.github.yujiaao:tablegen")
 public class {{className}} {{interface}} {
 {{! field declaration }}
 {{#each fields as | field index | }}

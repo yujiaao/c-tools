@@ -1,23 +1,39 @@
-package {{config.packageName}}{{viewModifier}}.service;
+package {{config.packageName}}{{viewModifier}}.service.autogenerate;
 
 {{> [header-comment.java]}}
+import com.bixuebihui.query.Paging;
 
-import javax.sql.DataSource;
-import {{config.packageName}}{{viewModifier}}.dal.{{pojoClassName}}Manager;
-
-
+import {{config.packageName}}{{viewModifier}}.business.{{pojoClassName}}Manager;
+import {{config.packageName}}{{viewModifier}}.cmd.{{pojoClassName}}SearchCmd;
+{{#unless tableInfo.isView}}
+import {{config.packageName}}{{viewModifier}}.cmd.{{pojoClassName}}DelCmd;
+{{/unless}}
+import {{config.packageName}}{{viewModifier}}.dto.{{pojoClassName}}Dto;
+import {{config.packageName}}{{viewModifier}}.pojo.{{pojoClassName}};
+import {{config.packageName}}{{viewModifier}}.converter.{{pojoClassName}}Converter;
+import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.processing.Generated;
-
-@Generated("com.github.yujiaao:tablegen")
-@Service
-public class {{className}}Service
-{
-    @Autowired
-    {{pojoClassName}}Manager {{firstLow pojoClassName}}Manager;
+import java.util.List;
 
 
+public interface {{className}} {
 
+    /**
+     * 查询
+     */
+    Pair<Integer, List<{{pojoClassName}}Dto>> queryList(Paging<{{pojoClassName}}SearchCmd> searchCmd);
+
+    {{#unless tableInfo.isView}}
+    /**
+    * 删除
+    */
+    Boolean del({{pojoClassName}}DelCmd delCmd);
+    /**
+    * 新增、修改
+    */
+    {{pojoClassName}}Dto save({{pojoClassName}}Dto dto);
+    {{/unless}}
 
 }

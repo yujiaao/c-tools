@@ -72,7 +72,8 @@ public class PojoGenerator extends BaseGenerator{
     protected void additionalSetting(Handlebars handlebars) {
         super.additionalSetting(handlebars);
         // usage: {{columnAnnotation aColumnData tableName}}
-        handlebars.registerHelper("columnAnnotation", (col, options) -> TableUtils.getColumnAnnotation(config, setInfo, options.param(0),(ColumnData) col));
+        handlebars.registerHelper("columnAnnotation", (col, options) ->
+                TableUtils.getColumnAnnotation(config, setInfo, options.param(0),(ColumnData) col, true));
 
         // usage: {{columnDescription aColumnData tableName}}
         handlebars.registerHelper("columnDescription", (col, options) -> TableUtils.getColumnDescription(config,

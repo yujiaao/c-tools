@@ -18,7 +18,7 @@ class PojoGeneratorTest {
     void getExtendsClasses() throws IOException {
         PojoGenerator gen = new PojoGenerator();
         gen.init(this.getClass().getResource("/tablegen.properties").getPath());
-        String res = gen.generate("test");
+        String res = gen.generate("test", 0);
 
         System.out.println(res);
     }

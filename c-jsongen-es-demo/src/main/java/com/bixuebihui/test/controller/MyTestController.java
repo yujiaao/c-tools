@@ -4,7 +4,8 @@ package com.bixuebihui.test.controller;
 import com.bixuebihui.elasticsearch.BaseEsOperator;
 import com.bixuebihui.elasticsearch.EsActiveRecordImpl;
 import com.bixuebihui.elasticsearch.EsRequest;
-import com.bixuebihui.jsongen.MobileVideoInfo;
+
+import com.example.es.pojo.ChejiahaoContents;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,18 +25,18 @@ public class MyTestController {
 
     String indexName =  "my-index-000001";
 
-    private EsActiveRecordImpl<MobileVideoInfo, Long> repository = new EsActiveRecordImpl<>(
+    private EsActiveRecordImpl<ChejiahaoContents, Long> repository = new EsActiveRecordImpl<>(
             new BaseEsOperator<>( new EsRequest("http://localhost:9200","","", indexName)) {
                 @Override
-                protected Class<MobileVideoInfo> getType() {
-                    return MobileVideoInfo.class;
+                protected Class<ChejiahaoContents> getType() {
+                    return ChejiahaoContents.class;
                 }
 
     });
 
     @GetMapping
-    public List<MobileVideoInfo> getAllConfig() {
-        return ((EsActiveRecordImpl<MobileVideoInfo, Long>)repository.limit(0,10))
+    public List<ChejiahaoContents> getAllConfig() {
+        return ((EsActiveRecordImpl<ChejiahaoContents, Long>)repository.limit(0,10))
                 .findAllDocMeta()
                 .stream()
                 .map(x -> {
@@ -49,16 +50,15 @@ public class MyTestController {
     @GetMapping("/update")
     public String update(
             @RequestParam(value = "abc", required = true) int abc) {
-//        MobileVideoInfo content = repository.eq("abc", abc).find();
-//
-//        int recommend = content.getIsRecommend().intValue();
 
          repository.eq("abc", abc)
                 .update(new String[]{"is_recommend", "author_name"}, new Object[]{1, "邢'万\"祥"});
 
          return "OK";
 
-//        return repository.eq("abc", abc).find();
+
     }
+
+
 
 }

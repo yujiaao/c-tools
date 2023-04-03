@@ -4,6 +4,8 @@ import com.bixuebihui.jdbc.IDbHelper;
 import com.bixuebihui.tablegen.TableGen;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -144,9 +146,18 @@ public class TableSetInfoTest {
     }
 
 
-    @Test
-    void initIndex() {
-
+    @ParameterizedTest
+    @CsvSource(quoteCharacter = '"', textBlock = """
+            "select top 10 * from abc", "select top 10 * from abc"
+            "select * from abc", "select top 1 * from abc"
+            "select ABC from abc", "select top 1 ABC from abc"
+            "select [ABC],'def' from abc", "select top 1 [ABC],'def' from abc"
+            "sELect [ABC],'def' from abc", "select top 1 [ABC],'def' from abc"
+            "sELect [ABC],'def' from (select * from Table1)", "select top 1 [ABC],'def' from (select * from Table1)"
+            """
+    )
+    void insertTop1(String sql, String result) {
+        assertEquals(result, TableSetInfo.insertTop1(sql));
     }
 
     @Test

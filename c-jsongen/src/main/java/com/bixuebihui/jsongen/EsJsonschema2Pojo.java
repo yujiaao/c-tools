@@ -7,6 +7,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.output.StringBuilderWriter;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.text.CaseUtils;
 import org.jsonschema2pojo.*;
 import org.jsonschema2pojo.exception.GenerationException;
 import org.jsonschema2pojo.rules.RuleFactory;
@@ -32,86 +33,101 @@ import static org.apache.commons.lang3.StringUtils.*;
 public class EsJsonschema2Pojo {
 
     /**
-         * Reads the contents of the given source and initiates schema generation.
-         *
-         * @param config
-         *            the configuration options (including source and target paths,
-         *            and other behavioural options) that will control code
-         *            generation
-         * @throws FileNotFoundException
-         *             if the source path is not found
-         * @throws IOException
-         *             if the application is unable to read data from the source
-         */
-        public static void generate(GenEs config, RuleLogger logger,
-                                    Consumer<Pair<String, String[]>> consumer,
-                                    Set<String> ignoreFields, Set<String> collectionFields,
-                                    Map<String, String> additionalProperties) throws IOException {
-            Annotator annotator = getAnnotator(config);
-            RuleFactory ruleFactory = createRuleFactory(config);
+     * Reads the contents of the given source and initiates schema generation.
+     *
+     * @param config           the configuration options (including source and target paths,
+     *                         and other behavioural options) that will control code
+     *                         generation
+     * @param primaryKeyFields
+     * @return
+     * @throws FileNotFoundException if the source path is not found
+     * @throws IOException           if the application is unable to read data from the source
+     */
+    public static Map<String, String> generate(GenEs config, RuleLogger logger,
+                                               Consumer<Pair<String, String[]>> indexFieldsConsumer,
+                                               Set<String> ignoreFields, Set<String> collectionFields,
+                                               Map<String, String> additionalProperties, List<String> primaryKeyFields) throws IOException {
+        Annotator annotator = getAnnotator(config);
+        RuleFactory ruleFactory = createRuleFactory(config);
 
-            ruleFactory.setAnnotator(annotator);
-            ruleFactory.setGenerationConfig(config);
-            ruleFactory.setLogger(logger);
-            ruleFactory.setSchemaStore(new SchemaStore(createContentResolver(config, additionalProperties)));
+        ruleFactory.setAnnotator(annotator);
+        ruleFactory.setGenerationConfig(config);
+        ruleFactory.setLogger(logger);
+        ruleFactory.setSchemaStore(new SchemaStore(createContentResolver(config, additionalProperties)));
 
-            EsSchemaMapper mapper = new EsSchemaMapper(ruleFactory, createSchemaGenerator(config));
+        EsSchemaMapper mapper = new EsSchemaMapper(ruleFactory, createSchemaGenerator(config));
 
-            JCodeModel codeModel = new JCodeModel();
+        JCodeModel codeModel = new JCodeModel();
 
-            if (config.isRemoveOldOutput()) {
-                removeOldOutput(config.getTargetDirectory());
-            }
+        if (config.isRemoveOldOutput()) {
+            removeOldOutput(config.getTargetDirectory());
+        }
 
-            boolean mkdir = config.getTargetDirectory().exists() || config.getTargetDirectory().mkdirs();
+        boolean mkdir = config.getTargetDirectory().exists() || config.getTargetDirectory().mkdirs();
 
-            for (Iterator<URL> sources = config.getSource(); sources.hasNext();) {
-                URL source = sources.next();
+        Map<String, String> map = new HashMap<>(64);
 
-                if (URLUtil.parseProtocol(source.toString()) == URLProtocol.FILE && URLUtil.getFileFromURL(source).isDirectory()) {
-                    generateRecursive(config, mapper, codeModel, defaultString(config.getTargetPackage()),
-                            Arrays.asList(URLUtil.getFileFromURL(source).listFiles(config.getFileFilter())), ignoreFields, collectionFields);
-                } else {
+        for (Iterator<URL> sources = config.getSource(); sources.hasNext(); ) {
+            URL source = sources.next();
 
-                    String className =   getNodeName(source, config);
-                    if(config.getAlias()!=null){
-                        className = config.getAlias();
-                    }
-
-                    JType res = mapper.generate(codeModel,className,
-                           defaultString(config.getTargetPackage()), source, ignoreFields, collectionFields,
-                           additionalProperties.get("username"),additionalProperties.get("password")
-
-                   );
-
-
-                    String[] fields = findFields((JDefinedClass) res);
-
-                    if(consumer!=null) {
-                        consumer.accept(ImmutablePair.of(res.name(), fields));
-                    }
-
-                }
-            }
-
-            if (mkdir) {
-                CodeWriter sourcesWriter = new FileCodeWriterWithEncoding(config.getTargetDirectory(), config.getOutputEncoding());
-                CodeWriter resourcesWriter = new FileCodeWriterWithEncoding(config.getTargetDirectory(), config.getOutputEncoding());
-                codeModel.build(sourcesWriter, resourcesWriter);
+            if (URLUtil.parseProtocol(source.toString()) == URLProtocol.FILE && URLUtil.getFileFromURL(source).isDirectory()) {
+                generateRecursive(config, mapper, codeModel, defaultString(config.getTargetPackage()),
+                        Arrays.asList(URLUtil.getFileFromURL(source).listFiles(config.getFileFilter())), ignoreFields, collectionFields);
             } else {
-                throw new GenerationException("Could not create or access target directory " + config.getTargetDirectory().getAbsolutePath());
+
+                String className = getNodeName(source, config);
+                if (config.getAlias() != null) {
+                    className = config.getAlias();
+                }
+
+                JType res = mapper.generate(codeModel, className,
+                        defaultString(config.getTargetPackage()), source, ignoreFields, collectionFields,
+                        additionalProperties.get(GenEs.USERNAME), additionalProperties.get(GenEs.PASSWORD)
+                );
+
+
+                String[] fields = findFields((JDefinedClass) res);
+                if (primaryKeyFields != null) {
+                    for (int i = 0; i < fields.length; i++) {
+                        String p = CaseUtils.toCamelCase(fields[i], false, '_', '-');
+                        String type = findTypes((JDefinedClass) res, p);
+
+                        if (type != null && primaryKeyFields.contains(fields[i])) {
+                            map.put(fields[i], type);
+                        }
+                    }
+                }
+
+                if (indexFieldsConsumer != null) {
+                    indexFieldsConsumer.accept(ImmutablePair.of(res.name(), fields));
+                }
+
             }
         }
+
+        if (mkdir) {
+            CodeWriter sourcesWriter = new FileCodeWriterWithEncoding(config.getTargetDirectory(), config.getOutputEncoding());
+            CodeWriter resourcesWriter = new FileCodeWriterWithEncoding(config.getTargetDirectory(), config.getOutputEncoding());
+            codeModel.build(sourcesWriter, resourcesWriter);
+        } else {
+            throw new GenerationException("Could not create or access target directory " + config.getTargetDirectory().getAbsolutePath());
+        }
+        return map;
+    }
+
+    private static String findTypes(JDefinedClass res, String field) {
+        return res.fields().containsKey(field) ? res.fields().get(field).type().name() : null;
+    }
 
     private static String[] findFields(JDefinedClass res) {
         StringBuilderWriter sb = new StringBuilderWriter();
         JFormatter f = new JFormatter(sb);
-        for(JAnnotationUse annotation: res.annotations()){
-            if("JsonPropertyOrder".equals(annotation.getAnnotationClass().name())){
+        for (JAnnotationUse annotation : res.annotations()) {
+            if ("JsonPropertyOrder".equals(annotation.getAnnotationClass().name())) {
                 List<JAnnotationUse> list = (List<JAnnotationUse>) ((JAnnotationArrayMember) (annotation.getAnnotationMembers().get("value"))).annotations();
-                for (JAnnotationValue a: list
-                     ) {
+                for (JAnnotationValue a : list) {
                     a.generate(f);
+                    System.out.println(((JAnnotationStringValue) a).getValue());
                 }
             }
         }
@@ -121,132 +137,132 @@ public class EsJsonschema2Pojo {
     }
 
     private static ContentResolver createContentResolver(GenEs config, Map<String, String> additionalProperties) {
-            if (config.getSourceType() == SourceType.YAMLSCHEMA || config.getSourceType() == SourceType.YAML) {
-                return new ContentResolver(new YAMLFactory());
+        if (config.getSourceType() == SourceType.YAMLSCHEMA || config.getSourceType() == SourceType.YAML) {
+            return new ContentResolver(new YAMLFactory());
+        } else {
+            return new EsContentResolver(null, additionalProperties);
+        }
+    }
+
+    private static SchemaGenerator createSchemaGenerator(GenEs config) {
+        if (config.getSourceType() == SourceType.YAMLSCHEMA || config.getSourceType() == SourceType.YAML) {
+            return new SchemaGenerator(new YAMLFactory());
+        } else {
+            return new SchemaGenerator();
+        }
+    }
+
+    private static RuleFactory createRuleFactory(GenEs config) {
+        Class<? extends RuleFactory> clazz = config.getCustomRuleFactory();
+
+        if (!RuleFactory.class.isAssignableFrom(clazz)) {
+            throw new IllegalArgumentException("The class name given as a rule factory  (" + clazz.getName() + ") does not refer to a class that implements " + RuleFactory.class.getName());
+        }
+
+        try {
+            return clazz.getDeclaredConstructor().newInstance();
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+                 NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void generateRecursive(GenEs config, EsSchemaMapper mapper, JCodeModel codeModel, String packageName, List<File> schemaFiles, Set<String> ignoreFields, Set<String> collectionFields) throws IOException {
+
+        schemaFiles.sort(config.getSourceSortOrder().getComparator());
+
+        for (File child : schemaFiles) {
+            if (child.isFile()) {
+
+                String className = getNodeName(child.toURI().toURL(), config);
+
+                if (config.getAlias() != null) {
+                    className = config.getAlias();
+                }
+
+                packageName = defaultString(packageName);
+
+                mapper.generate(codeModel, className, packageName,
+                        child.toURI().toURL(), ignoreFields, collectionFields, config.getUsername(), config.getPassword());
+
+
             } else {
-                return new EsContentResolver(null, additionalProperties);
+                generateRecursive(config, mapper, codeModel,
+                        childQualifiedName(packageName, child.getName()),
+                        Arrays.asList(child.listFiles(config.getFileFilter())), ignoreFields, collectionFields);
             }
         }
+    }
 
-        private static SchemaGenerator createSchemaGenerator(GenEs config) {
-            if (config.getSourceType() == SourceType.YAMLSCHEMA || config.getSourceType() == SourceType.YAML) {
-                return new SchemaGenerator(new YAMLFactory());
-            } else {
-                return new SchemaGenerator();
+    private static String childQualifiedName(String parentQualifiedName, String childSimpleName) {
+        String safeChildName = childSimpleName.replaceAll(NameHelper.ILLEGAL_CHARACTER_REGEX, "_");
+        return isEmpty(parentQualifiedName) ? safeChildName : parentQualifiedName + "." + safeChildName;
+    }
+
+    private static void removeOldOutput(File targetDirectory) {
+        if (targetDirectory.exists()) {
+            for (File f : targetDirectory.listFiles()) {
+                delete(f);
             }
         }
+    }
 
-        private static RuleFactory createRuleFactory(GenEs config) {
-            Class<? extends RuleFactory> clazz = config.getCustomRuleFactory();
-
-            if (!RuleFactory.class.isAssignableFrom(clazz)) {
-                throw new IllegalArgumentException("The class name given as a rule factory  (" + clazz.getName() + ") does not refer to a class that implements " + RuleFactory.class.getName());
-            }
-
-            try {
-                return clazz.getDeclaredConstructor().newInstance();
-            } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-                throw new RuntimeException(e);
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
+    private static void delete(File f) {
+        if (f.isDirectory()) {
+            for (File child : f.listFiles()) {
+                delete(child);
             }
         }
+        f.delete();
+    }
 
-        private static void generateRecursive(GenEs config, EsSchemaMapper mapper, JCodeModel codeModel, String packageName, List<File> schemaFiles, Set<String> ignoreFields, Set<String> collectionFields) throws IOException {
+    private static Annotator getAnnotator(GenEs config) {
+        AnnotatorFactory factory = new AnnotatorFactory(config);
+        return factory.getAnnotator(factory.getAnnotator(config.getAnnotationStyle()), factory.getAnnotator(config.getCustomAnnotator()));
+    }
 
-            schemaFiles.sort(config.getSourceSortOrder().getComparator());
+    public static String getNodeName(URL file, GenEs config) {
 
-            for (File child : schemaFiles) {
-                if (child.isFile()) {
+        // extract index name
+        String url = file.toString();
+        if (url.startsWith("http") && url.contains("/_mapping")) {
+            url = url.substring(0, url.indexOf("/_mapping"));
+        } else if (url.startsWith("http") && url.contains("/_search")) {
+            url = url.substring(0, url.indexOf("/_search"));
+        }
 
-                    String className =  getNodeName(child.toURI().toURL(), config);
+        return getNodeName(url, config);
+    }
 
-                    if(config.getAlias()!=null){
-                        className = config.getAlias();
-                    }
+    public static String getNodeName(String filePath, GenEs config) {
+        try {
+            String fileName = FilenameUtils.getName(URLDecoder.decode(filePath, StandardCharsets.UTF_8.toString()));
+            String[] extensions = config.getFileExtensions() == null ? new String[]{} : config.getFileExtensions();
 
-                    packageName  = defaultString(packageName);
-
-                    mapper.generate(codeModel,className, packageName,
-                            child.toURI().toURL(), ignoreFields, collectionFields, config.getUsername(), config.getPassword());
-
-
-                } else {
-                    generateRecursive(config, mapper, codeModel,
-                            childQualifiedName(packageName, child.getName()),
-                            Arrays.asList(child.listFiles(config.getFileFilter())), ignoreFields, collectionFields);
+            boolean extensionRemoved = false;
+            for (String s : extensions) {
+                String extension = s;
+                if (extension.length() == 0) {
+                    continue;
+                }
+                if (!extension.startsWith(".")) {
+                    extension = "." + extension;
+                }
+                if (fileName.endsWith(extension)) {
+                    fileName = removeEnd(fileName, extension);
+                    extensionRemoved = true;
+                    break;
                 }
             }
-        }
-
-        private static String childQualifiedName(String parentQualifiedName, String childSimpleName) {
-            String safeChildName = childSimpleName.replaceAll(NameHelper.ILLEGAL_CHARACTER_REGEX, "_");
-            return isEmpty(parentQualifiedName) ? safeChildName : parentQualifiedName + "." + safeChildName;
-        }
-
-        private static void removeOldOutput(File targetDirectory) {
-            if (targetDirectory.exists()) {
-                for (File f : targetDirectory.listFiles()) {
-                    delete(f);
-                }
+            if (!extensionRemoved) {
+                fileName = FilenameUtils.getBaseName(fileName);
             }
+            return fileName;
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalArgumentException(String.format("Unable to generate node name from URL: %s", filePath), e);
         }
-
-        @edu.umd.cs.findbugs.annotations.SuppressWarnings(value = "RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
-        private static void delete(File f) {
-            if (f.isDirectory()) {
-                for (File child : f.listFiles()) {
-                    delete(child);
-                }
-            }
-            f.delete();
-        }
-
-        private static Annotator getAnnotator(GenEs config) {
-            AnnotatorFactory factory = new AnnotatorFactory(config);
-            return factory.getAnnotator(factory.getAnnotator(config.getAnnotationStyle()), factory.getAnnotator(config.getCustomAnnotator()));
-        }
-
-        public static String getNodeName(URL file, GenEs config) {
-
-            // extract index name
-            String url = file.toString();
-            if(url.startsWith("http") && url.contains("/_mapping")){
-                url = url.substring(0,  url.indexOf("/_mapping"));
-            }else if (url.startsWith("http") && url.contains("/_search")){
-                url = url.substring(0, url.indexOf("/_search"));
-            }
-
-            return getNodeName(url, config);
-        }
-
-        public static String getNodeName(String filePath, GenEs config) {
-            try {
-                String fileName = FilenameUtils.getName(URLDecoder.decode(filePath, StandardCharsets.UTF_8.toString()));
-                String[] extensions = config.getFileExtensions() == null ? new String[] {} : config.getFileExtensions();
-
-                boolean extensionRemoved = false;
-                for (String s : extensions) {
-                    String extension = s;
-                    if (extension.length() == 0) {
-                        continue;
-                    }
-                    if (!extension.startsWith(".")) {
-                        extension = "." + extension;
-                    }
-                    if (fileName.endsWith(extension)) {
-                        fileName = removeEnd(fileName, extension);
-                        extensionRemoved = true;
-                        break;
-                    }
-                }
-                if (!extensionRemoved) {
-                    fileName = FilenameUtils.getBaseName(fileName);
-                }
-                return fileName;
-            } catch (UnsupportedEncodingException e) {
-                throw new IllegalArgumentException(String.format("Unable to generate node name from URL: %s", filePath), e);
-            }
-        }
-
+    }
 
 
 }

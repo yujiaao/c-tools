@@ -3,53 +3,17 @@ package com.bixuebihui.tablegen;
 import com.google.common.base.CaseFormat;
 import org.apache.commons.text.CaseUtils;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import static com.bixuebihui.db.KeywordsUtils.*;
 
 /**
  * @author xwx
  */
 public class NameUtils {
-	static char KEYWORD_APPEND_CHAR = '_';
 
-	static Set<String> PROJECT_FIELD_KEYWORD = new HashSet<>(Arrays.asList("length", "start", "draw", "count"));
-	static Set<String> JAVA_KEYWORD = new HashSet<>(Arrays.asList("abstract",
-			"assert",
-			"boolean",
-			"break",
-			"byte",
-			"case",
-			"catch",
-			"char",
-			"class",
-			"const",
-			"continue", "default", "do", "double", "else",
-			"enum", "extends", "final", "finally", "float",
-			"for", "goto", "if", "implements", "import",
-			"instanceof", "int", "interface", "long", "native",
-			"new", "package", "private", "protected", "public",
-			"return", "strictfp", "short", "static", "super",
-			"switch", "synchronized", "this", "throw", "throws",
-			"transient", "try", "void", "volatile", "while"));
 
 	public static boolean isYes(String str){
 		return "Y".equals(str)
 		|| "YES".equals(str);
-	}
-
-	public static String columnNameToFieldName(String columnName){
-		if (JAVA_KEYWORD.contains(columnName) || (PROJECT_FIELD_KEYWORD.contains(columnName))) {
-			columnName = KEYWORD_APPEND_CHAR + columnName;
-		}
-		return CaseUtils.toCamelCase(columnName,false,'_','-');
-	}
-
-	public static String tableNameToClassName(String tableName){
-		if (JAVA_KEYWORD.contains(tableName) || (PROJECT_FIELD_KEYWORD.contains(tableName))) {
-			tableName = KEYWORD_APPEND_CHAR + tableName;
-		}
-		return CaseUtils.toCamelCase(tableName,true,'_','-');
 	}
 
 
@@ -89,6 +53,10 @@ public class NameUtils {
 	public static String getConfigBaseDir(String propertiesFilename) {
 		int i = Math.max(propertiesFilename.lastIndexOf("/"),propertiesFilename.lastIndexOf("\\")) + 1;
 		return  propertiesFilename.substring(0, i);
+	}
+
+	public static String toSnakeCase(String p){
+		return CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_HYPHEN, CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_HYPHEN, p));
 	}
 
 }

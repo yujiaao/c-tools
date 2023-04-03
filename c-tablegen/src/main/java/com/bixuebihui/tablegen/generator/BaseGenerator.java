@@ -2,6 +2,7 @@ package com.bixuebihui.tablegen.generator;
 
 
 import com.bixuebihui.dbcon.DatabaseConfig;
+import com.bixuebihui.jdbc.BaseDao;
 import com.bixuebihui.jdbc.IDbHelper;
 import com.bixuebihui.tablegen.GenException;
 import com.bixuebihui.tablegen.NameUtils;
@@ -52,7 +53,15 @@ public abstract class BaseGenerator implements Generator {
 
     Properties esConfig;
 
-    protected boolean isView = false;
+    int dbType =0;
+
+    public int getDbType(){
+        return dbType;
+    }
+
+    protected boolean isView(){
+        return this instanceof IView;
+    }
 
     public BaseGenerator() {
         config = new ProjectConfig();
@@ -99,12 +108,33 @@ public abstract class BaseGenerator implements Generator {
         this.dbConfig = dbConfig;
         this.setInfo = setInfo;
         this.esConfig = prop;
+        this.dbType = BaseDao.detectDbType(dbConfig.getDburl());
+    }
+
+    protected List<ColumnData> getColsInfo(String tableName) {
+        List<ColumnData> cols = isView() ? this.setInfo.getViewCols(tableName) :
+                this.setInfo.getTableCols(tableName);
+
+        return cols;
+    }
+
+    protected List<String> getKeysInfo(List<ColumnData> cols, String tableName){
+        List<String> keys = getKeyData(tableName);
+        if(keys.isEmpty() && isView()){
+            keys = new ArrayList<>();
+            keys.add(cols.get(0).getName());
+        }
+        return keys;
     }
 
     String getClassSuffix(){return "";}
 
+    protected String getSourceDir(){
+        return config.getBaseSrcDir();
+    }
+
     protected String getBaseDir() {
-        String baseDir = config.getBaseSrcDir();
+        String baseDir = getSourceDir();
         //相对路径则相对于配置文件所在目录，避免windows 与linux 的差异
         if(!baseDir.startsWith("/") && !baseDir.contains(":")){
             baseDir = config.getBaseDir() + baseDir;
@@ -115,7 +145,7 @@ public abstract class BaseGenerator implements Generator {
 
     String getTargetFileName(String subDir, String tableName) {
         return
-                getBaseDir() + File.separator + subDir + File.separator + getPojoClassName(tableName)
+                getBaseDir() + (isView() ?  File.separator + VIEW_DIR : "")+ File.separator + subDir + File.separator + getPojoClassName(tableName)
                         + getClassSuffix() + ".java";
     }
 
@@ -202,7 +232,7 @@ public abstract class BaseGenerator implements Generator {
     }
 
     @Override
-    public String generate(String tableName) throws IOException {
+    public String generate(String tableName, int index) throws IOException {
         Handlebars handlebars = getHandlebars();
 
         Template template = handlebars.compile(getTemplateFileName());
@@ -226,6 +256,7 @@ public abstract class BaseGenerator implements Generator {
                     v.put((String) entry.getKey(), entry.getValue());
                 }
             }
+
         }else{
             if (setInfo.getTableInfos().get(tableName) != null) {
                 v.put("tableInfo", setInfo.getTableInfos().get(tableName));
@@ -245,7 +276,7 @@ public abstract class BaseGenerator implements Generator {
         v.put("setInfo", setInfo);
         v.put("config", config);
 
-        if(isView) {
+        if(isView()) {
             setViewContext(v, tableName);
         }
         return v;
@@ -258,6 +289,26 @@ public abstract class BaseGenerator implements Generator {
         map.put("viewModifier","."+ VIEW_DIR);
     }
 
+
+    public boolean isInsertAndUpdatableField(String tableName, String fieldName){
+        // int type = BaseDao.detectDbType(this.dbConfig.getDburl());
+        List<ColumnData> cols = setInfo.getTableCols(tableName);
+
+        return isInsertAndUpdatableField(cols, fieldName, config.isUseAutoincrement());
+    }
+    public static boolean isInsertAndUpdatableField(List<ColumnData> cols, String fieldName, boolean useAutoIncrement){
+        for(ColumnData col : cols){
+            if(col.getName().equals(fieldName) && isInsertAndUpdatableField(col, useAutoIncrement)){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static boolean isInsertAndUpdatableField(ColumnData col, boolean useAutoIncrement){
+        return  col.getType()!= 18 && !( col.isAutoIncrement() && useAutoIncrement);
+    }
+
     protected Handlebars getHandlebars() {
         TemplateLoader loader = new ClassPathTemplateLoader();
         loader.setPrefix(getTemplateDir());
@@ -268,9 +319,13 @@ public abstract class BaseGenerator implements Generator {
         handlebars.registerHelper("getPojoClassName", (tableName, options) -> this.getPojoClassName((String) tableName));
         handlebars.registerHelper("constantName", (name, options) -> NameUtils.columnNameToConstantName((String) name));
         handlebars.registerHelper("firstLow", (name, options) -> NameUtils.firstLow((String) name));
+
         handlebars.registerHelper("join", (items, options) -> StringUtils.join((Object[]) items, options.param(0)));
         handlebars.registerHelper("typeDefaultValue", (typeName, options) -> TableGen.defaultTypeValue().get(typeName));
         handlebars.registerHelper("unboxType", (type, options) -> TableGen.unboxType((String) type));
+
+//        handlebars.registerHelper("isInsertAndUpdatableField", (col, options) ->
+//                isInsertAndUpdatableField((ColumnData) col, config.isUseAutoincrement()));
 
         handlebars.registerHelpers(ConditionalHelpers.class);
 
@@ -303,17 +358,47 @@ public abstract class BaseGenerator implements Generator {
     }
 
     private List<ColumnData> getColumnData(String tableName) {
-        List<ColumnData> columnData = isView ? setInfo.getViewInfos().get(tableName).getFields() :
+        List<ColumnData> columnData = isView() ? setInfo.getViewInfos().get(tableName).getFields() :
                 setInfo.getTableInfos().get(tableName).getFields();
         return columnData;
     }
 
     protected List<String> getKeyData(String tableName) {
         List<String> keys =  setInfo.getTableKeys(tableName);
-        if(keys.isEmpty() && isView){
+        if(keys.isEmpty() ){
+            List<ColumnData> cols = getColumnData(tableName);
             keys = new ArrayList<>();
-            keys.add(getColumnData(tableName).get(0).getName());
+            if(isView()) {
+                keys.add(cols.get(0).getName());
+            }else{
+                for (ColumnData column: cols){
+                    if(column.isAutoIncrement()){
+                        keys.add(column.getName());
+                        break;
+                    }
+                }
+            }
         }
         return keys;
     }
+
+
+    public static String getFirstKeyName(List<String> keyData2) {
+        if (isNotEmpty(keyData2)) {
+            return keyData2.get(0);
+        }
+        return null;
+    }
+
+
+    public static boolean containsColName(List<ColumnData> cols, String colName) {
+        for (ColumnData col : cols) {
+            if (col.getName().equalsIgnoreCase(colName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
 }

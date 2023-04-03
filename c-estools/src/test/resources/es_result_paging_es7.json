@@ -1,0 +1,56 @@
+{
+  "took": 4,
+  "timed_out": false,
+  "_shards": {
+    "total": 10,
+    "successful": 10,
+    "skipped": 0,
+    "failed": 0
+  },
+  "hits": {
+    "total": {"value": 1, "relation": "eq"},
+    "max_score": 1.0,
+    "hits": [
+      {
+        "_index": "all-content-info",
+        "_type": "all-content-info-type",
+        "_id": "1998367890176217088",
+        "_score": 1.0,
+        "_source": {
+          "author_level": null,
+          "pv": 174439,
+          "author_img": "https://test.com/abc.jpg",
+          "year_ids": null,
+          "source": 2,
+          "community_status": null,
+          "qa_author_img": null,
+          "koubei_label_names": null,
+          "publish_time": "2022/07/07 19:00:00",
+          "price": null,
+          "bbs_name": null,
+          "brand_ids": [
+            331
+          ],
+          "media_id": null,
+          "verify_status": null,
+          "pc_url": "http://localhost/",
+          "height": null,
+          "like_count": 19,
+          "label_ids": null,
+          "qa_author_id": null,
+          "bbs_image": null,
+          "factory_ids": [
+            4
+          ],
+          "global_id": 1998367890176217088,
+          "expire_time": null,
+          "reply_count": 2095,
+          "content_level": null,
+          "city_ids": [],
+          "attribute_ids": null,
+          "m_url": "http://m.url.com/"
+        }
+      }
+    ]
+  }
+}

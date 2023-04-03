@@ -201,15 +201,20 @@ public class EsQueryBuilder {
             valueMap.put(key, value);
         });
 
-        source.put(SCRIPT_SOURCE, sb.toString());
+        if(!sb.isEmpty()) {
 
-        source.put(SCRIPT_PARAMS, valueMap);
+            source.put(SCRIPT_SOURCE, sb.toString());
 
-        body.put(SCRIPT, source);
+            source.put(SCRIPT_PARAMS, valueMap);
+
+            body.put(SCRIPT, source);
+        }
 
 
         return toJsonString(body);
     }
+
+
 
 
 }

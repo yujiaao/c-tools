@@ -60,21 +60,13 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
 
    @Override
    protected String getInsertSql(){
-       return "insert into "+this.getTableName()+" ( {{#each fields ~}}
-            {{#if (not (and config.isUseAutoincrement this.isAutoIncrement)) ~}} {{ name }} {{#unless @last}},{{/unless ~}} {{/if ~}}
-            {{/each ~}} ) values ( {{#each fields ~}}
-            {{#if (not (and config.isUseAutoincrement this.isAutoIncrement)) }} ? {{#unless @last}},{{/unless}} {{/if ~}}
-            {{/each ~}}
-            )";
+       return "{{{insertSql}}}";
    }
 
 
     @Override
-    protected String getUpdateSql(){ {{! TODO the logic below is buggy, update SQL must according with update OBJECTS }}
-        return "update "+this.getTableName()+" set {{#each fields ~}} {{#if (not (isKey tableName name)) ~}}
-            {{#eq config.versionColName name ~}} {{name}}= {{name}} +1  {{~#unless @last}},{{/unless~}} {{else}}  {{#if (not (and config.isUse_autoincrement this.isAutoIncrement)) ~}} {{ name }}=?{{~#unless @last}},{{/unless~}}{{/if ~}}
-            {{/eq ~}}{{/if}}
-    {{~/each}}{{{whereNoLike}}}";
+    protected String getUpdateSql(){
+        return "{{{updateSql}}}{{{whereNoLike}}}";
     }
 
     {{! writeObjs(tableName, keyData, colData); }}
@@ -99,7 +91,7 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
     {{#if tableInfo.isView}}
     {{!    tripple { for unescape equals sign '='  }}
         return "{{{tableInfo.comment}}}";
-    {{~ else ~}}
+    {{~ else }}
         return  "{{tableName}}";
     {{/if}}
     }
@@ -116,7 +108,7 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
     {
 {{#if tableInfo.isView}}
       return "("+this.getCoreSql()+") as {{tableName}}";
-{{~ else ~}}
+{{~ else }}
       return  "{{tableName}}";
 {{/if}}
     }
@@ -128,7 +120,11 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
     @Override
     public String getKeyName()
     {
+    {{#if hasKey}}
         return  F.{{constantName firstKeyName}};
+    {{else}}
+        return null;
+    {{/if ~}}
     }
 
 {{!    writeMapRow(tableName, colData); }}
@@ -137,7 +133,11 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
 {{! writeGetSetId(tableName, keyData, colData);}}
     @Override
     public {{firstKeyType}} getId({{pojoClassName}} info) {
+    {{#if hasKey}}
         return info.get{{firstUp firstKeyName}}();
+    {{else}}
+        return null;
+    {{/if ~}}
     }
 {{#unless tableInfo.isView}}
     @Override
@@ -178,6 +178,15 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
               }
           {{/eq}}
       {{/eq}}
+
+    {{#if hasLogicDelCol}}
+        public boolean logicDeleteByIds(List<{{firstKeyType}}>  keys)
+        {
+            return this.ar()
+                .in(F.{{constantName firstKeyName}}, keys)
+                .update(F.{{constantName config.delColName}}, 1) == keys.size();
+        }
+    {{/if}}
 
     {{#if hasVersionCol}}
     {{! writeUpdate(tableName, keyData, "updateByKeyAndVersion", false, withVersion, colData); }}

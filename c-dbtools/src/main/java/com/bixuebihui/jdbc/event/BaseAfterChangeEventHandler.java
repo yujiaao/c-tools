@@ -28,6 +28,13 @@ public abstract class BaseAfterChangeEventHandler<T,V> implements AfterChangeEve
                 infos==null? emptyList(): Arrays.stream(infos).map(info -> dbOperator.getId(info)).collect(Collectors.toList()),
                 changeType));
     }
+    void formEvent(ChangeType changeType, String tableName, List<T> infos){
+        sendEvent( new ChangeEvent<>(dbOperator.getDatabaseName(),
+                dbOperator.getTableName(tableName),
+                dbOperator.getKeyName(),
+                infos.stream().map(info -> dbOperator.getId(info)).collect(Collectors.toList()),
+                changeType));
+    }
     void formEvent(ChangeType changeType, String tableName, T info){
         sendEvent( new ChangeEvent<>(dbOperator.getDatabaseName(),
                 dbOperator.getTableName(tableName),
@@ -70,6 +77,10 @@ public abstract class BaseAfterChangeEventHandler<T,V> implements AfterChangeEve
         formEvent(changeType, null, infos);
     }
 
+    @Override
+    public void afterChange(List<T> infos, ChangeType changeType) {
+        formEvent(changeType, null, infos);
+    }
     @Override
     public void afterChange(String query, Object[] param, ChangeType changeType, int influenceRecordCount) {
         formEvent(changeType, null, influenceRecordCount, query, param);

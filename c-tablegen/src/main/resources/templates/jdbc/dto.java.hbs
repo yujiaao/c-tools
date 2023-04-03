@@ -1,0 +1,105 @@
+package {{config.packageName}}{{viewModifier}}.dto;
+
+{{> [header-comment.java]}}
+
+import java.sql.*;
+import java.io.Serializable;
+import jakarta.validation.constraints.*;
+import org.apache.commons.text.StringEscapeUtils;
+
+import javax.annotation.processing.Generated;
+
+
+{{#if config.useSwagger}}
+{{#eq config.swaggerVersion "2" }}
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiModelProperty;
+
+@Api(tags="{{tableInfo.comment}}")
+{{~else~}}
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(description ="{{tableInfo.comment}}")
+{{/eq}}
+
+@Generated("com.github.yujiaao:tablegen")
+{{/if~}}
+public class {{className}} {{interface}} {
+{{! field declaration }}
+{{#each fields as | field index | }}
+    {{#eq name config.delColName }}
+    //by pass {{name}} for security check
+    {{else}}
+    {{log field level="info" }}
+    /**
+     * {{columnDescription this tableName}}
+     */
+    {{{columnAnnotation this tableName}}}
+    protected {{javaType}}  {{firstLow name}};
+    {{/eq}}
+{{/each}}
+
+{{! setters & getters }}
+{{#each fields}}
+    {{#eq name 'RV'}}
+    {{else}}
+    {{#eq name config.delColName }}
+    {{else}}
+    /**
+     * {{columnDescription this tableName}}
+     */
+    public void set{{firstUp name}}({{javaType}} {{firstLow name}})
+    {
+      this.{{firstLow name}} = {{firstLow name}};
+    }
+    /**
+     * {{columnDescription this tableName}}
+     */
+    public {{javaType}} get{{firstUp name}}()
+    {
+      return this.{{firstLow name}};
+    }
+    {{/eq}}{{/eq}}
+{{/each}}
+
+    {{! handle the constructor }}
+    public {{className}}()
+    {
+{{#each fields~}}
+{{#eq name config.delColName ~}}
+{{else~}}
+    {{#eq "String" type ~}}
+        {{#not field.nullable~}}
+            {{firstLow name}}="*";
+        {{/not~}}
+    {{else}} {{#let 'code'}}{{{typeDefaultValue javaType}}}{{/let}}
+        {{#neq code null~}}
+            {{firstLow name}}={{{code}}};
+        {{/neq~}}
+    {{/eq~}}
+{{/eq~}}
+{{/each}}
+    }
+
+    public String toXml()
+    {
+        StringBuilder s= new StringBuilder();
+        String ln = System.getProperty("line.separator");
+        s.append("<{{tableName}} ");
+{{#each fields as | field index | }}
+{{#eq name config.delColName }}
+{{else~}}
+{{#eq "String" javaType~}}
+        s.append(" {{firstLow name}}=\"").append(StringEscapeUtils.escapeXml11(this.get{{firstUp  name }}())).append("\"");
+        {{~else~}}
+        s.append(" {{firstLow name}}=\"").append(this.get{{firstUp name}}()).append("\"");
+        {{/eq~}}
+{{/eq}}
+{{/each~}}
+
+        s.append(" />");
+        s.append(ln);
+        return s.toString();
+    }
+}
