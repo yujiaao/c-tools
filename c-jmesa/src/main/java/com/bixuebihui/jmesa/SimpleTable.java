@@ -24,7 +24,7 @@ public class SimpleTable extends BasicWebUI {
 
     public void exportExcel(HttpServletRequest request,
                             HttpServletResponse response) {
-        TableModel tableModel = new TableModel(id, request, response);
+        TableModel tableModel = new TableModel(this.id, request, response);
 
         this.exportRender(tableModel);
 

@@ -9,7 +9,7 @@
     <parent>
         <groupId>com.github.yujiaao</groupId>
         <artifactId>c-tools-parent</artifactId>
-        <version>1.12.1.11</version>
+        <version>1.12.1.12</version>
     </parent>
 
     <properties>
@@ -238,7 +238,7 @@
         <dependency>
             <groupId>com.github.yujiaao</groupId>
             <artifactId>c-estools</artifactId>
-            <version>1.12.1.11</version>
+            <version>1.12.1.12</version>
         </dependency>
 
 

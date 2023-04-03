@@ -6,7 +6,6 @@ import com.bixuebihui.datasource.DbcpDataSource;
 import com.bixuebihui.db.ActiveRecord;
 import com.bixuebihui.jdbc.aop.DbHelperAroundAdvice;
 import com.bixuebihui.jdbc.event.LogAfterChangeEventHandler;
-import com.mysql.cj.log.Log;
 import org.junit.jupiter.api.Test;
 import org.springframework.aop.framework.ProxyFactory;
 
@@ -298,7 +297,6 @@ public class BaseDaoTest  {
 
 		try{
 			db.executeNoQuery("drop table test",cn);}catch(Exception ex){
-				ex.printStackTrace();
 			}
 		try{
 			db.executeNoQuery("create table test(id int, name varchar(100))",
@@ -327,7 +325,7 @@ public class BaseDaoTest  {
 		int rowStart=0;
 		int rowEnd=100;
 
-		List<Long> res = mybd.select(select, whereClause, orderBy, null, rowStart, rowEnd, Long.class);
+		List<Integer> res = mybd.select(select, whereClause, orderBy, null, rowStart, rowEnd, Integer.class);
 		assertEquals(2, res.size());
 		System.out.println(res);
 	}
