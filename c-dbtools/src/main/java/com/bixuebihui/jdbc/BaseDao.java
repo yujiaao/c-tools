@@ -533,6 +533,12 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
             beforeChange(info, time);
         }
     }
+    private void beforeChange(List<T> infos) {
+        long time = System.currentTimeMillis();
+        for (T info : infos) {
+            beforeChange(info, time);
+        }
+    }
 
     /**
      * <p>Getter for the field <code>dbHelper</code>.</p>
@@ -763,6 +769,12 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     }
 
     private void afterUpdate(T[] infos, boolean res) {
+        if (res && afterChangeEventHandler != null) {
+            afterChangeEventHandler.afterChange(infos, ChangeType.UPDATE);
+        }
+    }
+
+    private void afterUpdate(List<T> infos, boolean res) {
         if (res && afterChangeEventHandler != null) {
             afterChangeEventHandler.afterChange(infos, ChangeType.UPDATE);
         }
@@ -1838,7 +1850,9 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     public boolean updateBatch(T[] infos) {
         return updateBatch(infos, null);
     }
-
+    public boolean updateBatch(List<T> infos) {
+        return updateBatch(infos, null);
+    }
     /**
      * Inserts the Agent object values into the database.
      *
@@ -1852,6 +1866,20 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         List<Object[]> a = Arrays.stream(infos).map(this::getInsertObjs).collect(Collectors.toList());
 
         boolean res = infos.length == getDbHelper().executeNoQueryBatch(getInsertSql(), a, cn);
+
+        afterUpdate(infos, res);
+        return res;
+    }
+
+    public boolean insertBatch(List<T> infos) {
+        return insertBatch(infos, null);
+    }
+    public boolean insertBatch(List<T> infos, Connection cn) {
+        beforeChange(infos);
+
+        List<Object[]> a = infos.stream().map(this::getInsertObjs).collect(Collectors.toList());
+
+        boolean res = infos.size() == getDbHelper().executeNoQueryBatch(getInsertSql(), a, cn);
 
         afterUpdate(infos, res);
         return res;
@@ -1885,6 +1913,17 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         afterUpdate(infos, res);
         return res;
     }
+    public boolean updateBatch(List<T> infos, Connection cn) {
+        beforeChange(infos);
+
+        List<Object[]> a = infos.stream().map(this::getUpdateObjs).collect(Collectors.toList());
+
+        boolean res = infos.size() == getDbHelper().executeNoQueryBatch(getUpdateSql(), a, cn);
+
+        afterUpdate(infos, res);
+        return res;
+    }
+
 
     public boolean updateBatch(T[] infos, Connection cn, String shardTableName) {
         beforeChange(infos);
