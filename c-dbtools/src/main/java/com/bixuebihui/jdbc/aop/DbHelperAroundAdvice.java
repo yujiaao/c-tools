@@ -20,7 +20,7 @@ import java.util.Map;
  */
 public class DbHelperAroundAdvice implements MethodInterceptor{
     private static final Logger LOG = LoggerFactory.getLogger(DbHelperAroundAdvice.class);
-    private static final int MAX_SHOW =20;
+    private static final int MAX_SHOW =100;
 
     private long before;
     private long after;
