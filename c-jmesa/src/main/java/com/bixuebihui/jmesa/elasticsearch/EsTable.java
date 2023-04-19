@@ -12,6 +12,7 @@ import org.jmesa.limit.RowSelect;
 import org.jmesa.limit.SortSet;
 
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -42,7 +43,7 @@ public class EsTable extends EasyTable {
         }
     }
 
-    private String getSearchResult(Limit limit) throws JsonProcessingException {
+    private String getSearchResult(Limit limit) throws JsonProcessingException, ParseException {
         ElasticSearchFilter filter = new ElasticSearchFilter();
         getFilter(filter, limit, id);
         RowSelect rowSelect = limit.getRowSelect();
