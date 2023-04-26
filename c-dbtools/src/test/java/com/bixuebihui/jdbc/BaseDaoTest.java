@@ -438,7 +438,7 @@ public class BaseDaoTest  {
 			ex.printStackTrace();
 		}
 		class DbObj{
-			long id;
+			Long id;
 			String name;
 			Timestamp dt;
 		}
@@ -512,11 +512,12 @@ public class BaseDaoTest  {
 		obj.addAdvice(new DbHelperAroundAdvice());
 		IDbHelper dbHelper = (IDbHelper) obj.getProxy();
 
+//		try{
+//			dbHelper.executeNoQuery("drop table test2");
+//		}catch(Exception ignored){
+//		}
 		try{
-			dbHelper.executeNoQuery("drop table test2");}catch(Exception ignored){
-		}
-		try{
-			dbHelper.executeNoQuery("create table test2(id int, name_Snake varchar(100), dt timestamp  default current_timestamp, primary key (id))");
+			dbHelper.executeNoQuery("create table test2(id bigint, name_Snake varchar(100), dt timestamp  default current_timestamp, primary key (id))");
 			dbHelper.executeNoQuery("insert into test2(id , name_Snake, dt) values(300,'MKD', null)");
 			dbHelper.executeNoQuery("insert into test2(id , name_Snake, dt) values(100,'abc', current_timestamp)");
 			dbHelper.executeNoQuery("insert into test2(id , name_Snake, dt) values(200,'efg', current_timestamp)");
@@ -570,28 +571,36 @@ public class BaseDaoTest  {
 		}
 
 		BD mybd = new BD(dbHelper);
+		//List<DbObj2> list = mybd.ar().asc("name_Snake").findAll(DbObj2.class);
+		List<DbObj2> list1 = mybd.ar().asc("name_Snake").findAll();
+
+		assertEquals("MKD", list1.get(0).nameSnake);
+		assertEquals("efg", list1.get(2).nameSnake);
+
 		List<DbObj2> list = mybd.ar().asc("name_Snake").findAll(DbObj2.class);
 
 		assertEquals("MKD", list.get(0).nameSnake);
 		assertEquals("efg", list.get(2).nameSnake);
+
+
 		System.out.println(mybd.getLast().dt);
 		System.out.println(mybd.getFirst().dt);
 
 	}
 
 	public static class DbObj2{
-		long id;
+		Long id;
 		String nameSnake;
 		Timestamp dt;
 
 		public DbObj2(){
 		}
 
-		public long getId() {
+		public Long getId() {
 			return id;
 		}
 
-		public void setId(long id) {
+		public void setId(Long id) {
 			this.id = id;
 		}
 

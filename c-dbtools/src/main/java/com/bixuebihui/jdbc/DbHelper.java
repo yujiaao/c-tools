@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -551,6 +551,10 @@ public class DbHelper implements IDbHelper {
      */
     public @NotNull
     List<Map<String, Object>> resultSet2Vector(ResultSet rs) {
+        return resultSet2Vector(rs, false);
+    }
+    protected @NotNull
+    List<Map<String, Object>> resultSet2Vector(ResultSet rs, boolean keepCase) {
         List<Map<String, Object>> result = new ArrayList<>();
         try {
             if (!rs.isBeforeFirst()) {
@@ -564,7 +568,7 @@ public class DbHelper implements IDbHelper {
                 Map<String, Object> mapColumn = new HashMap<>(32);
                 for (int i = 1; i <= iColumnNumber; i++) {
 
-                    String colTypeName = metaData.getColumnTypeName(i).toUpperCase();
+                    String colTypeName =  metaData.getColumnTypeName(i).toUpperCase();
 
                     String colName = metaData.getColumnName(i);
 

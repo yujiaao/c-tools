@@ -15,7 +15,7 @@ import com.bixuebihui.sequence.SequenceUtils;
 import com.bixuebihui.shardingjdbc.core.api.HintManager;
 import com.bixuebihui.sql.SQLUtil;
 import com.bixuebihui.util.DbUtils;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import org.apache.commons.beanutils.*;
 import org.apache.commons.beanutils.converters.*;
 import org.apache.commons.lang3.NotImplementedException;
@@ -1121,7 +1121,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         } else {
             for (Map<String, Object> h : v) {
                 try {
-                    if (keepCase) {
+                    if (keepCase && dbtype!= DERBY) { // Derby column name all BIG LETTERS
                         v1.add(convertCaseSensitive(h, clz.getConstructor().newInstance()));
                     } else {
                         v1.add(convert(h, clz.getConstructor().newInstance()));
