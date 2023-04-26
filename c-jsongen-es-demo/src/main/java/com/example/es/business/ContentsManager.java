@@ -11,8 +11,7 @@ package com.example.es.business;
  */
 
 
-import com.example.es.pojo.ChejiahaoContents;
-import com.example.es.dal.ChejiahaoContentsList;
+import com.example.es.dal.ContentsList;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
@@ -23,13 +22,13 @@ import java.util.Map;
 
 @Generated("com.github.yujiaao:tablegen")
 @Repository
-public class ChejiahaoContentsManager  extends ChejiahaoContentsList
+public class ContentsManager extends ContentsList
 {
 
     /**
      * the ds map must contain host/url, index_name, username and password for ElasticSearch/HTTP connection
      */
-    protected ChejiahaoContentsManager(@Qualifier("contentEs") Map<String,String> ds)
+    protected ContentsManager(@Qualifier("contentEs") Map<String,String> ds)
     {
        super(ds);
     }

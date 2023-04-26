@@ -5,7 +5,7 @@ import com.bixuebihui.elasticsearch.BaseEsOperator;
 import com.bixuebihui.elasticsearch.EsActiveRecordImpl;
 import com.bixuebihui.elasticsearch.EsRequest;
 
-import com.example.es.pojo.ChejiahaoContents;
+import com.example.es.pojo.Contents;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,18 +25,18 @@ public class MyTestController {
 
     String indexName =  "my-index-000001";
 
-    private EsActiveRecordImpl<ChejiahaoContents, Long> repository = new EsActiveRecordImpl<>(
+    private EsActiveRecordImpl<Contents, Long> repository = new EsActiveRecordImpl<>(
             new BaseEsOperator<>( new EsRequest("http://localhost:9200","","", indexName)) {
                 @Override
-                protected Class<ChejiahaoContents> getType() {
-                    return ChejiahaoContents.class;
+                protected Class<Contents> getType() {
+                    return Contents.class;
                 }
 
     });
 
     @GetMapping
-    public List<ChejiahaoContents> getAllConfig() {
-        return ((EsActiveRecordImpl<ChejiahaoContents, Long>)repository.limit(0,10))
+    public List<Contents> getAllConfig() {
+        return ((EsActiveRecordImpl<Contents, Long>)repository.limit(0,10))
                 .findAllDocMeta()
                 .stream()
                 .map(x -> {

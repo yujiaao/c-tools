@@ -109,7 +109,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "you_xuan_time"
 })
 @Generated("jsonschema2pojo")
-public class ChejiahaoContents {
+public class Contents {
 
     @JsonProperty("ad_city")
     private String adCity;
@@ -1231,7 +1231,7 @@ public class ChejiahaoContents {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(ChejiahaoContents.class.getName()).append('@').append(Integer.toHexString(System.identityHashCode(this))).append('[');
+        sb.append(Contents.class.getName()).append('@').append(Integer.toHexString(System.identityHashCode(this))).append('[');
         sb.append("adCity");
         sb.append('=');
         sb.append(((this.adCity == null)?"<null>":this.adCity));
@@ -1610,117 +1610,6 @@ public class ChejiahaoContents {
             sb.append(']');
         }
         return sb.toString();
-    }
-
-    @Override
-    public int hashCode() {
-        int result = 1;
-        result = ((result* 31)+((this.isManualContentLevel == null)? 0 :this.isManualContentLevel.hashCode()));
-        result = ((result* 31)+((this.infoId == null)? 0 :this.infoId.hashCode()));
-        result = ((result* 31)+((this.isLocalAudit == null)? 0 :this.isLocalAudit.hashCode()));
-        result = ((result* 31)+((this.pushDescription == null)? 0 :this.pushDescription.hashCode()));
-        result = ((result* 31)+((this.youXuanTime == null)? 0 :this.youXuanTime.hashCode()));
-        result = ((result* 31)+((this.ident == null)? 0 :this.ident.hashCode()));
-        result = ((result* 31)+((this.autohomeUa == null)? 0 :this.autohomeUa.hashCode()));
-        result = ((result* 31)+((this.adCity == null)? 0 :this.adCity.hashCode()));
-        result = ((result* 31)+((this.showBigImg == null)? 0 :this.showBigImg.hashCode()));
-        result = ((result* 31)+((this.hotSpotTag == null)? 0 :this.hotSpotTag.hashCode()));
-        result = ((result* 31)+((this.isTiming == null)? 0 :this.isTiming.hashCode()));
-        result = ((result* 31)+((this.recommendToMoji == null)? 0 :this.recommendToMoji.hashCode()));
-        result = ((result* 31)+((this.cancelRecommendTime == null)? 0 :this.cancelRecommendTime.hashCode()));
-        result = ((result* 31)+((this.waitAuditTime3 == null)? 0 :this.waitAuditTime3 .hashCode()));
-        result = ((result* 31)+((this.isFirst == null)? 0 :this.isFirst.hashCode()));
-        result = ((result* 31)+((this.operateRemarks == null)? 0 :this.operateRemarks.hashCode()));
-        result = ((result* 31)+((this.clientType == null)? 0 :this.clientType.hashCode()));
-        result = ((result* 31)+((this.infoType == null)? 0 :this.infoType.hashCode()));
-        result = ((result* 31)+((this.waiTuiTime == null)? 0 :this.waiTuiTime.hashCode()));
-        result = ((result* 31)+((this.plusOrMinusTwo == null)? 0 :this.plusOrMinusTwo.hashCode()));
-        result = ((result* 31)+((this.recommendToXny == null)? 0 :this.recommendToXny.hashCode()));
-        result = ((result* 31)+((this.contentType == null)? 0 :this.contentType.hashCode()));
-        result = ((result* 31)+((this.newKeyWords == null)? 0 :this.newKeyWords.hashCode()));
-        result = ((result* 31)+((this.isFastestFirst == null)? 0 :this.isFastestFirst.hashCode()));
-        result = ((result* 31)+((this.localRecommendTime == null)? 0 :this.localRecommendTime.hashCode()));
-        result = ((result* 31)+((this.allowDelete == null)? 0 :this.allowDelete.hashCode()));
-        result = ((result* 31)+((this.image == null)? 0 :this.image.hashCode()));
-        result = ((result* 31)+((this.infoLevel == null)? 0 :this.infoLevel.hashCode()));
-        result = ((result* 31)+((this.publishTime == null)? 0 :this.publishTime.hashCode()));
-        result = ((result* 31)+((this.ip == null)? 0 :this.ip.hashCode()));
-        result = ((result* 31)+((this.publishTiming == null)? 0 :this.publishTiming.hashCode()));
-        result = ((result* 31)+((this.isProductImage == null)? 0 :this.isProductImage.hashCode()));
-        result = ((result* 31)+((this.title2 == null)? 0 :this.title2 .hashCode()));
-        result = ((result* 31)+((this.title3 == null)? 0 :this.title3 .hashCode()));
-        result = ((result* 31)+((this.hasReview == null)? 0 :this.hasReview.hashCode()));
-        result = ((result* 31)+((this.isManualOrAi == null)? 0 :this.isManualOrAi.hashCode()));
-        result = ((result* 31)+((this.isConvertText == null)? 0 :this.isConvertText.hashCode()));
-        result = ((result* 31)+((this.localRecommendType == null)? 0 :this.localRecommendType.hashCode()));
-        result = ((result* 31)+((this.imgCross == null)? 0 :this.imgCross.hashCode()));
-        result = ((result* 31)+((this.isTop == null)? 0 :this.isTop.hashCode()));
-        result = ((result* 31)+((this.isWaiTui == null)? 0 :this.isWaiTui.hashCode()));
-        result = ((result* 31)+((this.isArtificial == null)? 0 :this.isArtificial.hashCode()));
-        result = ((result* 31)+((this.isAutoWrite == null)? 0 :this.isAutoWrite.hashCode()));
-        result = ((result* 31)+((this.recycledAlongWithAuthor == null)? 0 :this.recycledAlongWithAuthor.hashCode()));
-        result = ((result* 31)+((this.statusNoteId == null)? 0 :this.statusNoteId.hashCode()));
-        result = ((result* 31)+((this.conceptKeyWords == null)? 0 :this.conceptKeyWords.hashCode()));
-        result = ((result* 31)+((this.localAuditTime == null)? 0 :this.localAuditTime.hashCode()));
-        result = ((result* 31)+((this.additionalProperties == null)? 0 :this.additionalProperties.hashCode()));
-        result = ((result* 31)+((this.lastUpdateTime == null)? 0 :this.lastUpdateTime.hashCode()));
-        result = ((result* 31)+((this.status == null)? 0 :this.status.hashCode()));
-        result = ((result* 31)+((this.statusNote == null)? 0 :this.statusNote.hashCode()));
-        result = ((result* 31)+((this.isPush == null)? 0 :this.isPush.hashCode()));
-        result = ((result* 31)+((this.hailiangStatus == null)? 0 :this.hailiangStatus.hashCode()));
-        result = ((result* 31)+((this.auditNotes == null)? 0 :this.auditNotes.hashCode()));
-        result = ((result* 31)+((this.description == null)? 0 :this.description.hashCode()));
-        result = ((result* 31)+((this.description2 == null)? 0 :this.description2 .hashCode()));
-        result = ((result* 31)+((this.title == null)? 0 :this.title.hashCode()));
-        result = ((result* 31)+((this.pushTitle == null)? 0 :this.pushTitle.hashCode()));
-        result = ((result* 31)+((this.innovate == null)? 0 :this.innovate.hashCode()));
-        result = ((result* 31)+((this.recycled == null)? 0 :this.recycled.hashCode()));
-        result = ((result* 31)+((this.autoWriteAricleId == null)? 0 :this.autoWriteAricleId.hashCode()));
-        result = ((result* 31)+((this.isDeduction == null)? 0 :this.isDeduction.hashCode()));
-        result = ((result* 31)+((this.isBusiness == null)? 0 :this.isBusiness.hashCode()));
-        result = ((result* 31)+((this.isImportant == null)? 0 :this.isImportant.hashCode()));
-        result = ((result* 31)+((this.isExpose == null)? 0 :this.isExpose.hashCode()));
-        result = ((result* 31)+((this.isYouXuan == null)? 0 :this.isYouXuan.hashCode()));
-        result = ((result* 31)+((this.expireDate == null)? 0 :this.expireDate.hashCode()));
-        result = ((result* 31)+((this.auditStage == null)? 0 :this.auditStage.hashCode()));
-        result = ((result* 31)+((this.isLowCar == null)? 0 :this.isLowCar.hashCode()));
-        result = ((result* 31)+((this.keyWords == null)? 0 :this.keyWords.hashCode()));
-        result = ((result* 31)+((this.image3 == null)? 0 :this.image3 .hashCode()));
-        result = ((result* 31)+((this.hailiangReason == null)? 0 :this.hailiangReason.hashCode()));
-        result = ((result* 31)+((this.auditor == null)? 0 :this.auditor.hashCode()));
-        result = ((result* 31)+((this.imgVertical == null)? 0 :this.imgVertical.hashCode()));
-        result = ((result* 31)+((this.recommendToSeries == null)? 0 :this.recommendToSeries.hashCode()));
-        result = ((result* 31)+((this.configure == null)? 0 :this.configure.hashCode()));
-        result = ((result* 31)+((this.authorId == null)? 0 :this.authorId.hashCode()));
-        result = ((result* 31)+((this.image1 == null)? 0 :this.image1 .hashCode()));
-        result = ((result* 31)+((this.isPublish == null)? 0 :this.isPublish.hashCode()));
-        result = ((result* 31)+((this.auditRecommend == null)? 0 :this.auditRecommend.hashCode()));
-        result = ((result* 31)+((this.image2 == null)? 0 :this.image2 .hashCode()));
-        result = ((result* 31)+((this.newKeyWordIds == null)? 0 :this.newKeyWordIds.hashCode()));
-        result = ((result* 31)+((this.waitAuditTime == null)? 0 :this.waitAuditTime.hashCode()));
-        result = ((result* 31)+((this.plusOrMinusOne == null)? 0 :this.plusOrMinusOne.hashCode()));
-        result = ((result* 31)+((this.waitAuditTime2 == null)? 0 :this.waitAuditTime2 .hashCode()));
-        result = ((result* 31)+((this.isOriginal == null)? 0 :this.isOriginal.hashCode()));
-        result = ((result* 31)+((this.versionSource == null)? 0 :this.versionSource.hashCode()));
-        result = ((result* 31)+((this.createTime == null)? 0 :this.createTime.hashCode()));
-        result = ((result* 31)+((this.sortType == null)? 0 :this.sortType.hashCode()));
-        result = ((result* 31)+((this.showImageList == null)? 0 :this.showImageList.hashCode()));
-        result = ((result* 31)+((this.ipProvince == null)? 0 :this.ipProvince.hashCode()));
-        result = ((result* 31)+((this.showLevel == null)? 0 :this.showLevel.hashCode()));
-        result = ((result* 31)+((this.isDel == null)? 0 :this.isDel.hashCode()));
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object other) {
-        if (other == this) {
-            return true;
-        }
-        if ((other instanceof ChejiahaoContents) == false) {
-            return false;
-        }
-        ChejiahaoContents rhs = ((ChejiahaoContents) other);
-        return ((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((this.isManualContentLevel == rhs.isManualContentLevel)||((this.isManualContentLevel!= null)&&this.isManualContentLevel.equals(rhs.isManualContentLevel)))&&((this.infoId == rhs.infoId)||((this.infoId!= null)&&this.infoId.equals(rhs.infoId))))&&((this.isLocalAudit == rhs.isLocalAudit)||((this.isLocalAudit!= null)&&this.isLocalAudit.equals(rhs.isLocalAudit))))&&((this.pushDescription == rhs.pushDescription)||((this.pushDescription!= null)&&this.pushDescription.equals(rhs.pushDescription))))&&((this.youXuanTime == rhs.youXuanTime)||((this.youXuanTime!= null)&&this.youXuanTime.equals(rhs.youXuanTime))))&&((this.ident == rhs.ident)||((this.ident!= null)&&this.ident.equals(rhs.ident))))&&((this.autohomeUa == rhs.autohomeUa)||((this.autohomeUa!= null)&&this.autohomeUa.equals(rhs.autohomeUa))))&&((this.adCity == rhs.adCity)||((this.adCity!= null)&&this.adCity.equals(rhs.adCity))))&&((this.showBigImg == rhs.showBigImg)||((this.showBigImg!= null)&&this.showBigImg.equals(rhs.showBigImg))))&&((this.hotSpotTag == rhs.hotSpotTag)||((this.hotSpotTag!= null)&&this.hotSpotTag.equals(rhs.hotSpotTag))))&&((this.isTiming == rhs.isTiming)||((this.isTiming!= null)&&this.isTiming.equals(rhs.isTiming))))&&((this.recommendToMoji == rhs.recommendToMoji)||((this.recommendToMoji!= null)&&this.recommendToMoji.equals(rhs.recommendToMoji))))&&((this.cancelRecommendTime == rhs.cancelRecommendTime)||((this.cancelRecommendTime!= null)&&this.cancelRecommendTime.equals(rhs.cancelRecommendTime))))&&((this.waitAuditTime3 == rhs.waitAuditTime3)||((this.waitAuditTime3 != null)&&this.waitAuditTime3 .equals(rhs.waitAuditTime3))))&&((this.isFirst == rhs.isFirst)||((this.isFirst!= null)&&this.isFirst.equals(rhs.isFirst))))&&((this.operateRemarks == rhs.operateRemarks)||((this.operateRemarks!= null)&&this.operateRemarks.equals(rhs.operateRemarks))))&&((this.clientType == rhs.clientType)||((this.clientType!= null)&&this.clientType.equals(rhs.clientType))))&&((this.infoType == rhs.infoType)||((this.infoType!= null)&&this.infoType.equals(rhs.infoType))))&&((this.waiTuiTime == rhs.waiTuiTime)||((this.waiTuiTime!= null)&&this.waiTuiTime.equals(rhs.waiTuiTime))))&&((this.plusOrMinusTwo == rhs.plusOrMinusTwo)||((this.plusOrMinusTwo!= null)&&this.plusOrMinusTwo.equals(rhs.plusOrMinusTwo))))&&((this.recommendToXny == rhs.recommendToXny)||((this.recommendToXny!= null)&&this.recommendToXny.equals(rhs.recommendToXny))))&&((this.contentType == rhs.contentType)||((this.contentType!= null)&&this.contentType.equals(rhs.contentType))))&&((this.newKeyWords == rhs.newKeyWords)||((this.newKeyWords!= null)&&this.newKeyWords.equals(rhs.newKeyWords))))&&((this.isFastestFirst == rhs.isFastestFirst)||((this.isFastestFirst!= null)&&this.isFastestFirst.equals(rhs.isFastestFirst))))&&((this.localRecommendTime == rhs.localRecommendTime)||((this.localRecommendTime!= null)&&this.localRecommendTime.equals(rhs.localRecommendTime))))&&((this.allowDelete == rhs.allowDelete)||((this.allowDelete!= null)&&this.allowDelete.equals(rhs.allowDelete))))&&((this.image == rhs.image)||((this.image!= null)&&this.image.equals(rhs.image))))&&((this.infoLevel == rhs.infoLevel)||((this.infoLevel!= null)&&this.infoLevel.equals(rhs.infoLevel))))&&((this.publishTime == rhs.publishTime)||((this.publishTime!= null)&&this.publishTime.equals(rhs.publishTime))))&&((this.ip == rhs.ip)||((this.ip!= null)&&this.ip.equals(rhs.ip))))&&((this.publishTiming == rhs.publishTiming)||((this.publishTiming!= null)&&this.publishTiming.equals(rhs.publishTiming))))&&((this.isProductImage == rhs.isProductImage)||((this.isProductImage!= null)&&this.isProductImage.equals(rhs.isProductImage))))&&((this.title2 == rhs.title2)||((this.title2 != null)&&this.title2 .equals(rhs.title2))))&&((this.title3 == rhs.title3)||((this.title3 != null)&&this.title3 .equals(rhs.title3))))&&((this.hasReview == rhs.hasReview)||((this.hasReview!= null)&&this.hasReview.equals(rhs.hasReview))))&&((this.isManualOrAi == rhs.isManualOrAi)||((this.isManualOrAi!= null)&&this.isManualOrAi.equals(rhs.isManualOrAi))))&&((this.isConvertText == rhs.isConvertText)||((this.isConvertText!= null)&&this.isConvertText.equals(rhs.isConvertText))))&&((this.localRecommendType == rhs.localRecommendType)||((this.localRecommendType!= null)&&this.localRecommendType.equals(rhs.localRecommendType))))&&((this.imgCross == rhs.imgCross)||((this.imgCross!= null)&&this.imgCross.equals(rhs.imgCross))))&&((this.isTop == rhs.isTop)||((this.isTop!= null)&&this.isTop.equals(rhs.isTop))))&&((this.isWaiTui == rhs.isWaiTui)||((this.isWaiTui!= null)&&this.isWaiTui.equals(rhs.isWaiTui))))&&((this.isArtificial == rhs.isArtificial)||((this.isArtificial!= null)&&this.isArtificial.equals(rhs.isArtificial))))&&((this.isAutoWrite == rhs.isAutoWrite)||((this.isAutoWrite!= null)&&this.isAutoWrite.equals(rhs.isAutoWrite))))&&((this.recycledAlongWithAuthor == rhs.recycledAlongWithAuthor)||((this.recycledAlongWithAuthor!= null)&&this.recycledAlongWithAuthor.equals(rhs.recycledAlongWithAuthor))))&&((this.statusNoteId == rhs.statusNoteId)||((this.statusNoteId!= null)&&this.statusNoteId.equals(rhs.statusNoteId))))&&((this.conceptKeyWords == rhs.conceptKeyWords)||((this.conceptKeyWords!= null)&&this.conceptKeyWords.equals(rhs.conceptKeyWords))))&&((this.localAuditTime == rhs.localAuditTime)||((this.localAuditTime!= null)&&this.localAuditTime.equals(rhs.localAuditTime))))&&((this.additionalProperties == rhs.additionalProperties)||((this.additionalProperties!= null)&&this.additionalProperties.equals(rhs.additionalProperties))))&&((this.lastUpdateTime == rhs.lastUpdateTime)||((this.lastUpdateTime!= null)&&this.lastUpdateTime.equals(rhs.lastUpdateTime))))&&((this.status == rhs.status)||((this.status!= null)&&this.status.equals(rhs.status))))&&((this.statusNote == rhs.statusNote)||((this.statusNote!= null)&&this.statusNote.equals(rhs.statusNote))))&&((this.isPush == rhs.isPush)||((this.isPush!= null)&&this.isPush.equals(rhs.isPush))))&&((this.hailiangStatus == rhs.hailiangStatus)||((this.hailiangStatus!= null)&&this.hailiangStatus.equals(rhs.hailiangStatus))))&&((this.auditNotes == rhs.auditNotes)||((this.auditNotes!= null)&&this.auditNotes.equals(rhs.auditNotes))))&&((this.description == rhs.description)||((this.description!= null)&&this.description.equals(rhs.description))))&&((this.description2 == rhs.description2)||((this.description2 != null)&&this.description2 .equals(rhs.description2))))&&((this.title == rhs.title)||((this.title!= null)&&this.title.equals(rhs.title))))&&((this.pushTitle == rhs.pushTitle)||((this.pushTitle!= null)&&this.pushTitle.equals(rhs.pushTitle))))&&((this.innovate == rhs.innovate)||((this.innovate!= null)&&this.innovate.equals(rhs.innovate))))&&((this.recycled == rhs.recycled)||((this.recycled!= null)&&this.recycled.equals(rhs.recycled))))&&((this.autoWriteAricleId == rhs.autoWriteAricleId)||((this.autoWriteAricleId!= null)&&this.autoWriteAricleId.equals(rhs.autoWriteAricleId))))&&((this.isDeduction == rhs.isDeduction)||((this.isDeduction!= null)&&this.isDeduction.equals(rhs.isDeduction))))&&((this.isBusiness == rhs.isBusiness)||((this.isBusiness!= null)&&this.isBusiness.equals(rhs.isBusiness))))&&((this.isImportant == rhs.isImportant)||((this.isImportant!= null)&&this.isImportant.equals(rhs.isImportant))))&&((this.isExpose == rhs.isExpose)||((this.isExpose!= null)&&this.isExpose.equals(rhs.isExpose))))&&((this.isYouXuan == rhs.isYouXuan)||((this.isYouXuan!= null)&&this.isYouXuan.equals(rhs.isYouXuan))))&&((this.expireDate == rhs.expireDate)||((this.expireDate!= null)&&this.expireDate.equals(rhs.expireDate))))&&((this.auditStage == rhs.auditStage)||((this.auditStage!= null)&&this.auditStage.equals(rhs.auditStage))))&&((this.isLowCar == rhs.isLowCar)||((this.isLowCar!= null)&&this.isLowCar.equals(rhs.isLowCar))))&&((this.keyWords == rhs.keyWords)||((this.keyWords!= null)&&this.keyWords.equals(rhs.keyWords))))&&((this.image3 == rhs.image3)||((this.image3 != null)&&this.image3 .equals(rhs.image3))))&&((this.hailiangReason == rhs.hailiangReason)||((this.hailiangReason!= null)&&this.hailiangReason.equals(rhs.hailiangReason))))&&((this.auditor == rhs.auditor)||((this.auditor!= null)&&this.auditor.equals(rhs.auditor))))&&((this.imgVertical == rhs.imgVertical)||((this.imgVertical!= null)&&this.imgVertical.equals(rhs.imgVertical))))&&((this.recommendToSeries == rhs.recommendToSeries)||((this.recommendToSeries!= null)&&this.recommendToSeries.equals(rhs.recommendToSeries))))&&((this.configure == rhs.configure)||((this.configure!= null)&&this.configure.equals(rhs.configure))))&&((this.authorId == rhs.authorId)||((this.authorId!= null)&&this.authorId.equals(rhs.authorId))))&&((this.image1 == rhs.image1)||((this.image1 != null)&&this.image1 .equals(rhs.image1))))&&((this.isPublish == rhs.isPublish)||((this.isPublish!= null)&&this.isPublish.equals(rhs.isPublish))))&&((this.auditRecommend == rhs.auditRecommend)||((this.auditRecommend!= null)&&this.auditRecommend.equals(rhs.auditRecommend))))&&((this.image2 == rhs.image2)||((this.image2 != null)&&this.image2 .equals(rhs.image2))))&&((this.newKeyWordIds == rhs.newKeyWordIds)||((this.newKeyWordIds!= null)&&this.newKeyWordIds.equals(rhs.newKeyWordIds))))&&((this.waitAuditTime == rhs.waitAuditTime)||((this.waitAuditTime!= null)&&this.waitAuditTime.equals(rhs.waitAuditTime))))&&((this.plusOrMinusOne == rhs.plusOrMinusOne)||((this.plusOrMinusOne!= null)&&this.plusOrMinusOne.equals(rhs.plusOrMinusOne))))&&((this.waitAuditTime2 == rhs.waitAuditTime2)||((this.waitAuditTime2 != null)&&this.waitAuditTime2 .equals(rhs.waitAuditTime2))))&&((this.isOriginal == rhs.isOriginal)||((this.isOriginal!= null)&&this.isOriginal.equals(rhs.isOriginal))))&&((this.versionSource == rhs.versionSource)||((this.versionSource!= null)&&this.versionSource.equals(rhs.versionSource))))&&((this.createTime == rhs.createTime)||((this.createTime!= null)&&this.createTime.equals(rhs.createTime))))&&((this.sortType == rhs.sortType)||((this.sortType!= null)&&this.sortType.equals(rhs.sortType))))&&((this.showImageList == rhs.showImageList)||((this.showImageList!= null)&&this.showImageList.equals(rhs.showImageList))))&&((this.ipProvince == rhs.ipProvince)||((this.ipProvince!= null)&&this.ipProvince.equals(rhs.ipProvince))))&&((this.showLevel == rhs.showLevel)||((this.showLevel!= null)&&this.showLevel.equals(rhs.showLevel))))&&((this.isDel == rhs.isDel)||((this.isDel!= null)&&this.isDel.equals(rhs.isDel))));
     }
 
 }

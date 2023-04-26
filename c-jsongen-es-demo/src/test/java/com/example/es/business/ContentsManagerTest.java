@@ -1,7 +1,7 @@
 package com.example.es.business;
 
 import com.example.es.EsConfig;
-import com.example.es.pojo.ChejiahaoContents;
+import com.example.es.pojo.Contents;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,17 +14,17 @@ import java.util.List;
 
 
 @SpringBootTest(classes = {
-        ChejiahaoContentsManager.class,
+        ContentsManager.class,
         EsConfig.class
 })
 @EnableAutoConfiguration
-class ChejiahaoContentsManagerTest {
+class ContentsManagerTest {
 
     @Autowired
     EsConfig config;
 
     @Autowired
-    ChejiahaoContentsManager chejiahaoContentsManager;
+    ContentsManager chejiahaoContentsManager;
 
     @BeforeEach
     void setUp() {
@@ -35,7 +35,7 @@ class ChejiahaoContentsManagerTest {
 
     @Test
     void testGetId() {
-        ChejiahaoContents info = new ChejiahaoContents();
+        Contents info = new Contents();
         info.setInfoId(1L);
 
         Long result = chejiahaoContentsManager.getId(info);
@@ -44,7 +44,7 @@ class ChejiahaoContentsManagerTest {
 
     @Test
     void testGetFieldAlias() {
-        String result = ChejiahaoContentsManager.getFieldAlias("field");
+        String result = ContentsManager.getFieldAlias("field");
         Assertions.assertEquals("field", result);
     }
 
@@ -62,16 +62,16 @@ class ChejiahaoContentsManagerTest {
 
     @Test
     void testInsert() {
-        boolean result = chejiahaoContentsManager.save(new ChejiahaoContents());
+        boolean result = chejiahaoContentsManager.save(new Contents());
         Assertions.assertEquals(true, result);
     }
 
     @Test
     void testInsertBatch() {
-        ChejiahaoContents info = new ChejiahaoContents();
+        Contents info = new Contents();
         info.setInfoId(3L);
         info.setTitle("测试标题1---！");
-        ChejiahaoContents info1 = new ChejiahaoContents();
+        Contents info1 = new Contents();
         info1.setInfoId(4L);
         info1.setTitle("测试标题2---！");
         boolean result = chejiahaoContentsManager.saveBatch(List.of(info, info1));
@@ -80,7 +80,7 @@ class ChejiahaoContentsManagerTest {
 
     @Test
     void testGetIDs() {
-        ChejiahaoContents info = new ChejiahaoContents();
+        Contents info = new Contents();
         info.setInfoId(1L);
         List<Long> result = chejiahaoContentsManager.getIDs(List.of(info));
         Assertions.assertEquals(List.of(Long.valueOf(1)), result);

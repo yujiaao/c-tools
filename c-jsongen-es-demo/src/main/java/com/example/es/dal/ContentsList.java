@@ -25,11 +25,11 @@ import javax.annotation.processing.Generated;
 
 
 @Generated("com.github.yujiaao:tablegen")
-public class ChejiahaoContentsList extends BaseDao<ChejiahaoContents, Long> {
-    
+public class ContentsList extends BaseDao<Contents, Long> {
+
 
     @Override
-    public Long getId(ChejiahaoContents info) {
+    public Long getId(Contents info) {
         return info.getInfoId();
     }
 
@@ -43,7 +43,7 @@ public class ChejiahaoContentsList extends BaseDao<ChejiahaoContents, Long> {
     }
 
 
-    protected ChejiahaoContentsList(Map<String, String> ds)
+    protected ContentsList(Map<String, String> ds)
     {
         super(new BaseEsOperator<>( new EsRequest(ds.get("host"),
             ds.get("username"),
@@ -52,13 +52,13 @@ public class ChejiahaoContentsList extends BaseDao<ChejiahaoContents, Long> {
             ds.get("version")
             )) {
                 @Override
-                protected Class<ChejiahaoContents> getType() {
-                    return ChejiahaoContents.class;
+                protected Class<Contents> getType() {
+                    return Contents.class;
                 }
         });
         this.indexName =  "chejiahao-contents";
     }
-    
+
     @SuppressWarnings("AlibabaClassNamingShouldBeCamel")
     public static final class F{
         public static final String AD_CITY = "ad_city";
@@ -153,7 +153,7 @@ public class ChejiahaoContentsList extends BaseDao<ChejiahaoContents, Long> {
         public static final String WAIT_AUDIT_TIME2 = "wait_audit_time2";
         public static final String WAIT_AUDIT_TIME3 = "wait_audit_time3";
         public static final String YOU_XUAN_TIME = "you_xuan_time";
-        
+
         public static String[] getAllFields() {
             return new String[] { AD_CITY, ALLOW_DELETE, AUDIT_NOTES, AUDIT_RECOMMEND, AUDIT_STAGE, AUDITOR, AUTHOR_ID, AUTO_WRITE_ARICLE_ID, AUTOHOME_UA, CANCEL_RECOMMEND_TIME, CLIENT_TYPE, CONCEPT_KEY_WORDS, CONFIGURE, CONTENT_TYPE, CREATE_TIME, DESCRIPTION, DESCRIPTION2, EXPIRE_DATE, HAILIANG_REASON, HAILIANG_STATUS, HAS_REVIEW, HOT_SPOT_TAG, IDENT, IMAGE, IMAGE1, IMAGE2, IMAGE3, IMG_CROSS, IMG_VERTICAL, INFO_ID, INFO_LEVEL, INFO_TYPE, INNOVATE, IP, IP_PROVINCE, IS_ARTIFICIAL, IS_AUTO_WRITE, IS_BUSINESS, IS_CONVERT_TEXT, IS_DEDUCTION, IS_DEL, IS_EXPOSE, IS_FASTEST_FIRST, IS_FIRST, IS_IMPORTANT, IS_LOCAL_AUDIT, IS_LOW_CAR, IS_MANUAL_CONTENT_LEVEL, IS_MANUAL_OR_AI, IS_ORIGINAL, IS_PRODUCT_IMAGE, IS_PUBLISH, IS_PUSH, IS_TIMING, IS_TOP, IS_WAI_TUI, IS_YOU_XUAN, KEY_WORDS, LAST_UPDATE_TIME, LOCAL_AUDIT_TIME, LOCAL_RECOMMEND_TIME, LOCAL_RECOMMEND_TYPE, NEW_KEY_WORD_IDS, NEW_KEY_WORDS, OPERATE_REMARKS, PLUS_OR_MINUS_ONE, PLUS_OR_MINUS_TWO, PUBLISH_TIME, PUBLISH_TIMING, PUSH_DESCRIPTION, PUSH_TITLE, RECOMMEND_TO_MOJI, RECOMMEND_TO_SERIES, RECOMMEND_TO_XNY, RECYCLED, RECYCLED_ALONG_WITH_AUTHOR, SHOW_BIG_IMG, SHOW_IMAGE_LIST, SHOW_LEVEL, SORT_TYPE, STATUS, STATUS_NOTE, STATUS_NOTE_ID, TITLE, TITLE2, TITLE3, VERSION_SOURCE, WAI_TUI_TIME, WAIT_AUDIT_TIME, WAIT_AUDIT_TIME2, WAIT_AUDIT_TIME3, YOU_XUAN_TIME };
         }
