@@ -3,7 +3,7 @@ package com.bixuebihui.util;
 import junit.framework.TestCase;
 import org.springframework.mock.web.MockHttpServletResponse;
 
-import jakarta.servlet.http.Cookie;
+import javax.servlet.http.Cookie;
 
 public class CookieUtilTest extends TestCase {
 

@@ -1,5 +1,6 @@
 package com.bixuebihui.jdbc;
 
+import com.alibaba.druid.DbType;
 import com.bixuebihui.DbException;
 import com.bixuebihui.SqlUtils;
 import com.bixuebihui.db.*;
@@ -14,7 +15,7 @@ import com.bixuebihui.sequence.SequenceUtils;
 import com.bixuebihui.shardingjdbc.core.api.HintManager;
 import com.bixuebihui.sql.SQLUtil;
 import com.bixuebihui.util.DbUtils;
-import jakarta.validation.constraints.NotNull;
+import javax.validation.constraints.NotNull;
 import org.apache.commons.beanutils.*;
 import org.apache.commons.beanutils.converters.*;
 import org.apache.commons.lang3.NotImplementedException;
@@ -28,12 +29,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import javax.sql.DataSource;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.SQLIntegrityConstraintViolationException;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.Date;
 import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -1762,6 +1761,9 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     }
 
     String shardNameStrategy(String sql, String shardTableName) {
+        if(StringUtils.isEmpty(shardTableName)){
+            return sql;
+        }
         return sql.replaceAll(getTableName(), shardTableName);
     }
 
@@ -1798,7 +1800,15 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         }
     }
 
+    public boolean upsert(T info) {
+        return insert(info, "", getUpsertClause());
+    }
+
     public boolean insert(T info, String tableShardName) {
+        return insert(info, tableShardName,"");
+    }
+
+    public boolean insert(T info, String tableShardName, String upsertClause) {
         beforeChange(info);
         boolean res = 1 == getDbHelper().executeNoQuery(shardNameStrategy(getInsertSql(), tableShardName), getInsertObjs(info));
 
@@ -1871,31 +1881,46 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         return res;
     }
 
+    private String getUpsertClause(){
+        if(StringUtils.isEmpty(this.getKeyName())){
+            throw new DbException("Table "+getTableName()+" has not a primary key for upsert!");
+        }
+
+        if(this.dbtype == MYSQL ){
+           return " ON DUPLICATE KEY UPDATE";
+        }else if (this.dbtype == POSTGRESQL){
+           return "ON CONFLICT (id) DO UPDATE;";
+        }else{
+           throw new DbException(new SQLFeatureNotSupportedException("Current database not supported upsert natively:"+this.dbtype));
+        }
+    }
+    public boolean upsertBatch(List<T> infos) {
+        String suffix = getUpsertClause();
+        return insertBatch(infos, null, "", suffix);
+    }
+
     public boolean insertBatch(List<T> infos) {
         return insertBatch(infos, null);
     }
     public boolean insertBatch(List<T> infos, Connection cn) {
         beforeChange(infos);
-
         List<Object[]> a = infos.stream().map(this::getInsertObjs).collect(Collectors.toList());
-
         boolean res = infos.size() == getDbHelper().executeNoQueryBatch(getInsertSql(), a, cn);
-
         afterUpdate(infos, res);
         return res;
     }
 
-    public boolean insertBatch(T[] infos, Connection cn, String shardTableName) {
+    public boolean insertBatch(List<T> infos, Connection cn, String shardTableName) {
+        return insertBatch(infos,cn, shardTableName, "");
+    }
+
+    private boolean insertBatch(List<T> infos, Connection cn, String shardTableName, String upsertClause) {
         beforeChange(infos);
-
-        List<Object[]> a = Arrays.stream(infos).map(this::getInsertObjs).collect(Collectors.toList());
-
-        boolean res = infos.length == getDbHelper().executeNoQueryBatch(shardNameStrategy(getInsertSql(), shardTableName), a, cn);
-
+        List<Object[]> a = infos.stream().map(this::getInsertObjs).collect(Collectors.toList());
+        boolean res = infos.size() == getDbHelper().executeNoQueryBatch(shardNameStrategy(getInsertSql(), shardTableName)+upsertClause, a, cn);
         afterUpdate(infos, res);
         return res;
     }
-
     /**
      * <p>updateBatch.</p>
      *

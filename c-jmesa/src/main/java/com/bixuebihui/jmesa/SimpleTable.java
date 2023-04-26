@@ -3,8 +3,8 @@ package com.bixuebihui.jmesa;
 import org.jmesa.model.PageItems;
 import org.jmesa.model.TableModel;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * @author xwx
@@ -24,7 +24,7 @@ public class SimpleTable extends BasicWebUI {
 
     public void exportExcel(HttpServletRequest request,
                             HttpServletResponse response) {
-        TableModel tableModel = new TableModel(id, request, response);
+        TableModel tableModel = new TableModel(this.id, request, response);
 
         this.exportRender(tableModel);
 

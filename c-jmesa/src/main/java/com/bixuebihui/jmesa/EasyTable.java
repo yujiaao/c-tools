@@ -7,8 +7,6 @@ import com.bixuebihui.jmesa.entry.Query;
 import com.bixuebihui.jmesa.mock.SimpleHttpServletRequest;
 import com.bixuebihui.jmesa.mock.SimpleHttpServletResponse;
 import com.bixuebihui.util.DbUtils;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.foundationdb.sql.StandardException;
 import com.foundationdb.sql.parser.*;
 import net.sf.jsqlparser.JSQLParserException;
@@ -23,7 +21,6 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 

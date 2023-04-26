@@ -201,12 +201,9 @@ public class EsQueryBuilder {
             valueMap.put(key, value);
         });
 
-        if(!sb.isEmpty()) {
-
+        if(sb.length()!=0) {
             source.put(SCRIPT_SOURCE, sb.toString());
-
             source.put(SCRIPT_PARAMS, valueMap);
-
             body.put(SCRIPT, source);
         }
 
