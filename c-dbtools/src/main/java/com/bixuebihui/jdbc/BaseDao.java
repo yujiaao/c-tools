@@ -1121,7 +1121,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         } else {
             for (Map<String, Object> h : v) {
                 try {
-                    if (keepCase && dbtype!= DERBY) { // Derby column name all BIG LETTERS
+                    if (keepCase && getDbType()!= DERBY) { // Derby column name all BIG LETTERS
                         v1.add(convertCaseSensitive(h, clz.getConstructor().newInstance()));
                     } else {
                         v1.add(convert(h, clz.getConstructor().newInstance()));
@@ -1703,14 +1703,28 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     }
 
     public boolean insertKeepKey(T info){
-        List<Object> insertObjects = new ArrayList<>(List.of(this.getInsertObjs(info)));
-        insertObjects.add(this.getId(info));
-        String insertSql = this.getInsertSql().replace(") values (",","+this.getKeyName()+") values (?,");
+        return insertKeepKey(info,"");
+    }
+    public boolean insertKeepKey(T info, String suffix) {
+        List<Object> insertObjects = getInsertObjectsWithId(info);
+        String insertSql = getInsertSqlWithId();
         beforeChange(info);
-        boolean res = 1 == this.getDbHelper().executeNoQuery(insertSql, insertObjects.toArray());
+        boolean res = 1 == this.getDbHelper().executeNoQuery(insertSql+suffix, insertObjects.toArray());
         afterInsert(info, res);
         return res;
     }
+
+    private String getInsertSqlWithId() {
+        String insertSql = this.getInsertSql().replace(") values (",","+this.getKeyName()+") values (?,");
+        return insertSql;
+    }
+
+    private List<Object> getInsertObjectsWithId(T info) {
+        List<Object> insertObjects = new ArrayList<>(List.of(this.getInsertObjs(info)));
+        insertObjects.add(this.getId(info));
+        return insertObjects;
+    }
+
     /**
      * Updates the current object values into the database.
      *
@@ -1801,7 +1815,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     }
 
     public boolean upsert(T info) {
-        return insert(info, "", getUpsertClause());
+        return insertKeepKey(info, getUpsertClause());
     }
 
     public boolean insert(T info, String tableShardName) {
@@ -1881,22 +1895,27 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         return res;
     }
 
-    private String getUpsertClause(){
+    protected String getUpsertClause(){
         if(StringUtils.isEmpty(this.getKeyName())){
             throw new DbException("Table "+getTableName()+" has not a primary key for upsert!");
         }
 
-        if(this.dbtype == MYSQL ){
-           return " ON DUPLICATE KEY UPDATE";
-        }else if (this.dbtype == POSTGRESQL){
-           return "ON CONFLICT (id) DO UPDATE;";
+        if(this.getDbType() == MYSQL ){
+            String subquery = this.getUpdateSql();
+            subquery = subquery.substring(subquery.indexOf(" set ")+4, subquery.indexOf(" where "));
+           return " ON DUPLICATE KEY UPDATE "
+                   +subquery.replaceAll("(\\w+)=(\\?)","$1=values($1)");
+        }else if (this.getDbType() == POSTGRESQL){
+           return "ON CONFLICT ("+this.getKeyName()+") DO UPDATE;";
         }else{
            throw new DbException(new SQLFeatureNotSupportedException("Current database not supported upsert natively:"+this.dbtype));
         }
     }
     public boolean upsertBatch(List<T> infos) {
-        String suffix = getUpsertClause();
-        return insertBatch(infos, null, "", suffix);
+        return insertBatchKeepKey(infos, null,  "",true);
+    }
+    protected boolean upsertBatch(List<T> infos, String shardTableName) {
+        return insertBatchKeepKey(infos, null,  shardTableName,true);
     }
 
     public boolean insertBatch(List<T> infos) {
@@ -1910,14 +1929,22 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         return res;
     }
 
-    public boolean insertBatch(List<T> infos, Connection cn, String shardTableName) {
-        return insertBatch(infos,cn, shardTableName, "");
+
+    public boolean insertBatchKeepKey(List<T> infos, Connection cn, String shardTableName, boolean useUpsert) {
+        String insertSql = getInsertSqlWithId();
+        beforeChange(infos);
+        boolean res = infos.size() == this.getDbHelper().executeNoQueryBatch(shardNameStrategy(insertSql, shardTableName)
+                + (useUpsert?getUpsertClause():""),
+                infos.stream().map(info ->
+                getInsertObjectsWithId(info).toArray()).collect(Collectors.toList()));
+        afterUpdate(infos, res);
+        return res;
     }
 
-    private boolean insertBatch(List<T> infos, Connection cn, String shardTableName, String upsertClause) {
+    private boolean insertBatch(List<T> infos, Connection cn, String shardTableName) {
         beforeChange(infos);
         List<Object[]> a = infos.stream().map(this::getInsertObjs).collect(Collectors.toList());
-        boolean res = infos.size() == getDbHelper().executeNoQueryBatch(shardNameStrategy(getInsertSql(), shardTableName)+upsertClause, a, cn);
+        boolean res = infos.size() == getDbHelper().executeNoQueryBatch(shardNameStrategy(getInsertSql(), shardTableName), a, cn);
         afterUpdate(infos, res);
         return res;
     }

@@ -16,6 +16,7 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Set;
 
+import static com.bixuebihui.db.Dialect.MYSQL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -620,4 +621,115 @@ public class BaseDaoTest  {
 			this.dt = dt;
 		}
 	}
+
+
+
+	@Test
+	public void testUpsert() {
+		DbcpDataSource ds = new DbcpDataSource();
+		ds.setDatabaseConfig(DataSourceTest.getConfigMaster());
+		IDbHelper db = new DbHelper();
+
+		ProxyFactory obj = new ProxyFactory(db);
+		obj.addAdvice(new DbHelperAroundAdvice());
+
+		db.setDataSource(ds);
+		String tableName ="test_upsert";
+		try{
+			db.executeNoQuery("DROP TABLE if exists "+tableName);
+		}catch(DbException ex){
+			ex.printStackTrace();
+		}
+		db.executeNoQuery("create table "+tableName+"(id int primary key auto_increment, name varchar(100))");
+		db.executeNoQuery("insert into "+tableName+"(id, name) values(1,'abc')");
+		db.executeNoQuery("insert into "+tableName+"(id, name) values(2,'abc')");
+		db.executeNoQuery("insert into "+tableName+"(id, name) values(3,'abc')");
+
+		class T {Long id;	String name;}
+		class BD extends BaseDao<T, Long> {
+			BD(IDbHelper db) {
+				super(db);
+			}
+
+			@Override
+			public String getKeyName() {
+				return "id";
+			}
+
+			@Override
+			public T mapRow(ResultSet rs, int index, Set<String> set) throws SQLException {
+				T t = new T();
+				if (containsIgnoreCase("id", set)) {
+					t.id = rs.getLong("id");
+				}
+				if (containsIgnoreCase("name", set)){
+					t.name = rs.getString("name");
+				}
+				return t;
+			}
+
+			@Override
+			public boolean insertDummy() {
+				return false;
+			}
+
+			@Override
+			public Long getId(T info) {
+				return info.id;
+			}
+
+			@Override
+			public void setId(T info, Long id) {
+				info.id = id;
+			}
+
+			@Override
+			public String getTableName() {
+				return tableName;
+			}
+
+			@Override
+			protected String getUpdateSql(){
+				return "update "+this.getTableName()+" set name=? where id=?";
+			}
+
+			@Override
+			protected Object[] getUpdateObjs(T  info){
+				return new Object[]{ info.name,info.id };
+			}
+
+			@Override
+			protected Object[] getInsertObjs(T info){return new Object[]{ info.name}; }
+
+			@Override
+			protected String getInsertSql(){
+				return "insert into  "+this.getTableName()+" ( name ) values ( ? )";
+			}
+
+		}
+
+		BD bd = new BD((IDbHelper)obj.getProxy());
+		assertEquals(MYSQL, bd.getDbType());
+		bd.setAfterChangeEventHandler(new LogAfterChangeEventHandler<>(bd));
+
+		List<T> objs = bd.selectAll();
+		for(T o: objs){
+			o.name = o.name+o.id;
+		}
+
+		T t = new T();
+		t.id=4L;
+		t.name="def"+t.id;
+		objs.add(t);
+
+		bd.upsertBatch(objs);
+
+		List<T> news = bd.selectAll();
+		assertEquals(4, news.size());
+		for(T n:news){
+			assertTrue(n.name.endsWith(String.valueOf(n.id)));
+		}
+
+	}
+
 }
