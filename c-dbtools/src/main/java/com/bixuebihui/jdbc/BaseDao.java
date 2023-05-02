@@ -1706,16 +1706,28 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         return insertKeepKey(info,"");
     }
     public boolean insertKeepKey(T info, String suffix) {
-        List<Object> insertObjects = getInsertObjectsWithId(info);
-        String insertSql = getInsertSqlWithId();
+
+        boolean[]  has = new boolean[1];
+        String insertSql = getInsertSqlWithId(has);
+        List<Object> insertObjects = has[0] ? List.of(getInsertObjs(info)) : getInsertObjectsWithId(info);
         beforeChange(info);
         boolean res = 1 == this.getDbHelper().executeNoQuery(insertSql+suffix, insertObjects.toArray());
         afterInsert(info, res);
         return res;
     }
 
-    private String getInsertSqlWithId() {
-        String insertSql = this.getInsertSql().replace(") values (",","+this.getKeyName()+") values (?,");
+    private String getInsertSqlWithId(boolean[] outHas) {
+
+        String insertSql = this.getInsertSql();
+        if(insertSql.contains("("+getKeyName()+",")
+                || insertSql.contains(","+getKeyName()+",")
+                || insertSql.contains(","+getKeyName()+")")) {
+            return insertSql;
+        }else{
+            insertSql.replace(") values (", ","
+                    + this.getKeyName() + ") values (?,");
+            outHas[0]  =true;
+        }
         return insertSql;
     }
 
@@ -1931,12 +1943,13 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
 
 
     public boolean insertBatchKeepKey(List<T> infos, Connection cn, String shardTableName, boolean useUpsert) {
-        String insertSql = getInsertSqlWithId();
+        boolean[] res1 = new boolean[1];
+        String insertSql = getInsertSqlWithId(res1);
         beforeChange(infos);
         boolean res = infos.size() == this.getDbHelper().executeNoQueryBatch(shardNameStrategy(insertSql, shardTableName)
                 + (useUpsert?getUpsertClause():""),
-                infos.stream().map(info ->
-                getInsertObjectsWithId(info).toArray()).collect(Collectors.toList()));
+                infos.stream().map(info -> res1[0]?
+                getInsertObjectsWithId(info).toArray(): getInsertObjs(info)).collect(Collectors.toList()));
         afterUpdate(infos, res);
         return res;
     }

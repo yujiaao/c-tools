@@ -306,6 +306,7 @@ public abstract class BaseGenerator implements Generator {
     }
 
     public static boolean isInsertAndUpdatableField(ColumnData col, boolean useAutoIncrement){
+        // - 18 sql server row-version
         return  col.getType()!= 18 && !( col.isAutoIncrement() && useAutoIncrement);
     }
 
