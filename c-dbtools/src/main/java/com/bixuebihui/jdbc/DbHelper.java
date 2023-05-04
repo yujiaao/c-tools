@@ -1,7 +1,9 @@
 package com.bixuebihui.jdbc;
 
 import com.bixuebihui.DbException;
+import com.bixuebihui.jdbc.aop.DbHelperAroundAdvice;
 import com.bixuebihui.util.DbUtils;
+import jakarta.validation.constraints.NotNull;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -9,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
-import jakarta.validation.constraints.NotNull;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
@@ -109,13 +110,13 @@ public class DbHelper implements IDbHelper {
     }
 
     private static void dumpSql(SQLException ex, String sql, Object[] params) {
-        if(LOG.isWarnEnabled()) {
+        if (LOG.isWarnEnabled()) {
             StringBuilder sb = new StringBuilder();
             sb.append(ex.getMessage()).append("\n");
             sb.append("===" + sql).append("\n");
             if (params != null) {
                 for (Object o : params) {
-                    sb.append("===" + o).append("\n");
+                    sb.append("===" + DbHelperAroundAdvice.toString(o)).append("\n");
                 }
             }
             LOG.warn(sb.toString());
@@ -123,12 +124,12 @@ public class DbHelper implements IDbHelper {
     }
 
     private static void dumpSql(Exception ex, String[] sql) {
-        if(LOG.isWarnEnabled()) {
+        if (LOG.isWarnEnabled()) {
             StringBuilder sb = new StringBuilder();
             sb.append(ex.getMessage()).append("\n");
-        for (String s : sql) {
-            sb.append("==" + s).append("\n");
-        }
+            for (String s : sql) {
+                sb.append("==" + s).append("\n");
+            }
             LOG.warn(sb.toString());
         }
     }
@@ -553,6 +554,7 @@ public class DbHelper implements IDbHelper {
     List<Map<String, Object>> resultSet2Vector(ResultSet rs) {
         return resultSet2Vector(rs, false);
     }
+
     protected @NotNull
     List<Map<String, Object>> resultSet2Vector(ResultSet rs, boolean keepCase) {
         List<Map<String, Object>> result = new ArrayList<>();
@@ -568,7 +570,7 @@ public class DbHelper implements IDbHelper {
                 Map<String, Object> mapColumn = new HashMap<>(32);
                 for (int i = 1; i <= iColumnNumber; i++) {
 
-                    String colTypeName =  metaData.getColumnTypeName(i).toUpperCase();
+                    String colTypeName = metaData.getColumnTypeName(i).toUpperCase();
 
                     String colName = metaData.getColumnName(i);
 
@@ -826,7 +828,7 @@ public class DbHelper implements IDbHelper {
                     p.setTimestamp(i, (Timestamp) pa);
                 } else if (pa instanceof java.sql.Date) {
                     p.setDate(i, (Date) pa);
-                }else if (pa instanceof java.sql.Time) {
+                } else if (pa instanceof java.sql.Time) {
                     p.setTime(i, (Time) pa);
                 } else if (pa instanceof java.util.Date) {
                     p.setTimestamp(i, new java.sql.Timestamp(((java.util.Date) pa).getTime()));
@@ -1029,14 +1031,14 @@ public class DbHelper implements IDbHelper {
     @Override
     public @NotNull <T> List<T> executeQuery(String sql, Object[] params,
                                              @NotNull RowMapper<T> handle) {
-        return executeQuery( sql, params,
+        return executeQuery(sql, params,
                 new RowMapperResultReader<>(handle));
     }
 
     @Override
     public @NotNull <T> List<T> executeQuery(String sql, Object[] params,
                                              @NotNull RowMapper<T> handle, Set<String> returnFields) {
-        return executeQuery( sql, params,
+        return executeQuery(sql, params,
                 new RowMapperResultReader<>(handle), returnFields);
     }
 }

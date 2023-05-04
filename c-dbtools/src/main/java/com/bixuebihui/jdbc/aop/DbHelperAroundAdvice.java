@@ -74,7 +74,7 @@ public class DbHelperAroundAdvice implements MethodInterceptor{
         before = System.currentTimeMillis();
     }
 
-    static String toString(Object o){
+    public static String toString(Object o){
         if(o instanceof byte[]){
             return toString((byte[])o);
         }
@@ -88,7 +88,7 @@ public class DbHelperAroundAdvice implements MethodInterceptor{
         return new String(hexDigits);
     }
 
-    static String toString(byte[] byteArray) {
+    public static String toString(byte[] byteArray) {
         StringBuffer hexStringBuffer = new StringBuffer();
         for (int i = 0; i < byteArray.length && i<MAX_SHOW; i++) {
             hexStringBuffer.append(byteToHex(byteArray[i]));
