@@ -4,11 +4,10 @@
 Configuration:
   status: ALL
   monitorInterval: 30
-
   Properties: # 定义全局变量
     Property:
       - name: log.level.console
-        value: debug
+        value: INFO
       - name: log.path
         # “sys:”表示：如果VM参数中没指定这个变量值，则使用本文件中定义的缺省全局变量值
         # ${sys:catalina.home} 指向tomcat安装目录
@@ -28,12 +27,12 @@ Configuration:
   # 只有定义了 Loggers，并引入 Appenders，Appenders才会生效
   Loggers:
     Root:
-      level: debug
+      level: DEBUG
       AppenderRef:
         - ref: CONSOLE
 
     Logger: # 为com.***包配置特殊的Log级别，方便调试，trace会打印SQL具体结果，debug只打印SQL语句
       - name: com.bixuebihui
-        level: debug
+        level: DEBUG
         AppenderRef:
           - ref: CONSOLE

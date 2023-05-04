@@ -19,8 +19,10 @@ import jakarta.validation.constraints.NotNull;
 import org.apache.commons.beanutils.*;
 import org.apache.commons.beanutils.converters.*;
 import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.CaseUtils;
+import org.apache.commons.text.matcher.StringMatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.ProxyFactory;
@@ -35,10 +37,13 @@ import java.util.*;
 import java.util.Date;
 import java.util.Map.Entry;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.bixuebihui.db.Dialect.*;
 import static java.util.Collections.emptyList;
+import static java.util.regex.Pattern.CASE_INSENSITIVE;
+import static java.util.regex.Pattern.MULTILINE;
 
 /**
  * <p>Abstract BaseDao class.</p>
@@ -1711,17 +1716,20 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         String insertSql = getInsertSqlWithId(has);
         List<Object> insertObjects = has[0] ? List.of(getInsertObjs(info)) : getInsertObjectsWithId(info);
         beforeChange(info);
-        boolean res = 1 == this.getDbHelper().executeNoQuery(insertSql+suffix, insertObjects.toArray());
+        boolean res = 1 <= this.getDbHelper().executeNoQuery(insertSql+suffix, insertObjects.toArray());
         afterInsert(info, res);
         return res;
+    }
+
+    static  boolean matchField(String sql, String field){
+        Pattern m = Pattern.compile("[(,]\\s*" + field + "\\s*[),]", CASE_INSENSITIVE|MULTILINE);
+        return m.matcher(sql).find();
     }
 
     private String getInsertSqlWithId(boolean[] outHas) {
 
         String insertSql = this.getInsertSql();
-        if(insertSql.contains("("+getKeyName()+",")
-                || insertSql.contains(","+getKeyName()+",")
-                || insertSql.contains(","+getKeyName()+")")) {
+        if(matchField(insertSql, getKeyName())) {
             return insertSql;
         }else{
             insertSql.replace(") values (", ","
@@ -1732,7 +1740,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     }
 
     private List<Object> getInsertObjectsWithId(T info) {
-        List<Object> insertObjects = new ArrayList<>(List.of(this.getInsertObjs(info)));
+        List<Object> insertObjects = new ArrayList<>(Arrays.asList(this.getInsertObjs(info)));
         insertObjects.add(this.getId(info));
         return insertObjects;
     }
@@ -1946,7 +1954,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         boolean[] res1 = new boolean[1];
         String insertSql = getInsertSqlWithId(res1);
         beforeChange(infos);
-        boolean res = infos.size() == this.getDbHelper().executeNoQueryBatch(shardNameStrategy(insertSql, shardTableName)
+        boolean res = infos.size() <= this.getDbHelper().executeNoQueryBatch(shardNameStrategy(insertSql, shardTableName)
                 + (useUpsert?getUpsertClause():""),
                 infos.stream().map(info -> res1[0]?
                 getInsertObjectsWithId(info).toArray(): getInsertObjs(info)).collect(Collectors.toList()));

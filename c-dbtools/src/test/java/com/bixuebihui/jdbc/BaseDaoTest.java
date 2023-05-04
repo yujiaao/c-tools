@@ -7,6 +7,8 @@ import com.bixuebihui.db.ActiveRecord;
 import com.bixuebihui.jdbc.aop.DbHelperAroundAdvice;
 import com.bixuebihui.jdbc.event.LogAfterChangeEventHandler;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.aop.framework.ProxyFactory;
 
 import java.sql.Connection;
@@ -15,6 +17,8 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.bixuebihui.db.Dialect.MYSQL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -41,7 +45,6 @@ public class BaseDaoTest  {
 
 		System.out.println(bd.getCount(bd.getTableName(), ""));
 	}
-
 
 
 	private void derbySql() {
@@ -74,7 +77,6 @@ public class BaseDaoTest  {
 		assertTrue(res);
 
 	}
-
 
 
 	@Test
@@ -148,10 +150,10 @@ public class BaseDaoTest  {
 		}catch(DbException ex){
 			ex.printStackTrace();
 		}
-			db.executeNoQuery("create table test(id int, name varchar(100))");
-			db.executeNoQuery("insert into test(id, name) values(1,'abc')");
-			db.executeNoQuery("insert into test(id, name) values(2,'abc')");
-			db.executeNoQuery("insert into test(id, name) values(3,'abc')");
+		db.executeNoQuery("create table test(id int, name varchar(100))");
+		db.executeNoQuery("insert into test(id, name) values(1,'abc')");
+		db.executeNoQuery("insert into test(id, name) values(2,'abc')");
+		db.executeNoQuery("insert into test(id, name) values(3,'abc')");
 
 
 		class T {
@@ -298,7 +300,7 @@ public class BaseDaoTest  {
 
 		try{
 			db.executeNoQuery("drop table test",cn);}catch(Exception ex){
-			}
+		}
 		try{
 			db.executeNoQuery("create table test(id int, name varchar(100))",
 					cn);
@@ -343,7 +345,7 @@ public class BaseDaoTest  {
 		try{
 			db.executeNoQuery("drop table test",cn);}catch(DbException ex){
 			//	ex.printStackTrace();
-			}
+		}
 		try{
 			db.executeNoQuery("create table test(id int, name varchar(100), dt timestamp  default current_timestamp)",
 					cn);
@@ -389,9 +391,11 @@ public class BaseDaoTest  {
 		public String getName() {
 			return name;
 		}
+
 		public long getId() {
 			return id;
 		}
+
 		public void setId(long id) {
 			this.id = id;
 		}
@@ -399,9 +403,11 @@ public class BaseDaoTest  {
 		public void setName(String name) {
 			this.name = name;
 		}
+
 		public Timestamp getDt() {
 			return dt;
 		}
+
 		public void setDt(Timestamp dt) {
 			this.dt = dt;
 		}
@@ -409,6 +415,7 @@ public class BaseDaoTest  {
 		public String toString(){
 			return "id="+id+", name="+ name +", dt="+dt;
 		}
+
 		private long id;
 		private Timestamp dt;
 	}
@@ -424,8 +431,8 @@ public class BaseDaoTest  {
 
 		try{
 			db.executeNoQuery("drop table test1",cn);}catch(DbException ex){
-				//ex.printStackTrace();
-			}
+			//ex.printStackTrace();
+		}
 		try{
 			db.executeNoQuery("create table test1(id int, name varchar(100), dt timestamp  default current_timestamp, primary key (id))",
 					cn);
@@ -448,35 +455,41 @@ public class BaseDaoTest  {
 			public BD(IDbHelper db) {
 				super(db);
 			}
+
 			@Override
 			public DbObj mapRow(ResultSet rs, int index, Set<String> set) throws SQLException {
 				DbObj o= new DbObj();
-				 o.id = rs.getLong(1);
-				 o.name = rs.getString(2);
-				 o.dt = rs.getTimestamp(3);
-				 return o;
+				o.id = rs.getLong(1);
+				o.name = rs.getString(2);
+				o.dt = rs.getTimestamp(3);
+				return o;
 			}
 
 			@Override
 			public String getKeyName() {
 				return "ID";
 			}
+
 			@Override
 			public String getTableName() {
 				return "test1";
 			}
+
 			@Override
 			public boolean insertDummy() {
 				return false;
 			}
+
 			@Override
 			public Long getId(DbObj info) {
 				return info.id;
 			}
+
 			@Override
 			public void setId(DbObj info, Long id) {
 				info.id = id;
 			}
+
 			@Override
 			public Long getNextKey() {
 				return null;
@@ -530,6 +543,7 @@ public class BaseDaoTest  {
 			public BD(IDbHelper db) {
 				super(db);
 			}
+
 			@Override
 			public DbObj2 mapRow(ResultSet rs, int index, Set<String> set) throws SQLException {
 				DbObj2 o= new DbObj2();
@@ -543,22 +557,27 @@ public class BaseDaoTest  {
 			public String getKeyName() {
 				return "ID";
 			}
+
 			@Override
 			public String getTableName() {
 				return "test2";
 			}
+
 			@Override
 			public boolean insertDummy() {
 				return false;
 			}
+
 			@Override
 			public Long getId(DbObj2 info) {
 				return info.id;
 			}
+
 			@Override
 			public void setId(DbObj2 info, Long id) {
 				info.id = id;
 			}
+
 			@Override
 			public Long getNextKey() {
 				return null;
@@ -623,7 +642,6 @@ public class BaseDaoTest  {
 	}
 
 
-
 	@Test
 	public void testUpsert() {
 		DbcpDataSource ds = new DbcpDataSource();
@@ -645,7 +663,8 @@ public class BaseDaoTest  {
 		db.executeNoQuery("insert into "+tableName+"(id, name) values(2,'abc')");
 		db.executeNoQuery("insert into "+tableName+"(id, name) values(3,'abc')");
 
-		class T {Long id;	String name;}
+		class T {Long id;
+			String name;}
 		class BD extends BaseDao<T, Long> {
 			BD(IDbHelper db) {
 				super(db);
@@ -730,6 +749,42 @@ public class BaseDaoTest  {
 			assertTrue(n.name.endsWith(String.valueOf(n.id)));
 		}
 
+	}
+
+
+	@Test
+	@ParameterizedTest
+	@CsvSource({
+			"'INSERT into users ( userid, name) values(?,?)','userid'",
+			"'INSERT into users (asb, userid, name) values(?,?)','userid'",
+
+			"'INSERT into users (name, userid) values(?,?)','userId'",
+//			"'INSERT into users (name, userid) values(?,?)','user_Id'",
+
+
+	})
+	void matchField(String sql, String field){
+
+		assertTrue(BaseDao.matchField(sql, field));
+	}
+
+
+	public static void main(String[] args) {
+		final String regex = "[(,]\\s*userid\\s*[),]";
+		final String string = "insert into users ( userid, name) values(?,?)";
+
+		final Pattern pattern = Pattern.compile(regex, Pattern.MULTILINE);
+		final Matcher matcher = pattern.matcher(string);
+
+		System.out.println(matcher.matches());
+
+		while (matcher.find()) {
+			System.out.println("Full match: " + matcher.group(0));
+
+			for (int i = 1; i <= matcher.groupCount(); i++) {
+				System.out.println("Group " + i + ": " + matcher.group(i));
+			}
+		}
 	}
 
 }

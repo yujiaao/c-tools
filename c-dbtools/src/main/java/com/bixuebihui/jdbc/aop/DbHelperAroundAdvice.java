@@ -53,7 +53,10 @@ public class DbHelperAroundAdvice implements MethodInterceptor{
                     if (s[j] == null) {
                         sb.append("\t [").append(j).append("] null").append("\n");
                     } else {
-                        sb.append("\t  [").append(j).append("]").append(s[j].getClass()).append(": ").append(s[j].toString()).append("\n");
+                        sb.append("\t  [").append(j).append("]")
+                                .append(s[j].getClass()).append(": ")
+                                .append(toString(s[j]))
+                                .append("\n");
                     }
                 }
                 if(s.length>= MAX_SHOW){
@@ -69,6 +72,32 @@ public class DbHelperAroundAdvice implements MethodInterceptor{
         }
         LOG.debug(sb.toString());
         before = System.currentTimeMillis();
+    }
+
+    static String toString(Object o){
+        if(o instanceof byte[]){
+            return toString((byte[])o);
+        }
+      return o.toString();
+    }
+
+    static String byteToHex(byte num) {
+        char[] hexDigits = new char[2];
+        hexDigits[0] = Character.forDigit((num >> 4) & 0xF, 16);
+        hexDigits[1] = Character.forDigit((num & 0xF), 16);
+        return new String(hexDigits);
+    }
+
+    static String toString(byte[] byteArray) {
+        StringBuffer hexStringBuffer = new StringBuffer();
+        for (int i = 0; i < byteArray.length && i<MAX_SHOW; i++) {
+            hexStringBuffer.append(byteToHex(byteArray[i]));
+        }
+        hexStringBuffer.insert(0,"0x");
+        if(byteArray.length> MAX_SHOW){
+            hexStringBuffer.append("... ");
+        }
+        return hexStringBuffer.toString();
     }
 
     private void afterReturning(Method method, Object[] args
