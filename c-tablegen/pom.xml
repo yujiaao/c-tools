@@ -8,7 +8,7 @@
     <parent>
         <groupId>com.github.yujiaao</groupId>
         <artifactId>c-tools-parent</artifactId>
-        <version>1.13.9.8</version>
+        <version>1.13.9.10</version>
     </parent>
     <properties>
         <handlebars-version>4.3.0</handlebars-version>

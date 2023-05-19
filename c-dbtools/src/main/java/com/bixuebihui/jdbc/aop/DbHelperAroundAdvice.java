@@ -18,17 +18,14 @@ import java.util.Map;
  * @author xingwx
  * @version $Id: $Id
  */
-public class DbHelperAroundAdvice implements MethodInterceptor{
+public class DbHelperAroundAdvice implements MethodInterceptor {
     private static final Logger LOG = LoggerFactory.getLogger(DbHelperAroundAdvice.class);
-    private static final int MAX_SHOW =100;
-
+    private static final int MAX_SHOW = 100;
+    private static final Map<String, SqlStat> SQL_STAT_MAP = new LRUMap(1000);
+    double totalTime = 0;
     private long before;
     private long after;
     private long count;
-    double totalTime = 0;
-
-
-    private static final Map<String, SqlStat> SQL_STAT_MAP = new LRUMap(1000);
 
     /**
      * <p>Getter for the field <code>sqlStatStore</code>.</p>
@@ -39,8 +36,37 @@ public class DbHelperAroundAdvice implements MethodInterceptor{
         return Collections.unmodifiableMap(SQL_STAT_MAP);
     }
 
-    protected static boolean isDebug(){
+    protected static boolean isDebug() {
         return LOG.isDebugEnabled();
+    }
+
+    public static String toString(Object o) {
+        if (o == null) return "null";
+
+        if (o instanceof byte[]) {
+            return toString((byte[]) o);
+        }
+
+        return o.toString();
+    }
+
+    static String byteToHex(byte num) {
+        char[] hexDigits = new char[2];
+        hexDigits[0] = Character.forDigit((num >> 4) & 0xF, 16);
+        hexDigits[1] = Character.forDigit((num & 0xF), 16);
+        return new String(hexDigits);
+    }
+
+    public static String toString(byte[] byteArray) {
+        StringBuffer hexStringBuffer = new StringBuffer();
+        for (int i = 0; i < byteArray.length && i < MAX_SHOW; i++) {
+            hexStringBuffer.append(byteToHex(byteArray[i]));
+        }
+        hexStringBuffer.insert(0, "0x");
+        if (byteArray.length > MAX_SHOW) {
+            hexStringBuffer.append("... ");
+        }
+        return hexStringBuffer.toString();
     }
 
     private void beforeCall(Method method, Object[] args) {
@@ -49,7 +75,7 @@ public class DbHelperAroundAdvice implements MethodInterceptor{
         for (Object arg : args) {
             if (arg instanceof Object[]) {
                 Object[] s = (Object[]) arg;
-                for (int j = 0; j < s.length && j< MAX_SHOW; j++) {
+                for (int j = 0; j < s.length && j < MAX_SHOW; j++) {
                     if (s[j] == null) {
                         sb.append("\t [").append(j).append("] null").append("\n");
                     } else {
@@ -59,7 +85,7 @@ public class DbHelperAroundAdvice implements MethodInterceptor{
                                 .append("\n");
                     }
                 }
-                if(s.length>= MAX_SHOW){
+                if (s.length >= MAX_SHOW) {
                     sb.append("\t  ").append(s.length - MAX_SHOW).append("... omited ").append("\n");
                 }
             } else if (arg instanceof String
@@ -72,32 +98,6 @@ public class DbHelperAroundAdvice implements MethodInterceptor{
         }
         LOG.debug(sb.toString());
         before = System.currentTimeMillis();
-    }
-
-    public static String toString(Object o){
-        if(o instanceof byte[]){
-            return toString((byte[])o);
-        }
-      return o.toString();
-    }
-
-    static String byteToHex(byte num) {
-        char[] hexDigits = new char[2];
-        hexDigits[0] = Character.forDigit((num >> 4) & 0xF, 16);
-        hexDigits[1] = Character.forDigit((num & 0xF), 16);
-        return new String(hexDigits);
-    }
-
-    public static String toString(byte[] byteArray) {
-        StringBuffer hexStringBuffer = new StringBuffer();
-        for (int i = 0; i < byteArray.length && i<MAX_SHOW; i++) {
-            hexStringBuffer.append(byteToHex(byteArray[i]));
-        }
-        hexStringBuffer.insert(0,"0x");
-        if(byteArray.length> MAX_SHOW){
-            hexStringBuffer.append("... ");
-        }
-        return hexStringBuffer.toString();
     }
 
     private void afterReturning(Method method, Object[] args
@@ -123,9 +123,9 @@ public class DbHelperAroundAdvice implements MethodInterceptor{
                 }
                 ss.setCount(ss.getCount() + 1);
                 ss.setTotalTime(ss.getTotalTime() + thisTime);
-                if(thisTime > SqlStat.VERY_SLOW_QUERY){
+                if (thisTime > SqlStat.VERY_SLOW_QUERY) {
                     LOG.error("[AOP] Query is VERY SLOW: " + thisTime + " sql=" + sql);
-                }else if (thisTime > SqlStat.SLOW_QUERY) {
+                } else if (thisTime > SqlStat.SLOW_QUERY) {
                     LOG.warn("[AOP] Query is SLOW: " + thisTime + " sql=" + sql);
                 }
             }
@@ -136,7 +136,9 @@ public class DbHelperAroundAdvice implements MethodInterceptor{
     }
 
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Object invoke(MethodInvocation invocation) throws Throwable {
         Method m = invocation.getMethod();
