@@ -77,13 +77,18 @@ public class TableUtils {
         ResultSet r = null;
         try {
             String key;
+            int seq;
             if(isSQLServer(metaData) && StringUtils.isBlank(schema)){
                 schema = null;
             }
             r = metaData.getPrimaryKeys(catalog, schema, tableName);
+
+            TreeMap<Integer, String> keyMap = new TreeMap<>();
+
             while (r.next()) {
                 // COLUMN_NAME
                 key = r.getString(4);
+                seq = r.getInt(5);
 
                 boolean existsCol = false;
                 for (String dt : keyData) {
@@ -95,9 +100,9 @@ public class TableUtils {
                 if (existsCol) {
                     continue;
                 }
-
-                keyData.add(key);
+                keyMap.put(seq, key);
             }
+            keyData.addAll(keyMap.values());
 
         } catch (SQLException e) {
             System.err.println("Error whilst getting keys for " + tableName);
@@ -466,9 +471,12 @@ public class TableUtils {
      *
      * 数据库中schema和catalog
      * ----------------------
-     *  A：按照SQL标准的解释，在SQL环境下Catalog和Schema都属于抽象概念，从概念上说，一个数据库系统包含多个Catalog，每个Catalog又包含多个Schema，而每个Schema又包含多个数据库对象（表、视图、序列等），反过来讲一个数据库对象必然属于一个Schema，而该Schema又必然属于一个Catalog。
+     *  A：按照SQL标准的解释，在SQL环境下Catalog和Schema都属于抽象概念，
+     *     从概念上说，一个数据库系统包含多个Catalog，每个Catalog又包含多个Schema，
+     *     而每个Schema又包含多个数据库对象（表、视图、序列等），反过来讲一个数据库对象必然属于一个Schema，而该Schema又必然属于一个Catalog。
      *  B：作用：得到数据库对象的全限定名称，解决命名冲突问题
-     *  C：用法：各种数据库系统对Catalog和Schema的支持和实现方式千差万别，针对具体问题需要参考具体的产品说明书，比较简单而常用的实现方式是使用数据库名作为Catalog名，使用用户名作为Schema名
+     *  C：用法：各种数据库系统对Catalog和Schema的支持和实现方式千差万别，
+     *    针对具体问题需要参考具体的产品说明书，比较简单而常用的实现方式是使用数据库名作为Catalog名，使用用户名作为Schema名
      *
      *  数据库	Catalog	 Schema
      * -------|--------|--------

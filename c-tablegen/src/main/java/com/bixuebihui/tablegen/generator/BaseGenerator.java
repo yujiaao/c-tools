@@ -384,9 +384,9 @@ public abstract class BaseGenerator implements Generator {
     }
 
 
-    public static String getFirstKeyName(List<String> keyData2) {
-        if (isNotEmpty(keyData2)) {
-            return keyData2.get(0);
+    public static String getFirstKeyName(List<String> keyData) {
+        if (isNotEmpty(keyData)) {
+            return keyData.get(0);
         }
         return null;
     }

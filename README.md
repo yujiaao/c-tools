@@ -54,3 +54,18 @@ use dependencies:
  - javax -> jakarta
 
 
+## TODO
+     
+     - [ ] support composite primary key for MySQL partition table   
+     - [ ] support ES fields expression condition
+     - [ ] support ES aggregation
+     - [ ] support ES scroll
+     - [ ] support ES reindex
+   
+
+ 
+ 
+ 
+ 
+ 
+ 

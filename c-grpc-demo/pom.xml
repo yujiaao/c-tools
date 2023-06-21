@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>c-tools-parent</artifactId>
+        <groupId>com.github.yujiaao</groupId>
+        <version>1.13.9.9</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <artifactId>c-grpc-demo</artifactId>
+
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+
+    </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.github.yujiaao</groupId>
+                <artifactId>tablegen-maven-plugin</artifactId>
+                <version>${project.version}</version>
+                <configuration>
+                    <propPath>${project.basedir}/es.properties</propPath>
+                </configuration>
+            </plugin>
+
+        </plugins>
+
+    </build>
+    <dependencyManagement>
+        <dependencies>
+
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>c-tools-bom</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+</project>

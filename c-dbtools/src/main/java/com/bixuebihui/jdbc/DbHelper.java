@@ -119,7 +119,7 @@ public class DbHelper implements IDbHelper {
                     sb.append("===" + DbHelperAroundAdvice.toString(o)).append("\n");
                 }
             }
-            LOG.warn(sb.toString());
+            LOG.error(sb.toString());
         }
     }
 
@@ -130,7 +130,7 @@ public class DbHelper implements IDbHelper {
             for (String s : sql) {
                 sb.append("==" + s).append("\n");
             }
-            LOG.warn(sb.toString());
+            LOG.error(sb.toString());
         }
     }
 
@@ -817,9 +817,9 @@ public class DbHelper implements IDbHelper {
                 Object pa = params[i - 1];
                 if (pa == null) {
                     p.setNull(i, java.sql.Types.VARCHAR, "String");
-                    LOG.debug("不支持空数据(参数["
-                            + i
-                            + "])! Null is not support in DbHelper.executeNoQuery(String sql, Object[] params), there may be error!");
+//                    LOG.debug("不支持空数据(参数["
+//                            + i
+//                            + "])! Null is not support in DbHelper.executeNoQuery(String sql, Object[] params), there may be error!");
                 } else if (pa instanceof Integer) {
                     p.setInt(i, (Integer) pa);
                 } else if (pa instanceof Long) {

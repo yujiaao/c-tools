@@ -447,9 +447,9 @@ public class DbHelper implements IDbHelper {
                 Object pa = params[i];
                 if (pa == null) {
                     p.bindNull(i, String.class);
-                    LOG.debug("不支持空数据(参数["
-                            + i
-                            + "])! Null is not support in DbHelper.executeNoQuery(String sql, Object[] params), there may be error!");
+//                    LOG.debug("不支持空数据(参数["
+//                            + i
+//                            + "])! Null is not support in DbHelper.executeNoQuery(String sql, Object[] params), there may be error!");
                 } else if (pa instanceof Integer) {
                     p.bind(i, pa);
                 } else if (pa instanceof Long) {
