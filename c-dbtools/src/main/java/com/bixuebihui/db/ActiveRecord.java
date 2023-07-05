@@ -4,9 +4,15 @@ import com.bixuebihui.DbException;
 import com.bixuebihui.jdbc.BaseDao;
 import com.bixuebihui.query.Paging;
 import org.apache.commons.lang3.StringUtils;
+import org.supercsv.cellprocessor.CellProcessorAdaptor;
+import org.supercsv.cellprocessor.Optional;
+import org.supercsv.cellprocessor.StrReplace;
+import org.supercsv.cellprocessor.ift.CellProcessor;
+import org.supercsv.cellprocessor.ift.StringCellProcessor;
 import org.supercsv.io.CsvBeanWriter;
 import org.supercsv.io.ICsvBeanWriter;
 import org.supercsv.prefs.CsvPreference;
+import org.supercsv.util.CsvContext;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -379,11 +385,34 @@ public interface ActiveRecord<T> extends Record<T>, Customizer<T> {
      * @throws DbException
      */
     default String findAllToCsv(String titles, String onlyFields) throws DbException {
-        List<T> list =  findAll();
-        return findAllToCsv(list, titles, onlyFields);
+         return findAllToCsv(titles, onlyFields, false, false);
     }
 
-    static   <T> String findAllToCsv(List<T> list, String titles, String onlyFields) throws DbException {
+    default String findAllToCsv(String titles, String onlyFields,  boolean withBom, boolean forceStringForDateTime) throws DbException {
+        List<T> list =  findAll();
+        return findAllToCsv(list, titles, onlyFields, withBom, forceStringForDateTime);
+    }
+
+
+
+    class MyCustomCellProcessor extends CellProcessorAdaptor {
+        // 匹配日期时间格式，如 2020-01-01 12:00:00.000 或 2020-01-01 12:00:00
+        static String regex = "^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}(\\.\\d+)?$";
+        static String replacement = "=\"$0\"";
+        public MyCustomCellProcessor() {
+            super(new Optional(new StrReplace(regex, replacement)));
+        }
+
+        public MyCustomCellProcessor(StringCellProcessor next) {
+            super(new Optional(new StrReplace(regex, replacement, next)));
+        }
+
+        @Override
+        public <T> T execute(Object value, CsvContext context) {
+            return next.execute(value, context);
+        }
+    }
+    static <T> String findAllToCsv(List<T> list, String titles, String onlyFields, boolean withBom, boolean forceStringForDateTime) throws DbException {
 
         if(list.isEmpty()) return "";
 
@@ -392,6 +421,12 @@ public interface ActiveRecord<T> extends Record<T>, Customizer<T> {
                 .map(Field::getName).filter(name -> !name.contains("$")).toArray(String[]::new);
 
         StringWriter sb = new StringWriter(10_000);
+
+        // add bom header to StringBuilder
+        if(withBom) {
+            sb.write("\uFEFF");
+        }
+
         ICsvBeanWriter beanWriter = new CsvBeanWriter(sb,
                 CsvPreference.EXCEL_PREFERENCE);
 
@@ -399,14 +434,24 @@ public interface ActiveRecord<T> extends Record<T>, Customizer<T> {
 
         try {
             beanWriter.writeHeader(header);
-            for (T pojo : list) {
-                beanWriter.write(pojo, fields);
+            if(forceStringForDateTime) {
+                CellProcessor[] processors = new CellProcessor[fields.length];
+
+                for (int i = 0; i < fields.length; i++) {
+                    processors[i] = new MyCustomCellProcessor();
+                }
+                for (T pojo : list) {
+                    beanWriter.write(pojo, fields, processors);
+                }
+            }else{
+                for (T pojo : list) {
+                    beanWriter.write(pojo, fields);
+                }
             }
             beanWriter.close();
         } catch (IOException e) {
             throw new DbException(e);
         }
-
         return sb.toString();
     }
 }

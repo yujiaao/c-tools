@@ -31,6 +31,16 @@ public class ActiveRecordImplTest extends TestCase {
 
 		Long id;
 		String name;
+
+		public Timestamp getCreatetime() {
+			return createtime;
+		}
+
+		public void setCreatetime(Timestamp createtime) {
+			this.createtime = createtime;
+		}
+
+		Timestamp createtime;
 		public String toString(){
 			return id+" "+name;
 		}
@@ -46,6 +56,8 @@ public class ActiveRecordImplTest extends TestCase {
 			T t = new T();
 			t.id = rs.getLong("id");
 			t.name = rs.getString("name");
+			if(set.contains("createtime"))
+				t.createtime = rs.getTimestamp("createtime");
 			return t;
 		}
 
@@ -103,10 +115,25 @@ public class ActiveRecordImplTest extends TestCase {
 	public void testCsv() {
 		bd.getDbHelper().executeNoQuery("insert into test(id,name)values(234,'ba\"c')");
 
-		String s = bd.ar().alias("t1").fields("name,id").eq("t1.id", 234).findAllToCsv("何人,ID");
+		String s = bd.ar().alias("t1")
+				.fields("name,id").eq("t1.id", 234).findAllToCsv("何人,ID", "name,id");
 		assertEquals("何人,ID\n" +
-				"234,bac\n" +
-				"234,\"ba\"\"c\"\n", s);
+				"bac,234\n" +
+				"\"ba\"\"c\",234\n", s);
+	}
+
+	public void testCsvForExcel() {
+		bd.getDbHelper().executeNoQuery("insert into test(id,name, createtime)values(234,'ba\"c', " +
+				"'2023-07-09 12:23:34.0')");
+
+		String s = bd.ar().alias("t1")
+				.fields("name,id,createtime")
+				.eq("t1.id", 234)
+				.findAllToCsv("何人,ID,何时", "name,id,createtime", false, true);
+		assertEquals("何人,ID,何时\n" +
+				"bac,234,\"=\"\"2017-10-10 01:01:01.0\"\"\"\n" +
+				"\"ba\"\"c\",234,\"=\"\"2023-07-09 12:23:34.0\"\"\"\n", s);
+		System.out.println(s);
 	}
 
 

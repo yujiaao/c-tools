@@ -25,6 +25,7 @@ public class SqlHelper {
 	List<BaseFilter> filters;
 	List<SqlHelper> orCond = null;
 	List<SqlHelper> notCond = null;
+	List<SqlHelper> andCond = null;
 	private int databaseType = MYSQL;
 	private boolean useNullAsCondition = false;
 	private boolean acceptEmptyStringAsNullObjectInCondition = false;
@@ -45,6 +46,10 @@ public class SqlHelper {
 		if(src.notCond!=null) {
 			this.notCond = new ArrayList<>();
 			this.notCond.addAll(src.notCond);
+		}
+		if(src.andCond!=null){
+			this.andCond = new ArrayList<>();
+			this.andCond.addAll(src.andCond);
 		}
 		this.databaseType = src.databaseType;
 		this.useNullAsCondition = src.useNullAsCondition;
@@ -78,8 +83,6 @@ public class SqlHelper {
     public SqlPocket toCondition() {
 		SqlPocket criteria = new SqlPocket();
 
-
-
 		if (filters == null || filters.size() == 0) {
 			return criteria;
 		}
@@ -109,6 +112,16 @@ public class SqlHelper {
 				criteria.getParams().addAll(cond.getParams());
 			}
 		}
+		if (andCond != null) {
+			condition.insert(0, "(").append(")");
+			for (SqlHelper it : andCond) {
+				SqlPocket cond = it.toCondition();
+				condition.append(" and (")
+						.append(trimWhere(cond.getCondition())).append(")");
+				criteria.getParams().addAll(cond.getParams());
+			}
+		}
+
 		if (condition.length() > 0) {
 			removeLeadAnd(condition);
 			condition.insert(0, conditionTypeIsWhere? WHERE: HAVING);
