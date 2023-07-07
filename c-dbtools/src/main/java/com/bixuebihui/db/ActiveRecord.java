@@ -412,6 +412,10 @@ public interface ActiveRecord<T> extends Record<T>, Customizer<T> {
             return next.execute(value, context);
         }
     }
+
+    static <T> String findAllToCsv(List<T> list, String titles, String onlyFields) throws DbException {
+        return findAllToCsv(list, titles, onlyFields, false, false);
+    }
     static <T> String findAllToCsv(List<T> list, String titles, String onlyFields, boolean withBom, boolean forceStringForDateTime) throws DbException {
 
         if(list.isEmpty()) return "";

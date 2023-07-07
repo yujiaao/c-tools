@@ -34,12 +34,15 @@ import org.springframework.web.bind.annotation.RestController;
 
 import org.springframework.validation.annotation.Validated;
 
+import com.sdadas.spring2ts.annotations.SharedService;
+
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
  * @author generated
  */
+@SharedService
 @RestController
 @RequestMapping("/{{snakeCase pojoClassName}}")
 {{#eq config.swaggerVersion "2" }}
