@@ -1,0 +1,70 @@
+{
+  "size": 100,
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "terms": {
+            "biz_type": [
+              "1",
+              "3",
+              "700112"
+            ]
+          }
+        },
+        {
+          "terms": {
+            "dt": [
+              "2023-08-03",
+              "2023-08-02",
+              "2023-08-01",
+              "2023-07-31"
+            ]
+          }
+        },
+        {
+          "range": {
+            "sight_show_pv": {
+              "gte": 1
+            }
+          }
+        },
+        {
+          "range": {
+            "ctr": {
+              "from": "0",
+              "to": "100"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "aggs": {
+    "my-agg-name": {
+      "terms": {
+        "field": "biz_id"
+
+      },
+      "aggs": {
+        "agg2": {
+          "terms": {
+            "field": "biz_type"
+          }},
+        "my-sub-agg-name": {
+          "sum": {
+            "field": "click_pv"
+          }
+        },
+        "my-sub-agg-name2": {
+          "sum": {
+            "field": "sight_show_pv"
+          }
+        }
+      }
+    }
+  },
+  "sort": {
+    "ctr": "desc"
+  }
+}

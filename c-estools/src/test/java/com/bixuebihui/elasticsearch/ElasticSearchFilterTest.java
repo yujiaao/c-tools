@@ -1,6 +1,8 @@
 package com.bixuebihui.elasticsearch;
 
+import com.bixuebihui.elasticsearch.query.Query;
 import com.bixuebihui.jdbc.SqlFilter;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -57,5 +59,90 @@ class ElasticSearchFilterTest {
                 "{\"boost\":1.0,\"value\":\"中国*\"}}},{\"wildcard\":{\"title\":{\"boost\":1.0,\"value\":\"北京*\"}}}]," +
                 "\"must\":[{\"range\":{\"height\":{\"gt\":100}}}]}}}", res);
 
+    }
+
+
+    @Test
+    void toQuery() {
+        ElasticSearchFilter filter = new ElasticSearchFilter();
+        filter.addFilter("title", SqlFilter.Comparison.WILDCARD, new String[]{"中国","北京"});
+        filter.addFilter("height", SqlFilter.Comparison.GT, new Integer[]{100});
+
+        SqlFilter f1 = new SqlFilter();
+        f1.addFilter("a1",
+                SqlFilter.Comparison.LT, new Integer[]{100});
+        f1.addFilter("a2",
+                SqlFilter.Comparison.LT, new Integer[]{100});
+
+        SqlFilter f2 = new SqlFilter();
+        f2.addFilter("b1",
+                SqlFilter.Comparison.GTE, new Integer[]{100});
+        f2.addFilter("b2",
+                SqlFilter.Comparison.GTE, new Integer[]{100});
+        f2.setSubGroupsJoinOperator(SqlFilter.Operator.OR);
+
+        filter.addSubGroupCondition( SqlFilter.Operator.AND,f1, f2);
+
+
+        Query query = filter.toQuery();
+        assertEquals(2, query.getParams().size());
+
+        String res = filter.toEsObject(query, 0, 10, emptySet(),emptySet(),null, null, emptyMap());
+
+        System.out.println(res);
+    }
+
+    @Test
+    void toQueryOr() {
+        ElasticSearchFilter filter = new ElasticSearchFilter();
+
+        ElasticSearchFilter f1 = new ElasticSearchFilter();
+        f1.addFilter("a1",
+                SqlFilter.Comparison.LT, new Integer[]{100});
+        f1.addFilter("b1",
+                SqlFilter.Comparison.GTE, new Integer[]{100});
+        filter.addSubGroupCondition( SqlFilter.Operator.OR,f1);
+
+
+        Query query = filter.toQuery();
+        assertEquals(1, query.getParams().size());
+
+        System.out.println(query.toArray());
+
+        ObjectMapper mapper = new ObjectMapper();
+        System.out.println(mapper.valueToTree(query));
+
+        String res = filter.toEsObject(query, 0, 10, emptySet(),emptySet(),null, null, emptyMap());
+
+        System.out.println(res);
+    }
+
+
+    @Test
+    void toQuerySubOr() {
+        ElasticSearchFilter filter = new ElasticSearchFilter();
+
+        SqlFilter f2 = new SqlFilter();
+        f2.addFilter("b1",
+                SqlFilter.Comparison.GTE, new Integer[]{100});
+        f2.addFilter("b2",
+                SqlFilter.Comparison.GTE, new Integer[]{100});
+        f2.setSubGroupsJoinOperator(SqlFilter.Operator.OR);
+
+        filter.addSubGroupCondition( SqlFilter.Operator.AND,f2);
+
+
+
+        Query query = filter.toQuery();
+        assertEquals(1, query.getParams().size());
+
+        System.out.println(query.toArray());
+
+        ObjectMapper mapper = new ObjectMapper();
+        System.out.println(mapper.valueToTree(query));
+
+        String res = filter.toEsObject(query, 0, 10, emptySet(),emptySet(),null, null, emptyMap());
+
+        System.out.println(res);
     }
 }

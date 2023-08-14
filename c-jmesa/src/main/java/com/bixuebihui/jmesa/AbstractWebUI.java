@@ -113,7 +113,7 @@ public abstract class AbstractWebUI<T, V> implements WorksheetSaver {
                 SqlFilter subFilter = getFilter(subSqlFilter, set, tableAlias);
                 subFilters.add(subFilter);
             }
-            sqlFilter.addSubGroupCondition(SqlFilter.Operator.valueOf(filterSet.getOperator()+""),
+            sqlFilter.addSubGroupCondition(SqlFilter.Operator.valueOf(String.valueOf(filterSet.getOperator())),
                     subFilters.toArray(new SqlFilter[0]));
         }
         return sqlFilter;

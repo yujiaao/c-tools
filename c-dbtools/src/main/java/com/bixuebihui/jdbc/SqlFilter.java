@@ -25,12 +25,15 @@ public class SqlFilter {
 	 * Constant <code>AND=" and "</code>
 	 */
 	public static final String AND = " and ";
+	public static final String OR = " or  ";
+	public static final String NOT = " not ";
 	protected List<Filter> filters = null;
 	protected List<SqlFilter> orCond = null;
 	protected List<SqlFilter> subGroups = new ArrayList<>();
 	protected Operator subGroupsJoinOperator;
 	private int databaseType = MYSQL;
 	private boolean useNullAsCondition = false;
+	private Operator joinOperator= Operator.AND;
 
 	/**
 	 * 防止sql注入, 会改变原始数据,不建议使用
@@ -96,6 +99,7 @@ public class SqlFilter {
 		return (filters==null || filters.isEmpty())
 				&& subGroups.isEmpty();
 	}
+
 	/**
 	 * Generate SqlObject: sql string with parameters
 	 * @return SqlObject
@@ -170,6 +174,7 @@ public class SqlFilter {
 		return res.toString();
 	}
 
+	//TODO: or/not implement
 	private void buildCriteria(StringBuilder criteria, String property,
 							   Object value) {
 		if (value instanceof String) {
@@ -185,7 +190,6 @@ public class SqlFilter {
 		}
 
 	}
-
 
 	private void buildSqlObject(StringBuilder criteria, List<Object> params, Filter filter) {
 		criteria.append(AND).append(KeywordsUtils.decorFieldIfIsKeyword(filter.getProperty(), this.databaseType));
@@ -458,8 +462,28 @@ public class SqlFilter {
 		return this.addFilter(field, Comparison.START_WITH,  new Object[]{value});
 	}
 
+	public List<SqlFilter> getSubGroups() {
+		return subGroups;
+	}
+
+	public Operator getSubGroupsJoinOperator() {
+		return subGroupsJoinOperator;
+	}
+
+	public Operator getJoinOperator() {
+		return joinOperator;
+	}
+
+	public void setJoinOperator(Operator joinOperator) {
+		this.joinOperator = joinOperator;
+	}
+
+	public void setSubGroupsJoinOperator(Operator operator) {
+		subGroupsJoinOperator = operator;
+	}
+
 	public enum Operator{
-		/**and*/AND, /**or*/OR
+		/**and*/AND, /**or*/OR, /**not*/ NOT
 	}
 	/**
 	 * Used for filters

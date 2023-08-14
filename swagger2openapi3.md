@@ -1,5 +1,5 @@
 
-#Migrate from Swagger2 to OpenApi3
+# Migrate from Swagger2 to OpenApi3
 
 swagger2	| OpenAPI 3	| 注解位置
 ---|---|---

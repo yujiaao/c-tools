@@ -11,7 +11,7 @@
     <groupId>com.github.yujiaao</groupId>
     <artifactId>c-tools-parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.14.3</version>
+    <version>1.14.5</version>
 
     <modules>
         <module>c-tools-bom</module>
@@ -24,11 +24,13 @@
         <module>c-tablegen</module>
         <module>c-tablegen-mojo</module>
         <module>c-jsongen</module>
-        <module>c-estools</module>
 
         <module>c-tablegen-jdbc-demo</module>
         <module>c-tablegen-r2dbc-demo</module>
+                <module>c-estools</module>
+
         <module>c-jsongen-es-demo</module>
+
 
     </modules>
     <properties>
@@ -146,6 +148,7 @@
                 <version>3.1.1</version>
             </plugin>
 
+
         </plugins>
 
     </build>
@@ -166,6 +169,8 @@
 
 
         </plugins>
+
+
 
     </reporting>
 
