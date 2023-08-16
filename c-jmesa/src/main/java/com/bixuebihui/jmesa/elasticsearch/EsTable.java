@@ -6,6 +6,7 @@ import com.bixuebihui.elasticsearch.EsRequest;
 import com.bixuebihui.jmesa.EasyTable;
 import com.bixuebihui.jmesa.entry.Query;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.jmesa.limit.Limit;
 import org.jmesa.limit.LimitFactory;
 import org.jmesa.limit.RowSelect;
@@ -57,6 +58,22 @@ public class EsTable extends EasyTable {
         return request.esJsonToTableJson(request.search(query), rowSelect.getMaxRows(), rowSelect.getRowStart(), rowSelect.getRowEnd(), rowSelect.getTotalRows(), rowSelect.getPage());
     }
 
+    /**
+     * 测试用方法
+     * @param query
+     * @return
+     * @throws ParseException
+     */
+    protected static ElasticSearchFilter  queryToFilter(Query query, String tableCaption, String id) throws ParseException, JsonProcessingException {
+        ElasticSearchFilter filter = new ElasticSearchFilter();
+        Limit limit = getLimit(tableCaption, query);
+        System.out.println(new ObjectMapper().writeValueAsString(limit));
+
+        getFilter(filter, limit, id);
+
+        return filter;
+    }
+
     @Override
     public String json( Query jsonQuery) throws SQLException {
         try {
@@ -69,7 +86,7 @@ public class EsTable extends EasyTable {
 
 
 
-    private LinkedHashMap<String,String> toEsSort(SortSet sortSet) {
+    private static LinkedHashMap<String,String> toEsSort(SortSet sortSet) {
         LinkedHashMap<String,String> res = new LinkedHashMap<>();
         if(sortSet.isSorted()) {
             for (org.jmesa.limit.Sort sort :
@@ -81,11 +98,11 @@ public class EsTable extends EasyTable {
     }
 
 
-    public Limit getLimit(String id, String json) {
+    public static Limit getLimit(String id, String json) {
         return new LimitFactory(id, json).createLimit();
     }
 
-    public Limit getLimit(String id, Query json) {
+    public static Limit getLimit(String id, Query json) {
         return  new LimitFactory(id, json).createLimit();
     }
 

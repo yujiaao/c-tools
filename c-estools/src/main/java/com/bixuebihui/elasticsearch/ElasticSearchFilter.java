@@ -4,6 +4,7 @@ import com.bixuebihui.elasticsearch.query.Bool;
 import com.bixuebihui.elasticsearch.query.Query;
 import com.bixuebihui.elasticsearch.query.Range;
 import com.bixuebihui.jdbc.SqlFilter;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
@@ -85,18 +86,18 @@ public class ElasticSearchFilter extends SqlFilter {
         }
 
         Bool criteria = new Bool();
-        recursiveBool(this, criteria, this.filters);
+        recursiveBool(this, criteria);
         return criteria;
     }
 
-    public void recursiveBool(SqlFilter sqlFilterUp, Bool criteria, List<Filter> filters) {
-
+    public void recursiveBool(SqlFilter sqlFilterUp, Bool criteria) {
+         List<Filter> filters = sqlFilterUp.getFilters();
         if (filters != null) {
             for (Filter filter : filters) {
                 buildEsObject(criteria, filter, sqlFilterUp.getSubGroupsJoinOperator());
             }
         }
-        if(sqlFilterUp.getSubGroups()==null || sqlFilterUp.getSubGroups().isEmpty()){
+        if (sqlFilterUp.getSubGroups() == null || sqlFilterUp.getSubGroups().isEmpty()) {
             return;
         }
 
@@ -104,22 +105,13 @@ public class ElasticSearchFilter extends SqlFilter {
 
 
         for (SqlFilter sqlFilter : sqlFilterUp.getSubGroups()) {
-            if(sqlFilter.getFilters()==null || sqlFilter.getFilters().isEmpty()){
-                continue;
-            }
-            if(sqlFilter.getFilters().size()>1  && sqlFilter.getSubGroupsJoinOperator() == Operator.NOT) {
+
+            if (sqlFilter.getFilters() != null && sqlFilter.getFilters().size() > 1 && sqlFilter.getSubGroupsJoinOperator() == Operator.NOT) {
                 Bool subGroupCriteria = new Bool();
-                recursiveBool(sqlFilter, subGroupCriteria, sqlFilter.getFilters());
-//                if (sqlFilter.getSubGroupsJoinOperator() == Operator.AND) {
-//                    subCriteria.addMust(subGroupCriteria);
-//                } else if (sqlFilter.getSubGroupsJoinOperator() == Operator.NOT) {
-                    subCriteria.addMustNot(subGroupCriteria);
-//                } else {
-//                    //or
-//                    subCriteria.addShould(subGroupCriteria);
-//                }
-            }else {
-                recursiveBool(sqlFilter, subCriteria, sqlFilter.getFilters());
+                recursiveBool(sqlFilter, subGroupCriteria);
+                subCriteria.addMustNot(subGroupCriteria);
+            } else {
+                recursiveBool(sqlFilter, subCriteria);
             }
         }
 
@@ -127,10 +119,16 @@ public class ElasticSearchFilter extends SqlFilter {
             criteria.addMust(subCriteria);
         } else if (sqlFilterUp.getSubGroupsJoinOperator() == Operator.NOT) {
             criteria.addMustNot(subCriteria);
-        } else {
-            //or
+        } else {//or
             criteria.addShould(subCriteria);
         }
+
+//        try{
+//            System.out.println("bool query:");
+//            System.out.println(new ObjectMapper().writeValueAsString(criteria));
+//        }catch (Exception e){
+//            e.printStackTrace();
+//        }
 
     }
 
@@ -141,22 +139,24 @@ public class ElasticSearchFilter extends SqlFilter {
         return EsQueryBuilder.build(query, from, size, includeFields, excludeFields, sort, scriptSource, scriptParams);
     }
 
-    private void  addFilter(Bool criteria, Query filter, Operator upOperator){
-       switch (upOperator){
-           case AND:
-               criteria.addMust(filter);
-               break;
-           case OR:
-               criteria.addShould(filter);
-               break;
-           case NOT:
-               criteria.addMustNot(filter);
-               break;
-           default:
-               criteria.addMust(filter);
-       }
+    private void addFilter(Bool criteria, Query filter, Operator upOperator) {
+
+        switch (upOperator) {
+            case AND:
+                criteria.addMust(filter);
+                break;
+            case OR:
+                criteria.addShould(filter);
+                break;
+            case NOT:
+                criteria.addMustNot(filter);
+                break;
+            default:
+                criteria.addMust(filter);
+        }
     }
-    private void buildEsObject(Bool criteria, Filter filter, Operator upOperator){
+
+    private void buildEsObject(Bool criteria, Filter filter, Operator upOperator) {
         Query queryFilter;
 
         if (wantIgnoreNull(filter)) {
@@ -166,7 +166,7 @@ public class ElasticSearchFilter extends SqlFilter {
         switch (filter.getComparison()) {
             case IS:
                 queryFilter = Query.term(filter.getProperty(), filter.getValue()[0]);
-                addFilter( criteria,  queryFilter,  upOperator);
+                addFilter(criteria, queryFilter, upOperator);
                 break;
             case IS_NOT:
                 queryFilter = Query.term(filter.getProperty(), filter.getValue()[0]);
@@ -175,7 +175,7 @@ public class ElasticSearchFilter extends SqlFilter {
             case BETWEEN:
                 List list = objToList(filter.getValue());
                 queryFilter = Query.range(null, null).between(filter.getProperty(), list.get(0), list.get(1));
-                addFilter( criteria,  queryFilter,  upOperator);
+                addFilter(criteria, queryFilter, upOperator);
                 break;
             case NOT_BETWEEN:
                 List list1 = objToList(filter.getValue());
@@ -184,7 +184,7 @@ public class ElasticSearchFilter extends SqlFilter {
                 break;
             case IS_NULL:
                 queryFilter = Query.term(filter.getProperty(), null);
-                addFilter( criteria,  queryFilter,  upOperator);
+                addFilter(criteria, queryFilter, upOperator);
                 break;
             case IS_NOT_NULL:
                 queryFilter = Query.term(filter.getProperty(), null);
@@ -192,19 +192,19 @@ public class ElasticSearchFilter extends SqlFilter {
                 break;
             case GT:
                 queryFilter = Query.range(filter.getProperty(), ImmutableMap.builder().put(Range.GT, objToList(filter.getValue()).get(0)).build());
-                addFilter( criteria,  queryFilter,  upOperator);
+                addFilter(criteria, queryFilter, upOperator);
                 break;
             case GTE:
                 queryFilter = Query.range(filter.getProperty(), ImmutableMap.builder().put(Range.GTE, objToList(filter.getValue()).get(0)).build());
-                addFilter( criteria,  queryFilter,  upOperator);
+                addFilter(criteria, queryFilter, upOperator);
                 break;
             case LT:
                 queryFilter = Query.range(filter.getProperty(), ImmutableMap.builder().put(Range.LT, objToList(filter.getValue()).get(0)).build());
-                addFilter( criteria,  queryFilter,  upOperator);
+                addFilter(criteria, queryFilter, upOperator);
                 break;
             case LTE:
                 queryFilter = Query.range(filter.getProperty(), ImmutableMap.builder().put(Range.LTE, objToList(filter.getValue()).get(0)).build());
-                addFilter( criteria,  queryFilter,  upOperator);
+                addFilter(criteria, queryFilter, upOperator);
                 break;
             case NOT_IN:
                 queryFilter = Query.terms(filter.getProperty(), Lists.newArrayList(filter.getValue()));
@@ -212,7 +212,7 @@ public class ElasticSearchFilter extends SqlFilter {
                 break;
             case IN:
                 queryFilter = Query.terms(filter.getProperty(), Lists.newArrayList(filter.getValue()));
-                addFilter( criteria,  queryFilter,  upOperator);
+                addFilter(criteria, queryFilter, upOperator);
                 break;
             case NOT_EXISTS:
                 queryFilter = Query.exists(filter.getProperty());
@@ -220,11 +220,11 @@ public class ElasticSearchFilter extends SqlFilter {
                 break;
             case EXISTS:
                 queryFilter = Query.exists(filter.getProperty());
-                addFilter( criteria,  queryFilter,  upOperator);
+                addFilter(criteria, queryFilter, upOperator);
                 break;
             case CONTAIN:
                 queryFilter = Query.match(filter.getProperty(), filter.getValue()[0].toString());
-                addFilter( criteria,  queryFilter,  upOperator);
+                addFilter(criteria, queryFilter, upOperator);
                 break;
 
             case WILDCARD:

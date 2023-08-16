@@ -1,13 +1,28 @@
 package com.bixuebihui.jmesa.elasticsearch;
 
+import com.bixuebihui.elasticsearch.ElasticSearchFilter;
+import com.bixuebihui.elasticsearch.query.Query;
+import com.bixuebihui.jmesa.entry.Sort;
+import com.bixuebihui.jmesa.entry.Filter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.StringUtils;
+import org.jmesa.limit.FilterSet;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.junit.jupiter.api.Test;
 
 import java.sql.SQLException;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import static java.util.Collections.emptyMap;
+import static java.util.Collections.emptySet;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 //@RunWith(MockitoJUnitRunner.class)
@@ -59,5 +74,125 @@ public class EsTableTest {
 
 
     }
+
+
+
+    @Test
+    void testComplexQuery() throws JsonProcessingException, ParseException {
+        String bizType="1,2";
+
+        DateTime d = new DateTime();
+        String todayDt="2023-08-01";
+        Long pageNo=1L;
+
+        com.bixuebihui.jmesa.entry.Query queryCmd = new com.bixuebihui.jmesa.entry.Query();
+
+        List<Sort> sortList = new ArrayList<>();
+        List<com.bixuebihui.jmesa.entry.Filter> filterList = new ArrayList<>();
+        if(StringUtils.isNotEmpty(bizType)){
+            String[] bizTypes = bizType.split(",");
+            List<Object> bizTypeList = Arrays.stream(bizTypes).collect(Collectors.toList());
+            Filter filter3 = new Filter();
+            filter3.setKey("biz_type");
+            filter3.setValue(bizTypeList);
+            filter3.setComparison("IN");
+            filterList.add(filter3);
+        }
+
+        DateTimeFormatter format = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
+
+        int dataRangeType = 1;
+        if(dataRangeType==1){
+            //hour
+            List<Object> hourList = new ArrayList<>();
+            Integer lastestHours = 5;
+
+            int hour =  new DateTime().hourOfDay().get();
+            if(hour<10){
+                d = DateTime.parse(todayDt+" "+"0"+hour+":00:00",format);
+            }else{
+                d = DateTime.parse(todayDt+" "+hour+":00:00",format);
+            }
+            DateTime  d1 = d.minusHours(1).toDateTime();
+            DateTime  d2 = d.minusHours(lastestHours).toDateTime();
+            String endTime = d1.toString("yyyy-MM-dd HH:mm:ss");
+            String beginTime = d2.toString("yyyy-MM-dd HH:mm:ss");
+            hourList.add(beginTime);
+            hourList.add(endTime);
+            Filter filter4 = new Filter();
+            filter4.setKey("format_time");
+            filter4.setValue(hourList);
+            filter4.setComparison("BETWEEN");
+            filterList.add(filter4);
+            Filter filter6 = new Filter();
+            filter6.setKey("data_type");
+            filter6.setValue(Arrays.asList(1));
+            filter6.setComparison("IS");
+            filterList.add(filter6);
+        }else{
+            //day
+            List<Object> dtList = new ArrayList<>();
+            Integer lastestDays = 6;
+            for(int i=1;i<=lastestDays;i++){
+                String lastestDt  =d.minusDays(i).toString("yyyy-MM-dd");
+                dtList.add(lastestDt);
+            }
+            Filter filter = new Filter();
+            filter.setKey("dt");
+            filter.setValue(dtList);
+            filter.setComparison("IN");
+            filterList.add(filter);
+            Filter filter6 = new Filter();
+            filter6.setKey("data_type");
+            filter6.setValue(Arrays.asList(0));
+            filter6.setComparison("IS");
+            filterList.add(filter6);
+        }
+        String json= "{\"operator\":\"AND\",\"filterSets\":[{\"operator\":\"AND\",\"filterSets\":[],\"filters\":[{\"property\":\"ctr\",\"comparison\":\"GTE\",\"value\":[\"0.9\"]},{\"property\":\"ctr\",\"comparison\":\"LTE\",\"value\":[\"0.9\"]}]}],\"filters\":[]}";
+
+        if(StringUtils.isNotEmpty(json)){
+            FilterSet filterSet = new ObjectMapper().readValue(json, FilterSet.class);
+            queryCmd.setFilterSet(filterSet);
+        }
+        queryCmd.setPage(pageNo);
+        queryCmd.setMaxRows(10000L);
+        queryCmd.setExportType("json");
+
+        int takeNumberType = 1;
+        if(takeNumberType==1){
+            //所有
+            Sort s = new Sort();
+            s.setField("sight_show_pv");
+            s.setOrder("desc");
+            sortList.add(s);
+        }else{
+            String[] config = "ctr,desc,10000".split(",");
+            Sort s = new Sort();
+            s.setField(config[0]);
+            s.setOrder(config[1]);
+            queryCmd.setMaxRows(10000L);
+            sortList.add(s);
+        }
+        queryCmd.setSort(sortList);
+        queryCmd.setFilter(filterList);
+
+
+
+//        System.out.println(new ObjectMapper().writeValueAsString(queryCmd));
+
+        Query q = convert(queryCmd);
+        System.out.println(new ObjectMapper().writeValueAsString(q));
+        String res = new ElasticSearchFilter().toEsObject(q, 0, 10, emptySet(), emptySet(), null, null, emptyMap());
+
+        System.out.println(res);
+    }
+
+    //convert to es query
+    Query convert(com.bixuebihui.jmesa.entry.Query q) throws ParseException, JsonProcessingException {
+        ElasticSearchFilter filter = EsTable.queryToFilter(q, "tableCaption", "tableId");
+        System.out.println(new ObjectMapper().writeValueAsString(filter));
+        return filter.toQuery();
+    }
+
 
 }

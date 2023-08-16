@@ -89,6 +89,10 @@ public abstract class AbstractWebUI<T, V> implements WorksheetSaver {
     }
 
     public static SqlFilter getFilter(SqlFilter sqlFilter, FilterSet filterSet, String tableAlias) throws ParseException {
+        if(filterSet==null){
+            return sqlFilter;
+        }
+
         Collection<Filter> filters = filterSet.getFilters();
 
         for (Filter filter : filters) {

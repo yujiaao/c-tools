@@ -30,7 +30,7 @@ public class SqlFilter {
 	protected List<Filter> filters = null;
 	protected List<SqlFilter> orCond = null;
 	protected List<SqlFilter> subGroups = new ArrayList<>();
-	protected Operator subGroupsJoinOperator;
+	protected Operator subGroupsJoinOperator =  Operator.AND;
 	private int databaseType = MYSQL;
 	private boolean useNullAsCondition = false;
 	private Operator joinOperator= Operator.AND;
