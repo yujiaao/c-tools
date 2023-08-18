@@ -9,7 +9,7 @@
     <parent>
         <groupId>com.github.yujiaao</groupId>
         <artifactId>c-tools-parent</artifactId>
-        <version>1.14.6.3</version>
+        <version>1.14.6.4</version>
     </parent>
 
     <properties>
@@ -137,7 +137,7 @@
         <dependency>
             <groupId>com.github.yujiaao</groupId>
             <artifactId>jmesa</artifactId>
-            <version>4.5.12</version>
+            <version>4.5.13</version>
             <exclusions>
                 <exclusion>
                     <artifactId>spring-core</artifactId>
@@ -257,7 +257,7 @@
         <dependency>
             <groupId>com.github.yujiaao</groupId>
             <artifactId>c-estools</artifactId>
-            <version>1.14.6.3</version>
+            <version>1.14.6.4</version>
         </dependency>
 
 
@@ -324,6 +324,11 @@
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>2.11.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>

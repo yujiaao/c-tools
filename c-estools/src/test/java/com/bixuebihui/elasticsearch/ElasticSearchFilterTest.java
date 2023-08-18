@@ -86,7 +86,7 @@ class ElasticSearchFilterTest {
                 SqlFilter.Comparison.GTE, new Integer[]{100});
         f2.addFilter("b2",
                 SqlFilter.Comparison.GTE, new Integer[]{100});
-        f2.setSubGroupsJoinOperator(SqlFilter.Operator.OR);
+        f2.setJoinOperator(SqlFilter.Operator.OR);
 
         filter.addSubGroupCondition(SqlFilter.Operator.AND, f1, f2);
 
@@ -100,7 +100,33 @@ class ElasticSearchFilterTest {
     }
 
     @Test
-    void toQueryOr() {
+    void toQueryOrDirect() {
+        ElasticSearchFilter filter = new ElasticSearchFilter();
+
+
+        filter.addFilter("a1",
+                SqlFilter.Comparison.LT, new Integer[]{100});
+        filter.addFilter("b1",
+                SqlFilter.Comparison.GTE, new Integer[]{100});
+        filter.setJoinOperator(SqlFilter.Operator.OR);
+
+        Query query = filter.toQuery();
+        assertEquals(1, query.getParams().size());
+
+        System.out.println(query.toArray());
+
+        ObjectMapper mapper = new ObjectMapper();
+        System.out.println(mapper.valueToTree(query));
+
+        String res = filter.toEsObject(query, 0, 10, emptySet(), emptySet(), null, null, emptyMap());
+
+        assertEquals("{\"size\":10,\"query\":{\"bool\":{\"should\":[{\"range\":{\"a1\":{\"lt\":100}}},{\"range\":{\"b1\":{\"gte\":100}}}]}}}"
+        ,res);
+        System.out.println(res);
+    }
+
+    @Test
+    void toQueryInnerOr() {
         ElasticSearchFilter filter = new ElasticSearchFilter();
 
         ElasticSearchFilter f1 = new ElasticSearchFilter();
@@ -108,7 +134,9 @@ class ElasticSearchFilterTest {
                 SqlFilter.Comparison.LT, new Integer[]{100});
         f1.addFilter("b1",
                 SqlFilter.Comparison.GTE, new Integer[]{100});
-        filter.addSubGroupCondition(SqlFilter.Operator.OR, f1);
+        f1.setJoinOperator(SqlFilter.Operator.OR);
+
+        filter.addSubGroupCondition(SqlFilter.Operator.AND, f1);
 
 
         Query query = filter.toQuery();
@@ -121,6 +149,8 @@ class ElasticSearchFilterTest {
 
         String res = filter.toEsObject(query, 0, 10, emptySet(), emptySet(), null, null, emptyMap());
 
+        assertEquals("{\"size\":10,\"query\":{\"bool\":{\"must\":[{\"bool\":{\"should\":[{\"range\":{\"a1\":{\"lt\":100}}},{\"range\":{\"b1\":{\"gte\":100}}}]}}]}}}"
+                ,res);
         System.out.println(res);
     }
 
@@ -134,7 +164,7 @@ class ElasticSearchFilterTest {
                 SqlFilter.Comparison.GTE, new Integer[]{100});
         f2.addFilter("b2",
                 SqlFilter.Comparison.GTE, new Integer[]{100});
-        f2.setSubGroupsJoinOperator(SqlFilter.Operator.OR);
+        f2.setJoinOperator(SqlFilter.Operator.OR);
 
         filter.addSubGroupCondition(SqlFilter.Operator.AND, f2);
 
@@ -156,25 +186,29 @@ class ElasticSearchFilterTest {
     @Test
     void toQuerySubOr2() {
         ElasticSearchFilter filter = new ElasticSearchFilter();
-
+        filter.addFilter("a1",
+                SqlFilter.Comparison.GTE, new Integer[]{99});
         SqlFilter f2 = new SqlFilter();
         f2.addFilter("b1",
                 SqlFilter.Comparison.GTE, new Integer[]{100});
         f2.addFilter("b2",
-                SqlFilter.Comparison.GTE, new Integer[]{100});
-        f2.setSubGroupsJoinOperator(SqlFilter.Operator.OR);
+                SqlFilter.Comparison.GTE, new Integer[]{101});
+//        f2.setJoinOperator(SqlFilter.Operator.OR);
 
         SqlFilter f3 = new SqlFilter();
         f3.addFilter("c1",
                 SqlFilter.Comparison.IS, new Double[]{0.9});
-        f2.addSubGroupCondition(SqlFilter.Operator.AND, f3);
+        f2.addSubGroupCondition(SqlFilter.Operator.OR, f3);
 
         filter.addSubGroupCondition(SqlFilter.Operator.OR, f2);
 
         Query query = filter.toQuery();
+
         String res = filter.toEsObject(query, 0, 10, emptySet(), emptySet(), null, null, emptyMap());
 
         System.out.println(res);
+        assertEquals("{\"size\":10,\"query\":{\"bool\":{\"should\":[{\"bool\":{\"should\":[{\"bool\":{\"must\":[{\"term\":{\"c1\":{\"boost\":1.0,\"value\":0.9}}}]}},{\"range\":{\"b1\":{\"gte\":100}}},{\"range\":{\"b2\":{\"gte\":101}}}]}},{\"range\":{\"a1\":{\"gte\":99}}}]}}}"
+        ,res);
     }
 
 

@@ -95,6 +95,10 @@ public abstract class AbstractWebUI<T, V> implements WorksheetSaver {
 
         Collection<Filter> filters = filterSet.getFilters();
 
+        if(!filters.isEmpty()){
+            sqlFilter.setJoinOperator(SqlFilter.Operator.valueOf(String.valueOf(filterSet.getOperator())));
+        }
+
         for (Filter filter : filters) {
             String property = filter.getProperty();
             Object[] value = filter.getValue();
