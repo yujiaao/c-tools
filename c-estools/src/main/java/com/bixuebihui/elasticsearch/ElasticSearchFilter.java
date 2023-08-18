@@ -134,7 +134,7 @@ public class ElasticSearchFilter extends SqlFilter {
     private void addFilter(Bool criteria, List<Query> filters, Operator upOperator) {
         if (filters.isEmpty()) return;
         switch (upOperator) {
-            case OR -> criteria.addShould(filters,1);
+            case OR -> criteria.addShould(filters).setMinimumShouldMatch(1);
             case NOT -> criteria.addMustNot(filters);
             default -> criteria.addMust(filters);
         }

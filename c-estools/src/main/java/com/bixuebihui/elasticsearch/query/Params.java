@@ -85,7 +85,7 @@ public class Params implements ArrayableInterface {
         return this;
     }
 
-    Set<String> addJustIs= Sets.newHashSet("minimum_should_match");
+//    Set<String> addJustIs= Sets.newHashSet("minimum_should_match");
 
     /**
      * Adds a param to the list.
@@ -102,14 +102,13 @@ public class Params implements ArrayableInterface {
         if(this.params==null){
             this.params = Maps.newHashMap();
         }
-
-
-        if(addJustIs.contains(key)){
-            if(value!=null) {
-                this.params.put(key, value);
-            }
-            return this;
-        }
+//
+//        if(addJustIs.contains(key)){
+//            if(value!=null) {
+//                this.params.put(key, value);
+//            }
+//            return this;
+//        }
 
         Object o = this.params.get(key);
         if(!(o instanceof List)) {
