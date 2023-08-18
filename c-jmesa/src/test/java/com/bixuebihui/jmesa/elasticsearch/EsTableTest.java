@@ -85,7 +85,7 @@ public class EsTableTest {
 
                 Arguments.of("{\"operator\":\"OR\",\"filterSets\":[],\"filters\":[{\"property\":\"sight_show_pv\",\"comparison\":\"IS\",\"value\":[\"300\"]}" +
                                 ",{\"property\":\"req_pv\",\"value\":[\"500\"],\"comparison\":\"IS\"}]}",
-                        "{\"bool\":{\"should\":[{\"term\":{\"sight_show_pv\":{\"boost\":1.0,\"value\":\"300\"}}},{\"term\":{\"req_pv\":{\"boost\":1.0,\"value\":\"500\"}}}]}}"),
+                        "{\"bool\":{\"should\":[{\"term\":{\"sight_show_pv\":{\"boost\":1.0,\"value\":\"300\"}}},{\"term\":{\"req_pv\":{\"boost\":1.0,\"value\":\"500\"}}}],\"minimum_should_match\":1}}"),
 
                 Arguments.of("{\"operator\":\"NOT\",\"filterSets\":[],\"filters\":[{\"property\":\"sight_show_pv\",\"comparison\":\"IS\",\"value\":[\"300\"]}" +
                                 ",{\"property\":\"req_pv\",\"value\":[\"500\"],\"comparison\":\"IS\"}]}",
@@ -97,7 +97,7 @@ public class EsTableTest {
                                 "{\"property\":\"sight_show_pv\",\"comparison\":\"IS\",\"value\":[\"300\"]}," +
                                 "{\"property\":\"sight_show_pv\",\"comparison\":\"IS\",\"value\":[\"400\"]}]" +
                                 "}]}",
-                        "{\"bool\":{\"must\":[{\"bool\":{\"should\":[{\"term\":{\"sight_show_pv\":{\"boost\":1.0,\"value\":\"300\"}}},{\"term\":{\"sight_show_pv\":{\"boost\":1.0,\"value\":\"400\"}}}],\"must\":[{\"term\":{\"ctr\":{\"boost\":1.0,\"value\":\"0.1\"}}}]}}]}}"),
+                        "{\"bool\":{\"must\":[{\"bool\":{\"should\":[{\"term\":{\"sight_show_pv\":{\"boost\":1.0,\"value\":\"300\"}}},{\"term\":{\"sight_show_pv\":{\"boost\":1.0,\"value\":\"400\"}}}],\"minimum_should_match\":1,\"must\":[{\"term\":{\"ctr\":{\"boost\":1.0,\"value\":\"0.1\"}}}]}}]}}"),
 
                 //filterSets NOT + OR
                 Arguments.of("{\"operator\":\"AND\",\"filterSets\":[{\"operator\":\"NOT\",\"filters\":[{\"property\":\"ctr\",\"comparison\":\"IS\",\"value\":[\"0.1\"]}]}," +
@@ -105,8 +105,7 @@ public class EsTableTest {
                                 "{\"property\":\"sight_show_pv\",\"comparison\":\"IS\",\"value\":[\"300\"]}," +
                                 "{\"property\":\"sight_show_pv\",\"comparison\":\"IS\",\"value\":[\"400\"]}]" +
                                 "}]}",
-                        "{\"bool\":{\"must\":[{\"bool\":{\"must_not\":[{\"term\":{\"ctr\":{\"boost\":1.0,\"value\":\"0.1\"}}}]," +
-                                "\"should\":[{\"term\":{\"sight_show_pv\":{\"boost\":1.0,\"value\":\"300\"}}},{\"term\":{\"sight_show_pv\":{\"boost\":1.0,\"value\":\"400\"}}}]}}]}}"),
+                        "{\"bool\":{\"must\":[{\"bool\":{\"must_not\":[{\"term\":{\"ctr\":{\"boost\":1.0,\"value\":\"0.1\"}}}],\"should\":[{\"term\":{\"sight_show_pv\":{\"boost\":1.0,\"value\":\"300\"}}},{\"term\":{\"sight_show_pv\":{\"boost\":1.0,\"value\":\"400\"}}}],\"minimum_should_match\":1}}]}}"),
 
                 //filterSets NOT + OR(IS, IS_NOT)
                 Arguments.of("{\"operator\":\"AND\",\"filterSets\":[{\"operator\":\"NOT\",\"filters\":[{\"property\":\"ctr\",\"comparison\":\"IS\",\"value\":[\"0.1\"]}]}," +
@@ -114,9 +113,7 @@ public class EsTableTest {
                                 "{\"property\":\"sight_show_pv\",\"comparison\":\"IS\",\"value\":[\"300\"]}," +
                                 "{\"property\":\"num\",\"comparison\":\"IS_NOT\",\"value\":[\"400\"]}]" +
                                 "}]}",
-                        "{\"bool\":{\"must\":[{\"bool\":{\"must_not\":[{\"term\":{\"ctr\":{\"boost\":1.0,\"value\":\"0.1\"}}}]," +
-                                "\"should\":[{\"term\":{\"sight_show_pv\":{\"boost\":1.0,\"value\":\"300\"}}}," +
-                                "{\"bool\":{\"must_not\":[{\"term\":{\"num\":{\"boost\":1.0,\"value\":\"400\"}}}]}}]}}]}}"),
+                        "{\"bool\":{\"must\":[{\"bool\":{\"must_not\":[{\"term\":{\"ctr\":{\"boost\":1.0,\"value\":\"0.1\"}}}],\"should\":[{\"term\":{\"sight_show_pv\":{\"boost\":1.0,\"value\":\"300\"}}},{\"bool\":{\"must_not\":[{\"term\":{\"num\":{\"boost\":1.0,\"value\":\"400\"}}}]}}],\"minimum_should_match\":1}}]}}"),
 
                 //empty
                 Arguments.of("{}",

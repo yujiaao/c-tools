@@ -24,8 +24,8 @@ public class Bool extends Query {
         return this.addQuery("should", args);
     }
 
-    public Bool addShould(List<Query> args) {
-        return this.addQuery("should", args);
+    public Bool addShould(List<Query> args, int minimumShouldMatch) {
+        return this.addQuery("should", args, minimumShouldMatch);
     }
 
 
@@ -40,7 +40,7 @@ public class Bool extends Query {
     }
 
     public Bool addMust(List<Query> args) {
-        return this.addQuery("must", args);
+        return this.addQuery("must", args, 0);
     }
 
 
@@ -55,7 +55,7 @@ public class Bool extends Query {
     }
 
     public Bool addMustNot(List<Query> args) {
-        return this.addQuery("must_not", args);
+        return this.addQuery("must_not", args, 0);
     }
 
 
@@ -80,8 +80,11 @@ public class Bool extends Query {
         return (Bool) this.addParam(type, args.toArray());
     }
 
-    protected Bool addQuery(String type, List<Query> args) {
+    protected Bool addQuery(String type, List<Query> args, int minimumShouldMatch) {
         args.forEach(q -> this.addParam(type, q.toArray()));
+        if(minimumShouldMatch>0){
+            this.addParam("minimum_should_match", minimumShouldMatch);
+        }
         return this;
     }
 
