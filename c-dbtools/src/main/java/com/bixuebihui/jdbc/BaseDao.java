@@ -1732,7 +1732,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         if(matchField(insertSql, getKeyName())) {
             return insertSql;
         }else{
-            insertSql.replace(") values (", ","
+            insertSql = insertSql.replace(") values (", ","
                     + this.getKeyName() + ") values (?,");
             outHas[0]  =true;
         }
