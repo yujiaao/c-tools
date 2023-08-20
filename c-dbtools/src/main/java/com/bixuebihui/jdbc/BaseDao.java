@@ -1,6 +1,5 @@
 package com.bixuebihui.jdbc;
 
-import com.alibaba.druid.DbType;
 import com.bixuebihui.DbException;
 import com.bixuebihui.SqlUtils;
 import com.bixuebihui.db.*;
@@ -19,10 +18,8 @@ import jakarta.validation.constraints.NotNull;
 import org.apache.commons.beanutils.*;
 import org.apache.commons.beanutils.converters.*;
 import org.apache.commons.lang3.NotImplementedException;
-import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.CaseUtils;
-import org.apache.commons.text.matcher.StringMatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.ProxyFactory;
@@ -1932,10 +1929,10 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         }
     }
     public boolean upsertBatch(List<T> infos) {
-        return insertBatchKeepKey(infos, null,  "",true);
+        return insertBatchKeepKey(infos, "",true);
     }
     protected boolean upsertBatch(List<T> infos, String shardTableName) {
-        return insertBatchKeepKey(infos, null,  shardTableName,true);
+        return insertBatchKeepKey(infos, shardTableName,true);
     }
 
     public boolean insertBatch(List<T> infos) {
@@ -1950,7 +1947,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     }
 
 
-    public boolean insertBatchKeepKey(List<T> infos, Connection cn, String shardTableName, boolean useUpsert) {
+    public boolean insertBatchKeepKey(List<T> infos, String shardTableName, boolean useUpsert) {
         boolean[] res1 = new boolean[1];
         String insertSql = getInsertSqlWithId(res1);
         beforeChange(infos);
