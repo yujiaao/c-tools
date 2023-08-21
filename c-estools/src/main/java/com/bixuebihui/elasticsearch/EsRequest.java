@@ -45,7 +45,7 @@ import static java.util.Collections.emptyMap;
  * @author xwx
  */
 public class EsRequest {
-    public static final String RETRY_ON_CONFLICT = "?retry_on_conflict=5&timeout=1m";
+    public static final String TIMEOUT = "?timeout=1m";
     static final Logger logger = LoggerFactory.getLogger(EsRequest.class);
     /**
      * This you have to fill in yourself, you're probably using Jackson's ObjectMapper
@@ -542,9 +542,9 @@ public class EsRequest {
         String res;
         if (version != null && version.startsWith("6")) {
             //TODO routing problem
-            res = post(EsQueryBuilder.buildUpdate(map), "_doc", id + "/" + EsQueryBuilder.ACTION_UPDATE+ RETRY_ON_CONFLICT +(refresh? "&"+this.refresh:""));
+            res = post(EsQueryBuilder.buildUpdate(map), "_doc", id + "/" + EsQueryBuilder.ACTION_UPDATE+ TIMEOUT +(refresh? "&"+this.refresh:""));
         } else {
-            res = post(EsQueryBuilder.buildUpdate(map), EsQueryBuilder.ACTION_UPDATE+ RETRY_ON_CONFLICT +(refresh? "&"+this.refresh:""), id);
+            res = post(EsQueryBuilder.buildUpdate(map), EsQueryBuilder.ACTION_UPDATE+ TIMEOUT +(refresh? "&"+this.refresh:""), id);
         }
         /**
          * {
@@ -569,7 +569,7 @@ public class EsRequest {
     public int updateByQuery(Query query, Map<String, Object> keyValues, boolean conflictsProceed) throws JsonProcessingException {
         String q = EsQueryBuilder.buildUpdateByQuery(query, keyValues);
 
-        String action = EsQueryBuilder.ACTION_UPDATE_BY_QUERY + RETRY_ON_CONFLICT+ (conflictsProceed ? "&conflicts=proceed" : "");
+        String action = EsQueryBuilder.ACTION_UPDATE_BY_QUERY + TIMEOUT + (conflictsProceed ? "&conflicts=proceed" : "");
 
         String res = post(q, action);
 
@@ -605,7 +605,7 @@ public class EsRequest {
 
         String q = EsQueryBuilder.buildUpdateByQuery(query, emptyMap());
 
-        String action = EsQueryBuilder.ACTION_DELETE_BY_QUERY + RETRY_ON_CONFLICT+ (conflictsProceed ? "&conflicts=proceed" : "");
+        String action = EsQueryBuilder.ACTION_DELETE_BY_QUERY + TIMEOUT + (conflictsProceed ? "&conflicts=proceed" : "");
 
         String res = post(q, action);
         JsonNode result = mapper.readTree(res);

@@ -45,42 +45,42 @@ import java.util.List;
 @SharedService
 @RestController
 @RequestMapping("/{{snakeCase pojoClassName}}")
-{{#eq config.swaggerVersion "2" }}
+{{#eq config.swaggerVersion "2" ~}}
 @Api(tags = "{{tableInfo.comment}}")
-{{else}}
+{{else~}}
 @OpenAPIDefinition(info = @Info(description = "{{tableInfo.comment}}"))
-{{/eq}}
+{{/eq~}}
 public class  {{className}} {
     @Autowired
     {{pojoClassName}}Service {{firstLow pojoClassName}}Service;
 
     {{#eq config.swaggerVersion "2" }}@ApiOperation({{else}}@Operation(summary ={{/eq~}}"取{{tableName}}列表")
-    @GetMapping(value = "/list", produces = {"application/json;charset=UTF-8"})
+    @PostMapping(value = "/list", produces = {"application/json;charset=UTF-8"})
     public BaseModel<PageModel<{{pojoClassName}}Dto>> list(
-    {{#eq config.swaggerVersion "2" }}
+    {{#eq config.swaggerVersion "2" ~}}
         @ApiParam(name = "maxRows", value = "一页大小")
-    {{else}}
+    {{else~}}
         @Parameter(name ="maxRows", description = "一页大小")
-    {{/eq}}
+    {{/eq~}}
         @RequestParam(value = "maxRows", defaultValue = "10") Long maxRows,
-    {{#eq config.swaggerVersion "2" }}
+    {{#eq config.swaggerVersion "2" ~}}
         @ApiParam(name = "page", value = "页码")
-    {{else}}
+    {{else~}}
         @Parameter(name ="page", description = "页码")
-    {{/eq}}
+    {{/eq~}}
         @RequestParam(value = "page", defaultValue = "1") Long page,
-    {{#eq config.swaggerVersion "2" }}
+    {{#eq config.swaggerVersion "2" ~}}
         @ApiParam(name = "sortBy", value = "排序 sortBy=abc:asc,def:desc")
-    {{else}}
+    {{else~}}
         @Parameter(name ="sortBy", description = "排序 sortBy=abc:asc,def:desc")
-    {{/eq}}
+    {{/eq~}}
         @RequestParam(value = "sortBy", defaultValue = "{{firstKeyName}}:desc") String sortBy,
         @Validated
-    {{#eq config.swaggerVersion "2" }}
+    {{#eq config.swaggerVersion "2" ~}}
         @ApiParam(value = "查询条件", required = true)
-    {{else}}
+    {{else~}}
         @Parameter(required ="true", description = "查询条件")
-    {{/eq}}
+    {{/eq~}}
         {{pojoClassName}}SearchCmd  searchCmd,
         HttpServletRequest request) {
 
@@ -101,7 +101,6 @@ public class  {{className}} {
         sw.stop();
         result.setTook(sw.getTime());
 
-
         BaseModel<PageModel<{{pojoClassName}}Dto>> res = new BaseModel<>();
         res.setResult(result);
         res.setReturncode(0);
@@ -114,11 +113,11 @@ public class  {{className}} {
     @PostMapping(value = "/del", produces = {"application/json;charset=UTF-8"})
     public BaseModel<Boolean> del(
         @Validated
-    {{#eq config.swaggerVersion "2" }}
+    {{#eq config.swaggerVersion "2" ~}}
         @ApiParam(value = "主键", required = true)
-    {{else}}
+    {{else~}}
         @Parameter(required ="true", description = "主键")
-    {{/eq}}
+    {{/eq~}}
         {{pojoClassName}}DelCmd  delCmd,
         HttpServletRequest request) {
 
@@ -133,11 +132,11 @@ public class  {{className}} {
     @PostMapping(value = "/save", produces = {"application/json;charset=UTF-8"})
     public BaseModel<{{pojoClassName}}Dto> save(
         @Validated
-        {{#eq config.swaggerVersion "2" }}
+        {{#eq config.swaggerVersion "2" ~}}
             @ApiParam(value = "{{tableName}} 数据对象", required = true)
-        {{else}}
+        {{else~}}
             @Parameter(required ="true", description = "{{tableName}} 数据对象")
-        {{/eq}}
+        {{/eq~}}
             {{pojoClassName}}Dto  dto, HttpServletRequest request) {
 
         BaseModel<{{pojoClassName}}Dto> res = new BaseModel<>();

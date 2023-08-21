@@ -186,7 +186,7 @@ public abstract class BaseEsOperator<T, V> implements Record<T> {
     }
 
     public int update(String _id, String[] fields, Object[] values) throws DbException {
-        return update(_id, fields, values, false);
+        return update(_id, fields, values, true);
     }
 
     public int update(String _id, String[] fields, Object[] values, boolean refresh) throws DbException {
@@ -203,7 +203,7 @@ public abstract class BaseEsOperator<T, V> implements Record<T> {
     }
 
     public int update(String _id, String fields, Object values) throws DbException {
-        return update(_id, fields, values, false);
+        return update(_id, fields, values, true);
     }
 
     public int update(String _id, String fields, Object values, boolean refresh) throws DbException {
