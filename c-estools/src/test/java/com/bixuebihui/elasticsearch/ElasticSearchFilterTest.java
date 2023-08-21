@@ -92,7 +92,7 @@ class ElasticSearchFilterTest {
 
 
         Query query = filter.toQuery();
-        assertEquals(2, query.getParams().size());
+        assertEquals(3, query.getParams().size());
 
         String res = filter.toEsObject(query, 0, 10, emptySet(), emptySet(), null, null, emptyMap());
 
@@ -111,7 +111,7 @@ class ElasticSearchFilterTest {
         filter.setJoinOperator(SqlFilter.Operator.OR);
 
         Query query = filter.toQuery();
-        assertEquals(1, query.getParams().size());
+        assertEquals(2, query.getParams().size());
 
         System.out.println(query.toArray());
 
@@ -120,7 +120,7 @@ class ElasticSearchFilterTest {
 
         String res = filter.toEsObject(query, 0, 10, emptySet(), emptySet(), null, null, emptyMap());
 
-        assertEquals("{\"size\":10,\"query\":{\"bool\":{\"should\":[{\"range\":{\"a1\":{\"lt\":100}}},{\"range\":{\"b1\":{\"gte\":100}}}]}}}"
+        assertEquals("{\"size\":10,\"query\":{\"bool\":{\"should\":[{\"range\":{\"a1\":{\"lt\":100}}},{\"range\":{\"b1\":{\"gte\":100}}}],\"minimum_should_match\":1}}}"
         ,res);
         System.out.println(res);
     }
@@ -140,7 +140,7 @@ class ElasticSearchFilterTest {
 
 
         Query query = filter.toQuery();
-        assertEquals(1, query.getParams().size());
+        assertEquals(2, query.getParams().size());
 
         System.out.println(query.toArray());
 
@@ -149,7 +149,7 @@ class ElasticSearchFilterTest {
 
         String res = filter.toEsObject(query, 0, 10, emptySet(), emptySet(), null, null, emptyMap());
 
-        assertEquals("{\"size\":10,\"query\":{\"bool\":{\"must\":[{\"bool\":{\"should\":[{\"range\":{\"a1\":{\"lt\":100}}},{\"range\":{\"b1\":{\"gte\":100}}}]}}]}}}"
+        assertEquals("{\"size\":10,\"query\":{\"bool\":{\"should\":[{\"range\":{\"a1\":{\"lt\":100}}},{\"range\":{\"b1\":{\"gte\":100}}}],\"minimum_should_match\":1}}}"
                 ,res);
         System.out.println(res);
     }
@@ -170,7 +170,7 @@ class ElasticSearchFilterTest {
 
 
         Query query = filter.toQuery();
-        assertEquals(1, query.getParams().size());
+        assertEquals(2, query.getParams().size());
 
         System.out.println(query.toArray());
 
@@ -207,7 +207,7 @@ class ElasticSearchFilterTest {
         String res = filter.toEsObject(query, 0, 10, emptySet(), emptySet(), null, null, emptyMap());
 
         System.out.println(res);
-        assertEquals("{\"size\":10,\"query\":{\"bool\":{\"should\":[{\"bool\":{\"should\":[{\"bool\":{\"must\":[{\"term\":{\"c1\":{\"boost\":1.0,\"value\":0.9}}}]}},{\"range\":{\"b1\":{\"gte\":100}}},{\"range\":{\"b2\":{\"gte\":101}}}]}},{\"range\":{\"a1\":{\"gte\":99}}}]}}}"
+        assertEquals("{\"size\":10,\"query\":{\"bool\":{\"should\":[{\"bool\":{\"must\":[{\"term\":{\"c1\":{\"boost\":1.0,\"value\":0.9}}}]}},{\"range\":{\"b1\":{\"gte\":100}}},{\"range\":{\"b2\":{\"gte\":101}}},{\"range\":{\"a1\":{\"gte\":99}}}],\"minimum_should_match\":1}}}"
         ,res);
     }
 
