@@ -165,4 +165,7 @@ public class Params implements ArrayableInterface {
         return arr;
     }
 
+    protected boolean hasParam(String paramName) {
+        return this.params!=null && this.params.containsKey(paramName);
+    }
 }

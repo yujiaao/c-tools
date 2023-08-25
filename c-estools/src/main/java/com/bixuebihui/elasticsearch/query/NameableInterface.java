@@ -6,7 +6,7 @@ package com.bixuebihui.elasticsearch.query;
  *
  * @author Evgeniy Sokolov <ewgraf@gmail.com>
  */
-interface NameableInterface
+public interface NameableInterface
 {
     /**
      * Retrieve the name of this object.

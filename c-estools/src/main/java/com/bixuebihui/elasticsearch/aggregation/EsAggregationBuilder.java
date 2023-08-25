@@ -1,0 +1,62 @@
+package com.bixuebihui.elasticsearch.aggregation;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+public class EsAggregationBuilder {
+
+    /**
+     // 按时间聚合
+     "aggs": {
+     // 自己取的聚合名字
+     "group_by_grabTime": {
+     // es提供的时间处理函数
+     "date_histogram": {
+     // 需要聚合分组的字段名称, 类型需要为date, 格式没有要求
+     "field": "@timestamp",
+     // 按什么时间段聚合, 这里是5分钟, 可用的interval在上面给出
+     "interval": "5m",
+     // 设置时区, 这样就相当于东八区的时间
+     "time_zone":"+08:00",
+     // 返回值格式化，HH大写，不然不能区分上午、下午
+     "format": "yyyy-MM-dd HH",
+     // 为空的话则填充0
+     "min_doc_count": 0,
+     // 需要填充0的范围
+     "extended_bounds": {
+     "min": 1533556800000,
+     "max": 1533806520000
+     }
+     },
+     // 聚合
+     "aggs": {
+     // 自己取的名称
+     "group_by_status": {
+     // es提供
+     "terms": {
+     // 聚合字段名
+     "field": "LowStatusOfPrice"
+     }
+     }
+     }
+     }
+     */
+    //beijing time
+    public static final String timezone= "+08:00";
+    public static DateHistogram buildDateHistogram(String name, String field, String interval,
+                                                   String format,  String min, String max) {
+
+        DateHistogram res = new DateHistogram(name, field, interval);
+        //int factor =1;
+        //res.setFactor(factor);
+        //res.setOffset(offset);
+        res.setFormat(format);
+        res.setExtendedBounds(min, max);
+        res.setTimezone(timezone);
+
+
+        return  res;
+    }
+
+
+}
