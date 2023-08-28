@@ -101,7 +101,8 @@ public interface Record<T> {
 
 	<K> List<CountObject<K>> countList(String returnField, String[] groupByFields, String having, GroupFunction fun, Class<K> objectType);
 
-	/**
+
+    /**
 	 * <p>countSum.</p> 获得数量
 	 *
 	 * @param field a {@link java.lang.String} object.

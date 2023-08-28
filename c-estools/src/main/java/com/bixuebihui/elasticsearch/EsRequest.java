@@ -1,5 +1,6 @@
 package com.bixuebihui.elasticsearch;
 
+import com.bixuebihui.elasticsearch.aggregation.AbstractAggregation;
 import com.bixuebihui.elasticsearch.query.Query;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -395,16 +396,16 @@ public class EsRequest {
     }
 
     public String query(Query query, int from, int size) {
-        return query(query, from, size, null);
+        return query(query, from, size, null, null);
     }
 
-    public String query(Query query, int from, int size, LinkedHashMap<String, String> sort) {
-        return query(query, from, size, sort, null, emptyMap());
+    public String query(Query query, int from, int size, LinkedHashMap<String, String> sort, AbstractAggregation aggs) {
+        return query(query, from, size, sort, null, emptyMap(), aggs);
     }
 
-    public String query(Query query, int from, int size, LinkedHashMap<String, String> sort, String scriptSource, Map<String, Object> scriptParams) {
+    public String query(Query query, int from, int size, LinkedHashMap<String, String> sort, String scriptSource, Map<String, Object> scriptParams, AbstractAggregation aggs) {
         try {
-            String body = EsQueryBuilder.build(query, from, size, Collections.emptySet(), Collections.emptySet(), sort, scriptSource, scriptParams);
+            String body = EsQueryBuilder.build(query, from, size, Collections.emptySet(), Collections.emptySet(), sort, scriptSource, scriptParams, aggs);
 
             HttpWithJsonEntity getRequest =
                     HttpWithJsonEntity.builder()

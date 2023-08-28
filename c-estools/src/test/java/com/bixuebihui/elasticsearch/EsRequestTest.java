@@ -34,7 +34,7 @@ public class EsRequestTest {
 
         esRequest.indexName = "test*";
 
-        String s0 = esRequest.query(Query.match_all(), 0, 10, null);
+        String s0 = esRequest.query(Query.match_all(), 0, 10, null, null);
         System.out.println(s0);
 
         System.out.println("===========");
@@ -42,7 +42,7 @@ public class EsRequestTest {
 
         String s = esRequest.query(Query
                 .match(null, null).setFieldQuery("child_endpoint_name",
-                        "{GET}/index/sysGenerator"), 0, 10, null);
+                        "{GET}/index/sysGenerator"), 0, 10, null, null);
         System.out.println(s);
 
     }
@@ -50,7 +50,7 @@ public class EsRequestTest {
     @Test
     public void testMatchAll(){
         esRequest.indexName = "test*";
-        String s0 = esRequest.query(Query.match_all(), 0, 10, null);
+        String s0 = esRequest.query(Query.match_all(), 0, 10, null, null);
         System.out.println(s0);
     }
 

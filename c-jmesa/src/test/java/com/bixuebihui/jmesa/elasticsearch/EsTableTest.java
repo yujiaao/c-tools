@@ -266,7 +266,8 @@ public class EsTableTest {
 
         Query q = convert(queryCmd);
         System.out.println(new ObjectMapper().writeValueAsString(q));
-        String res = new ElasticSearchFilter().toEsObject(q, 0, 10, emptySet(), emptySet(), null, null, emptyMap());
+        String res = new ElasticSearchFilter().toEsObject(q, 0, 10, emptySet(), emptySet(),
+                null, null, emptyMap(), null);
 
         System.out.println(res);
     }

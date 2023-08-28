@@ -3,6 +3,8 @@ package com.bixuebihui.elasticsearch;
 import com.bixuebihui.DbException;
 import com.bixuebihui.db.*;
 import com.bixuebihui.db.Record;
+import com.bixuebihui.elasticsearch.aggregation.DateHistogram;
+import com.bixuebihui.elasticsearch.aggregation.EsAggregationBuilder;
 import com.bixuebihui.elasticsearch.query.Query;
 import com.bixuebihui.jdbc.*;
 import com.bixuebihui.jdbc.entity.CountObject;
@@ -22,6 +24,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
 
 public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
@@ -469,6 +472,11 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     public <K> List<CountObject<K>> countList(String returnField, String[] groupByFields, String having, GroupFunction fun, Class<K> objectType) {
         throw new NotImplementedException();
 
+    }
+
+    @Override
+    public <K> List<K> dateHistCountList(String dateField, String interval, String[] groupByFields,GroupFunction fun, Class<K> objectType) {
+        return  operator.dateHistCountList(filterStack.toQuery(), dateField, interval, groupByFields,fun, objectType);
     }
 
     @Override

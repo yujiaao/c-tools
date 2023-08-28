@@ -7,7 +7,7 @@ import static java.util.Collections.emptyMap;
 /**
  * Class GlobalAggregation.
  *
- * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-bucket-global-aggregation.html
+ * @see <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-bucket-global-aggregation.html">...</a>
  */
 public class GlobalAggregation extends AbstractAggregation
 {

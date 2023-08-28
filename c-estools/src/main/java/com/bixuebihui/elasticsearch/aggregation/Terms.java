@@ -7,19 +7,19 @@ import java.util.Map;
  *
  * @see <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-bucket-terms-aggregation.html">...</a>
  */
-public class Terms extends AbstractTermsAggregation
+public class Terms extends AbstractTermsAggregation implements  MissingTrait
 {
     public Terms(String name) {
         super(name);
     }
 
     //use Traits\MissingTrait;
-    public Terms setMissing(Object missing)
+
+    Terms setMissing(Object missing)
     {
         this.setParam("missing", missing);
         return this;
     }
-
 
     /**
      * Set the bucket sort order.

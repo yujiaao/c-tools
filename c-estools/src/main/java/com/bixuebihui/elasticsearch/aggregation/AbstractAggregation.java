@@ -5,7 +5,7 @@ import com.bixuebihui.elasticsearch.query.Params;
 
 import java.util.*;
 
-abstract class AbstractAggregation extends Params implements NameableInterface
+public abstract class AbstractAggregation extends Params implements NameableInterface
 {
     protected String METADATA_KEY = "meta";
 
@@ -32,7 +32,7 @@ abstract class AbstractAggregation extends Params implements NameableInterface
      *
      * @return $this
      */
-    public NameableInterface setName(String $name)
+    public AbstractAggregation setName(String $name)
     {
         this._name = $name;
 
@@ -128,17 +128,15 @@ abstract class AbstractAggregation extends Params implements NameableInterface
         Map array = super.toArray();
 
         if (this._aggs.size() > 0) {
-            array.put("aggs", this.convertArrayable( this._aggs));
+            array.put("aggs",  this.convertArrayable( this._aggs));
         }
 
         return array;
     }
-//
-//    protected String getBaseName()
-//    {
-//        String shortName = (new \ReflectionClass($this))->getShortName();
-//        $shortName = \preg_replace('/Aggregation$/', '', $shortName);
-//
-//        return Util::toSnakeCase($shortName);
-//    }
+
+    protected String getBaseName()
+    {
+        String shortName = super.getBaseName().replaceAll("Aggregation$", "");
+        return camelToSnake(shortName);
+    }
 }

@@ -54,7 +54,7 @@ public class EsTable extends EasyTable {
         Map<String, Object> scriptParams = emptyMap();
 
         String query = filter.toEsObject(filter.toQuery(), rowSelect.getRowStart(),
-                rowSelect.getRowEnd() - rowSelect.getRowStart(), emptySet(),emptySet(), sort, scriptSource, scriptParams);
+                rowSelect.getRowEnd() - rowSelect.getRowStart(), emptySet(),emptySet(), sort, scriptSource, scriptParams, null);
         return request.esJsonToTableJson(request.search(query), rowSelect.getMaxRows(), rowSelect.getRowStart(), rowSelect.getRowEnd(), rowSelect.getTotalRows(), rowSelect.getPage());
     }
 

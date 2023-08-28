@@ -7,8 +7,8 @@ import com.google.common.collect.Sets;
 import java.util.*;
 
 public class Params implements ArrayableInterface {
-    Map<String, Object> rawParams;
-    Map<String, Object> params;
+    Map<String, Object> rawParams = new HashMap<>();
+    Map<String, Object> params = new HashMap<>();
 
     public static <T> String getParamName(Class<T> claz) {
         String[] all = claz.getName().split("\\.");
@@ -66,9 +66,6 @@ public class Params implements ArrayableInterface {
     }
 
     public Map<String, Object> getParams() {
-        if(params==null){
-            params =  new HashMap<>(8);
-        }
         return params;
     }
 
@@ -83,6 +80,23 @@ public class Params implements ArrayableInterface {
         }
         this.params.put(key, value);
         return this;
+    }
+
+    /**
+     * Returns a specific param.
+     *
+     * @param wstring $key Key to return
+     *
+     *
+     * @return mixed Key value
+     */
+    public Object getParam(String key)
+    {
+        if (!this.hasParam(key)) {
+            throw new IllegalArgumentException("Param "+key+" does not exist");
+        }
+
+        return this.params.get(key);
     }
 
     /**

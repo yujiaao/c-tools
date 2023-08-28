@@ -1,0 +1,38 @@
+# 共有8个级别，按照从低到高为：ALL < TRACE < DEBUG < INFO < WARN < ERROR < FATAL < OFF。
+# status：用于设置log4j2自身内部的信息输出，可以不设置
+# monitorInterval：log4j2监测配置文件的时间间隔，如果文件被修改，则重新加载
+Configuration:
+  status: ALL
+  monitorInterval: 30
+  Properties: # 定义全局变量
+    Property:
+      - name: log.level.console
+        value: DEBUG
+      - name: log.path
+        # “sys:”表示：如果VM参数中没指定这个变量值，则使用本文件中定义的缺省全局变量值
+        # ${sys:catalina.home} 指向tomcat安装目录
+        value: target/logs
+      - name: project.name
+        value: CloudEmploy
+      - name: log.pattern
+        value: "%highlight{%d{HH:mm:ss.SSS} %-5level %logger{36}.%M() @%L - %msg%n}{FATAL=Bright Red, ERROR=Bright Magenta, WARN=Bright Yellow, INFO=Bright Green, DEBUG=Bright Cyan, TRACE=Bright White}"
+
+  Appenders:
+    Console:  # 输出到控制台
+      name: CONSOLE
+      target: SYSTEM_OUT
+      PatternLayout:
+        pattern: ${log.pattern}
+
+  # 只有定义了 Loggers，并引入 Appenders，Appenders才会生效
+  Loggers:
+    Root:
+      level: DEBUG
+      AppenderRef:
+        - ref: CONSOLE
+
+    Logger: # 为com.***包配置特殊的Log级别，方便调试，trace会打印SQL具体结果，debug只打印SQL语句
+      - name: com.bixuebihui
+        level: DEBUG
+        AppenderRef:
+          - ref: CONSOLE

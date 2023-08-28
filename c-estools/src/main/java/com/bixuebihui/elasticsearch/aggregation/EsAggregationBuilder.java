@@ -58,5 +58,30 @@ public class EsAggregationBuilder {
         return  res;
     }
 
+    public static DateHistogram buildDateHistogram(String field, String interval, String termField, String aggFunction) {
+
+        DateHistogram res = new DateHistogram("date_hist_by_"+field, field, interval);
+
+        res.setTimezone(timezone);
+        if(termField!=null && !termField.isEmpty()){
+            res.addAggregation(new Terms("group_by_"+termField)
+                    .setField( termField));
+        }
+        if(aggFunction!=null && !aggFunction.isEmpty()){
+            switch (aggFunction){
+                case "count" ->
+                    res.addAggregation(new ValueCount("count_"+termField, termField)
+                            .setField( aggFunction));
+                case "sum" -> res.addAggregation(new Sum("sum_"+termField)
+                        .setField( termField));
+                case "max" -> res.addAggregation(new Max("max_"+termField).setField( termField));
+                case "min" -> res.addAggregation(new Min("min_"+termField).setField( termField));
+            }
+        }
+
+
+        return  res;
+    }
+
 
 }

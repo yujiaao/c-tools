@@ -1,5 +1,7 @@
 package com.bixuebihui.elasticsearch;
 
+import com.bixuebihui.elasticsearch.aggregation.AbstractAggregation;
+
 import com.bixuebihui.elasticsearch.query.Query;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -35,6 +37,7 @@ public class EsQueryBuilder {
     static final String FROM = "from";
     static final String SOURCE = "_source";
     static final String QUERY ="query";
+    static final String AGGS ="aggs";
     static final String COUNT ="count";
     static final String INCLUDES ="includes";
     static final String EXCLUDES ="excludes";
@@ -92,15 +95,22 @@ public class EsQueryBuilder {
      * @param sort
      * @return
      */
-
     public static String build(Query query, int from, int size,
                                Set<String> commaSeparatedIncludeFields,
                                Set<String> excludesFields,
-                               LinkedHashMap<String, String> sort, String scriptSource, Map<String,Object> scriptParams)  {
+                               LinkedHashMap<String, String> sort,
+                               String scriptSource,
+                               Map<String,Object> scriptParams,
+                               AbstractAggregation aggs)  {
         Map queryConditions = query.toArray();
 
         HashMap<Object, Object> body = Maps.newHashMap();
         body.put(QUERY, queryConditions);
+
+        if(aggs!=null){
+            body.put(AGGS, Map.of(aggs.getName(), aggs.toArray()));
+        }
+
         if(size>0) {
             body.put(SIZE, size);
         }
@@ -117,7 +127,6 @@ public class EsQueryBuilder {
                     Map.of( INCLUDES, commaSeparatedIncludeFields) : Map.of(EXCLUDES, excludesFields));
 
             body.put(SOURCE, map);
-
         }
 
         if(sort!=null && !sort.isEmpty()){

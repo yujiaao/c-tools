@@ -44,14 +44,15 @@ abstract class AbstractSimpleAggregation extends AbstractAggregation
             throw new IllegalArgumentException("Either the field param or the script param should be set");
         }
         Map array = super.toArray();
-
         String baseName = this.getBaseName();
 
-        Object obj = ((Map)(array.get(baseName))).get("script");
+        Map baseMap = (Map) (array).get(baseName);
+
+        Object obj = baseMap.get("script");
         if (obj instanceof Map) {
             Map script = (Map) obj;
-            ((Map)(array.get(baseName))).remove("script");
-            HashMap h = new HashMap<>(((Map) (array.get(baseName))));
+            baseMap.remove("script");
+            HashMap h = new HashMap<>(baseMap);
             h.putAll(script);
             array.put(baseName,  h);
         }

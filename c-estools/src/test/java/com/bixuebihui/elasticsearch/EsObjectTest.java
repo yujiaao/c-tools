@@ -14,7 +14,7 @@ public  class EsObjectTest {
     @Test
     public void testMatchAll() {
 
-        String s = EsQueryBuilder.build(Query.match_all(), 0, 5, emptySet(),emptySet(), null, null, emptyMap());
+        String s = EsQueryBuilder.build(Query.match_all(), 0, 5, emptySet(),emptySet(), null, null, emptyMap(), null);
 
         assertEquals("{\"size\":5,\"query\":{\"match_all\":{}}}", s);
     }
@@ -27,7 +27,7 @@ public  class EsObjectTest {
 
 
         String s = EsQueryBuilder.build(Query.match_all()
-               , 0,5,emptySet(), emptySet(), sort, null, emptyMap());
+               , 0,5,emptySet(), emptySet(), sort, null, emptyMap(), null);
 
         assertEquals("{\"size\":5,\"query\":{\"match_all\":{}},\"sort\":{\"age\":\"desc\"}}", s);
 
@@ -52,7 +52,8 @@ public  class EsObjectTest {
     public void testMatch() {
 
         String s = EsQueryBuilder.build(Query.match(null, null)
-                .setFieldQuery("abc","test 123"), 0,5,emptySet(), emptySet(),null, null, emptyMap());
+                .setFieldQuery("abc","test 123"), 0,5,emptySet(), emptySet(),
+                null, null, emptyMap(), null);
 
         assertEquals("{\"size\":5,\"query\":{\"match\":{\"abc\":{\"query\":\"test 123\"}}}}", s);
     }
@@ -68,7 +69,8 @@ public  class EsObjectTest {
 
 
         String s = EsQueryBuilder.build(Query.match(null, null)
-                .setFieldQuery("abc","test 123"), 0,5,emptySet(),emptySet(), sort, null, emptyMap());
+                .setFieldQuery("abc","test 123"), 0,5,emptySet(),emptySet(),
+                sort, null, emptyMap(), null);
 
         assertEquals("{\"size\":5,\"query\":{\"match\":{\"abc\":{\"query\":\"test 123\"}}},\"sort\":{\"age\":\"desc\"}}", s);
     }

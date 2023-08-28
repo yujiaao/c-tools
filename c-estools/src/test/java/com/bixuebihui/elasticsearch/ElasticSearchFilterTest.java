@@ -1,5 +1,7 @@
 package com.bixuebihui.elasticsearch;
 
+import com.bixuebihui.elasticsearch.aggregation.DateHistogram;
+import com.bixuebihui.elasticsearch.aggregation.EsAggregationBuilder;
 import com.bixuebihui.elasticsearch.processor.Sort;
 import com.bixuebihui.elasticsearch.query.Query;
 import com.bixuebihui.jdbc.SqlFilter;
@@ -36,7 +38,8 @@ class ElasticSearchFilterTest {
         filter.addFilter("age", SqlFilter.Comparison.BETWEEN, new Integer[]{10, 15});
         filter.addFilter("height", SqlFilter.Comparison.GT, new Integer[]{100});
 
-        String res = filter.toEsObject(filter.toQuery(), 0, 10, emptySet(), emptySet(), null, null, emptyMap());
+        String res = filter.toEsObject(filter.toQuery(), 0, 10, emptySet(), emptySet(),
+                null, null, emptyMap(), null);
 
         assertEquals("{\"size\":10,\"query\":{\"bool\":{\"must\":[{\"range\":{\"age\":{\"from\":10,\"to\":15}}},{\"range\":{\"height\":{\"gt\":100}}}]}}}", res);
 
@@ -48,7 +51,8 @@ class ElasticSearchFilterTest {
         filter.addFilter("title", SqlFilter.Comparison.CONTAIN, new String[]{"abc 中国"});
         filter.addFilter("height", SqlFilter.Comparison.GT, new Integer[]{100});
 
-        String res = filter.toEsObject(filter.toQuery(), 0, 10, emptySet(), emptySet(), null, null, emptyMap());
+        String res = filter.toEsObject(filter.toQuery(), 0, 10, emptySet(), emptySet(),
+                null, null, emptyMap(), null);
 
         assertEquals("{\"size\":10,\"query\":{\"bool\":{\"must\":[{\"match\":{\"title\":\"abc 中国\"}},{\"range\":{\"height\":{\"gt\":100}}}]}}}", res);
 
@@ -60,7 +64,8 @@ class ElasticSearchFilterTest {
         filter.addFilter("title", SqlFilter.Comparison.WILDCARD, new String[]{"中国", "北京"});
         filter.addFilter("height", SqlFilter.Comparison.GT, new Integer[]{100});
 
-        String res = filter.toEsObject(filter.toQuery(), 0, 10, emptySet(), emptySet(), null, null, emptyMap());
+        String res = filter.toEsObject(filter.toQuery(), 0, 10, emptySet(), emptySet(),
+                null, null, emptyMap(), null);
 
         assertEquals("{\"size\":10,\"query\":{\"bool\":{\"should\":[{\"wildcard\":{\"title\":" +
                 "{\"boost\":1.0,\"value\":\"中国*\"}}},{\"wildcard\":{\"title\":{\"boost\":1.0,\"value\":\"北京*\"}}}]," +
@@ -94,7 +99,8 @@ class ElasticSearchFilterTest {
         Query query = filter.toQuery();
         assertEquals(3, query.getParams().size());
 
-        String res = filter.toEsObject(query, 0, 10, emptySet(), emptySet(), null, null, emptyMap());
+        String res = filter.toEsObject(query, 0, 10, emptySet(), emptySet(),
+                null, null, emptyMap(), null);
 
         System.out.println(res);
     }
@@ -118,7 +124,8 @@ class ElasticSearchFilterTest {
         ObjectMapper mapper = new ObjectMapper();
         System.out.println(mapper.valueToTree(query));
 
-        String res = filter.toEsObject(query, 0, 10, emptySet(), emptySet(), null, null, emptyMap());
+        String res = filter.toEsObject(query, 0, 10, emptySet(), emptySet(),
+                null, null, emptyMap(), null);
 
         assertEquals("{\"size\":10,\"query\":{\"bool\":{\"should\":[{\"range\":{\"a1\":{\"lt\":100}}},{\"range\":{\"b1\":{\"gte\":100}}}],\"minimum_should_match\":1}}}"
         ,res);
@@ -147,7 +154,8 @@ class ElasticSearchFilterTest {
         ObjectMapper mapper = new ObjectMapper();
         System.out.println(mapper.valueToTree(query));
 
-        String res = filter.toEsObject(query, 0, 10, emptySet(), emptySet(), null, null, emptyMap());
+        String res = filter.toEsObject(query, 0, 10, emptySet(), emptySet(),
+                null, null, emptyMap(), null);
 
         assertEquals("{\"size\":10,\"query\":{\"bool\":{\"should\":[{\"range\":{\"a1\":{\"lt\":100}}},{\"range\":{\"b1\":{\"gte\":100}}}],\"minimum_should_match\":1}}}"
                 ,res);
@@ -177,7 +185,7 @@ class ElasticSearchFilterTest {
         ObjectMapper mapper = new ObjectMapper();
         System.out.println(mapper.valueToTree(query));
 
-        String res = filter.toEsObject(query, 0, 10, emptySet(), emptySet(), null, null, emptyMap());
+        String res = filter.toEsObject(query, 0, 10, emptySet(), emptySet(), null, null, emptyMap(), null);
 
         System.out.println(res);
     }
@@ -204,11 +212,27 @@ class ElasticSearchFilterTest {
 
         Query query = filter.toQuery();
 
-        String res = filter.toEsObject(query, 0, 10, emptySet(), emptySet(), null, null, emptyMap());
+        String res = filter.toEsObject(query, 0, 10, emptySet(), emptySet(), null, null, emptyMap(), null);
 
         System.out.println(res);
         assertEquals("{\"size\":10,\"query\":{\"bool\":{\"should\":[{\"bool\":{\"must\":[{\"term\":{\"c1\":{\"boost\":1.0,\"value\":0.9}}}]}},{\"range\":{\"b1\":{\"gte\":100}}},{\"range\":{\"b2\":{\"gte\":101}}},{\"range\":{\"a1\":{\"gte\":99}}}],\"minimum_should_match\":1}}}"
         ,res);
+    }
+
+    @Test
+    void testWithDateHist(){
+        ElasticSearchFilter filter = new ElasticSearchFilter();
+
+        filter.addFilter("age", SqlFilter.Comparison.BETWEEN, new Integer[]{10, 15});
+
+        DateHistogram  agg = EsAggregationBuilder.buildDateHistogram("create_time", "10m", "type", null);
+
+        String res = filter.toEsObject(filter.toQuery(), 0, 10, emptySet(), emptySet(),
+                null, null, emptyMap(), agg);
+
+        assertEquals("{\"size\":10,\"query\":{\"bool\":{\"must\":[{\"range\":{\"age\":{\"from\":10,\"to\":15}}}]}},\"aggs\":{\"date_hist_by_create_time\":{\"date_histogram\":{\"fixed_interval\":\"10m\",\"field\":\"create_time\",\"time_zone\":\"+08:00\"},\"aggs\":{\"group_by_type\":{\"terms\":{\"field\":\"type\"}}}}}}", res);
+
+
     }
 
 

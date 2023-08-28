@@ -5,12 +5,10 @@ import java.util.Map;
 /**
  * Class Histogram.
  *
- * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-bucket-histogram-aggregation.html
+ * @see <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-bucket-histogram-aggregation.html">...</a>
  */
 class Histogram extends AbstractSimpleAggregation
 {
-//    use Traits\KeyedTrait;
-//    use Traits\MissingTrait;
     /**
      * Setting the keyed flag to true associates a unique string key
      * with each bucket and returns the result as a hash rather than an array.
@@ -51,7 +49,7 @@ class Histogram extends AbstractSimpleAggregation
     /**
      * Set the interval by which documents will be bucketed.
      *
-     * @param int|string $interval
+     * @param interval int|string
      * @return $this
      */
     public Histogram setInterval(String interval)
@@ -70,8 +68,6 @@ class Histogram extends AbstractSimpleAggregation
      */
     public Histogram setOrder(String order, String direction)
     {
-        //convert below php code to java
-        // this->setParam('order', [$order => $direction]);
         this.setParam("order", Map.of(order, direction));
         return this;
     }

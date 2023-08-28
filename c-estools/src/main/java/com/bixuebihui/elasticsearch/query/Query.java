@@ -19,6 +19,43 @@ public class Query extends Params {
     static final String OPERATOR_AND = "and";
 
     /**
+     * Sets maximum number of results for this query.
+     *
+     * @param size int $size Maximal number of results for query (default = 10)
+     *
+     * @see <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-body.html#request-body-search-from-size">...</a>
+     */
+    public Query setSize(int size)
+    {
+         this.setParam("size", size);
+         return this;
+    }
+    /**
+     * Enables explain on the query.
+     *
+     * @param  $explain boolean Enabled or disable explain (default = true)
+     *
+     * @see <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-body.html#request-body-search-explain">...</a>
+     */
+    public Query setExplain(boolean $explain)
+    {
+         this.setParam("explain", $explain);
+        return this;
+    }
+
+    /**
+     * Adds a track_total_hits argument.
+     *
+     * @param $trackTotalHits bool|int $trackTotalHits Track total hits parameter
+     * @see <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/search-request-body.html#request-body-search-track-total-hits">...</a>
+     */
+    public Query setTrackTotalHits(boolean $trackTotalHits)
+    {
+        this.setParam("track_total_hits", $trackTotalHits);
+        return this;
+    }
+
+    /**
      * match query.
      * <p>
      * https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-match-query.html
