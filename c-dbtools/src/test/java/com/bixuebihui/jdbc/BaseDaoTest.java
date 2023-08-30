@@ -752,19 +752,14 @@ public class BaseDaoTest  {
 	}
 
 
-	@Test
 	@ParameterizedTest
 	@CsvSource({
 			"'INSERT into users ( userid, name) values(?,?)','userid'",
 			"'INSERT into users (asb, userid, name) values(?,?)','userid'",
-
 			"'INSERT into users (name, userid) values(?,?)','userId'",
 //			"'INSERT into users (name, userid) values(?,?)','user_Id'",
-
-
 	})
 	void matchField(String sql, String field){
-
 		assertTrue(BaseDao.matchField(sql, field));
 	}
 

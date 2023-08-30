@@ -14,6 +14,7 @@ public class CookieUtilTest extends TestCase {
 		Integer time = 0;
 		CookieUtil.setCookie(name, value, time , response);
 		Cookie res = response.getCookie(name);
+		assert res != null;
 		assertEquals("is+not+a+null",res.getValue());
 	}
 
