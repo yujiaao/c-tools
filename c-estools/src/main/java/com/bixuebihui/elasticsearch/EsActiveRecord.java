@@ -3,7 +3,7 @@ package com.bixuebihui.elasticsearch;
 import com.bixuebihui.DbException;
 import com.bixuebihui.db.ActiveRecord;
 import com.bixuebihui.db.GroupFunction;
-import com.bixuebihui.elasticsearch.query.Query;
+import com.bixuebihui.elasticsearch.aggregation.CountObj;
 
 import java.util.List;
 import java.util.Map;
@@ -29,6 +29,8 @@ public interface EsActiveRecord<T> extends ActiveRecord<T> {
     boolean insert(String indexName, T info, Function<T, String> getId);
     boolean insertBatch(String indexName, List<T> infos, Function<T, String> getId);
 
-    <K> List<K> dateHistCountList(String dateField, String interval, String[] groupByFields, GroupFunction fun, Class<K> objectType);
+    EsActiveRecord<T> setFilter(ElasticSearchFilter filter);
+
+    List<CountObj> dateHistCountList(String dateField, String interval, String[] groupByFields, GroupFunction fun);
 
 }

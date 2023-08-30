@@ -3,8 +3,7 @@ package com.bixuebihui.elasticsearch;
 import com.bixuebihui.DbException;
 import com.bixuebihui.db.*;
 import com.bixuebihui.db.Record;
-import com.bixuebihui.elasticsearch.aggregation.DateHistogram;
-import com.bixuebihui.elasticsearch.aggregation.EsAggregationBuilder;
+import com.bixuebihui.elasticsearch.aggregation.CountObj;
 import com.bixuebihui.elasticsearch.query.Query;
 import com.bixuebihui.jdbc.*;
 import com.bixuebihui.jdbc.entity.CountObject;
@@ -24,7 +23,6 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
 
 public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
@@ -69,7 +67,15 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
         return this;
     }
 
-    /** {@inheritDoc} */
+    @Override
+    public EsActiveRecord<T> setFilter(ElasticSearchFilter filter) {
+        filterStack = filter;
+        return this;
+    }
+
+
+
+     /** {@inheritDoc} */
     @Override
     public EsActiveRecord<T> notIn(String field, Object[] values) {
         filterStack.notIn(field, values);
@@ -475,8 +481,8 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     }
 
     @Override
-    public <K> List<K> dateHistCountList(String dateField, String interval, String[] groupByFields,GroupFunction fun, Class<K> objectType) {
-        return  operator.dateHistCountList(filterStack.toQuery(), dateField, interval, groupByFields,fun, objectType);
+    public List<CountObj> dateHistCountList(String dateField, String interval, String[] groupByFields, GroupFunction fun)  {
+        return  operator.dateHistCountList(filterStack.toQuery(), dateField, interval, groupByFields,fun);
     }
 
     @Override
@@ -559,7 +565,7 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
             map.put(fields[i], values[i]);
         }
         try {
-            return operator.request.updateByQuery(filterStack.toQuery(), map, true);
+            return operator.request.updateByQuery(filterStack.toQuery(), map, true, true);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             throw new DbException(e.getMessage());
@@ -573,10 +579,9 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
         map.put(field, value);
 
         try {
-            return operator.request.updateByQuery(filterStack.toQuery(), map, true);
+            return operator.request.updateByQuery(filterStack.toQuery(), map, true, true);
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
-            throw new DbException(e.getMessage());
+            throw new DbException(e);
         }
     }
 

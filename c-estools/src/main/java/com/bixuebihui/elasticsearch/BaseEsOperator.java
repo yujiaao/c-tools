@@ -4,8 +4,10 @@ import com.bixuebihui.DbException;
 import com.bixuebihui.db.GroupFunction;
 import com.bixuebihui.db.Record;
 import com.bixuebihui.db.SqlPocket;
+import com.bixuebihui.elasticsearch.aggregation.CountObj;
 import com.bixuebihui.elasticsearch.aggregation.DateHistogram;
 import com.bixuebihui.elasticsearch.aggregation.EsAggregationBuilder;
+import com.bixuebihui.elasticsearch.aggregation.EsAggregationParser;
 import com.bixuebihui.elasticsearch.query.Query;
 import com.bixuebihui.jdbc.entity.CountObject;
 import com.bixuebihui.jdbc.entity.CountValue;
@@ -151,16 +153,21 @@ public abstract class BaseEsOperator<T, V> implements Record<T> {
     }
 
 
-    public <K> List<K> dateHistCountList(String dateField, String interval, String[] groupByFields, GroupFunction fun, Class<K> objectType) {
-        return dateHistCountList(Query.match_all(), dateField, interval, groupByFields, fun, objectType);
+    public List<CountObj> dateHistCountList(String dateField, String interval, String[] groupByFields, GroupFunction fun) throws JsonProcessingException {
+        return dateHistCountList(Query.match_all(), dateField, interval, groupByFields, fun);
     }
 
-    public <K> List<K> dateHistCountList(Query query, String dateField, String interval, String[] groupByFields, GroupFunction fun, Class<K> objectType) {
-        DateHistogram aggs = EsAggregationBuilder.buildDateHistogram(dateField, interval, groupByFields[0], fun.name());
+    public List<CountObj> dateHistCountList(Query query, String dateField, String interval, String[] groupByFields, GroupFunction fun)  {
+        DateHistogram aggs = EsAggregationBuilder.buildDateHistogram(dateField, interval, groupByFields[0], fun==null? null:fun.name());
 
         String res = request.search(EsQueryBuilder.build(query, 0, 0, Collections.emptySet(), Collections.emptySet(), null, null, emptyMap(), aggs));
 
-        return toObjectList(res, objectType);
+        try {
+            return EsAggregationParser.parse(res, aggs.getName(), aggs.getAggs().isEmpty() ? null: aggs.getAggs().entrySet().stream().findFirst().get().getValue().getName());
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            throw new DbException(e.getMessage());
+        }
     }
 
     @Override

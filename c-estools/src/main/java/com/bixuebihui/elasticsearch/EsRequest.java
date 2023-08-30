@@ -34,6 +34,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -95,10 +96,35 @@ public class EsRequest {
                     "paging:{totalRows:hits.total}, " +
                     "total: hits.total.value} "
     );
+
+    /**
+     * after translate will be:
+     * [
+     *   {
+     *     "key": 1690866000000,
+     *     "doc_count": 1,
+     *     "items": [
+     *       {
+     *         "key": 3,
+     *         "doc_count": 1
+     *       }
+     *     ]
+     *   },
+     *   {
+     *     "key": 1690872000000,
+     *     "doc_count": 0,
+     *     "items": []
+     *   }
+     *   ...
+     *   ]
+     */
+    static BiFunction<String, String, Expression<JsonNode>> exp7aggCount =(String firstAgg, String secondAgg) -> jmespath.compile(
+            "aggregations."+firstAgg+".buckets[*].{key: key, doc_count:doc_count"+(secondAgg!=null? ", items: "+secondAgg+".buckets": "")+"}"
+    );
     private final String username;
     private final String password;
 
-    private final String refresh = "refresh=true";
+    private static final String REFRESH = "refresh=true";
     /**
      * index name to search
      * 需要检索的索引
@@ -245,6 +271,9 @@ public class EsRequest {
         return resultTotal.toPrettyString();
     }
 
+
+
+
     public JsonNode getTableJsonNode(String esJson,
                                      int maxRows,
                                      int rowEnd,
@@ -265,6 +294,21 @@ public class EsRequest {
             ((ObjectNode) paging).put("rowStart", rowStart);
             ((ObjectNode) paging).put("page", page);
         }
+        return resultTotal;
+    }
+
+
+
+    public static JsonNode getAggTableJsonNode(String esJson,
+            String firstAggName, String secondAggName) throws JsonProcessingException {
+        JsonNode input = mapper.readTree(esJson);
+        // https://datatracker.ietf.org/doc/html/rfc6901
+        if (input == null || (input.at("/aggregations/"+firstAggName+"/buckets") instanceof MissingNode)) {
+            return null;
+        }
+        // Finally this is how you search a structure. There's really not much more to it.
+        JsonNode resultTotal =  exp7aggCount.apply(firstAggName, secondAggName).search(input);
+
         return resultTotal;
     }
 
@@ -306,7 +350,7 @@ public class EsRequest {
 
     public <T> String insertBatch(String indexName, List<T> docs, Function<T, String> getId, boolean refresh) throws JsonProcessingException {
 
-        HttpEntityEnclosingRequestBase post = new HttpPost(host + "/" + EsQueryBuilder.ACTION_BULK + (refresh ? "?" + this.refresh : ""));
+        HttpEntityEnclosingRequestBase post = new HttpPost(host + "/" + EsQueryBuilder.ACTION_BULK + (refresh ? "?" + REFRESH : ""));
         StringBuilder sb = new StringBuilder();
 
         for (T doc : docs) {
@@ -390,7 +434,7 @@ public class EsRequest {
             logger.debug(StringUtils.abbreviate(res, 1000));
             return res;
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.error("remote error", e);
         }
         return EsQueryBuilder.EMPTY_JSON_STRING;
     }
@@ -543,9 +587,9 @@ public class EsRequest {
         String res;
         if (version != null && version.startsWith("6")) {
             //TODO routing problem
-            res = post(EsQueryBuilder.buildUpdate(map), "_doc", id + "/" + EsQueryBuilder.ACTION_UPDATE+ TIMEOUT +(refresh? "&"+this.refresh:""));
+            res = post(EsQueryBuilder.buildUpdate(map), "_doc", id + "/" + EsQueryBuilder.ACTION_UPDATE+ TIMEOUT +(refresh? "&"+ REFRESH :""));
         } else {
-            res = post(EsQueryBuilder.buildUpdate(map), EsQueryBuilder.ACTION_UPDATE+ TIMEOUT +(refresh? "&"+this.refresh:""), id);
+            res = post(EsQueryBuilder.buildUpdate(map), EsQueryBuilder.ACTION_UPDATE+ TIMEOUT +(refresh? "&"+ REFRESH :""), id);
         }
         /**
          * {
@@ -567,10 +611,10 @@ public class EsRequest {
         return result.path("_shards").path("successful").asInt();
     }
 
-    public int updateByQuery(Query query, Map<String, Object> keyValues, boolean conflictsProceed) throws JsonProcessingException {
+    public int updateByQuery(Query query, Map<String, Object> keyValues, boolean conflictsProceed, boolean refresh) throws JsonProcessingException {
         String q = EsQueryBuilder.buildUpdateByQuery(query, keyValues);
 
-        String action = EsQueryBuilder.ACTION_UPDATE_BY_QUERY + TIMEOUT + (conflictsProceed ? "&conflicts=proceed" : "");
+        String action = EsQueryBuilder.ACTION_UPDATE_BY_QUERY + TIMEOUT + (conflictsProceed ? "&conflicts=proceed" : "")+  (refresh ? "?" + REFRESH : "");
 
         String res = post(q, action);
 

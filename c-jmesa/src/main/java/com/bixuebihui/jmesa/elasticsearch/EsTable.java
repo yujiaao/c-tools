@@ -64,7 +64,7 @@ public class EsTable extends EasyTable {
      * @return
      * @throws ParseException
      */
-    protected static ElasticSearchFilter  queryToFilter(Query query, String tableCaption, String id) throws ParseException, JsonProcessingException {
+    public static ElasticSearchFilter  queryToFilter(Query query, String tableCaption, String id) throws ParseException, JsonProcessingException {
         ElasticSearchFilter filter = new ElasticSearchFilter();
         Limit limit = getLimit(tableCaption, query);
 //        System.out.println(new ObjectMapper().writeValueAsString(limit));
