@@ -614,7 +614,7 @@ public class EsRequest {
     public int updateByQuery(Query query, Map<String, Object> keyValues, boolean conflictsProceed, boolean refresh) throws JsonProcessingException {
         String q = EsQueryBuilder.buildUpdateByQuery(query, keyValues);
 
-        String action = EsQueryBuilder.ACTION_UPDATE_BY_QUERY + TIMEOUT + (conflictsProceed ? "&conflicts=proceed" : "")+  (refresh ? "?" + REFRESH : "");
+        String action = EsQueryBuilder.ACTION_UPDATE_BY_QUERY + TIMEOUT + (conflictsProceed ? "&conflicts=proceed" : "")+  (refresh ? "&" + REFRESH : "");
 
         String res = post(q, action);
 
