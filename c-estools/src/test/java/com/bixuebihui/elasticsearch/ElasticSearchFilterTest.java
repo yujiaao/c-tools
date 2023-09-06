@@ -97,7 +97,7 @@ class ElasticSearchFilterTest {
 
 
         Query query = filter.toQuery();
-        assertEquals(3, query.getParams().size());
+        assertEquals(2, query.getParams().size());
 
         String res = filter.toEsObject(query, 0, 10, emptySet(), emptySet(),
                 null, null, emptyMap(), null);
@@ -217,6 +217,30 @@ class ElasticSearchFilterTest {
         System.out.println(res);
         assertEquals("{\"size\":10,\"query\":{\"bool\":{\"should\":[{\"bool\":{\"must\":[{\"term\":{\"c1\":{\"boost\":1.0,\"value\":0.9}}}]}},{\"range\":{\"b1\":{\"gte\":100}}},{\"range\":{\"b2\":{\"gte\":101}}},{\"range\":{\"a1\":{\"gte\":99}}}],\"minimum_should_match\":1}}}"
         ,res);
+    }
+
+    @Test
+    void toQuerySubOrAnd() {
+        ElasticSearchFilter filter = new ElasticSearchFilter();
+        SqlFilter f1 = new SqlFilter();
+        f1.addFilter("a1", SqlFilter.Comparison.GTE, new Integer[]{99});
+        f1.addFilter("a2", SqlFilter.Comparison.GTE, new Integer[]{99});
+
+        SqlFilter f2 = new SqlFilter();
+        f2.addFilter("b1", SqlFilter.Comparison.GTE, new Integer[]{100});
+        f2.addFilter("b2", SqlFilter.Comparison.GTE, new Integer[]{101});
+
+        filter.addSubGroupCondition(SqlFilter.Operator.OR, f1);
+        filter.addSubGroupCondition(SqlFilter.Operator.OR, f2);
+
+
+        Query query = filter.toQuery();
+
+        String res = filter.toEsObject(query, 0, 10, emptySet(), emptySet(), null, null, emptyMap(), null);
+
+        System.out.println(res);
+        assertEquals("{\"size\":10,\"query\":{\"bool\":{\"should\":[{\"bool\":{\"must\":[{\"range\":{\"a1\":{\"gte\":99}}},{\"range\":{\"a2\":{\"gte\":99}}}]}},{\"bool\":{\"must\":[{\"range\":{\"b1\":{\"gte\":100}}},{\"range\":{\"b2\":{\"gte\":101}}}]}}],\"minimum_should_match\":1}}}"
+                ,res);
     }
 
     @Test

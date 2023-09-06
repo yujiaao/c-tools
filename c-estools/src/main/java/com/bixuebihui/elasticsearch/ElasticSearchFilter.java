@@ -90,23 +90,22 @@ public class ElasticSearchFilter extends SqlFilter {
 
     public Bool recursiveBool(SqlFilter sqlFilterUp, Bool criteria) {
 
-        List<Bool> subCriteriaList = Collections.emptyList();
-        if (sqlFilterUp.getSubGroups() != null && !sqlFilterUp.getSubGroups().isEmpty()) {
-            Bool subCriteria = new Bool();
+        List<Bool> subCriteriaList = new ArrayList<>();
+        if (sqlFilterUp.getSubGroups() != null) {
             for (SqlFilter sqlFilter : sqlFilterUp.getSubGroups()) {
-
-                    recursiveBool(sqlFilter, subCriteria);
-
+                Bool subCriteria = new Bool();
+                recursiveBool(sqlFilter, subCriteria);
+                subCriteriaList.add(subCriteria);
             }
-            subCriteriaList = List.of(subCriteria);
         }
 
 
-        if(criteria==null){ //为减少一层bool，只有一个子组时，不再创建bool
-            if(subCriteriaList.size()==1) {
+        if (criteria == null) {
+            //为减少一层bool，只有一个子组时，不再创建bool
+            if (subCriteriaList.size() == 1) {
                 criteria = subCriteriaList.get(0);
-                subCriteriaList=Collections.emptyList();
-            }else {
+                subCriteriaList = Collections.emptyList();
+            } else {
                 criteria = new Bool();
             }
         }
@@ -145,8 +144,8 @@ public class ElasticSearchFilter extends SqlFilter {
 
     private void buildEsObject(Bool criteria, List<Filter> filters, Operator upOperator, List<Bool> addOnFilters) {
 
-        List<Query> queryFilters = new ArrayList<>(upOperator!=Operator.NOT? addOnFilters:Collections.emptyList());
-        List<Query> queryNotFilters = new ArrayList<>(upOperator==Operator.NOT? addOnFilters:Collections.emptyList());
+        List<Query> queryFilters = new ArrayList<>(upOperator != Operator.NOT ? addOnFilters : Collections.emptyList());
+        List<Query> queryNotFilters = new ArrayList<>(upOperator == Operator.NOT ? addOnFilters : Collections.emptyList());
 
         if (filters != null) {
             filters.forEach(filter -> {
@@ -228,7 +227,7 @@ public class ElasticSearchFilter extends SqlFilter {
             );
         }
 
-        if(!queryNotFilters.isEmpty()) {
+        if (!queryNotFilters.isEmpty()) {
             Bool notCriteria = new Bool();
             notCriteria.addMustNot(queryNotFilters);
             queryFilters.add(notCriteria);

@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>guide.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<!--
+_class: lead gaia
+_paginate: false
+_backgroundColor: black
+-->
+<h2 id="%E7%94%9F%E6%88%90%E4%BB%A3%E7%A0%81%E5%88%A9%E5%99%A8">生成代码利器</h2>
+<p><img src="assets/logo.png" alt="invert opacity:.9 w:400"></p>
+<h4 id="xwxlivecn">xwx@live.cn</h4>
+<p>2023-01-13</p>
+<hr>
+<h1 id="%E4%B8%BB%E9%A2%98">主题</h1>
+<ul>
+<li>简介</li>
+<li>先决条件</li>
+<li>快速起步</li>
+<li>配置文件参数</li>
+</ul>
+<hr>
+<h1 id="tablegear-%E7%AE%80%E4%BB%8B">TableGear 简介</h1>
+<h2 id="%E6%98%AF%E4%BB%80%E4%B9%88">是什么</h2>
+<p>TableGear 是一款基于 JDBC 标准的高性能ORM引擎。TableGear 底层基于 JDBC 进行生成代码，通过链式条件拼接调用完成数据库访问的模式。底层基于 JDBC 标准实现，主要特点是方便快速增量开发。</p>
+<hr>
+<h1 id="%E5%BF%AB%E9%80%9F%E8%B5%B7%E6%AD%A5">快速起步</h1>
+<ul>
+<li>复制 c-tablegen-jdbc-demo 项目</li>
+<li>修改配置文件中的数据库相关参数： tablegen.properties</li>
+<li>运行 <code>mvn tablegen:gen</code></li>
+</ul>
+<hr>
+<h2 id="%E5%85%88%E5%86%B3%E6%9D%A1%E4%BB%B6">先决条件</h2>
+<ul>
+<li>最新版本支持 jdk 17 以上</li>
+<li>使用 jakarta 替代 javax 命名空间</li>
+<li>Spring Boot 2.7.7</li>
+<li>生成的项目可选
+<ul>
+<li>依赖 swagger v3</li>
+<li>lombok</li>
+<li>hibernate-validator</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2 id="%E4%B8%BA%E4%BB%80%E4%B9%88">为什么</h2>
+<ul>
+<li>支持 JDBC 标准的数据库 ORM 代码生成</li>
+<li>支持 ElasticSearch 代码生成</li>
+<li>支持 pojo, dal, dto, cmd, service, controller 等分层概念</li>
+<li>添加字段后，可增量生成</li>
+<li>生成代码与手写代码可以多种方式结合</li>
+<li>可以生成支持 Project Reactor 的代码</li>
+</ul>
+<hr>
+<h2 id="%E4%BB%A3%E7%A0%81%E7%94%9F%E6%88%90%E5%8E%9F%E7%90%86%E6%AF%94%E8%BE%83">代码生成原理比较</h2>
+<p>TableGear vs JPG vs Gorm：</p>
+<p><img src="assets/代码生成流程原理比较.png" alt="bg contain"></p>
+<hr>
+<h2 id="%E5%BF%AB%E9%80%9F%E4%BD%93%E9%AA%8C-tablegear">快速体验 TableGear</h2>
+<p>使用以下命令安装 TableGear CLI：</p>
+<pre class="hljs"><code><div><span class="hljs-meta">$</span><span class="bash"> mvn  com.github.yujiaao:tablegen-maven-plugin:1.13.2:gen</span>
+</div></code></pre>
+<hr>
+<h2 id="maven-%E6%8F%92%E4%BB%B6%E9%85%8D%E7%BD%AE">maven 插件配置</h2>
+<p>propPath用来配置配置文件所在位置
+如需访问多个数据库，可以配多个配置文件，文件名间用逗号分隔</p>
+<pre class="hljs"><code><div>            <span class="hljs-tag">&lt;<span class="hljs-name">plugin</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>com.github.yujiaao<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>tablegen-maven-plugin<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>1.13.2.4<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span>
+                <span class="hljs-tag">&lt;<span class="hljs-name">configuration</span>&gt;</span>
+                    <span class="hljs-tag">&lt;<span class="hljs-name">propPath</span>&gt;</span>${project.basedir}/tablegen1.properties,${project.basedir}/tablegen2.properties<span class="hljs-tag">&lt;/<span class="hljs-name">propPath</span>&gt;</span>
+                <span class="hljs-tag">&lt;/<span class="hljs-name">configuration</span>&gt;</span>
+            <span class="hljs-tag">&lt;/<span class="hljs-name">plugin</span>&gt;</span>
+</div></code></pre>
+<hr>
+<h2 id="maven-%E8%BF%90%E8%A1%8C%E6%97%B6%E4%BE%9D%E8%B5%96%E9%85%8D%E7%BD%AE">maven 运行时依赖配置</h2>
+<p>c-jmesa 将引入全部功能，可以按需替换为</p>
+<ul>
+<li>c-tools,  支持关系型数据库</li>
+<li>或 c-r2dbc, 支持 Project Reactor</li>
+<li>或 c-estools， 支持 ElasticSearch</li>
+</ul>
+<pre class="hljs"><code><div><span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span>
+	<span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>com.github.yujiaao<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span>
+	<span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>c-jmesa<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span>
+	<span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>1.13.2.4<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span>
+</div></code></pre>
+<hr>
+<h2 id="%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6---%E6%95%B0%E6%8D%AE%E5%BA%93%E8%BF%9E%E6%8E%A5">配置文件 - 数据库连接</h2>
+<pre class="hljs"><code><div><span class="hljs-attr">alias</span>=<span class="hljs-string">testdb</span>
+<span class="hljs-attr">className</span>=<span class="hljs-string">com.mysql.cj.jdbc.Driver</span>
+<span class="hljs-attr">dburl</span>=<span class="hljs-string">jdbc:mysql://127.0.0.1:3306/testdb</span>
+<span class="hljs-attr">username</span>=<span class="hljs-string">test</span>
+<span class="hljs-attr">password</span>=<span class="hljs-string">test123</span>
+<span class="hljs-attr">schema</span>=<span class="hljs-string">testdb</span>
+<span class="hljs-attr">table_owner</span>=<span class="hljs-string">testdb</span>
+<span class="hljs-attr">catalog</span>=<span class="hljs-string">testdb</span>
+</div></code></pre>
+<p>alias 用于生成数据源（DataSource）的别名</p>
+<blockquote>
+<p>MySQL: schema和table_owner 为库名, catalog可不设
+SQL Server: catalog为库名，schema、table_owner一般为dbo</p>
+</blockquote>
+<hr>
+<h2 id="%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6---%E7%94%9F%E6%88%90%E7%9B%AE%E6%A0%87%E9%85%8D%E7%BD%AE">配置文件 - 生成目标配置</h2>
+<pre class="hljs"><code><div><span class="hljs-attr">package_name</span>=<span class="hljs-string">com.bixuebihui.test</span>
+<span class="hljs-attr">src_dir</span>=<span class="hljs-string">src/main/java</span>
+<span class="hljs-attr">test_dir</span>=<span class="hljs-string">src/test/java</span>
+<span class="hljs-attr">resource_dir</span>=<span class="hljs-string">src/main/resources</span>
+<span class="hljs-attr">service_dir</span>=<span class="hljs-string">src/main/java</span>
+<span class="hljs-attr">controller_dir</span>=<span class="hljs-string">src/main/java</span>
+<span class="hljs-attr">indexes</span>=<span class="hljs-string">yes</span>
+</div></code></pre>
+<p>indexes=yes 会根据主外键关系生成相应的数据操作方法，因为这种查询走索引 ，效率会更高</p>
+<hr>
+<h2 id="%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6---%E9%80%89%E6%8B%A9%E7%94%9F%E6%88%90%E8%A1%A8">配置文件 - 选择生成表</h2>
+<pre class="hljs"><code><div><span class="hljs-comment">#table_list=test(\\w+)</span>
+<span class="hljs-attr">table_list</span>=<span class="hljs-string">table1,table2</span>
+<span class="hljs-attr">exclude_table_list</span>=<span class="hljs-string">not_table3</span>
+</div></code></pre>
+<p>table_list 和 exclude_table_list 支持Java正则表达式，同样需要用<code>\</code>来转义
+多个表用逗号分隔
+同时出现时， exclude_table_list优先级更高</p>
+<hr>
+<h2 id="%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6---%E8%99%9A%E6%8B%9F%E8%A7%86%E5%9B%BE%E7%94%9F%E6%88%90">配置文件 - 虚拟视图生成</h2>
+<p>视图是一个好的数据工具，但不是哪里都允许用，如果你的公司不允许，那就用虚拟视图</p>
+<pre class="hljs"><code><div><span class="hljs-attr">view_list</span>=<span class="hljs-string">view1:select * form a left join b on a.id=b.aid;\
+view2:select * form c left join d on c.id=d.cid;</span>
+</div></code></pre>
+<p>子格式为<code>视图名1:查询语名1;视图名2:查询语名2</code>, 太长时，可以用<code>\</code>续行符来解决</p>
+<hr>
+<h2 id="%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6---%E5%85%B6%E4%BB%96%E6%9D%82%E9%A1%B9">配置文件 - 其他杂项</h2>
+<pre class="hljs"><code><div><span class="hljs-comment"># 是否使用扩展表，如果不懂，就是no啦 </span>
+<span class="hljs-attr">kuozhanbiao</span>=<span class="hljs-string">no</span>
+<span class="hljs-comment">#是否加注解，用于validator和swagger</span>
+<span class="hljs-attr">use_annotation</span>=<span class="hljs-string">yes</span>
+<span class="hljs-comment">#是否覆盖全部已有文件，包括dal,pojo</span>
+<span class="hljs-attr">over_write_all</span> = <span class="hljs-string">yes</span>
+<span class="hljs-comment">#是否生成全部，为no时启用表结构对比的增量方式，如果速度很重要，试试 generate_all=no</span>
+<span class="hljs-attr">generate_all</span>=<span class="hljs-string">yes</span>
+<span class="hljs-comment">#是否覆盖生成BaseList</span>
+<span class="hljs-attr">generate_baselist</span>=<span class="hljs-string">no</span>
+<span class="hljs-comment">#是否用表机制模拟sequence的方式，生成自增长主键</span>
+<span class="hljs-attr">use_autoincrement</span>=<span class="hljs-string">yes</span>
+<span class="hljs-comment">#是否用读写分离的双数据源</span>
+<span class="hljs-attr">read_write_separate</span>=<span class="hljs-string">yes</span>
+</div></code></pre>
+<hr>
+<h2 id="%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6---pojo%E7%B1%BB%E9%9C%80%E8%A6%81%E7%BB%A7%E6%89%BF%E8%87%AA%E4%BD%A0%E7%9A%84%E5%9F%BA%E7%B1%BB">配置文件 - Pojo类需要继承自你的基类？</h2>
+<p>打开下面的注释试试</p>
+<pre class="hljs"><code><div>#haschildren code name \u4E09\u4E2A\u5B57\u6BB5
+#pojo_node_interface=com.bixuebihui.module.catalog.node.NodeInterface
+#pojo_node_interface_list=table_name1,table_name2,view_name3
+##version
+#pojo_version_interface=com.bixuebihui.module.catalog.node.VersionInterface
+##state
+#pojo_state_interface=com.bixuebihui.module.catalog.node.StateInterface
+##uuid
+#pojo_uuid_interface=com.bixuebihui.module.catalog.node.UUIDInterface
+##modifydate
+#pojo_modifydate_interface=com.bixuebihui.module.catalog.node.ModifydateInterface
+</div></code></pre>
+<hr>
+<h2 id="%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6---elasticsearch">配置文件 - ElasticSearch</h2>
+<pre class="hljs"><code><div><span class="hljs-comment">## bean name of ElasticSearch connection configuration</span>
+<span class="hljs-attr">alias</span>=<span class="hljs-string">my_content</span>
+<span class="hljs-comment">## type one of: elasticsearch_mapping, elasticsearch_sample, json</span>
+<span class="hljs-attr">type</span>=<span class="hljs-string">elasticsearch_mapping</span>
+<span class="hljs-attr">url</span>=<span class="hljs-string">http://localhost:9200</span>
+<span class="hljs-attr">username</span>=<span class="hljs-string">elastic</span>
+<span class="hljs-attr">password</span>=<span class="hljs-string">changeme</span>
+<span class="hljs-attr">src_dir</span>=<span class="hljs-string">src/main/java</span>
+<span class="hljs-attr">package_name</span>=<span class="hljs-string">com.ownsame.client.es</span>
+<span class="hljs-comment">#comma separated index:alias pairs, alias can be ommit if you not have one</span>
+<span class="hljs-attr">index_list</span>=<span class="hljs-string">index1:alias1,index2</span>
+<span class="hljs-comment"># this id field will used for ElasticSearch inner `_id`</span>
+<span class="hljs-attr">primary_key_fields</span>=<span class="hljs-string">biz_id_for_index1,biz_id_for_index2</span>
+<span class="hljs-comment"># not generate for ignore_fields</span>
+<span class="hljs-attr">ignore_fields</span>=<span class="hljs-string">keyword</span>
+<span class="hljs-comment"># I will gess for field for collection type, but not always collect, if not, point out here</span>
+<span class="hljs-attr">collection_fields</span>=<span class="hljs-string">id_list_field</span>
+</div></code></pre>
+<hr>
+<h1 id="q--a">Q &amp; A</h1>
+<p><img src="assets/c-tools.svg" alt="bg contain"></p>
+
+</body>
+</html>

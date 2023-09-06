@@ -18,6 +18,7 @@ import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.sql.Date;
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.*;
 
 
@@ -628,6 +629,10 @@ public class DbHelper implements IDbHelper {
                             mapColumn.put(colName, temp);
                             break;
                         }
+
+                        //Java 8 and up db DATETIME will map to java.time.LocalDateTime
+                        // convert form LocalDateTime to java.sql.Timestamp by Timestamp.valueOf(LocalDateTime.now());
+                        // and back by  Timestamp.toLocalDateTime();
                         case "DATETIME":
                         case "TIMESTAMP":
                             // 10.17
