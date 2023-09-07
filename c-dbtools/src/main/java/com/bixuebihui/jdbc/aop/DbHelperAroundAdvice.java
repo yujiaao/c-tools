@@ -24,7 +24,6 @@ public class DbHelperAroundAdvice implements MethodInterceptor {
     private static final Map<String, SqlStat> SQL_STAT_MAP = new LRUMap(1000);
     double totalTime = 0;
     private long before;
-    private long after;
     private long count;
 
     /**
@@ -58,7 +57,7 @@ public class DbHelperAroundAdvice implements MethodInterceptor {
     }
 
     public static String toString(byte[] byteArray) {
-        StringBuffer hexStringBuffer = new StringBuffer();
+        StringBuilder hexStringBuffer = new StringBuilder();
         for (int i = 0; i < byteArray.length && i < MAX_SHOW; i++) {
             hexStringBuffer.append(byteToHex(byteArray[i]));
         }
@@ -86,7 +85,7 @@ public class DbHelperAroundAdvice implements MethodInterceptor {
                     }
                 }
                 if (s.length >= MAX_SHOW) {
-                    sb.append("\t  ").append(s.length - MAX_SHOW).append("... omited ").append("\n");
+                    sb.append("\t  ").append(s.length - MAX_SHOW).append("... omitted ").append("\n");
                 }
             } else if (arg instanceof String
                     || arg instanceof Integer
@@ -103,7 +102,7 @@ public class DbHelperAroundAdvice implements MethodInterceptor {
     private void afterReturning(Method method, Object[] args
     ) {
 
-        after = System.currentTimeMillis();
+        long after = System.currentTimeMillis();
         double thisTime = ((after - before) / 1000.0);
         if (!"getConnection".equals(method.getName())) {
             count++;
@@ -129,9 +128,11 @@ public class DbHelperAroundAdvice implements MethodInterceptor {
                     LOG.warn("[AOP] Query is SLOW: " + thisTime + " sql=" + sql);
                 }
             }
+
+            // time 保留3位小数
             LOG.debug("[AOP] Current call time: " + thisTime + "s, Counts: "
                     + count + " Total sql time: " + totalTime + "s, on average: "
-                    + (count > 0 ? (totalTime / count) : 0));
+                    + (count > 0 ? Math.round(totalTime / count * 1000) / 1000.0 : 0));
         }
     }
 

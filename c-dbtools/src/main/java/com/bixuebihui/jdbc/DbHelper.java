@@ -18,7 +18,6 @@ import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.sql.Date;
 import java.sql.*;
-import java.time.LocalDateTime;
 import java.util.*;
 
 
@@ -114,10 +113,10 @@ public class DbHelper implements IDbHelper {
         if (LOG.isWarnEnabled()) {
             StringBuilder sb = new StringBuilder();
             sb.append(ex.getMessage()).append("\n");
-            sb.append("===" + sql).append("\n");
+            sb.append("===").append(sql).append("\n");
             if (params != null) {
                 for (Object o : params) {
-                    sb.append("===" + DbHelperAroundAdvice.toString(o)).append("\n");
+                    sb.append("===").append(o == null ? null : DbHelperAroundAdvice.toString(o)).append("\n");
                 }
             }
             LOG.error(sb.toString());
@@ -129,7 +128,7 @@ public class DbHelper implements IDbHelper {
             StringBuilder sb = new StringBuilder();
             sb.append(ex.getMessage()).append("\n");
             for (String s : sql) {
-                sb.append("==" + s).append("\n");
+                sb.append("==").append(s).append("\n");
             }
             LOG.error(sb.toString());
         }
@@ -209,12 +208,12 @@ public class DbHelper implements IDbHelper {
 
     /**
      * do not use this if you don't know what to do...
-     * because it leading to resource leaking
+     * because it's leading to resource leaking
      *
      * @param sql sql
      * @param cn  connection
-     * @return ResultSet must closed after using
-     * @deprecated ResultSet must closed, before close the connection, is not recommend to use this
+     * @return ResultSet must be closed after using
+     * @deprecated ResultSet must be closed, before close the connection, is not recommend to use this
      */
     @Deprecated
     public ResultSet executeQuery(String sql, @NotNull Connection cn) {
@@ -232,7 +231,7 @@ public class DbHelper implements IDbHelper {
      * <p>executeNoQuery.</p>
      *
      * @param sql a {@link java.lang.String} object.
-     * @return a int.
+     * @return an int.
      */
     @Override
     public int executeNoQuery(String sql) {
@@ -260,7 +259,7 @@ public class DbHelper implements IDbHelper {
      *
      * @param sql a {@link java.lang.String} object.
      * @param cn  a {@link java.sql.Connection} object.
-     * @return a int.
+     * @return an int.
      */
     public int executeNoQuery(String sql, @NotNull Connection cn) {
         try (Statement stmt = cn.createStatement()) {
@@ -406,7 +405,7 @@ public class DbHelper implements IDbHelper {
      *
      * @param strSql an array of {@link java.lang.String} objects.
      * @param cn     a {@link java.sql.Connection} object.
-     * @return a int.
+     * @return an int.
      */
     @Override
     public int executeNoQuery(String[] strSql, @NotNull Connection cn) {
@@ -822,9 +821,6 @@ public class DbHelper implements IDbHelper {
                 Object pa = params[i - 1];
                 if (pa == null) {
                     p.setNull(i, java.sql.Types.VARCHAR, "String");
-//                    LOG.debug("不支持空数据(参数["
-//                            + i
-//                            + "])! Null is not support in DbHelper.executeNoQuery(String sql, Object[] params), there may be error!");
                 } else if (pa instanceof Integer) {
                     p.setInt(i, (Integer) pa);
                 } else if (pa instanceof Long) {
@@ -890,7 +886,7 @@ public class DbHelper implements IDbHelper {
      * @param sql            a {@link java.lang.String} object.
      * @param params         an array of {@link java.lang.Object} objects.
      * @param targetSqlTypes an array of int objects.
-     * @return a int.
+     * @return an int.
      */
     @Override
     public int executeNoQuery(String sql, Object[] params, int[] targetSqlTypes) {
@@ -962,7 +958,7 @@ public class DbHelper implements IDbHelper {
      *
      * @param sql    a {@link java.lang.String} object.
      * @param params an array of {@link java.lang.Object} objects.
-     * @return a int.
+     * @return an int.
      */
     @Override
     public int executeNoQuery(String sql, Object[] params) {
