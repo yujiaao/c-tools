@@ -407,7 +407,7 @@ public class EsRequest {
      */
     private String httpJson(HttpEntityEnclosingRequestBase requestBase, String body) {
         logger.debug("====>>>>");
-        logger.debug(requestBase.toString() + "\n" + body);
+        logger.debug(requestBase.toString() + "\n" + StringUtils.abbreviate(body, 10_000)+"\n"+(body!=null && body.length()>10_000?"...":""));
 
         if (StringUtils.isNotBlank(body) && requestBase.getEntity() == null) {
             requestBase.setEntity(new StringEntity(body, ContentType.APPLICATION_JSON));
