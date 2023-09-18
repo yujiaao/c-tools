@@ -39,12 +39,24 @@ class Histogram extends AbstractSimpleAggregation
      * @param field string     $field    the name of the field on which to perform the aggregation
      * @param interval int|string $interval the interval by which documents will be bucketed
      */
-    public Histogram(String name, String field, String interval)
+    public Histogram(String name, String field, String interval, String version)
     {
         super(name);
+        this.setVersion(version);
         this.setField(field);
         this.setInterval(interval);
     }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+    String version;
+
 
     /**
      * Set the interval by which documents will be bucketed.

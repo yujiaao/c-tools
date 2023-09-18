@@ -85,7 +85,7 @@ public class Params implements ArrayableInterface {
     /**
      * Returns a specific param.
      *
-     * @param wstring $key Key to return
+     * @param key wstring Key to return
      *
      *
      * @return mixed Key value

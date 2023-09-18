@@ -4,6 +4,7 @@ import com.bixuebihui.DbException;
 import com.bixuebihui.db.ActiveRecord;
 import com.bixuebihui.db.GroupFunction;
 import com.bixuebihui.elasticsearch.aggregation.CountObj;
+import com.bixuebihui.elasticsearch.aggregation.CountValueObj;
 
 import java.util.List;
 import java.util.Map;
@@ -14,6 +15,8 @@ import java.util.function.Function;
  * @author xwx
  */
 public interface EsActiveRecord<T> extends ActiveRecord<T> {
+
+    List<CountValueObj> aggregationList(List<String> groupByFields, Map<String, GroupFunction> termFieldAggFunctionMap);
 
     int update(String _id, String field, Object value) throws DbException;
 

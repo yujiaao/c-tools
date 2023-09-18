@@ -1,6 +1,7 @@
 package com.bixuebihui.elasticsearch.aggregation;
 
-import java.util.LinkedHashMap;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 public class EsAggregationBuilder {
@@ -68,19 +69,72 @@ public class EsAggregationBuilder {
                     .setField( termField));
         }
         if(aggFunction!=null && !aggFunction.isEmpty()){
-            switch (aggFunction){
-                case "count" ->
-                    res.addAggregation(new ValueCount("count_"+termField, termField)
-                            .setField( aggFunction));
-                case "sum" -> res.addAggregation(new Sum("sum_"+termField)
-                        .setField( termField));
-                case "max" -> res.addAggregation(new Max("max_"+termField).setField( termField));
-                case "min" -> res.addAggregation(new Min("min_"+termField).setField( termField));
-            }
+            addAggFun(res, termField, aggFunction);
         }
 
 
         return  res;
+    }
+
+    public static DateHistogram buildDateHistogramMulti(String dateField, String interval,
+                                                   List<String> groupByField,
+                                                   Map<String,String> termFieldAggFunctionMap, String esVersion) {
+
+        DateHistogram res = new DateHistogram("date_hist_by_"+dateField, dateField, interval, esVersion);
+
+        res.setTimezone(timezone);
+        return (DateHistogram) formAggregationQuery(groupByField, termFieldAggFunctionMap, res);
+    }
+
+    public static Terms buildTermsAggMulti(List<String> groupByField,
+                                                        Map<String,String> termFieldAggFunctionMap) {
+
+        Terms res = formTermsAgg(groupByField);
+        return (Terms) formAggregationQuery(Collections.emptyList(), termFieldAggFunctionMap, res);
+    }
+
+    static Terms formTermsAgg(List<String> fields){
+        if(fields.size()==1) {
+            return (Terms) new Terms("group_by_" + fields.get(0))
+                    .setField(fields.get(0));
+        }else if(fields.size()>1){
+            return (Terms) new Terms("group_by_" + String.join("_", fields))
+                    .setScript("doc['"+String.join("'].value+'_'+doc['", fields)+"'].value");
+        }
+        throw new IllegalArgumentException("fields list must not empty");
+    }
+
+    private static AbstractAggregation formAggregationQuery(List<String> groupByField, Map<String, String> termFieldAggFunctionMap, AbstractAggregation res) {
+        if(groupByField.size()==1) {
+            res.addAggregation(new Terms("group_by_" + groupByField.get(0))
+                    .setField(groupByField.get(0)));
+        }else if(groupByField.size()>1){
+            res.addAggregation(new Terms("group_by_" + String.join("_", groupByField))
+                    .setScript("doc['"+String.join("'].value+'_'+doc['", groupByField)+"'].value"));
+        }
+
+        if(termFieldAggFunctionMap !=null && !termFieldAggFunctionMap.isEmpty()){
+            for(Map.Entry<String,String> entry: termFieldAggFunctionMap.entrySet()){
+                String termField = entry.getKey();
+                String aggFunction = entry.getValue();
+                if(termField!=null && !termField.isEmpty() && aggFunction!=null && !aggFunction.isEmpty()){
+                    addAggFun(res, termField, aggFunction);
+                }
+            }
+        }
+        return res;
+    }
+
+    private static void addAggFun(AbstractAggregation res, String termField, String aggFunction) {
+        switch (aggFunction){
+            case "count" ->
+                    res.addAggregation(new ValueCount("count_"+termField, termField)
+                            .setField( aggFunction));
+            case "sum" -> res.addAggregation(new Sum("sum_"+termField)
+                    .setField( termField));
+            case "max" -> res.addAggregation(new Max("max_"+termField).setField( termField));
+            case "min" -> res.addAggregation(new Min("min_"+termField).setField( termField));
+        }
     }
 
 

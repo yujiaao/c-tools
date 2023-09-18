@@ -38,9 +38,9 @@ public abstract class AbstractTermsAggregation extends AbstractSimpleAggregation
     /**
      * Filter documents to include based on a regular expression.
      *
-     * @param string $pattern a regular expression, following the Regexp syntax
+     * @param $pattern string  a regular expression, following the Regexp syntax
      * @return $this
-     * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/regexp-syntax.html for syntax
+     * @see <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/regexp-syntax.html">for syntax</a>
      */
     public AbstractTermsAggregation setInclude(String $pattern)
     {
@@ -51,7 +51,7 @@ public abstract class AbstractTermsAggregation extends AbstractSimpleAggregation
     /**
      * Filter documents to include based on a list of exact values.
      *
-     * @param string[] $values
+     * @param $values string[]
      * @return $this
      * @see <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/search-aggregations-bucket-terms-aggregation.html#_filtering_values_with_exact_values_2">...</a>
      */

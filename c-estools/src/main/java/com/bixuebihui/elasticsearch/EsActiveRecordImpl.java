@@ -4,6 +4,7 @@ import com.bixuebihui.DbException;
 import com.bixuebihui.db.*;
 import com.bixuebihui.db.Record;
 import com.bixuebihui.elasticsearch.aggregation.CountObj;
+import com.bixuebihui.elasticsearch.aggregation.CountValueObj;
 import com.bixuebihui.elasticsearch.query.Query;
 import com.bixuebihui.jdbc.*;
 import com.bixuebihui.jdbc.entity.CountObject;
@@ -37,19 +38,20 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     SqlLimit limit;
 
     ElasticSearchFilter havingStack;
+    BaseEsOperator<T, V> operator;
+    Set<String> excludeFieldsSet = emptySet();
+    private boolean useLast=false;
+    private String resultFields;
 
     public EsActiveRecordImpl(BaseEsOperator<T, V> operator) {
        init(operator);
     }
-
-    BaseEsOperator<T, V> operator;
-    private boolean useLast=false;
-
-    private String resultFields;
-    Set<String> excludeFieldsSet = emptySet();
-
     public EsActiveRecordImpl() {
         init(null);
+    }
+
+    public BaseEsOperator<T, V> getOperator() {
+        return operator;
     }
 
     public String getResultFields() {
@@ -248,7 +250,7 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
 
             List<EsSearchHitResult<T>> res = operator.select(getResultFieldsSet(), getExcludeFieldsSet(), where
                     , toEsSort(), limit.getBegin(), limit.getEnd());
-            if(res.size()>0){
+            if(!res.isEmpty()){
                 return res.stream().map(EsSearchHitResult::get_source).collect(Collectors.toList());
             }
             return Collections.emptyList();
@@ -302,7 +304,7 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
         try {
            BaseEsOperator.Wrapper<T> res = operator.selectWithJoin(getResultFieldsSet(), getExcludeFieldsSet(), filterStack.toQuery() , toEsSort(),
                     SqlLimit.LIMIT_ONE.getBegin(), SqlLimit.LIMIT_ONE.getEnd());
-            if (res!=null && res.data !=null && res.data.size() > 0) {
+            if (res!=null && res.data !=null && !res.data.isEmpty()) {
                 return res.data.get(0);
             }
             return null;
@@ -449,6 +451,7 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
 
     @Override
     public <S> EsActiveRecord<T> query(Paging<S> searchBean, Set<String> fields) {
+//        this.operator.dateHistCountList()
         return query(searchBean, fields);
     }
 
@@ -477,7 +480,6 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     @Override
     public <K> List<CountObject<K>> countList(String returnField, String[] groupByFields, String having, GroupFunction fun, Class<K> objectType) {
         throw new NotImplementedException();
-
     }
 
     @Override
@@ -486,9 +488,27 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     }
 
     @Override
-    public CountValue countSum(String field) throws DbException {
-        throw new NotImplementedException();
+    public List<CountValueObj> aggregationList(List<String> groupByFields, Map<String, GroupFunction> termFieldAggFunctionMap)  {
+        return  operator.aggregationList(filterStack.toQuery(), groupByFields, termFieldAggFunctionMap);
+    }
 
+    @Override
+    public CountValue countSum(String field) throws DbException {
+        List<CountValueObj> res = operator.aggregationList(filterStack.toQuery(), List.of(field),
+                Map.of(field, GroupFunction.SUM)
+        );
+        if(res.isEmpty()){
+            return new CountValue();
+        }
+
+        CountValue result = new CountValue();
+        result.setCount(res.get(0).getDoc_count());
+        result.setKey(field);
+        result.setValue(Double.parseDouble(((Map<String, Object>)(
+                res.get(0).getAdditionalProperties()
+                        .get(GroupFunction.SUM.name().toLowerCase()+"_"+field)))
+                .getOrDefault("value", 0).toString()));
+        return result;
     }
 
     @Override

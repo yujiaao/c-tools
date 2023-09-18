@@ -37,8 +37,13 @@ public class DateHistogram extends Histogram
      * @param interval int|string $interval the interval by which documents will be bucketed
      */
     public DateHistogram(String name, String field, String interval) {
-        super(name, field, interval);
+        super(name, field, interval, null);
     }
+
+    public DateHistogram(String name, String field, String interval, String version) {
+        super(name, field, interval, version);
+    }
+
 
     /**
      * Set the interval by which documents will be bucketed.
@@ -61,6 +66,11 @@ public class DateHistogram extends Histogram
      */
     public DateHistogram setCalendarInterval(String interval)
     {
+        if(version != null && version.startsWith("6.")){
+            this.setParam("interval", interval);
+            return this;
+        }
+
         this.setParam("calendar_interval", interval);
         return this;
     }
@@ -70,6 +80,11 @@ public class DateHistogram extends Histogram
      */
     public DateHistogram setFixedInterval(String interval)
     {
+        if(version != null && version.startsWith("6.")){
+            this.setParam("interval", interval);
+            return this;
+        }
+
         this.setParam("fixed_interval", interval);
         return this;
     }

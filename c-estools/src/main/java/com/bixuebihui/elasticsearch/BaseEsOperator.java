@@ -4,11 +4,9 @@ import com.bixuebihui.DbException;
 import com.bixuebihui.db.GroupFunction;
 import com.bixuebihui.db.Record;
 import com.bixuebihui.db.SqlPocket;
-import com.bixuebihui.elasticsearch.aggregation.CountObj;
-import com.bixuebihui.elasticsearch.aggregation.DateHistogram;
-import com.bixuebihui.elasticsearch.aggregation.EsAggregationBuilder;
-import com.bixuebihui.elasticsearch.aggregation.EsAggregationParser;
+import com.bixuebihui.elasticsearch.aggregation.*;
 import com.bixuebihui.elasticsearch.query.Query;
+import com.bixuebihui.jdbc.SqlFilter;
 import com.bixuebihui.jdbc.entity.CountObject;
 import com.bixuebihui.jdbc.entity.CountValue;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -19,9 +17,10 @@ import org.apache.commons.lang3.NotImplementedException;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Supplier;
 
-import static java.util.Collections.emptyList;
-import static java.util.Collections.emptyMap;
+import static java.util.Collections.*;
+import static java.util.Collections.emptySet;
 
 /**
  * @author xwx
@@ -35,6 +34,10 @@ public abstract class BaseEsOperator<T, V> implements Record<T> {
 
     public static JsonWapper builder() {
         return new JsonWapper();
+    }
+
+    public EsRequest getRequest() {
+        return request;
     }
 
     @Override
@@ -153,7 +156,7 @@ public abstract class BaseEsOperator<T, V> implements Record<T> {
     }
 
 
-    public List<CountObj> dateHistCountList(String dateField, String interval, String[] groupByFields, GroupFunction fun) throws JsonProcessingException {
+    public List<CountObj> dateHistCountList(String dateField, String interval, String[] groupByFields, GroupFunction fun) {
         return dateHistCountList(Query.match_all(), dateField, interval, groupByFields, fun);
     }
 
@@ -299,6 +302,33 @@ public abstract class BaseEsOperator<T, V> implements Record<T> {
             e.printStackTrace();
             throw new DbException(e.getMessage());
         }
+    }
+
+    public List<CountValueObj> aggregationList(Query query,
+                                               List<String> groupByFields,
+                                               Map<String, GroupFunction> termFieldAggFunctionMap) {
+
+        Terms aggs = EsAggregationBuilder.buildTermsAggMulti(groupByFields,
+                termFieldAggFunctionMap.entrySet().stream().map(
+                e -> Map.of(e.getKey(), e.getValue().name())).reduce(
+                        (a,b) ->{ Map<String, String> c= new HashMap<>(a); c.putAll(b); return c;}
+                ).or(() -> Optional.of(emptyMap())).get());
+
+        String res = request.search(EsQueryBuilder.build(query, 0, 0,
+                Collections.emptySet(), Collections.emptySet(),
+                null, null, emptyMap(), aggs));
+
+        try {
+            return EsAggregationParser.parseCountValue(res,
+                    aggs.getName(),
+                    aggs.getAggs().isEmpty() ? null:
+                            aggs.getAggs().entrySet().stream().findFirst().get().getValue().getName(),
+                    new ObjectMapper());
+
+        } catch (JsonProcessingException e) {
+            throw new DbException(e);
+        }
+
     }
 
     static class JsonWapper {

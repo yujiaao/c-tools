@@ -2,6 +2,7 @@ package com.bixuebihui.elasticsearch;
 
 import com.bixuebihui.elasticsearch.aggregation.DateHistogram;
 import com.bixuebihui.elasticsearch.aggregation.EsAggregationBuilder;
+import com.bixuebihui.elasticsearch.aggregation.Terms;
 import com.bixuebihui.elasticsearch.processor.Sort;
 import com.bixuebihui.elasticsearch.query.Query;
 import com.bixuebihui.jdbc.SqlFilter;
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyMap;
@@ -255,6 +257,51 @@ class ElasticSearchFilterTest {
                 null, null, emptyMap(), agg);
 
         assertEquals("{\"size\":10,\"query\":{\"bool\":{\"must\":[{\"range\":{\"age\":{\"from\":10,\"to\":15}}}]}},\"aggs\":{\"date_hist_by_create_time\":{\"date_histogram\":{\"fixed_interval\":\"10m\",\"field\":\"create_time\",\"time_zone\":\"+08:00\"},\"aggs\":{\"group_by_type\":{\"terms\":{\"field\":\"type\"}}}}}}", res);
+
+
+    }
+
+    @Test
+    void testWithDateAgg(){
+        ElasticSearchFilter filter = new ElasticSearchFilter();
+
+        filter.addFilter("age", SqlFilter.Comparison.BETWEEN, new Integer[]{10, 15});
+
+        DateHistogram  agg = EsAggregationBuilder.buildDateHistogramMulti(
+                "create_time", "30d",
+                List.of("biz_type","biz_id"),
+                Map.of(
+                        "click_pv","sum",
+                        "show_pv","sum"
+                ), "6.8.0");
+
+        String res = filter.toEsObject(filter.toQuery(), 0, 10, emptySet(), emptySet(),
+                null, null, emptyMap(), agg);
+
+        assertEquals("{\"size\":10,\"query\":{\"bool\":{\"must\":[{\"range\":{\"age\":{\"from\":10,\"to\":15}}}]}},\"aggs\":{\"date_hist_by_create_time\":{\"date_histogram\":{\"field\":\"create_time\",\"interval\":\"30d\",\"time_zone\":\"+08:00\"},\"aggs\":{\"sum_click_pv\":{\"sum\":{\"field\":\"click_pv\"}},\"group_by_biz_type_biz_id\":{\"terms\":{\"script\":\"doc['biz_type'].value+'_'+doc['biz_id'].value\"}},\"sum_show_pv\":{\"sum\":{\"field\":\"show_pv\"}}}}}}"
+                , res);
+
+
+    }
+
+    @Test
+    void testWithTermsAgg(){
+        ElasticSearchFilter filter = new ElasticSearchFilter();
+
+        filter.addFilter("dt", SqlFilter.Comparison.BETWEEN, new String[]{"now-7d/d", "now/d"});
+
+        Terms agg = EsAggregationBuilder.buildTermsAggMulti(
+                List.of("biztype_id", "object_id"),
+                Map.of(
+                        "click_pv","sum",
+                        "sight_show_pv","sum"
+                ));
+
+        String res = filter.toEsObject(filter.toQuery(), 0, 10, emptySet(), emptySet(),
+                null, null, emptyMap(), agg);
+
+        assertEquals("{\"size\":10,\"query\":{\"bool\":{\"must\":[{\"range\":{\"dt\":{\"from\":\"now-7d/d\",\"to\":\"now/d\"}}}]}},\"aggs\":{\"group_by_biztype_id_object_id\":{\"terms\":{\"script\":\"doc['biztype_id'].value+'_'+doc['object_id'].value\"},\"aggs\":{\"sum_sight_show_pv\":{\"sum\":{\"field\":\"sight_show_pv\"}},\"sum_click_pv\":{\"sum\":{\"field\":\"click_pv\"}}}}}}"
+                , res);
 
 
     }
