@@ -3,6 +3,9 @@ package com.bixuebihui.elasticsearch.aggregation;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+
+import static java.util.Collections.emptySet;
 
 public class EsAggregationBuilder {
 
@@ -69,7 +72,7 @@ public class EsAggregationBuilder {
                     .setField( termField));
         }
         if(aggFunction!=null && !aggFunction.isEmpty()){
-            addAggFun(res, termField, aggFunction);
+            addAggFun(res, termField, aggFunction, false);
         }
 
 
@@ -83,14 +86,15 @@ public class EsAggregationBuilder {
         DateHistogram res = new DateHistogram("date_hist_by_"+dateField, dateField, interval, esVersion);
 
         res.setTimezone(timezone);
-        return (DateHistogram) formAggregationQuery(groupByField, termFieldAggFunctionMap, res);
+        return (DateHistogram) formAggregationQuery(groupByField, termFieldAggFunctionMap, res, emptySet());
     }
 
     public static Terms buildTermsAggMulti(List<String> groupByField,
-                                                        Map<String,String> termFieldAggFunctionMap) {
+                                                        Map<String,String> termFieldAggFunctionMap,
+                                           Set<String> textFieldsNeededConvertToDouble) {
 
         Terms res = formTermsAgg(groupByField);
-        return (Terms) formAggregationQuery(Collections.emptyList(), termFieldAggFunctionMap, res);
+        return (Terms) formAggregationQuery(Collections.emptyList(), termFieldAggFunctionMap, res, textFieldsNeededConvertToDouble);
     }
 
     static Terms formTermsAgg(List<String> fields){
@@ -104,7 +108,9 @@ public class EsAggregationBuilder {
         throw new IllegalArgumentException("fields list must not empty");
     }
 
-    private static AbstractAggregation formAggregationQuery(List<String> groupByField, Map<String, String> termFieldAggFunctionMap, AbstractAggregation res) {
+    private static AbstractAggregation formAggregationQuery(List<String> groupByField,
+                                                            Map<String, String> termFieldAggFunctionMap,
+                                                            AbstractAggregation res, Set<String> textFieldsNeededConvertToDouble) {
         if(groupByField.size()==1) {
             res.addAggregation(new Terms("group_by_" + groupByField.get(0))
                     .setField(groupByField.get(0)));
@@ -118,22 +124,34 @@ public class EsAggregationBuilder {
                 String termField = entry.getKey();
                 String aggFunction = entry.getValue();
                 if(termField!=null && !termField.isEmpty() && aggFunction!=null && !aggFunction.isEmpty()){
-                    addAggFun(res, termField, aggFunction);
+                    addAggFun(res, termField, aggFunction, textFieldsNeededConvertToDouble.contains(termField));
                 }
             }
         }
         return res;
     }
 
-    private static void addAggFun(AbstractAggregation res, String termField, String aggFunction) {
-        switch (aggFunction){
-            case "count" ->
-                    res.addAggregation(new ValueCount("count_"+termField, termField)
-                            .setField( aggFunction));
-            case "sum" -> res.addAggregation(new Sum("sum_"+termField)
-                    .setField( termField));
-            case "max" -> res.addAggregation(new Max("max_"+termField).setField( termField));
-            case "min" -> res.addAggregation(new Min("min_"+termField).setField( termField));
+    private static void addAggFun(AbstractAggregation res, String termField, String aggFunction, boolean textNeedConvertToDouble) {
+        String alias = aggFunction + "_" + termField;
+        AbstractAggregation agg = switch (aggFunction) {
+            case "count" -> new ValueCount(alias, termField);
+            case "sum" -> new Sum(alias);
+            case "max" -> new Max(alias);
+            case "min" -> new Min(alias);
+            default -> throw new IllegalStateException("Unexpected value: " + aggFunction);
+        };
+        if(agg instanceof AbstractSimpleAggregation) {
+            setupAgg((AbstractSimpleAggregation)agg, termField, textNeedConvertToDouble);
+        }
+        res.addAggregation(agg);
+
+    }
+
+    private static void setupAgg( AbstractSimpleAggregation agg, String termField, boolean textNeedConvertToDouble) {
+        if (textNeedConvertToDouble) {
+            agg.setScript("String string = doc['"+termField+"'].value; return  (string==null || string.isEmpty()) ? 0.0 : Double.parseDouble(string)");
+        } else {
+            agg.setField(termField);
         }
     }
 

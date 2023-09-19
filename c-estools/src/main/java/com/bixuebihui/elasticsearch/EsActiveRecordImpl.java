@@ -43,6 +43,8 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     private boolean useLast=false;
     private String resultFields;
 
+    private List<Object> searchAfter;
+
     public EsActiveRecordImpl(BaseEsOperator<T, V> operator) {
        init(operator);
     }
@@ -225,6 +227,12 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
         return this;
     }
 
+    @Override
+    public EsActiveRecord<T> searchAfter(List<Object> lastOrderFieldsValue){
+        this.searchAfter =  lastOrderFieldsValue;
+        return this;
+    }
+
     /** {@inheritDoc} */
     @Override
     public EsActiveRecord<T> orderByIn(String field, Object[] order) {
@@ -249,7 +257,7 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
             Query where = filterStack.toQuery();
 
             List<EsSearchHitResult<T>> res = operator.select(getResultFieldsSet(), getExcludeFieldsSet(), where
-                    , toEsSort(), limit.getBegin(), limit.getEnd());
+                    , toEsSort(), limit.getBegin(), limit.getEnd(), searchAfter);
             if(!res.isEmpty()){
                 return res.stream().map(EsSearchHitResult::get_source).collect(Collectors.toList());
             }
@@ -264,7 +272,7 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
             Query where = filterStack.toQuery();
 
             return operator.select(getResultFieldsSet(), getExcludeFieldsSet(), where
-                    , toEsSort() ,limit.getBegin(), limit.getEnd());
+                    , toEsSort() ,limit.getBegin(), limit.getEnd(),searchAfter);
         } finally {
             clear();
         }
@@ -276,8 +284,9 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     @Override
     public <K> List<K> findAll(Class<K> clz) throws DbException {
         try {
-            return operator.select(getResultFieldsSet(),getExcludeFieldsSet(), filterStack.toQuery(), toEsSort(), limit.getBegin(),
-                    limit.getEnd(), clz);
+            return operator.select(getResultFieldsSet(),getExcludeFieldsSet(),
+                    filterStack.toQuery(), toEsSort(), limit.getBegin(),
+                    limit.getEnd(), clz, searchAfter);
         } finally {
             clear();
         }
@@ -303,7 +312,7 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     public T find() throws DbException {
         try {
            BaseEsOperator.Wrapper<T> res = operator.selectWithJoin(getResultFieldsSet(), getExcludeFieldsSet(), filterStack.toQuery() , toEsSort(),
-                    SqlLimit.LIMIT_ONE.getBegin(), SqlLimit.LIMIT_ONE.getEnd());
+                    SqlLimit.LIMIT_ONE.getBegin(), SqlLimit.LIMIT_ONE.getEnd(), searchAfter);
             if (res!=null && res.data !=null && !res.data.isEmpty()) {
                 return res.data.get(0);
             }
@@ -332,7 +341,8 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     @Override
     public Object get(String field) throws DbException {
         try {
-            return operator.selectWithJoin(Set.of(field), emptySet(), filterStack.toQuery(),null, 0,1);
+            return operator.selectWithJoin(Set.of(field), emptySet(),
+                    filterStack.toQuery(),toEsSort(), 0,1, searchAfter);
         } finally {
             clear();
         }
@@ -345,7 +355,8 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     public List<Object> getVector(String field) throws DbException {
         try {
             // orderStack.build()
-            return (List<Object>) operator.selectWithJoin(Set.of(field), emptySet(), filterStack.toQuery(),null, 0,10000);
+            return (List<Object>) operator.selectWithJoin(Set.of(field), emptySet(), filterStack.toQuery(),
+                    toEsSort(), limit.getBegin(),limit.getEnd(), searchAfter);
         } finally {
             clear();
         }
@@ -361,8 +372,8 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     @Override
     public List<Long> getLongVector(String field) throws DbException {
         try {
-
-            return (List<Long>) operator.selectWithJoin(Set.of(field), emptySet(), filterStack.toQuery(),null, 0,10000);
+            return (List<Long>) operator.selectWithJoin(Set.of(field), emptySet(), filterStack.toQuery(),
+                    toEsSort(), limit.getBegin(),limit.getEnd(), searchAfter);
 
         } finally {
             clear();
@@ -483,19 +494,30 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     }
 
     @Override
+    public CountValue countSum(String field) throws DbException {
+        return countSum(field, false);
+    }
+
+    @Override
     public List<CountObj> dateHistCountList(String dateField, String interval, String[] groupByFields, GroupFunction fun)  {
         return  operator.dateHistCountList(filterStack.toQuery(), dateField, interval, groupByFields,fun);
     }
 
     @Override
-    public List<CountValueObj> aggregationList(List<String> groupByFields, Map<String, GroupFunction> termFieldAggFunctionMap)  {
-        return  operator.aggregationList(filterStack.toQuery(), groupByFields, termFieldAggFunctionMap);
+    public List<CountValueObj> aggregationList(List<String> groupByFields,
+                                               Map<String, GroupFunction> termFieldAggFunctionMap, Set<String> textFieldsNeededConvertToDouble)  {
+        return  operator.aggregationList(filterStack.toQuery(), groupByFields, termFieldAggFunctionMap, textFieldsNeededConvertToDouble);
     }
 
     @Override
-    public CountValue countSum(String field) throws DbException {
+    public List<CountValueObj> aggregationList(List<String> groupByFields, Map<String, GroupFunction> termFieldAggFunctionMap) {
+        return aggregationList(groupByFields, termFieldAggFunctionMap, emptySet());
+    }
+
+    @Override
+    public CountValue countSum(String field, boolean needConvertToDouble) throws DbException {
         List<CountValueObj> res = operator.aggregationList(filterStack.toQuery(), List.of(field),
-                Map.of(field, GroupFunction.SUM)
+                Map.of(field, GroupFunction.SUM), needConvertToDouble ? Set.of(field):emptySet()
         );
         if(res.isEmpty()){
             return new CountValue();
@@ -520,8 +542,8 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     @Override
     public List<String> getStringVector(String field) throws DbException {
         try {
-
-            return (List<String>) operator.selectWithJoin(Set.of(field), emptySet(), filterStack.toQuery(),null, 0,10000);
+            return (List<String>) operator.selectWithJoin(Set.of(field),
+                    emptySet(), filterStack.toQuery(),toEsSort(), limit.getBegin(),limit.getEnd(), searchAfter);
 
         } finally {
             clear();

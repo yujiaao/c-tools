@@ -121,7 +121,18 @@ public class ElasticSearchFilter extends SqlFilter {
                              LinkedHashMap<String, String> sort, String scriptSource, Map<String, Object> scriptParams,
                              AbstractAggregation aggs
     ) {
-        return EsQueryBuilder.build(query, from, size, includeFields, excludeFields, sort, scriptSource, scriptParams, aggs);
+        return EsQueryBuilder.build(query, from, size, includeFields, excludeFields, sort,
+                scriptSource, scriptParams, aggs, Collections.emptyList());
+    }
+
+    public String toEsObject(Query query, int from, int size,
+                             Set<String> includeFields,
+                             Set<String> excludeFields,
+                             LinkedHashMap<String, String> sort, String scriptSource, Map<String, Object> scriptParams,
+                             AbstractAggregation aggs, List<Object> searchAfter
+    ) {
+        return EsQueryBuilder.build(query, from, size, includeFields, excludeFields,
+                sort, scriptSource, scriptParams, aggs, searchAfter);
     }
 
     private void addFilter(Bool criteria, Query filter, Operator upOperator) {

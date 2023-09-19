@@ -117,7 +117,9 @@ public abstract class BaseEsOperator<T, V> implements Record<T> {
         int from = 0;
         int size = 10;
         LinkedHashMap<String, String> sort = new LinkedHashMap<>();
-        String res = request.search(EsQueryBuilder.build(Query.match_all(), from, size, Collections.emptySet(), Collections.emptySet(), sort, null, emptyMap(), null));
+        String res = request.search(EsQueryBuilder.build(Query.match_all(), from, size,
+                Collections.emptySet(), Collections.emptySet(), sort, null,
+                emptyMap(), null, emptyList()));
 
         Wrapper<T> w = toObjectWrapper(res);
 
@@ -129,7 +131,9 @@ public abstract class BaseEsOperator<T, V> implements Record<T> {
         int from = 0;
         int size = 10;
         LinkedHashMap<String, String> sort = new LinkedHashMap<>();
-        String res = request.search(EsQueryBuilder.build(Query.match_all(), from, size, Collections.emptySet(), Collections.emptySet(), sort, null, emptyMap(), null));
+        String res = request.search(EsQueryBuilder.build(Query.match_all(), from, size,
+                Collections.emptySet(), Collections.emptySet(),
+                sort, null, emptyMap(), null, emptyList()));
 
         return toObjectList(res, clz);
     }
@@ -163,7 +167,8 @@ public abstract class BaseEsOperator<T, V> implements Record<T> {
     public List<CountObj> dateHistCountList(Query query, String dateField, String interval, String[] groupByFields, GroupFunction fun)  {
         DateHistogram aggs = EsAggregationBuilder.buildDateHistogram(dateField, interval, groupByFields[0], fun==null? null:fun.name());
 
-        String res = request.search(EsQueryBuilder.build(query, 0, 0, Collections.emptySet(), Collections.emptySet(), null, null, emptyMap(), aggs));
+        String res = request.search(EsQueryBuilder.build(query, 0, 0, Collections.emptySet(),
+                Collections.emptySet(), null, null, emptyMap(), aggs, emptyList()));
 
         try {
             return EsAggregationParser.parse(res, aggs.getName(), aggs.getAggs().isEmpty() ? null: aggs.getAggs().entrySet().stream().findFirst().get().getValue().getName());
@@ -271,26 +276,34 @@ public abstract class BaseEsOperator<T, V> implements Record<T> {
      * @param end
      * @return
      */
-    public Wrapper<T> selectWithJoin(Set<String> resultFields, Set<String> exludeFields, Query query, LinkedHashMap<String, String> sort, int begin, int end) {
+    public Wrapper<T> selectWithJoin(Set<String> resultFields, Set<String> exludeFields, Query query,
+                                     LinkedHashMap<String,
+                                             String> sort, int begin, int end, List<Object> searchAfter) {
         int size = end - begin;
 
-        String res = request.search(EsQueryBuilder.build(query, begin, size, resultFields, exludeFields, sort, null, emptyMap(), null));
+        String res = request.search(EsQueryBuilder.build(query, begin, size, resultFields, exludeFields, sort,
+                null, emptyMap(), null, searchAfter));
 
         return toObjectWrapper(res);
     }
 
-    public List<EsSearchHitResult<T>> select(Set<String> resultFields, Set<String> exludeFields, Query query, LinkedHashMap<String, String> sort, int begin, int end) {
+    public List<EsSearchHitResult<T>> select(Set<String> resultFields, Set<String> exludeFields,
+                                             Query query, LinkedHashMap<String, String> sort,
+                                             int begin, int end, List<Object> searchAfter) {
         int size = end - begin;
 
-        String res = request.search(EsQueryBuilder.build(query, begin, size, resultFields, exludeFields, sort, null, emptyMap(), null));
+        String res = request.search(EsQueryBuilder.build(query, begin, size, resultFields,
+                exludeFields, sort, null, emptyMap(), null, searchAfter));
 
         return toEsResultWrapper(res);
     }
 
-    public <K> List<K> select(Set<String> resultFields, Set<String> exludeFields, Query query, LinkedHashMap<String, String> sort, int begin, int end, Class<K> clz) {
+    public <K> List<K> select(Set<String> resultFields, Set<String> exludeFields, Query query,
+                              LinkedHashMap<String, String> sort, int begin, int end, Class<K> clz, List<Object> searchAfter) {
         int size = end - begin;
 
-        String res = request.search(EsQueryBuilder.build(query, begin, size, resultFields, exludeFields, sort, null, emptyMap(), null));
+        String res = request.search(EsQueryBuilder.build(query, begin, size,
+                resultFields, exludeFields, sort, null, emptyMap(), null, searchAfter));
 
         return toObjectList(res, clz);
     }
@@ -306,23 +319,25 @@ public abstract class BaseEsOperator<T, V> implements Record<T> {
 
     public List<CountValueObj> aggregationList(Query query,
                                                List<String> groupByFields,
-                                               Map<String, GroupFunction> termFieldAggFunctionMap) {
+                                               Map<String, GroupFunction> termFieldAggFunctionMap,
+                                               Set<String> textFieldsNeededConvertToDouble) {
 
-        Terms aggs = EsAggregationBuilder.buildTermsAggMulti(groupByFields,
+        Terms aggregation = EsAggregationBuilder.buildTermsAggMulti(groupByFields,
                 termFieldAggFunctionMap.entrySet().stream().map(
-                e -> Map.of(e.getKey(), e.getValue().name())).reduce(
-                        (a,b) ->{ Map<String, String> c= new HashMap<>(a); c.putAll(b); return c;}
-                ).or(() -> Optional.of(emptyMap())).get());
+                e -> Map.of(e.getKey(), e.getValue().name().toLowerCase()))
+                        .reduce((a,b) ->{ Map<String, String> c= new HashMap<>(a); c.putAll(b); return c;}
+                ).or(() -> Optional.of(emptyMap())).get(),
+                textFieldsNeededConvertToDouble);
 
-        String res = request.search(EsQueryBuilder.build(query, 0, 0,
+        String res = request.search(EsQueryBuilder.build(query, 0, 1,
                 Collections.emptySet(), Collections.emptySet(),
-                null, null, emptyMap(), aggs));
+                null, null, emptyMap(), aggregation, emptyList()));
 
         try {
             return EsAggregationParser.parseCountValue(res,
-                    aggs.getName(),
-                    aggs.getAggs().isEmpty() ? null:
-                            aggs.getAggs().entrySet().stream().findFirst().get().getValue().getName(),
+                    aggregation.getName(),
+                    aggregation.getAggs().isEmpty() ? null:
+                            aggregation.getAggs().entrySet().stream().findFirst().get().getValue().getName(),
                     new ObjectMapper());
 
         } catch (JsonProcessingException e) {

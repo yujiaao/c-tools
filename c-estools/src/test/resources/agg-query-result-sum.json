@@ -1,0 +1,188 @@
+{
+  "took": 171,
+  "timed_out": false,
+  "_shards": {
+    "total": 3,
+    "successful": 3,
+    "skipped": 0,
+    "failed": 0
+  },
+  "hits": {
+    "total": 86,
+    "max_score": 3.6968117,
+    "hits": [
+      {
+        "_index": "rdm_general_rcmd_bizid_di",
+        "_type": "compete",
+        "_id": "2023-08-31-100011-1413020527",
+        "_score": 3.6968117,
+        "_source": {
+          "vv": "77.0",
+          "finish_read_rate": "0.2338",
+          "per_click_duration": "0.022681",
+          "negative_num": "0",
+          "create_time": "2023-09-01 05:09:14",
+          "per_duration": "0.11",
+          "objectuid": "14-13020527",
+          "attention_rate": "0.0",
+          "attention_num": "0",
+          "biztype_id": "14",
+          "pid": "100011",
+          "interact_rate": "0.0",
+          "req_pv": 2664,
+          "negative_rate": "0.0000",
+          "valid_play_num": "36.0",
+          "object_id": "13020527",
+          "dt": "2023-08-31",
+          "duration": "62.6000",
+          "valid_play_rate": "0.4675",
+          "interact_num": "0",
+          "sight_show_pv": 561,
+          "click_pv": 46,
+          "attribute": "非商业",
+          "finish_read_num": "18.0"
+        }
+      }
+    ]
+  },
+  "aggregations": {
+    "group_by_biztype_id_object_id": {
+      "doc_count_error_upper_bound": 0,
+      "sum_other_doc_count": 0,
+      "buckets": [
+        {
+          "key": "14_13020500",
+          "doc_count": 28,
+          "sum_sight_show_pv": {
+            "value": 15772.0
+          },
+          "sum_click_pv": {
+            "value": 2146.0
+          },
+          "sum_interact_num": {
+            "value": 20.0
+          },
+          "sum_duration": {
+            "value": 7072.5333
+          },
+          "sum_finish_read_num": {
+            "value": 5378.0
+          },
+          "sum_valid_play_num": {
+            "value": 7269.0
+          }
+        },
+        {
+          "key": "14_13020527",
+          "doc_count": 27,
+          "sum_sight_show_pv": {
+            "value": 14104.0
+          },
+          "sum_click_pv": {
+            "value": 1564.0
+          },
+          "sum_interact_num": {
+            "value": 29.0
+          },
+          "sum_duration": {
+            "value": 1740.5664000000002
+          },
+          "sum_finish_read_num": {
+            "value": 529.0
+          },
+          "sum_valid_play_num": {
+            "value": 1207.0
+          }
+        },
+        {
+          "key": "12_12909677",
+          "doc_count": 20,
+          "sum_sight_show_pv": {
+            "value": 422.0
+          },
+          "sum_click_pv": {
+            "value": 31.0
+          },
+          "sum_interact_num": {
+            "value": 0.0
+          },
+          "sum_duration": {
+            "value": 71.5333
+          },
+          "sum_finish_read_num": {
+            "value": 8.0
+          },
+          "sum_valid_play_num": {
+            "value": 0.0
+          }
+        },
+        {
+          "key": "14_12675033",
+          "doc_count": 8,
+          "sum_sight_show_pv": {
+            "value": 1.0
+          },
+          "sum_click_pv": {
+            "value": 0.0
+          },
+          "sum_interact_num": {
+            "value": 0.0
+          },
+          "sum_duration": {
+            "value": 0.0
+          },
+          "sum_finish_read_num": {
+            "value": 0.0
+          },
+          "sum_valid_play_num": {
+            "value": 0.0
+          }
+        },
+        {
+          "key": "12_11392176",
+          "doc_count": 2,
+          "sum_sight_show_pv": {
+            "value": 1.0
+          },
+          "sum_click_pv": {
+            "value": 0.0
+          },
+          "sum_interact_num": {
+            "value": 0.0
+          },
+          "sum_duration": {
+            "value": 0.0
+          },
+          "sum_finish_read_num": {
+            "value": 0.0
+          },
+          "sum_valid_play_num": {
+            "value": 0.0
+          }
+        },
+        {
+          "key": "12_12306476",
+          "doc_count": 1,
+          "sum_sight_show_pv": {
+            "value": 0.0
+          },
+          "sum_click_pv": {
+            "value": 0.0
+          },
+          "sum_interact_num": {
+            "value": 0.0
+          },
+          "sum_duration": {
+            "value": 0.0
+          },
+          "sum_finish_read_num": {
+            "value": 0.0
+          },
+          "sum_valid_play_num": {
+            "value": 0.0
+          }
+        }
+      ]
+    }
+  }
+}

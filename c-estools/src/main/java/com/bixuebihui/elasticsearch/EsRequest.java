@@ -49,6 +49,8 @@ import static java.util.Collections.emptyMap;
 public class EsRequest {
     public static final String TIMEOUT = "?timeout=1m";
     static final Logger logger = LoggerFactory.getLogger(EsRequest.class);
+    public static final int MAX_REQUEST_DEBUG_INFO_WIDTH = 10_000;
+    public static final int MAX_RESPONSE_DEBUG_INFO_WIDTH = 10_000;
     /**
      * This you have to fill in yourself, you're probably using Jackson's ObjectMapper
      * to load JSON data, and that should fit right in here.
@@ -119,7 +121,8 @@ public class EsRequest {
      *   ]
      */
     static BiFunction<String, String, Expression<JsonNode>> exp7aggCount =(String firstAgg, String secondAgg) -> jmespath.compile(
-            "aggregations."+firstAgg+".buckets[*].{key: key, doc_count:doc_count"+(secondAgg!=null? ", items: "+secondAgg+".buckets": "")+"}"
+            //"aggregations."+firstAgg+".buckets[*].{key: key, doc_count:doc_count"+(secondAgg!=null? ", items: "+secondAgg+".buckets": "")+"}"
+            "aggregations."+firstAgg+".buckets[*]"
     );
     private final String username;
     private final String password;
@@ -407,7 +410,8 @@ public class EsRequest {
      */
     private String httpJson(HttpEntityEnclosingRequestBase requestBase, String body) {
         logger.debug("====>>>>");
-        logger.debug(requestBase.toString() + "\n" + StringUtils.abbreviate(body, 10_000)+"\n"+(body!=null && body.length()>10_000?"...":""));
+        logger.debug(requestBase.toString() + "\n" + StringUtils.abbreviate(body, MAX_REQUEST_DEBUG_INFO_WIDTH)
+                +"\n"+(body!=null && body.length()> MAX_REQUEST_DEBUG_INFO_WIDTH ?"...":""));
 
         if (StringUtils.isNotBlank(body) && requestBase.getEntity() == null) {
             requestBase.setEntity(new StringEntity(body, ContentType.APPLICATION_JSON));
@@ -431,7 +435,7 @@ public class EsRequest {
 
             String res = getResponseString(response);
             logger.debug("<<<<====");
-            logger.debug(StringUtils.abbreviate(res, 1000));
+            logger.debug(StringUtils.abbreviate(res, MAX_RESPONSE_DEBUG_INFO_WIDTH));
             return res;
         } catch (IOException e) {
             logger.error("remote error", e);
@@ -439,17 +443,23 @@ public class EsRequest {
         return EsQueryBuilder.EMPTY_JSON_STRING;
     }
 
-    public String query(Query query, int from, int size) {
-        return query(query, from, size, null, null);
+    public String query(Query query, int from, int size,List<Object> searchAfter) {
+        return query(query,
+                from, size, null, null, searchAfter);
     }
 
-    public String query(Query query, int from, int size, LinkedHashMap<String, String> sort, AbstractAggregation aggs) {
-        return query(query, from, size, sort, null, emptyMap(), aggs);
+    public String query(Query query, int from, int size,
+                        LinkedHashMap<String, String> sort, AbstractAggregation aggs, List<Object> searchAfter) {
+        return query(query, from, size, sort, null, emptyMap(), aggs,searchAfter);
     }
 
-    public String query(Query query, int from, int size, LinkedHashMap<String, String> sort, String scriptSource, Map<String, Object> scriptParams, AbstractAggregation aggs) {
+    public String query(Query query, int from, int size,
+                        LinkedHashMap<String, String> sort, String scriptSource,
+                        Map<String, Object> scriptParams, AbstractAggregation aggs, List<Object> searchAfter) {
         try {
-            String body = EsQueryBuilder.build(query, from, size, Collections.emptySet(), Collections.emptySet(), sort, scriptSource, scriptParams, aggs);
+            String body = EsQueryBuilder.build(query, from, size,
+                    Collections.emptySet(), Collections.emptySet(),
+                    sort, scriptSource, scriptParams, aggs,searchAfter);
 
             HttpWithJsonEntity getRequest =
                     HttpWithJsonEntity.builder()

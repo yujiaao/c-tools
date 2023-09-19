@@ -9,10 +9,7 @@ import com.google.common.collect.Maps;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * a helper class for EsRequest to build query json string
@@ -45,6 +42,10 @@ public class EsQueryBuilder {
     static final String SCRIPT ="script";
     public static final String SCRIPT_SOURCE = "source";
     public static final String SCRIPT_PARAMS = "params";
+    public static final String SORT = "sort";
+
+    public static final String SEARCH_AFTER = "search_after";
+
 
 
     static ObjectMapper objectMapper = new ObjectMapper();
@@ -101,7 +102,7 @@ public class EsQueryBuilder {
                                LinkedHashMap<String, String> sort,
                                String scriptSource,
                                Map<String,Object> scriptParams,
-                               AbstractAggregation aggs)  {
+                               AbstractAggregation aggs, List<Object> searchAfter)  {
         Map queryConditions = query.toArray();
 
         HashMap<Object, Object> body = Maps.newHashMap();
@@ -130,7 +131,13 @@ public class EsQueryBuilder {
         }
 
         if(sort!=null && !sort.isEmpty()){
-            body.put("sort", sort);
+            body.put(SORT, sort);
+        }
+        if(searchAfter!=null && !searchAfter.isEmpty()){
+            if (sort == null || searchAfter.size() != sort.size()) {
+                logger.error("search_after value size must equals sort field counts!");
+            }
+            body.put(SEARCH_AFTER, searchAfter);
         }
 
         if(scriptSource!=null){

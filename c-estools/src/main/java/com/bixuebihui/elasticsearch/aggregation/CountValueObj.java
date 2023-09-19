@@ -118,4 +118,8 @@ public class CountValueObj {
     public void setAdditionalProperty(String name, Object value) {
         this.additionalProperties.put(name, value);
     }
+
+    public Double getValue(String field){
+        return (Double) ((Map)additionalProperties.get(field)).get("value");
+    }
 }

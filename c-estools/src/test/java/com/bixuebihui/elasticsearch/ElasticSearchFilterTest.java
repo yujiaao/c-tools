@@ -17,8 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static java.util.Collections.emptyMap;
-import static java.util.Collections.emptySet;
+import static java.util.Collections.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ElasticSearchFilterTest {
@@ -41,7 +40,7 @@ class ElasticSearchFilterTest {
         filter.addFilter("height", SqlFilter.Comparison.GT, new Integer[]{100});
 
         String res = filter.toEsObject(filter.toQuery(), 0, 10, emptySet(), emptySet(),
-                null, null, emptyMap(), null);
+                null, null, emptyMap(), null, emptyList());
 
         assertEquals("{\"size\":10,\"query\":{\"bool\":{\"must\":[{\"range\":{\"age\":{\"from\":10,\"to\":15}}},{\"range\":{\"height\":{\"gt\":100}}}]}}}", res);
 
@@ -54,7 +53,7 @@ class ElasticSearchFilterTest {
         filter.addFilter("height", SqlFilter.Comparison.GT, new Integer[]{100});
 
         String res = filter.toEsObject(filter.toQuery(), 0, 10, emptySet(), emptySet(),
-                null, null, emptyMap(), null);
+                null, null, emptyMap(), null, emptyList());
 
         assertEquals("{\"size\":10,\"query\":{\"bool\":{\"must\":[{\"match\":{\"title\":\"abc 中国\"}},{\"range\":{\"height\":{\"gt\":100}}}]}}}", res);
 
@@ -67,7 +66,7 @@ class ElasticSearchFilterTest {
         filter.addFilter("height", SqlFilter.Comparison.GT, new Integer[]{100});
 
         String res = filter.toEsObject(filter.toQuery(), 0, 10, emptySet(), emptySet(),
-                null, null, emptyMap(), null);
+                null, null, emptyMap(), null, emptyList());
 
         assertEquals("{\"size\":10,\"query\":{\"bool\":{\"should\":[{\"wildcard\":{\"title\":" +
                 "{\"boost\":1.0,\"value\":\"中国*\"}}},{\"wildcard\":{\"title\":{\"boost\":1.0,\"value\":\"北京*\"}}}]," +
@@ -102,7 +101,7 @@ class ElasticSearchFilterTest {
         assertEquals(2, query.getParams().size());
 
         String res = filter.toEsObject(query, 0, 10, emptySet(), emptySet(),
-                null, null, emptyMap(), null);
+                null, null, emptyMap(), null, emptyList());
 
         System.out.println(res);
     }
@@ -127,7 +126,7 @@ class ElasticSearchFilterTest {
         System.out.println(mapper.valueToTree(query));
 
         String res = filter.toEsObject(query, 0, 10, emptySet(), emptySet(),
-                null, null, emptyMap(), null);
+                null, null, emptyMap(), null, emptyList());
 
         assertEquals("{\"size\":10,\"query\":{\"bool\":{\"should\":[{\"range\":{\"a1\":{\"lt\":100}}},{\"range\":{\"b1\":{\"gte\":100}}}],\"minimum_should_match\":1}}}"
         ,res);
@@ -157,7 +156,7 @@ class ElasticSearchFilterTest {
         System.out.println(mapper.valueToTree(query));
 
         String res = filter.toEsObject(query, 0, 10, emptySet(), emptySet(),
-                null, null, emptyMap(), null);
+                null, null, emptyMap(), null, emptyList());
 
         assertEquals("{\"size\":10,\"query\":{\"bool\":{\"should\":[{\"range\":{\"a1\":{\"lt\":100}}},{\"range\":{\"b1\":{\"gte\":100}}}],\"minimum_should_match\":1}}}"
                 ,res);
@@ -187,7 +186,7 @@ class ElasticSearchFilterTest {
         ObjectMapper mapper = new ObjectMapper();
         System.out.println(mapper.valueToTree(query));
 
-        String res = filter.toEsObject(query, 0, 10, emptySet(), emptySet(), null, null, emptyMap(), null);
+        String res = filter.toEsObject(query, 0, 10, emptySet(), emptySet(), null, null, emptyMap(), null, emptyList());
 
         System.out.println(res);
     }
@@ -295,7 +294,7 @@ class ElasticSearchFilterTest {
                 Map.of(
                         "click_pv","sum",
                         "sight_show_pv","sum"
-                ));
+                ), emptySet());
 
         String res = filter.toEsObject(filter.toQuery(), 0, 10, emptySet(), emptySet(),
                 null, null, emptyMap(), agg);
@@ -304,6 +303,23 @@ class ElasticSearchFilterTest {
                 , res);
 
 
+    }
+
+    @Test
+    void toQuerySearchAfter() {
+        ElasticSearchFilter filter = new ElasticSearchFilter();
+        SqlFilter f1 = new SqlFilter();
+        f1.addFilter("a1", SqlFilter.Comparison.GTE, new Integer[]{99});
+        filter.addSubGroupCondition(SqlFilter.Operator.AND, f1);
+
+        Query query = filter.toQuery();
+
+        List<Object> searchAfter= List.of(123, "abc");
+        String res = filter.toEsObject(query, 0, 10, emptySet(), emptySet(), null, null, emptyMap(), null, searchAfter);
+
+        System.out.println(res);
+        assertEquals("{\"size\":10,\"query\":{\"bool\":{\"should\":[{\"bool\":{\"must\":[{\"range\":{\"a1\":{\"gte\":99}}},{\"range\":{\"a2\":{\"gte\":99}}}]}},{\"bool\":{\"must\":[{\"range\":{\"b1\":{\"gte\":100}}},{\"range\":{\"b2\":{\"gte\":101}}}]}}],\"minimum_should_match\":1}}}"
+                ,res);
     }
 
 

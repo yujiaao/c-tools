@@ -1,0 +1,22 @@
+{
+  "key": "14_13020500",
+  "doc_count": 28,
+  "sum_sight_show_pv": {
+    "value": 15772.0
+  },
+  "sum_click_pv": {
+    "value": 2146.0
+  },
+  "sum_interact_num": {
+    "value": 20.0
+  },
+  "sum_duration": {
+    "value": 7072.5333
+  },
+  "sum_finish_read_num": {
+    "value": 5378.0
+  },
+  "sum_valid_play_num": {
+    "value": 7269.0
+  }
+}

@@ -1,5 +1,15 @@
 package com.bixuebihui.elasticsearch.aggregation;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.io.IOUtils;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class EsAggregationParserTest {
@@ -95,4 +105,30 @@ autotest
 
         }
 
+    @Test
+    void jsonNodeToCountValueObj() throws IOException {
+        String s = IOUtils.resourceToString("/node-addition.json", StandardCharsets.UTF_8);
+        ObjectMapper objectMapper = new ObjectMapper();
+        CountValueObj res = EsAggregationParser.jsonNodeToCountValueObj(objectMapper.readTree(s), objectMapper);
+        assertEquals(28, res.doc_count);
+        assertEquals(6, res.getAdditionalProperties().size());
+        assertEquals(15772.0,
+                ((Map)res.getAdditionalProperties().get("sum_sight_show_pv")).get("value"));
+
+    }
+
+
+    @Test
+    void parseCountValue() throws IOException {
+        String s = IOUtils.resourceToString("/agg-query-result-sum.json", StandardCharsets.UTF_8);
+        List<CountValueObj> res = EsAggregationParser.parseCountValue(s, "group_by_biztype_id_object_id", null, new ObjectMapper());
+
+        assertEquals(6, res.size());
+        assertEquals(28, res.get(0).doc_count);
+        assertEquals(6, res.get(0).getAdditionalProperties().size());
+        assertEquals(15772.0,
+                ((Map)res.get(0).getAdditionalProperties().get("sum_sight_show_pv")).get("value"));
+
+
+    }
 }
