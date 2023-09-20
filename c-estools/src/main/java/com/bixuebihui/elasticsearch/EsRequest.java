@@ -595,30 +595,38 @@ public class EsRequest {
 
     public int update(String id, Map<String, Object> map, boolean refresh) throws JsonProcessingException {
         String res;
-        if (version != null && version.startsWith("6")) {
-            //TODO routing problem
-            res = post(EsQueryBuilder.buildUpdate(map), "_doc", id + "/" + EsQueryBuilder.ACTION_UPDATE+ TIMEOUT +(refresh? "&"+ REFRESH :""));
-        } else {
-            res = post(EsQueryBuilder.buildUpdate(map), EsQueryBuilder.ACTION_UPDATE+ TIMEOUT +(refresh? "&"+ REFRESH :""), id);
+        int retryCount=3;
+        String retry="&retry_on_conflict=10";
+        int i=0;
+        while(i++<retryCount) {
+            if (version != null && version.startsWith("6")) {
+                //TODO routing problem
+                res = post(EsQueryBuilder.buildUpdate(map), "_doc", id + "/" + EsQueryBuilder.ACTION_UPDATE + TIMEOUT +retry + (refresh ? "&" + REFRESH : ""));
+            } else {
+                res = post(EsQueryBuilder.buildUpdate(map), EsQueryBuilder.ACTION_UPDATE + TIMEOUT +retry+ (refresh ? "&" + REFRESH : ""), id);
+            }
+            /**
+             * {
+             *   "_index" : "my-index-000001",
+             *   "_type" : "_doc",
+             *   "_id" : "1",
+             *   "_version" : 2,
+             *   "result" : "updated",
+             *   "_shards" : {
+             *     "total" : 2,
+             *     "successful" : 1,
+             *     "failed" : 0
+             *   },
+             *   "_seq_no" : 1,
+             *   "_primary_term" : 4
+             * }
+             */
+            JsonNode result = mapper.readTree(res);
+            // es on conflict retry 10 times
+            int update = result.path("_shards").path("successful").asInt();
+            if(update>0)return update;
         }
-        /**
-         * {
-         *   "_index" : "my-index-000001",
-         *   "_type" : "_doc",
-         *   "_id" : "1",
-         *   "_version" : 2,
-         *   "result" : "updated",
-         *   "_shards" : {
-         *     "total" : 2,
-         *     "successful" : 1,
-         *     "failed" : 0
-         *   },
-         *   "_seq_no" : 1,
-         *   "_primary_term" : 4
-         * }
-         */
-        JsonNode result = mapper.readTree(res);
-        return result.path("_shards").path("successful").asInt();
+        return 0;
     }
 
     public int updateByQuery(Query query, Map<String, Object> keyValues, boolean conflictsProceed, boolean refresh) throws JsonProcessingException {
