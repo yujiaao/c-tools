@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.jupiter.api.Test;
 
+import static java.util.Collections.emptyList;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class EsAggregationBuilderTest {
@@ -49,7 +50,7 @@ class EsAggregationBuilderTest {
         Query q=Query.match_all();
 
 
-        String res2 = esRequest.query(q, 0, 1, null,  res);
+        String res2 = esRequest.query(q, 0, 1, null,  res, emptyList());
         JsonNode res3 = esRequest.getAggTableJsonNode(res2, res.getName(), res.getAggs().entrySet().stream().findFirst().get().getValue().getName());
         System.out.println(res3);
 

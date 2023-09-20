@@ -253,8 +253,6 @@ class EsActiveRecordImplTest {
         int res = ar.eq("abc", "123").update(_id, field, value+"");
         System.out.println(res);
         assertEquals(1, res);
-
-
     }
 
     @Test

@@ -427,7 +427,7 @@ public class EsRequest {
 
             HttpResponse response = httpClient.execute(requestBase);
 
-            if (response.getStatusLine().getStatusCode() != 200) {
+            if (response.getStatusLine().getStatusCode() < 200 || response.getStatusLine().getStatusCode() >299) {
                 throw new RuntimeException("Failed : HTTP error code : "
                         + response.getStatusLine().getStatusCode() +
                         " with message:" + getResponseString(response));
@@ -596,14 +596,15 @@ public class EsRequest {
     public int update(String id, Map<String, Object> map, boolean refresh) throws JsonProcessingException {
         String res;
         int retryCount=3;
-        String retry="&retry_on_conflict=10";
+
         int i=0;
+        String ref= refresh ? "&refresh=true":"";
+
         while(i++<retryCount) {
             if (version != null && version.startsWith("6")) {
-                //TODO routing problem
-                res = post(EsQueryBuilder.buildUpdate(map), "_doc", id + "/" + EsQueryBuilder.ACTION_UPDATE + TIMEOUT +retry + (refresh ? "&" + REFRESH : ""));
+                res = post(EsQueryBuilder.buildUpdate(map), "_doc", id + "/" + EsQueryBuilder.ACTION_UPDATE + TIMEOUT+ref);
             } else {
-                res = post(EsQueryBuilder.buildUpdate(map), EsQueryBuilder.ACTION_UPDATE + TIMEOUT +retry+ (refresh ? "&" + REFRESH : ""), id);
+                res = post(EsQueryBuilder.buildUpdate(map), EsQueryBuilder.ACTION_UPDATE ,  id+ TIMEOUT+ref+"&retry_on_conflict=10");
             }
             /**
              * {

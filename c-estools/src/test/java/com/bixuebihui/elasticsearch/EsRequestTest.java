@@ -16,6 +16,7 @@ import org.junit.jupiter.params.provider.CsvSource;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -34,7 +35,7 @@ public class EsRequestTest {
 
         esRequest.indexName = "test*";
 
-        String s0 = esRequest.query(Query.match_all(), 0, 10, null, null);
+        String s0 = esRequest.query(Query.match_all(), 0, 10, null, null, Collections.emptyList());
         System.out.println(s0);
 
         System.out.println("===========");
@@ -42,7 +43,7 @@ public class EsRequestTest {
 
         String s = esRequest.query(Query
                 .match(null, null).setFieldQuery("child_endpoint_name",
-                        "{GET}/index/sysGenerator"), 0, 10, null, null);
+                        "{GET}/index/sysGenerator"), 0, 10, null, null, Collections.emptyList());
         System.out.println(s);
 
     }
@@ -50,7 +51,7 @@ public class EsRequestTest {
     @Test
     public void testMatchAll(){
         esRequest.indexName = "test*";
-        String s0 = esRequest.query(Query.match_all(), 0, 10, null, null);
+        String s0 = esRequest.query(Query.match_all(), 0, 10, null, null, Collections.emptyList());
         System.out.println(s0);
     }
 
@@ -85,7 +86,7 @@ public class EsRequestTest {
 
         String s0 = esRequest.query(Query.range("age", ImmutableMap.<String, Object>builder()
                 .put("from", 11)
-                .put("to",18).build()), 0, 10);
+                .put("to",18).build()), 0, 10, Collections.emptyList());
         System.out.println(s0);
     }
 
@@ -187,7 +188,7 @@ public class EsRequestTest {
     @Test
     public void queryData(){
         esRequest.indexName = "library*";
-        String json = esRequest.query(Query.match_all(), 0, 2);
+        String json = esRequest.query(Query.match_all(), 0, 2, null);
         System.out.println(json);
     }
 

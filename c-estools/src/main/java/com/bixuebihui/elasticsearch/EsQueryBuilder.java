@@ -178,6 +178,8 @@ public class EsQueryBuilder {
 
         HashMap<Object, Object> body = Maps.newHashMap();
         body.put(UPDATE_DOC, updateFieldsValues);
+        body.put("doc_as_upsert", true);
+//        body.put("retry_on_conflict", 10);
 
         return toJsonString(body);
     }
