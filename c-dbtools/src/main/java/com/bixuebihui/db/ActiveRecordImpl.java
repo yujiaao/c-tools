@@ -303,8 +303,20 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
      * {@inheritDoc}
      */
     @Override
-    public ActiveRecord<T> or(SqlHelper andStack) {
-        filterStack.or(andStack);
+    public ActiveRecord<T> or(SqlHelper orStack) {
+        filterStack.or(orStack);
+        return this;
+    }
+
+    @Override
+    public ActiveRecord<T> and(SqlHelper andStack) {
+        filterStack.and(andStack);
+        return this;
+    }
+
+    @Override
+    public ActiveRecord<T> not(SqlHelper notStack) {
+        filterStack.not(notStack);
         return this;
     }
 

@@ -406,6 +406,16 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
         return this;
     }
 
+    @Override
+    public EsActiveRecord<T> and(SqlHelper andStack) {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public ActiveRecord<T> not(SqlHelper notStack) {
+        throw new NotImplementedException();
+    }
+
 
     @Override
     public EsActiveRecord<T> desc(String field) {

@@ -219,6 +219,10 @@ public interface ActiveRecord<T> extends Record<T>, Customizer<T> {
     ActiveRecord<T> asc(String field);
 
 
+    ActiveRecord<T> and(SqlHelper andStack);
+
+    ActiveRecord<T> not(SqlHelper notStack);
+
     /**
      * Sort by given order
      * e.g. select FirstName from DemoTable where Id IN(4,5,6) order by field(Id,4,5,6);
@@ -305,6 +309,16 @@ public interface ActiveRecord<T> extends Record<T>, Customizer<T> {
      * @return a {@link ActiveRecord} object.
      */
     ActiveRecord<T> or(SqlHelper andStack);
+
+    default ActiveRecord<T> or(ActiveRecord<T> orStack){
+        return or(orStack.getCondStack());
+    }
+    default ActiveRecord<T> and(ActiveRecord<T> andStack){
+        return and(andStack.getCondStack());
+    }
+    default ActiveRecord<T> not(ActiveRecord<T> notStack){
+        return not(notStack.getCondStack());
+    }
 
     /**
      * <p>alias.</p>

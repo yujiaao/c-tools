@@ -527,6 +527,16 @@ public class DbImpl<T, V> extends BaseDao<T, V> implements ActiveRecord<T>,
 	}
 
 	@Override
+	public ActiveRecord<T> and(SqlHelper andStack) {
+		return null;
+	}
+
+	@Override
+	public ActiveRecord<T> not(SqlHelper notStack) {
+		return null;
+	}
+
+	@Override
 	public ActiveRecord<T> orderByIn(String field, Object[] in) {
 		return null;
 	}

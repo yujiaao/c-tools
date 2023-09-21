@@ -239,6 +239,14 @@ public class SqlHelper {
 		return this;
 	}
 
+	public SqlHelper and(SqlHelper cond) {
+		if (andCond == null) {
+			andCond = new ArrayList<>();
+		}
+		this.andCond.add(cond);
+		return this;
+	}
+
 	/**
 	 * <p>not.</p>
 	 *

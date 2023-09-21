@@ -20,7 +20,19 @@ import java.util.List;
 import java.util.Set;
 
 public class ActiveRecordImplTest extends TestCase {
-	public static class T {
+    @Test
+    void or() {
+    }
+
+    @Test
+    void and() {
+    }
+
+    @Test
+    void not() {
+    }
+
+    public static class T {
 		public Long getId() {
 			return id;
 		}
@@ -258,7 +270,17 @@ public class ActiveRecordImplTest extends TestCase {
 		boolean		res = ar.exists();
 
 		assertTrue(res);
+	}
 
+	public void testAndCond() {
+		SqlPocket sql = bd.ar().eq("id", 123)
+				.and(bd.ar().eq("name", "a").or(bd.ar().eq("pub", 1).eq("id", 0))).getSql();
+
+
+		assertEquals(" where (id = ?) and ((name = ?) or (pub = ? and id = ?))",
+				sql.getCondition().toString());
+		assertEquals(4, sql.getParams().size());
+		assertEquals("a", sql.getParams().get(1));
 
 	}
 
