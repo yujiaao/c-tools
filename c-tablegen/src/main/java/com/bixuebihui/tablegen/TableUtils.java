@@ -664,7 +664,7 @@ public class TableUtils {
 
         Map<String, String > columnComment= new HashMap<>();
         if(dbHelper!=null && dbType == SQLSERVER|| dbType==SQLSERVER_2005_AND_UP || dbType==SQLSERVER_2010_AND_UP){
-            columnComment = getColumnComment(dbHelper, tableName);
+            columnComment = getColumnCommentForSQLServer(dbHelper, tableName);
         }
 
         ColumnData cd;
@@ -737,7 +737,7 @@ public class TableUtils {
 
     }
 
-    private static Map<String, String> getColumnComment(IDbHelper dbHelper, String tableName) {
+    private static Map<String, String> getColumnCommentForSQLServer(IDbHelper dbHelper, String tableName) {
         String sql ="SELECT\n" +
                 "    B.name AS column_name,\n" +
                 "    C.value AS column_description\n" +
@@ -755,7 +755,7 @@ public class TableUtils {
     }
 
 
-    public static Map<String, String> getTableComment(IDbHelper dbHelper, List<String> tableName) {
+    public static Map<String, String> getTableCommentForSQLServer(IDbHelper dbHelper, List<String> tableName) {
         String sql ="select top 1000\n" +
                 "    ROW_NUMBER() OVER (ORDER BY a.name) AS No,\n" +
                 "    a.name AS table_name,\n" +

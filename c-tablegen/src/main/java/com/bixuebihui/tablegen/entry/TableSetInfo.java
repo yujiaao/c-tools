@@ -72,12 +72,12 @@ public class TableSetInfo implements KeyInfo {
 
     private static void fillTableComment(IDbHelper dbHelper, TableInfo tableInfo ) {
         String tableName =tableInfo.getName();
-        Map<String, String> map = TableUtils.getTableComment(dbHelper, List.of(tableName));
+        Map<String, String> map = TableUtils.getTableCommentForSQLServer(dbHelper, List.of(tableName));
 
         tableInfo.setComment(map.get(tableName));
     }
 
-    private static  void findFieldComment(String tableName, List<ColumnData> fields, String tableSql) {
+    protected static  void findFieldComment(String tableName, List<ColumnData> fields, String tableSql) {
         String fieldSql = tableSql.substring(tableSql.indexOf("(") + 1, tableSql.lastIndexOf(")"));
         String[] fieldDescs = StringUtils.split(fieldSql, "\n");
         Map<String, ColumnData> commentMap = new HashMap<>();
@@ -97,7 +97,7 @@ public class TableSetInfo implements KeyInfo {
             if (!upper.contains("COMMENT")) {
                 continue;
             }
-            String[] splits = StringUtils.split(trim, "COMMENT");
+            String[] splits = StringUtils.splitByWholeSeparator(trim, "COMMENT");
             String comment = splits[splits.length - 1];
             comment = replaceComment(comment);
             if (commentMap.containsKey(fieldName)) {
@@ -135,14 +135,14 @@ public class TableSetInfo implements KeyInfo {
         classCommentTmp = StringUtils.replace(classCommentTmp, "\t", " ");
         classCommentTmp = StringUtils.trim(classCommentTmp);
 
-        //classCommentTmp.stripLeading("'").stripTrailing("',");
-        if(classCommentTmp.startsWith("'")){
-            classCommentTmp = classCommentTmp.substring(1);
+        if(classCommentTmp.endsWith(",")){
+            classCommentTmp = classCommentTmp.substring(0, classCommentTmp.length()-1);
         }
 
-        if(classCommentTmp.endsWith("',")){
-            classCommentTmp = classCommentTmp.substring(0, classCommentTmp.length()-2);
-        }
+        //classCommentTmp.stripLeading("'").stripTrailing("',");
+        //StarRocks commend quoted in double quotes "\""
+        classCommentTmp  = StringUtils.strip(classCommentTmp, "'\"");
+
 
         return classCommentTmp;
     }

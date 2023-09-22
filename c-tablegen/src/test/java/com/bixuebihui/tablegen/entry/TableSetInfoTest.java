@@ -190,5 +190,22 @@ public class TableSetInfoTest {
         String comment ="'审核状态 0未审核 1通过审核 2不通过审核',";
         String s = TableSetInfo.replaceComment(comment);
         assertEquals("审核状态 0未审核 1通过审核 2不通过审核", s);
+
+        String sr = "\"业务线OGC,PGC,UGC\",";
+        String s2 = TableSetInfo.replaceComment(sr);
+        assertEquals("业务线OGC,PGC,UGC", s2);
+    }
+
+    @Test
+    void findFieldComment(){
+        String sql = "CREATE TABLE `mytable` (\n" +
+                "  `type` varchar(65532) NOT NULL COMMENT \"业务A,B,C\",\n `id` varchar(65532) NOT NULL COMMENT \"id\" );";
+        List<ColumnData> fields = List.of(new ColumnData("type", "varchar", 65532, false),
+                new ColumnData("id", "varchar", 65532, false));
+
+        TableSetInfo.findFieldComment("mytable", fields, sql);
+        assertEquals("业务A,B,C", fields.get(0).getComment());
+        assertEquals("id", fields.get(1).getComment());
+
     }
 }
