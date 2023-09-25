@@ -1,6 +1,13 @@
 package com.bixuebihui.dbcon;
 
+import com.bixuebihui.jdbc.IDbHelper;
+
+import java.io.*;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * <p>DatabaseTools class.</p>
@@ -78,5 +85,36 @@ public class DatabaseTools extends BaseOperator
         }
 
         return -1;
+    }
+
+    public static long importTsvData(String tsvFileName, String tableName, IDbHelper dbHelper) {
+        String encoding = "UTF-8";
+        int maxLines = 100;
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(tsvFileName), encoding))) {
+
+            String firstLine = reader.readLine();
+            String[] columns = firstLine.split("\t");
+            String insertSql = "insert into " + tableName+ "(" + String.join(",", columns)
+                    + ") values (" + String.join(",", "?".repeat(columns.length).split("")) + ")";
+            List<Object[]> values = new ArrayList<>();
+
+            int count = 0;
+            for (String line; (line = reader.readLine()) != null; ) {
+                Object[] fields = line.split("\t");
+                values.add(fields);
+                if (count++ % maxLines == 0) {
+                    dbHelper.executeNoQueryBatch(insertSql, values);
+                    values.clear();
+                    System.out.println("imported " + count + " lines");
+                }
+            }
+            if (!values.isEmpty()) {
+                dbHelper.executeNoQueryBatch(insertSql, values);
+            }
+            return count;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

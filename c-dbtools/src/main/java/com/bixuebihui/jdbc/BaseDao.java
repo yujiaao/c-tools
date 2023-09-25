@@ -3,6 +3,7 @@ package com.bixuebihui.jdbc;
 import com.bixuebihui.DbException;
 import com.bixuebihui.SqlUtils;
 import com.bixuebihui.db.*;
+import com.bixuebihui.dbcon.DatabaseTools;
 import com.bixuebihui.jdbc.aop.DbHelperAroundAdvice;
 import com.bixuebihui.jdbc.entity.CountObject;
 import com.bixuebihui.jdbc.entity.CountValue;
@@ -2238,5 +2239,10 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
 
     protected String getCoreSql() {
         return SELECT_FROM + getTableName() + " ";
+    }
+
+    public long importTsvData(String fileName) {
+        return DatabaseTools.importTsvData(
+                fileName, this.getTableName(), this.getDbHelper());
     }
 }
