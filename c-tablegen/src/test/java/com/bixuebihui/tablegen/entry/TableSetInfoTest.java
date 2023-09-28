@@ -175,13 +175,12 @@ public class TableSetInfoTest {
     @Test
     void getTableIndexes() throws SQLException {
         TableSetInfo setInfo = new TableSetInfo();
-        DatabaseMetaData metaData = dbHelper.getConnection().getMetaData();
 
         TableGen t = new TableGen();
         t.init(TableSetInfoTest.class.getResource("/tablegen.properties").getPath());
 
         String testGen = "test_gen";
-        setInfo.initIndex(t.getConfig(), metaData, testGen);
+        setInfo.initIndex(t.getConfig(), dbHelper, testGen);
         System.out.println(setInfo.getTableIndexes(testGen));
     }
 

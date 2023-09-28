@@ -19,7 +19,7 @@ import {{config.packageName}}.BaseList;
 import javax.annotation.processing.Generated;
 
 @Generated("com.github.yujiaao:tablegen")
-public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{{else}}BaseList{{/if}}<{{pojoClassName}}, {{firstKeyType}}> {{#if }}{{/if}}
+public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{{else}}BaseList{{/if}}<{{pojoClassName}}, {{{firstKeyType}}}>
 {
     {{! writeDALConstructor(tableName); }}
     /**
@@ -90,7 +90,9 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
     {
     {{#if tableInfo.isView}}
     {{!    tripple { for unescape equals sign '='  }}
-        return "{{{tableInfo.comment}}}";
+        return """
+        {{{tableInfo.viewSql}}}
+        """;
     {{~ else }}
         return  "{{tableName}}";
     {{/if}}
@@ -119,10 +121,9 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
     */
     @Override
     public String getKeyName()
-    {
-    {{#if hasKey}}
-        return  F.{{constantName firstKeyName}};
-    {{else}}
+    { {{#if hasKey}}
+        return {{#each keys}} F.{{constantName this}} {{#unless @last}}+ "," + {{/unless}}{{/each}};
+    {{else~}}
         return null;
     {{/if ~}}
     }
@@ -132,18 +133,27 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
 
 {{! writeGetSetId(tableName, keyData, colData);}}
     @Override
-    public {{firstKeyType}} getId({{pojoClassName}} info) {
+    public {{{firstKeyType}}} getId({{pojoClassName}} info) {
     {{#if hasKey}}
+        {{#if (lt keys.size 2)}}
         return info.get{{firstUp firstKeyName}}();
+        {{~else~}}
+        return List.of({{#each keys}}info.get{{firstUp this}}(){{#unless @last}}, {{/unless}}{{/each}});
+        {{/if}}
     {{else}}
         return null;
     {{/if ~}}
     }
 {{#unless tableInfo.isView}}
     @Override
-    public void setId({{pojoClassName}} info, {{firstKeyType}} id) {
+    public void setId({{pojoClassName}} info, {{{firstKeyType}}} id) {
     {{#if hasKey}}
+        {{#if (lt keys.size 2)}}
         info.set{{firstUp firstKeyName}}(id);
+        {{~else~}}
+        {{#each keys}}info.set{{firstUp this}}(({{colType tableName this}}) id.get({{@index}}) );
+        {{/each}}
+        {{/if}}
     {{else}}
         //no key to set, don't use this method!
     {{/if ~}}
@@ -151,41 +161,55 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
 
     @Override
     public void setIdLong({{pojoClassName}} info, long id) {
-    {{#if hasKey}}
+{{#if hasKey}}
+    {{#if (lt keys.size 2)}}
         info.set{{firstUp firstKeyName}}({{{unboxType firstKeyType}}}id);
-    {{else}}
-        //no key to set, don't use this method!
+    {{~else~}}
+        throw new UnsupportedOperationException("This method is not supported, because table {{tableName}} has more than one key!");
     {{/if}}
+{{else}}
+    //no key to set, don't use this method!
+{{/if}}
     }
 {{/unless}}
 {{! writeGetNextKey(keyData, colData); }}
 {{#if hasKey}}{{#unless tableInfo.isView}}
 
       {{#gt keys.size 1}}
-          public {{firstKeyType}} getNextKey(){
+          public {{{firstKeyType}}} getNextKey(){
             throw new IllegalStateException("no autokey for union keys");
           }
       {{/gt}}
       {{#eq keys.size 1}}
           {{#eq firstKeyType "Timestamp"}}
-              public {{firstKeyType}} getNextKey(){
+              public {{{firstKeyType}}} getNextKey(){
               return new Timestamp(System.currentTimeMillis());
               }
           {{/eq}}
           {{#eq firstKeyType "String"}}
-              public {{firstKeyType}} getNextKey(){
+              public {{{firstKeyType}}} getNextKey(){
               return java.util.UUID.randomUUID().toString();
               }
           {{/eq}}
       {{/eq}}
 
     {{#if hasLogicDelCol}}
-        public boolean logicDeleteByIds(List<{{firstKeyType}}>  keys)
+        public boolean logicDeleteByIds(List<{{{firstKeyType}}}>  keys)
         {
-            return this.ar()
+        {{~#gt keys.size 1}}
+            return keys.stream().map(item ->
+                this.ar()
+                    {{#each keys}}.eq(F.{{constantName this}}, item.get({{@index}}))
+                    {{/each~}}
+                .update(F.IS_DEL, 1)
+                ).reduce((a, b) -> a + b).orElse(0) == keys.size();
+        {{~else~}}
+           return this.ar()
                 .in(F.{{constantName firstKeyName}}, keys)
                 .update(F.{{constantName config.delColName}}, 1) == keys.size();
+        {{/gt}}
         }
+
     {{/if}}
 
     {{#if hasVersionCol}}
@@ -250,7 +274,7 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
 
     {{! writeDummyDelete(tableName, keyData, "deleteByKey", colData); }}
     @Override
-    public boolean deleteByKey({{firstKeyType}}  key)  {
+    public boolean deleteByKey({{{firstKeyType}}}  key)  {
         throw new DbException("This operation is not supported, because table {{ tableName }} not have a unique key!");
     }
     {{/unless}}
@@ -348,9 +372,9 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
     {{/eq ~}}
     {{/if ~}}
     {{/each ~}}
-    {{#if hasKey}}
+    {{#eq keys.size 1}}
         info.set{{firstUp keys.[0]}}(getNextKey());
-    {{/if}}
+    {{/eq}}
         return this.insert(info);
     }
 {{/unless}}

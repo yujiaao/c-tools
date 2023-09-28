@@ -179,12 +179,11 @@ public class Paging<S> {
         BeanMap dest = new BeanMap(searchBean);
         Map<String, MutablePair<Object, Object>> dateRange = new HashMap<>(16);
 
-        Map<String, String> fields = validFields.stream().collect(Collectors.toMap(x -> unifyField(x), y -> y, (x,y) -> x));
+        Map<String, String> fields = validFields.stream().collect(Collectors.toMap(this::unifyField, y -> y, (x, y) -> x));
 
         dest.forEach((k, v) -> {
 
             String key = unifyField(((String) k));
-
 
             if (fields.isEmpty() ||  fields.containsKey(key)) {
                 String originalKey = fields.get(key);

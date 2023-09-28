@@ -77,7 +77,7 @@ public class GenerateAll implements DiffHandler {
 
     public void run(String filename, OutputStream out) {
 
-        if (filename != null && filename.length() > 0) {
+        if (filename != null && !filename.isEmpty()) {
             init(filename);
         }
 
@@ -120,7 +120,7 @@ public class GenerateAll implements DiffHandler {
 
                 Connection conn =  helper.getConnection();
                 try {
-                    DbDiff dd = new DbDiff(getTableDataFromLocalCache(), conn, generator.config.getCatalog(),
+                    DbDiff dd = new DbDiff(helper, helper, getTableDataFromLocalCache(), conn, generator.config.getCatalog(),
                             generator.config.getSchema());
                     dd.addDiffHandler(this);
                     dd.compareTables(generator.config.getR2dc());

@@ -877,10 +877,10 @@ public class TableGen implements DiffHandler {
                     generateStoreProcedures(meta);
                 }
             } else {
-
+                IDbHelper dbHelper2 = getDbHelper(dbConfig);
                 Connection conn = getDbHelper(dbConfig).getConnection();
                 try {
-                    DbDiff dd = new DbDiff(getTableDataFromLocalCache(), conn, config.catalog, config.schema);
+                    DbDiff dd = new DbDiff(dbHelper, dbHelper2, getTableDataFromLocalCache(), conn, config.catalog, config.schema);
                     dd.addDiffHandler(this);
                     dd.compareTables(config.getR2dc());
                 } finally {
@@ -897,7 +897,7 @@ public class TableGen implements DiffHandler {
     }
 
     private void writeGetSetId(String tableName, List<String> keyData, List<ColumnData> columnData) throws IOException, GenException {
-        String type = getFirstKeyType(keyData, columnData);
+        String type = getPrimaryKeyType(keyData, columnData);
         out("@Override");
         out("public " + type + " getId(" + this.getPojoClassName(tableName) + " info) {");
         out("    return " + this.getOneId(keyData) + ";");
@@ -980,7 +980,7 @@ public class TableGen implements DiffHandler {
             writeObjs(tableName, keyData, colData);
 
             writeGetTableName(tableName, "getTableName", false);
-            writeGetKeyName(getFirstKeyName(keyData));
+            writeGetKeyName(getPrimaryKeyName(keyData));
 
             if(config.r2dbc) {
                 out(mapRowR2dbc(colData, getPojoClassName(tableName)));
@@ -1079,7 +1079,7 @@ public class TableGen implements DiffHandler {
 
     private void writeDummyDelete(String tableName, List<String> keyData2, String methodName, List<ColumnData> columnData) throws IOException, GenException {
         out("");
-        out("public boolean " + methodName + "(" + getFirstKeyType(keyData2, columnData) + " key) throws SQLException {");
+        out("public boolean " + methodName + "(" + getPrimaryKeyType(keyData2, columnData) + " key) throws SQLException {");
         out("    throw new SQLException(\"This operation is not supported, because table " + tableName
                 + " not have a unique key!\");");
         out("}");
@@ -1178,7 +1178,7 @@ public class TableGen implements DiffHandler {
                     // getKeys
                     out("\t@Override");
                     if (isNotEmpty(keyData)) {
-                        String keyType = getFirstKeyType(keyData, colData);
+                        String keyType = getPrimaryKeyType(keyData, colData);
                         out("\tprotected " + keyType + "[] getKeys(HttpServletRequest request) {");
                         out("\t\tString[] res = request.getParameterValues(checkboxName);");
                         out("\t\tif(res==null) return new " + keyType + "[0];");
@@ -1252,7 +1252,7 @@ public class TableGen implements DiffHandler {
     void writeHeader(TableInfo table, String subPackage, String extClass) throws IOException {
         out("package " + config.packageName + "." + subPackage + ";");
         out("/*");
-        out("  * " + table.getName() + (table.getComment() != null ? (": " + table.getComment()) : ""));
+        out("  * " + table.getName() + (table.getComment() != null ? (": " +  table.getComment() ) : ""));
         writeHeaderComment();
         out("  */");
         out("");
@@ -1489,7 +1489,7 @@ public class TableGen implements DiffHandler {
         String tableName = table.getName();
         List<String> keyData = setInfo.getTableKeys(tableName);
         List<ColumnData> columnData = table.getFields();
-        return "<" + getPojoClassName(tableName) + "," + getFirstKeyType(keyData, columnData) + ">";
+        return "<" + getPojoClassName(tableName) + "," + getPrimaryKeyType(keyData, columnData) + ">";
     }
 
 
@@ -1626,7 +1626,7 @@ public class TableGen implements DiffHandler {
 
     private String getOneId(List<String> keyData2) {
         if (isNotEmpty(keyData2)) {
-            String key = getFirstKeyName(keyData2);
+            String key = getPrimaryKeyName(keyData2);
             if (key != null) {
                 return " info.get" + firstUp(key) + "()";
             }
@@ -1700,7 +1700,7 @@ public class TableGen implements DiffHandler {
      */
     void writeGetNextKey(List<String> keyData, List<ColumnData> columnData) throws IOException, GenException {
 
-        String type = getFirstKeyType(keyData, columnData);
+        String type = getPrimaryKeyType(keyData, columnData);
 
         if ("Timestamp".equals(type) || "String".equals(type)) {
             out("public " + type + " getNextKey(){\n");

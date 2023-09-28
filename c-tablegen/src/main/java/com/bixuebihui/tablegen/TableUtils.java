@@ -68,10 +68,11 @@ public class TableUtils {
      *
      * @throws SQLException if any
      */
-    public static List<String> getTableKeys(DatabaseMetaData metaData,
+    public static List<String> getTableKeys(IDbHelper helper,
                                             String catalog, String schema, String tableName)
             throws SQLException {
         start("getTableKeys");
+        DatabaseMetaData metaData = helper.getConnection().getMetaData();
 
         List<String> keyData = new ArrayList<>();
         ResultSet r = null;
@@ -103,6 +104,10 @@ public class TableUtils {
                 keyMap.put(seq, key);
             }
             keyData.addAll(keyMap.values());
+            if(keyData.isEmpty()){
+                LOG.warn("No primary key found for table " + tableName+" using driver metadata");
+                keyData.addAll(descTable(metaData, tableName));
+            }
 
         } catch (SQLException e) {
             System.err.println("Error whilst getting keys for " + tableName);
@@ -112,6 +117,22 @@ public class TableUtils {
             DbUtils.close(r);
         }
 
+        return keyData;
+    }
+
+    private static Collection<String> descTable(DatabaseMetaData metaData, String tableName) throws SQLException {
+        //same db can't get primary key by metadata, try `desc table`
+        String sql = "desc " + tableName;
+        List<String> keyData = new ArrayList<>();
+        new DbHelper(metaData.getConnection()).executeQuery(sql, resultset -> {
+            String key = resultset.getString(1);
+            //for mysql
+            if (resultset.getString(4).equalsIgnoreCase("PRI") ||
+                    //for StarRocks
+                    resultset.getString(4).equalsIgnoreCase("true")) {
+                keyData.add(key);
+            }
+        });
         return keyData;
     }
 
@@ -652,18 +673,18 @@ public class TableUtils {
      *
      *
      */
-    public static TableInfo getColumnData(IDbHelper dbHelper, DatabaseMetaData metaData,
+    public static TableInfo getColumnData(IDbHelper dbHelper,
                                                  String catalog, String schema, String tableName, boolean isR2dbc) throws SQLException {
         start("getColumnData");
         List<ColumnData> colData = new ArrayList<>();
 
-
+        DatabaseMetaData metaData = dbHelper.getConnection().getMetaData();
         ResultSet rs = metaData.getColumns(catalog, schema, tableName, "%");
 
         int dbType = BaseDao.detectDbType(metaData.getDriverName());
 
         Map<String, String > columnComment= new HashMap<>();
-        if(dbHelper!=null && dbType == SQLSERVER|| dbType==SQLSERVER_2005_AND_UP || dbType==SQLSERVER_2010_AND_UP){
+        if( dbType == SQLSERVER|| dbType==SQLSERVER_2005_AND_UP || dbType==SQLSERVER_2010_AND_UP){
             columnComment = getColumnCommentForSQLServer(dbHelper, tableName);
         }
 

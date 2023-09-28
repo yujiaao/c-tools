@@ -10,6 +10,9 @@ import java.util.List;
 public class TableInfo {
    String name;
    String comment;
+
+   String viewSql;
+
    List<ColumnData> fields;
     boolean isView=false;
 
@@ -47,7 +50,7 @@ public class TableInfo {
         if(StringUtils.isBlank(comment)){
             return name;
         }
-        return comment;
+        return org.apache.commons.lang3.StringUtils.abbreviate( comment.replace("\n"," "),200);
     }
 
     public void setComment(String comment) {
@@ -60,5 +63,13 @@ public class TableInfo {
 
     public void setFields(List<ColumnData> fields) {
         this.fields = fields;
+    }
+
+    public String getViewSql() {
+        return viewSql;
+    }
+
+    public void setViewSql(String viewSql) {
+        this.viewSql = viewSql;
     }
 }

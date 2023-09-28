@@ -1,6 +1,8 @@
 package com.bixuebihui.dbcon;
 
 import com.bixuebihui.jdbc.IDbHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.sql.SQLException;
@@ -17,6 +19,7 @@ import java.util.stream.Collectors;
  */
 public class DatabaseTools extends BaseOperator
 {
+    private  static  final Logger log = LoggerFactory.getLogger(DatabaseTools.class);
     /**
      * <p>getMaxvalue.</p>
      *
@@ -87,9 +90,9 @@ public class DatabaseTools extends BaseOperator
         return -1;
     }
 
-    public static long importTsvData(String tsvFileName, String tableName, IDbHelper dbHelper) {
+    public static long importTsvData(String tsvFileName, String tableName, IDbHelper dbHelper, int batchSize) {
         String encoding = "UTF-8";
-        int maxLines = 100;
+        int maxLines = batchSize>0 ? batchSize : 1000;
 
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(tsvFileName), encoding))) {
 
@@ -103,10 +106,11 @@ public class DatabaseTools extends BaseOperator
             for (String line; (line = reader.readLine()) != null; ) {
                 Object[] fields = line.split("\t");
                 values.add(fields);
-                if (count++ % maxLines == 0) {
+                count++;
+                if (count % maxLines == 0) {
                     dbHelper.executeNoQueryBatch(insertSql, values);
                     values.clear();
-                    System.out.println("imported " + count + " lines");
+                    log.info("imported " + count + " lines to "+tableName);
                 }
             }
             if (!values.isEmpty()) {

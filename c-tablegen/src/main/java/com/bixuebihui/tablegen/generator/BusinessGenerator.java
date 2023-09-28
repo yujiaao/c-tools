@@ -41,7 +41,7 @@ public class BusinessGenerator extends BaseGenerator {
     @Override
     protected Map<String, Object> getContextMap(String tableName) {
         Map<String, Object> v = super.getContextMap(tableName);
-        v.put("firstKeyType", this.getFirstKeyType(tableName));
+        v.put("firstKeyType", this.getPrimaryKeyType(tableName));
 
         return v;
     }

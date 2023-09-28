@@ -17,8 +17,8 @@ public class SqlLimit {
     /**
      * <p>Constructor for SqlLimit.</p>
      *
-     * @param begin a int.
-     * @param num a int.
+     * @param begin offset from begin, default 0.
+     * @param num  count of record to return.
      */
     public SqlLimit(int begin, int num) {
         this.begin = begin;
@@ -43,7 +43,7 @@ public class SqlLimit {
     /**
      * <p>Getter for the field <code>begin</code>.</p>
      *
-     * @return a int.
+     * @return an int.
      */
     public int getBegin() {
         return begin;
@@ -52,7 +52,7 @@ public class SqlLimit {
     /**
      * <p>Setter for the field <code>begin</code>.</p>
      *
-     * @param begin a int.
+     * @param begin an int.
      */
     public void setBegin(int begin) {
         this.begin = begin;
@@ -61,7 +61,7 @@ public class SqlLimit {
     /**
      * <p>Getter for the field <code>num</code>.</p>
      *
-     * @return a int.
+     * @return an int.
      */
     public int getNum() {
         return num;
@@ -70,7 +70,7 @@ public class SqlLimit {
     /**
      * <p>getEnd.</p>
      *
-     * @return a int.
+     * @return an int.
      */
     public int getEnd(){
         return begin + num;
@@ -79,7 +79,7 @@ public class SqlLimit {
     /**
      * <p>Setter for the field <code>num</code>.</p>
      *
-     * @param num a int.
+     * @param num an int.
      */
     public void setNum(int num) {
         this.num = num;

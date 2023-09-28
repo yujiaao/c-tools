@@ -64,11 +64,15 @@ public class DalGenerator extends BaseGenerator {
 
     public static String makeUpdateObjects(List<String> params, List<ColumnData> columnData, boolean use_autoincrement, String versionColName) {
         boolean  skipKey =true;
-        return "" + makeInsertObjects(skipKey, params, use_autoincrement, true, columnData, versionColName) + "," +
+        return makeInsertObjects(skipKey, params, use_autoincrement, true, columnData, versionColName) + "," +
                 createKeyObjects(params);
     }
 
     public static String createKeyObjects(List<String> params) {
+        return getParamGattersString(params);
+    }
+
+    static String getParamGattersString(List<String> params) {
         StringBuilder objs = new StringBuilder();
         if (params != null) {
             String key;
@@ -102,9 +106,9 @@ public class DalGenerator extends BaseGenerator {
                 .append(INDENT).append("  * Updates the object from a selected ResultSet.\n")
                 .append(INDENT).append("  */\n")
                 .append(INDENT).append("@Override\n")
-                .append(INDENT).append("public " + pojoClassName + " mapRow (ResultSet r, int index, Set<String> fields) throws SQLException\n")
+                .append(INDENT).append("public ").append(pojoClassName).append(" mapRow (ResultSet r, int index, Set<String> fields) throws SQLException\n")
                 .append(INDENT).append("{\n")
-                .append(INDENT).append(INDENT).append(pojoClassName + " res = new " + pojoClassName + "();\n");
+                .append(INDENT).append(INDENT).append(pojoClassName).append(" res = new ").append(pojoClassName).append("();\n");
 
         for (ColumnData cd : columnData) {
             col = cd.getName();
@@ -258,7 +262,7 @@ public class DalGenerator extends BaseGenerator {
         v.put("updateSql", makeUpdateSql(tableName, keys, cols, config.isUseAutoincrement(), config.getVersionColName()));
 
 
-        v.put("firstKeyType", this.getFirstKeyType(tableName));
+        v.put("firstKeyType", this.getPrimaryKeyType(tableName));
         v.put("firstKeyName", this.getFirstKeyName(tableName));
 
         v.put("whereNoLike", TableGen.createPreparedWhereClause(keys,
@@ -327,7 +331,6 @@ public class DalGenerator extends BaseGenerator {
             boolean like = options.param(0);
             return TableGen.createPreparedWhereClause(this.setInfo.getTableKeys((String) tableName), like, this.setInfo.getTableCols((String) tableName));
         });
-
     }
 
     String getFirstKeyName(String tableName) {
@@ -335,7 +338,7 @@ public class DalGenerator extends BaseGenerator {
         if(!isNotEmpty(keyData)) {
             LOG.warn("Table '"+tableName+"' have not a  primary key, this may be a error");
         }
-        return getFirstKeyName(keyData);
+        return getPrimaryKeyName(keyData);
     }
 
 }

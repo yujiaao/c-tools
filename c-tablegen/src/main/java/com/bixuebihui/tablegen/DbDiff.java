@@ -22,6 +22,8 @@ import java.util.*;
  */
 public class DbDiff {
     private static final Logger LOG = LoggerFactory.getLogger(DbDiff.class);
+    private  IDbHelper dbHelper1;
+    private  IDbHelper dbHelper2;
 
     Database db1;
     Database db2;
@@ -36,13 +38,16 @@ public class DbDiff {
     private final List<DiffHandler> diffHandlerList = new ArrayList<>();
 
 
-    public DbDiff(Map<String, List<ColumnData>> cachedTableData, Connection dsdstcfg, String catalog, String schema) throws SQLException {
+    public DbDiff(IDbHelper dbHelper1, IDbHelper dbHelper2, Map<String, List<ColumnData>> cachedTableData,
+                  Connection destConnection, String catalog, String schema) throws SQLException {
 
         this.cachedTableData = cachedTableData;
 
-        this.db2 = new Database(dsdstcfg.getMetaData());
+        this.db2 = new Database(destConnection.getMetaData());
         this.db2.catalog = catalog;
         this.db2.schema = schema;
+        this.dbHelper2 = dbHelper2;
+        this.dbHelper1 = dbHelper1;
     }
 
 
@@ -114,7 +119,7 @@ public class DbDiff {
 
         for (String t : tab2) {
 
-            List<ColumnData> c = getColumns(db2, t, isR2dbc).getFields();
+            List<ColumnData> c = getColumns(dbHelper2, db2, t, isR2dbc).getFields();
 
             addTableData(t, c);
         }
@@ -139,9 +144,9 @@ public class DbDiff {
         }
     }
 
-    protected TableInfo getColumns(Database database, String tableName, boolean isR2dbc)
+    protected TableInfo getColumns(IDbHelper dbHelper, Database database, String tableName, boolean isR2dbc)
             throws SQLException {
-        return  TableUtils.getColumnData(null, database.metaData, database.catalog, database.schema, tableName, isR2dbc);
+        return  TableUtils.getColumnData(dbHelper,  database.catalog, database.schema, tableName, isR2dbc);
     }
 
     public void compareColumns(String tableName, boolean isR2dbc) throws SQLException, IOException {
@@ -157,11 +162,11 @@ public class DbDiff {
             }
 
         } else {
-            cols1 = getColumns(db1, tableName, isR2dbc).getFields();
+            cols1 = getColumns(dbHelper1, db1, tableName, isR2dbc).getFields();
         }
 
 
-        List<ColumnData> cols2 = getColumns(db2, tableName,isR2dbc).getFields();
+        List<ColumnData> cols2 = getColumns(dbHelper2, db2, tableName,isR2dbc).getFields();
 
 
         if (dumpDiffCols(cols1, cols2)) {

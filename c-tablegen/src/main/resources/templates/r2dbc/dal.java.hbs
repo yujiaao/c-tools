@@ -24,7 +24,7 @@ import javax.annotation.processing.Generated;
 import reactor.core.publisher.Mono;
 
 @Generated("com.github.yujiaao:tablegen")
-public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{{else}}BaseList{{/if}}<{{pojoClassName}}, {{firstKeyType}}>
+public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{{else}}BaseList{{/if}}<{{pojoClassName}}, {{{{firstKeyType}}}}>
 {
     {{! writeDALConstructor(tableName); }}
     /**
@@ -101,7 +101,9 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
     {
     {{#if tableInfo.isView}}
     {{!    tripple { for unescape equals sign '='  }}
-        return "{{{tableInfo.comment}}}";
+        return """
+    {{{tableInfo.viewSql}}}
+    """;
     {{~ else ~}}
         return  "{{tableName}}";
     {{/if}}
@@ -139,12 +141,12 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
 
 {{! writeGetSetId(tableName, keyData, colData);}}
     @Override
-    public {{firstKeyType}} getId({{pojoClassName}} info) {
+    public {{{firstKeyType}}} getId({{pojoClassName}} info) {
         return info.get{{firstUp firstKeyName}}();
     }
 {{#unless tableInfo.isView}}
     @Override
-    public void setId({{pojoClassName}} info, {{firstKeyType}} id) {
+    public void setId({{pojoClassName}} info, {{{firstKeyType}}} id) {
     {{#if hasKey}}
         info.set{{firstUp firstKeyName}}(id);
     {{else}}
@@ -164,17 +166,17 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
 {{! writeGetNextKey(keyData, colData); }}
 {{#if hasKey}}{{#unless tableInfo.isView}}
       {{#eq firstKeyType "Timestamp"}}
-      public Mono<{{firstKeyType}}> getNextKey(){
+      public Mono<{{{firstKeyType}}}> getNextKey(){
         return new Timestamp(System.currentTimeMillis());
       }
       {{/eq}}
       {{#eq firstKeyType "String"}}
-      public Mono<{{firstKeyType}}> getNextKey(){
+      public Mono<{{{firstKeyType}}}> getNextKey(){
           return java.util.UUID.randomUUID().toString();
       }
       {{/eq}}
       {{#gt keys.size 1}}
-      public Mono<{{firstKeyType}}> getNextKey(){
+      public Mono<{{{firstKeyType}}}> getNextKey(){
           throw new IllegalStateException("no autokey for union keys");
       }
       {{/gt}}
@@ -244,7 +246,7 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
 
     {{! writeDummyDelete(tableName, keyData, "deleteByKey", colData); }}
     @Override
-    public Mono<Boolean> deleteByKey({{firstKeyType}}  key)  {
+    public Mono<Boolean> deleteByKey({{{firstKeyType}}}  key)  {
         throw new DbException("This operation is not supported, because table {{ tableName }} not have a unique key!");
     }
     {{/unless}}

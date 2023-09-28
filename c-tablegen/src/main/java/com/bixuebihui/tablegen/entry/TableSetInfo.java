@@ -403,10 +403,10 @@ public class TableSetInfo implements KeyInfo {
      * 12. PAGES==0, int => TYPE 为 tableIndexStatisic 时，它是用于表的页数，否则它是用于当前索引的页数。
      * 13。 FILTER_CONDITION==null, String => 过滤器条件，如果有的话。（可能为 null）
      * @param config generator configuration
-     * @param metaData
+     * @param dbHelper
      * @param tableName
      */
-    protected void initIndex(ProjectConfig config, DatabaseMetaData metaData, String tableName) {
+    protected void initIndex(ProjectConfig config, IDbHelper dbHelper, String tableName) {
         // use a hashmap to temporarily store the indexes as well
         // so we can avoid duplicate values.
         String primary ="PRIMARY";
@@ -422,7 +422,7 @@ public class TableSetInfo implements KeyInfo {
          * unique : 该参数为 true 时，仅返回惟一值的索引；该参数为 false 时，返回所有索引，不管它们是否惟一
          * approximate : 该参数为 true 时，允许结果是接近的数据值或这些数据值以外的值；该参数为 false 时，要求结果是精确结果
          */
-        try( ResultSet r = metaData.getIndexInfo(config.getCatalog(), config.getSchema(), tableName, false, false) ) {
+        try( ResultSet r = dbHelper.getConnection().getMetaData().getIndexInfo(config.getCatalog(), config.getSchema(), tableName, false, false) ) {
             while (r.next()) {
                 indexName = r.getString(6);
                 //skip primary key, 主键不处理
@@ -446,7 +446,8 @@ public class TableSetInfo implements KeyInfo {
 
 
 
-    private void initExportKeys(ProjectConfig config, IDbHelper dbHelper, DatabaseMetaData metaData, String tableName) throws SQLException {
+    private void initExportKeys(ProjectConfig config, IDbHelper dbHelper, String tableName) throws SQLException {
+        DatabaseMetaData metaData = dbHelper.getConnection().getMetaData();
         if(isMysql(metaData)){
             //针对mysql的优化, 一次加载全部外键
             if (getForeignKeyExCache().isEmpty()) {
@@ -486,22 +487,22 @@ public class TableSetInfo implements KeyInfo {
                     TableInfo table = new TableInfo(name);
 
                     // Fill columns info
-                    TableInfo newInfo = TableUtils.getColumnData(dbHelper, metaData, config.getCatalog(), config.getSchema(), name, config.getR2dc());
+                    TableInfo newInfo = TableUtils.getColumnData(dbHelper, config.getCatalog(), config.getSchema(), name, config.getR2dc());
                     table.setFields(newInfo.getFields());
                     tables.put(name, table);
 
                     // Primary keys info
-                    List<String> keyData = TableUtils.getTableKeys(metaData, config.getCatalog(), config.getSchema(), name);
+                    List<String> keyData = TableUtils.getTableKeys(dbHelper, config.getCatalog(), config.getSchema(), name);
                     getKeyCache().put(name, keyData);
 
                     // foreign keys import info
-                    initImportKeys(config, dbHelper, metaData, name);
+                    initImportKeys(config, dbHelper, name);
 
                     // foreign keys export info
-                    initExportKeys(config, dbHelper, metaData, name);
+                    initExportKeys(config, dbHelper, name);
 
                     // index info
-                    initIndex(config, metaData, name);
+                    initIndex(config, dbHelper, name);
 
                     // table & column's  comment
                     if(isMysql(metaData)) {
@@ -561,9 +562,10 @@ public class TableSetInfo implements KeyInfo {
                                     try {
                                         TableInfo info = OnFlyViewUtils.getColumnData(rs.getMetaData(), name, dbType, config.getR2dc());
                                         info.setComment(originalSql);
+                                        info.setViewSql(originalSql);
                                         viewInfos.put(name, info);
                                     } catch (SQLException e) {
-                                        e.printStackTrace();
+                                        LOG.error("getOnFlyViewData", e);
                                     }
 
                                     return Collections.emptyList();
@@ -604,7 +606,7 @@ public class TableSetInfo implements KeyInfo {
         boolean first = true;
         while (tokenizer.hasMoreElements()) {
             String next = tokenizer.nextElement().toString();
-            if(first && next.toLowerCase().equals("select")){
+            if(first && next.equalsIgnoreCase("select")){
                 sb.append("select top 1 ");
                 first = false;
             }else{
@@ -615,7 +617,8 @@ public class TableSetInfo implements KeyInfo {
         return sb.toString();
     }
 
-    private  void initImportKeys(ProjectConfig config, IDbHelper dbHelper, DatabaseMetaData metaData, String tableName) throws SQLException {
+    private  void initImportKeys(ProjectConfig config, IDbHelper dbHelper, String tableName) throws SQLException {
+        DatabaseMetaData metaData = dbHelper.getConnection().getMetaData();
         if(isMysql(metaData)){
             //针对mysql的优化, 一次加载全部外键
             if (getForeignKeyImCache().isEmpty()) {

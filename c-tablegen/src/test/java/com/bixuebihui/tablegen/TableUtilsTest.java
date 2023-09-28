@@ -39,7 +39,7 @@ public class TableUtilsTest {
         }
 
 
-        List<String> v = TableUtils.getTableKeys(meta, null, null, "VRMS_PRJMAPCOLLEGES");
+        List<String> v = TableUtils.getTableKeys(dbHelper, null, null, "VRMS_PRJMAPCOLLEGES");
         for (String s : v) {
             System.out.println(s);
         }
@@ -94,7 +94,7 @@ public class TableUtilsTest {
         List<String> v = TableUtils.getTableData(metaData, catalog, schema, null, t.getConfig().tablesList, t.getConfig().excludeTablesList);
         for (String s : v) {
             System.out.println(s);
-            TableInfo cols = TableUtils.getColumnData(dbHelper, metaData, catalog, schema, s,false);
+            TableInfo cols = TableUtils.getColumnData(dbHelper, catalog, schema, s,false);
             for (ColumnData col : cols.getFields()) {
                 System.out.println(col);
             }
@@ -149,7 +149,7 @@ public class TableUtilsTest {
         DatabaseMetaData metaData = dbHelper.getConnection().getMetaData();
         String tableName = "VRMS_ALLOWANCE";
         String catalog = "WESTPLAN";
-        List<ColumnData> v = TableUtils.getColumnData(dbHelper, metaData, catalog, null, tableName,false).getFields();
+        List<ColumnData> v = TableUtils.getColumnData(dbHelper, catalog, null, tableName,false).getFields();
         for (ColumnData c : v) {
             System.out.println(c);
         }
@@ -162,7 +162,7 @@ public class TableUtilsTest {
         //create table test1(id int auto_increment, num decimal(10,6) , primary key(id));
 
         String tableName = "t_metatable";
-        List<ColumnData> v = TableUtils.getColumnData(dbHelper, meta, null, null, tableName,false).getFields();
+        List<ColumnData> v = TableUtils.getColumnData(dbHelper,  null, null, tableName,false).getFields();
         for (ColumnData s : v) {
             System.out.println(s + ", java type = " + s.getJavaType());
         }

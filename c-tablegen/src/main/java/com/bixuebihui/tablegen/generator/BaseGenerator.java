@@ -32,6 +32,7 @@ import java.io.IOException;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.bixuebihui.tablegen.NameUtils.firstUp;
 import static com.bixuebihui.tablegen.NameUtils.getConfigBaseDir;
@@ -92,8 +93,12 @@ public abstract class BaseGenerator implements Generator {
         return type;
     }
 
-    public static String getFirstKeyType(List<String> keyData2, List<ColumnData> columnData) throws GenException {
-        return (isNotEmpty(keyData2)) ? BaseGenerator.getColType(keyData2.get(0), columnData) : "Object";
+    public static String getPrimaryKeyType(List<String> keyData2, List<ColumnData> columnData) throws GenException {
+        return (isNotEmpty(keyData2))
+                ? (keyData2.size()>1
+                    ? "List<Object>"
+                    : BaseGenerator.getColType(keyData2.get(0), columnData))
+                : "Object";
     }
 
     /**
@@ -215,7 +220,7 @@ public abstract class BaseGenerator implements Generator {
             readDbMetaData(dbConfig);
 
         } catch (IOException | SQLException | InstantiationException | IllegalAccessException e) {
-            e.printStackTrace();
+            LOG.error(e.getMessage(), e);
         }
         return false;
     }
@@ -347,21 +352,20 @@ public abstract class BaseGenerator implements Generator {
                 :"es");
     }
 
-    String getFirstKeyType(String tableName) {
+    String getPrimaryKeyType(String tableName) {
         try {
             List<String> keyData = getKeyData(tableName);
             List<ColumnData> columnData = getColumnData(tableName);
-            return BaseGenerator.getFirstKeyType(keyData, columnData);
+            return BaseGenerator.getPrimaryKeyType(keyData, columnData);
         } catch (GenException e) {
-            e.printStackTrace();
+            LOG.error(e.getMessage(),e);
         }
         return "";
     }
 
     private List<ColumnData> getColumnData(String tableName) {
-        List<ColumnData> columnData = isView() ? setInfo.getViewInfos().get(tableName).getFields() :
+        return isView() ? setInfo.getViewInfos().get(tableName).getFields() :
                 setInfo.getTableInfos().get(tableName).getFields();
-        return columnData;
     }
 
     protected List<String> getKeyData(String tableName) {
@@ -384,9 +388,9 @@ public abstract class BaseGenerator implements Generator {
     }
 
 
-    public static String getFirstKeyName(List<String> keyData) {
+    public static String getPrimaryKeyName(List<String> keyData) {
         if (isNotEmpty(keyData)) {
-            return keyData.get(0);
+            return String.join(",", keyData);
         }
         return null;
     }

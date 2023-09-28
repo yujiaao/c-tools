@@ -45,16 +45,16 @@ public class {{className}} implements  {{pojoClassName}}Service{
 {{#unless tableInfo.isView}}
     @Override
     public Boolean del({{pojoClassName}}DelCmd delCmd) {
-{{#if hasKey}}
+{{#eq keys.size 1}}
     {{#if hasLogicDelCol}}
         return {{firstLow pojoClassName}}Manager.logicDeleteByIds(delCmd.get{{firstUp firstKeyName}}s());
     {{~ else }}
         return {{firstLow pojoClassName}}Manager.deleteByKeys(delCmd.get{{firstUp firstKeyName}}s()
-                .toArray(new {{firstKeyType}}[0]));
+                .toArray(new {{{firstKeyType}}}[0]));
     {{/if}}
 {{~ else }}
     return false;
-{{/if}}
+{{/eq}}
     }
 
     @Override

@@ -43,6 +43,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
     private Function<SqlHelper, SqlHelper> havingInterceptor = it -> it;
     private Function<SqlSort, SqlSort> sortInterceptor = it -> it;
     private Function<SqlGroup, SqlGroup> groupInterceptor = it -> it;
+    private Function<List<Object>, List<Object>> paramsInterceptor = it -> it;
     private SqlPocket sqlPocket;
     private boolean useLast = false;
     private String tableAlias;
@@ -77,7 +78,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
      *
      * @param src a {@link ActiveRecordImpl} object.
      */
-    public ActiveRecordImpl(ActiveRecordImpl src) {
+    public ActiveRecordImpl(ActiveRecordImpl<T,V> src) {
         this.filterStack = new SqlHelper(src.filterStack);
         this.limit = new SqlLimit(src.limit);
         this.orderStack = new SqlSort(this.orderStack);
@@ -369,7 +370,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
         if (operator.getDbType() != DERBY) {
             res.addAll(orderStack.getParams());
         }
-        return res;
+        return paramsInterceptor.apply(res);
     }
 
     /**
@@ -402,7 +403,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
         String res = sqlPocket.getCondition().toString();
         if (StringUtils.isNotBlank(this.tableAlias)) {
             StringBuilder join = new StringBuilder();
-            if (joins != null && joins.size() > 0) {
+            if (joins != null && !joins.isEmpty()) {
                 for (String t : joins) {
                     join.append(t);
                 }
@@ -436,7 +437,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
             list.addAll(having.getParams());
             List<T> res = operator.selectWithJoin(resultFields, where, list.toArray(), parseOrder(),
                     SqlLimit.LIMIT_ONE.getBegin(), SqlLimit.LIMIT_ONE.getEnd(), tableName);
-            if (res.size() > 0) {
+            if (!res.isEmpty()) {
                 return res.get(0);
             }
             return null;
@@ -463,7 +464,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
             }
 
             if (limit != null && limit.getBegin() == 0 && limit.getEnd() > 0) {
-                LOG.info("DELETE table "+operator.getTableName()+" operation with not limit, please make sure this is correct:\n" + where);
+                LOG.info("DELETE table "+operator.getTableName()+" operation with a limit("+limit+"), please make sure this is correct:\n" + where);
             }
             return operator.delete(where, list.toArray(), cn);
         } finally {
@@ -745,7 +746,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
             List<CountValue> res = operator.countGroupValue(field, fun.toString(), where,
                     sqlPocket.getCondition().toString(), groupInterceptor.apply(groupByClause).toArray(), params);
 
-            return res.size() == 0 ? new CountValue() : res.get(0);
+            return res.isEmpty() ? new CountValue() : res.get(0);
         } finally {
             clear();
         }
@@ -813,7 +814,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
             List<CountObject<K>> res = operator.countGroupObject(field, fun.toString(), where,
                     having.getCondition().toString(), groupInterceptor.apply(groupByClause).toArray(), objectType, list.toArray());
 
-            return res.size() == 0 ? new CountObject<>() : res.get(0);
+            return res.isEmpty() ? new CountObject<>() : res.get(0);
         } finally {
             clear();
         }
@@ -861,4 +862,11 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
         this.groupInterceptor = groupInterceptor;
         return this;
     }
+
+    @Override
+    public ActiveRecord<T> paramsInterceptor(Function<List<Object>, List<Object>> paramsInterceptor) {
+        this.paramsInterceptor = paramsInterceptor;
+        return this;
+    }
+
 }

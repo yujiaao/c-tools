@@ -29,24 +29,19 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public class {{className}} {{interface}} {
 {{! field declaration }}
 {{#each fields as | field index | }}
-    {{#eq name config.delColName }}
-    //by pass {{name}} for security check
-    {{else}}
     {{log field level="info" }}
     /**
      * {{columnDescription this tableName}}
      */
     {{{columnAnnotation this tableName}}}
     protected {{javaType}}  {{firstLow name}};
-    {{/eq}}
 {{/each}}
 
 {{! setters & getters }}
 {{#each fields}}
     {{#eq name 'RV'}}
     {{else}}
-    {{#eq name config.delColName }}
-    {{else}}
+
     /**
      * {{columnDescription this tableName}}
      */
@@ -61,7 +56,7 @@ public class {{className}} {{interface}} {
     {
       return this.{{firstLow name}};
     }
-    {{/eq}}{{/eq}}
+    {{/eq}}
 {{/each}}
 
     {{! handle the constructor }}
@@ -89,14 +84,11 @@ public class {{className}} {{interface}} {
         String ln = System.getProperty("line.separator");
         s.append("<{{tableName}} ");
 {{#each fields as | field index | }}
-{{#eq name config.delColName }}
-{{else~}}
 {{#eq "String" javaType~}}
         s.append(" {{firstLow name}}=\"").append(StringEscapeUtils.escapeXml11(this.get{{firstUp  name }}())).append("\"");
         {{~else~}}
         s.append(" {{firstLow name}}=\"").append(this.get{{firstUp name}}()).append("\"");
         {{/eq~}}
-{{/eq}}
 {{/each~}}
 
         s.append(" />");

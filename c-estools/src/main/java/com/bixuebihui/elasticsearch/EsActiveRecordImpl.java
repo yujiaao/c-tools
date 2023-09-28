@@ -34,7 +34,6 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     EsSort orderStack;
     ElasticSearchFilter filterStack;
 
-
     SqlLimit limit;
 
     ElasticSearchFilter havingStack;
@@ -94,7 +93,7 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     }
 
     @Override
-    public ActiveRecord<T> keepNullForNumberField() {
+    public EsActiveRecord<T> keepNullForNumberField() {
         return this;
     }
 
@@ -412,7 +411,7 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     }
 
     @Override
-    public ActiveRecord<T> not(SqlHelper notStack) {
+    public EsActiveRecord<T> not(SqlHelper notStack) {
         throw new NotImplementedException();
     }
 
@@ -445,7 +444,7 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     }
 
     @Override
-    public ActiveRecord<T> tableName(String partitionTableName) {
+    public EsActiveRecord<T> tableName(String partitionTableName) {
         throw new NotImplementedException();
     }
 
@@ -472,12 +471,11 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
 
     @Override
     public <S> EsActiveRecord<T> query(Paging<S> searchBean, Set<String> fields) {
-//        this.operator.dateHistCountList()
-        return query(searchBean, fields);
+        return ( EsActiveRecord<T>)searchBean.toActiveRecordParams(this, fields);
     }
 
     @Override
-    public <S> ActiveRecord<T> query(Paging<S> searchBean) {
+    public <S> EsActiveRecord<T> query(Paging<S> searchBean) {
         return query(searchBean, Set.of(operator.getAllFields().toArray(new String[0])));
     }
 
@@ -722,22 +720,27 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     }
 
     @Override
-    public ActiveRecord<T> filterInterceptor(Function<SqlHelper, SqlHelper> filterInterceptor) {
-        return null;
+    public EsActiveRecord<T> filterInterceptor(Function<SqlHelper, SqlHelper> filterInterceptor) {
+        return this;
     }
 
     @Override
-    public ActiveRecord<T> havingInterceptor(Function<SqlHelper, SqlHelper> havingInterceptor) {
-        return null;
+    public EsActiveRecord<T> havingInterceptor(Function<SqlHelper, SqlHelper> havingInterceptor) {
+        return this;
     }
 
     @Override
-    public ActiveRecord<T> sortInterceptor(Function<SqlSort, SqlSort> sortInterceptor) {
-        return null;
+    public EsActiveRecord<T> sortInterceptor(Function<SqlSort, SqlSort> sortInterceptor) {
+        return this;
     }
 
     @Override
-    public ActiveRecord<T> groupInterceptor(Function<SqlGroup, SqlGroup> groupInterceptor) {
-        return null;
+    public EsActiveRecord<T> groupInterceptor(Function<SqlGroup, SqlGroup> groupInterceptor) {
+        return this;
+    }
+
+    @Override
+    public EsActiveRecord<T> paramsInterceptor(Function<List<Object>, List<Object>> groupInterceptor) {
+        return this;
     }
 }

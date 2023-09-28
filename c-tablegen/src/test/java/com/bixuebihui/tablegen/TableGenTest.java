@@ -163,4 +163,13 @@ public class TableGenTest {
 		assertTrue(tg.makeDir());
 	}
 
+	@Test
+	public void testRunCompositePrimaryKey() throws SQLException {
+		TableGen tg = new TableGen(System.out);
+		System.out.println(this.getClass().getResource("/rocks.properties").getFile());
+
+		tg.run(this.getClass().getResource("/rocks.properties").getFile());
+
+	}
+
 }

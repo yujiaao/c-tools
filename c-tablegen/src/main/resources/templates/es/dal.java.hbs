@@ -16,11 +16,11 @@ import javax.annotation.processing.Generated;
 
 
 @Generated("com.github.yujiaao:tablegen")
-public class {{className}} extends BaseDao<{{pojoClassName}}, {{firstKeyType}}> {
+public class {{className}} extends BaseDao<{{pojoClassName}}, {{{firstKeyType}}}> {
     {{! writeDALConstructor(tableName); }}
 
     @Override
-    public {{firstKeyType}} getId({{pojoClassName}} info) {
+    public {{{firstKeyType}}} getId({{pojoClassName}} info) {
         return info.get{{firstUp firstKeyName}}();
     }
 

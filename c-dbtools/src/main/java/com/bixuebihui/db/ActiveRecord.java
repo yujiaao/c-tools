@@ -392,11 +392,11 @@ public interface ActiveRecord<T> extends Record<T>, Customizer<T> {
         return findAllToCsv(titles, null);
     }
     /**
-     * export to CSV format with excel preferences
+     * export to CSV format with Excel preferences
      * @param titles  i18n titles
      * @param onlyFields field names of POJO type T
-     * @return
-     * @throws DbException
+     * @return csv string
+     * @throws DbException if any.
      */
     default String findAllToCsv(String titles, String onlyFields) throws DbException {
          return findAllToCsv(titles, onlyFields, false, false);

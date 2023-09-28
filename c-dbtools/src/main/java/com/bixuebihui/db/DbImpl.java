@@ -690,4 +690,9 @@ public class DbImpl<T, V> extends BaseDao<T, V> implements ActiveRecord<T>,
 	public ActiveRecord<T> groupInterceptor(Function<SqlGroup, SqlGroup> groupInterceptor) {
 		return null;
 	}
+
+	@Override
+	public ActiveRecord<T> paramsInterceptor(Function<List<Object>, List<Object>> groupInterceptor) {
+		return null;
+	}
 }

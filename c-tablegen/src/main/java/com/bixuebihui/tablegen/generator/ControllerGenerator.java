@@ -41,7 +41,7 @@ public class ControllerGenerator extends BaseGenerator {
                 , config.getVersionColName()));
 
 
-        v.put("firstKeyType", this.getFirstKeyType(tableName));
+        v.put("firstKeyType", this.getPrimaryKeyType(tableName));
         v.put("firstKeyName", this.getFirstKeyName(tableName));
 
         v.put("whereNoLike", TableGen.createPreparedWhereClause(keys,
@@ -88,7 +88,7 @@ public class ControllerGenerator extends BaseGenerator {
         if(!isNotEmpty(keyData)) {
             LOG.warn("Table '"+tableName+"' have not a  primary key, this may be a error");
         }
-        return getFirstKeyName(keyData);
+        return getPrimaryKeyName(keyData);
     }
 
 }

@@ -2241,8 +2241,8 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         return SELECT_FROM + getTableName() + " ";
     }
 
-    public long importTsvData(String fileName) {
+    public long importTsvData(String fileName, int batchSize) {
         return DatabaseTools.importTsvData(
-                fileName, this.getTableName(), this.getDbHelper());
+                fileName, this.getTableName(), this.getDbHelper(), batchSize);
     }
 }
