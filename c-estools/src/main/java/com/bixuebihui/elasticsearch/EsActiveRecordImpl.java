@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -103,6 +104,11 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     public EsActiveRecord<T> in(String field, Object values) {
         filterStack.in(field, (Object[]) values);
         return this;
+    }
+
+    @Override
+    public ActiveRecord<T> in(Pair<String, String> fields, List<Pair<Object, Object>> values) {
+        throw new NotImplementedException();
     }
 
     /** {@inheritDoc} */

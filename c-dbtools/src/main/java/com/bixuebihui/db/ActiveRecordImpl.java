@@ -8,6 +8,7 @@ import com.bixuebihui.query.Paging;
 import jakarta.validation.constraints.NotNull;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,7 +30,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 
     private static final Logger LOG = LoggerFactory.getLogger(ActiveRecordImpl.class);
     /**
-     * NOTE that: class field make this class can't use in spring as singleton!
+     * NOTE that: class field makes this class can't use in spring as singleton!
      */
     SqlSort orderStack;
     SqlHelper filterStack;
@@ -78,7 +79,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
      *
      * @param src a {@link ActiveRecordImpl} object.
      */
-    public ActiveRecordImpl(ActiveRecordImpl<T,V> src) {
+    public ActiveRecordImpl(ActiveRecordImpl<T, V> src) {
         this.filterStack = new SqlHelper(src.filterStack);
         this.limit = new SqlLimit(src.limit);
         this.orderStack = new SqlSort(this.orderStack);
@@ -172,12 +173,42 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
             throw new IllegalArgumentException("InFilter values must be Collection or SqlString objects");
         }
         if (values instanceof Collection) {
-            filterStack.in(field, (Collection) values);
+            filterStack.in(field, (Collection<?>) values);
         } else {
             filterStack.in(field, (SqlString) values);
         }
 
         return this;
+    }
+
+    /**
+     * -- works in PostgreSQL, Oracle, MySQL, DB2, HSQLDB
+     * SELECT whatever
+     * FROM t                               --- you missed the FROM
+     * WHERE (col1, col2)                    --- parentheses here
+     * IN ((val1a, val2a), (val1b, val2b), ...) ;
+     * not work in StarRocks, so we use this:
+     * SELECT whatever
+     * FROM t
+     * WHERE ( (col1 = val1a AND col2 = val2a) or (col1 = val1b AND col2 = val2b) or ... );
+     * *  see:
+     * <a href="https://dba.stackexchange.com/a/34270/127082"> in grammar</a>
+     *
+     * @param fields primary key fields
+     * @param values primary key values
+     * @return a {@link ActiveRecord} object.
+     */
+    @Override
+    public ActiveRecord<T> in(Pair<String, String> fields, List<Pair<Object, Object>> values) {
+        if (values == null || values.isEmpty()) {
+            throw new IllegalArgumentException("InFilter values must not be empty");
+        }
+        ActiveRecordImpl<T, V> localAr = new ActiveRecordImpl<>(this.operator);
+        values.forEach(it -> localAr.or(new ActiveRecordImpl<>(this.operator)
+                .eq(fields.getLeft(), it.getLeft())
+                .eq(fields.getRight(), it.getRight())));
+        return and(localAr);
+
     }
 
     /**
@@ -464,7 +495,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
             }
 
             if (limit != null && limit.getBegin() == 0 && limit.getEnd() > 0) {
-                LOG.info("DELETE table "+operator.getTableName()+" operation with a limit("+limit+"), please make sure this is correct:\n" + where);
+                LOG.info("DELETE table " + operator.getTableName() + " operation with a limit(" + limit + "), please make sure this is correct:\n" + where);
             }
             return operator.delete(where, list.toArray(), cn);
         } finally {
@@ -589,12 +620,12 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 
             String tableNameAlias = getTableName();
             boolean innerSelect = false;
-            if (tableNameAlias!=null && tableNameAlias.toUpperCase().startsWith("SELECT ")) {
-                tableNameAlias = "(" + tableNameAlias+" "+where+ ") as counting_table";
+            if (tableNameAlias != null && tableNameAlias.toUpperCase().startsWith("SELECT ")) {
+                tableNameAlias = "(" + tableNameAlias + " " + where + ") as counting_table";
                 innerSelect = true;
             }
 
-            return operator.countWhere(tableNameAlias,  innerSelect? "": where, list.toArray());
+            return operator.countWhere(tableNameAlias, innerSelect ? "" : where, list.toArray());
         } finally {
             clear();
         }
@@ -786,7 +817,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
             sqlPocket = this.getSql();
             String whereClause = formWhereClause();
 
-            return operator.update(fields, values, whereClause, getParams().toArray() , cn);
+            return operator.update(fields, values, whereClause, getParams().toArray(), cn);
         } finally {
             clear();
         }
@@ -830,9 +861,8 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
             sqlPocket = this.getSql();
             String where = formWhereClause();
             List<Object> list = Arrays.asList(getParams().toArray());
-            List<CountObject<K>> res = operator.countGroupObject(returnField, fun.toString(), where,
+            return operator.countGroupObject(returnField, fun.toString(), where,
                     having, groupByFields, objectType, list.toArray());
-            return res;
         } finally {
             clear();
         }

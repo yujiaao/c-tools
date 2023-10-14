@@ -5,7 +5,6 @@ import com.bixuebihui.jdbc.ISqlConditionType;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.sql.SQLException;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -83,18 +82,24 @@ public class SqlHelper {
     public SqlPocket toCondition() {
 		SqlPocket criteria = new SqlPocket();
 
-		if (filters == null || filters.size() == 0) {
+		if ((filters == null || filters.isEmpty()) && orCond == null
+				&& notCond == null && andCond == null) {
 			return criteria;
 		}
-		for (BaseFilter filter : filters) {
-			buildCriteria(criteria, filter);
+		if(filters!=null) {
+			for (BaseFilter filter : filters) {
+				buildCriteria(criteria, filter);
+			}
 		}
 
 		StringBuffer condition = criteria.getCondition();
-		removeLeadAnd(condition);
+		removeLeadAndOr(condition);
 
 		if (orCond != null) {
-			condition.insert(0, "(").append(")");
+			if(condition.length()>0) {
+				condition.insert(0, "(").append(")");
+			}
+
 			for (SqlHelper it : orCond) {
 				SqlPocket cond = it.toCondition();
 				condition.append(" or (")
@@ -103,7 +108,10 @@ public class SqlHelper {
 			}
 		}
 		if (notCond != null) {
-			condition.insert(0, "(").append(")");
+			if(condition.length()>0) {
+				condition.insert(0, "(").append(")");
+			}
+
 			for (SqlHelper it : notCond) {
 				SqlPocket cond = it.toCondition();
 
@@ -113,7 +121,10 @@ public class SqlHelper {
 			}
 		}
 		if (andCond != null) {
-			condition.insert(0, "(").append(")");
+			if(condition.length()>0) {
+				condition.insert(0, "(").append(")");
+			}
+
 			for (SqlHelper it : andCond) {
 				SqlPocket cond = it.toCondition();
 				condition.append(" and (")
@@ -123,15 +134,18 @@ public class SqlHelper {
 		}
 
 		if (condition.length() > 0) {
-			removeLeadAnd(condition);
+			removeLeadAndOr(condition);
 			condition.insert(0, conditionTypeIsWhere? WHERE: HAVING);
 		}
 		return criteria;
 	}
 
-	private void removeLeadAnd(StringBuffer condition) {
+	private void removeLeadAndOr(StringBuffer condition) {
 		if (condition.length() > 0 && condition.indexOf(" and ") == 0) {
 			condition.delete(0, 5);
+		}
+		if (condition.length() > 0 && condition.indexOf(" or ") == 0) {
+			condition.delete(0, 4);
 		}
 	}
 

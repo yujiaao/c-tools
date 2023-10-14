@@ -4,6 +4,7 @@ import com.bixuebihui.DbException;
 import com.bixuebihui.jdbc.BaseDao;
 import com.bixuebihui.query.Paging;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.supercsv.cellprocessor.CellProcessorAdaptor;
 import org.supercsv.cellprocessor.Optional;
 import org.supercsv.cellprocessor.StrReplace;
@@ -121,6 +122,13 @@ public interface ActiveRecord<T> extends Record<T>, Customizer<T> {
      */
     ActiveRecord<T> in(String field, Object values);
 
+    /**
+     * for union primary key search
+     * @param fields primary key fields
+     * @param values primary key values
+     * @return this
+     */
+    ActiveRecord<T> in(Pair<String,String > fields, List<Pair<Object,Object>> values);
     /**
      * <p>like.</p>
      *
@@ -411,7 +419,8 @@ public interface ActiveRecord<T> extends Record<T>, Customizer<T> {
 
     class MyCustomCellProcessor extends CellProcessorAdaptor {
         // 匹配日期时间格式，如 2020-01-01 12:00:00.000 或 2020-01-01 12:00:00
-        static String regex = "^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}(\\.\\d+)?$";
+        // 或长数字 20200101120000001
+        static String regex = "^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}(\\.\\d+)?$|^\\d{11,20}$";
         static String replacement = "=\"$0\"";
         public MyCustomCellProcessor() {
             super(new Optional(new StrReplace(regex, replacement)));

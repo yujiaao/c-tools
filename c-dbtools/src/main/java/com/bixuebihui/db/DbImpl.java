@@ -9,6 +9,7 @@ import com.bixuebihui.jdbc.entity.CountObject;
 import com.bixuebihui.jdbc.entity.CountValue;
 import com.bixuebihui.query.Paging;
 import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -90,6 +91,14 @@ public class DbImpl<T, V> extends BaseDao<T, V> implements ActiveRecord<T>,
 			filterStack.in(field, (SqlString)values);
 		}
 		return this;
+	}
+
+	@Override
+	public ActiveRecord<T> in(Pair<String, String> fields, List<Pair<Object, Object>> values) {
+		filterStack.in("(" + fields.getLeft() + "," + fields.getRight() + ")",
+				values); //TODO tobe fix params!
+		return this;
+
 	}
 
 

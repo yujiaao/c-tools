@@ -1,10 +1,13 @@
 package com.bixuebihui.tablegen;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 /**
@@ -499,9 +502,29 @@ public class ProjectConfig {
 
             while (st.hasMoreElements()) {
                 String name = st.nextToken().trim();
-                viewList.put(name.substring(0,name.indexOf(":")), name.substring(name.indexOf(":")+1));
+                viewList.put(name.substring(0,name.indexOf(":")), parseViewBody(name.substring(name.indexOf(":")+1)));
                 LOG.info(name);
             }
+        }
+    }
+
+    /**
+     * if sqlOrFileName starts with @ symbol, then treat it as a file name in a relative path of tablegen.properties,
+     * otherwise as sql string.
+     * @param sqlOrFileName file name or sql string
+     * @return sql string
+     */
+    private String parseViewBody(String sqlOrFileName) {
+        if (sqlOrFileName.startsWith("@")) {
+            String fileName = baseDir + sqlOrFileName.substring(1);
+            try {
+                return FileUtils.readFileToString(new File(fileName), StandardCharsets.UTF_8);
+            } catch (IOException e) {
+                LOG.error("parseViewBody read file error:"+fileName+"\n because the `"+sqlOrFileName+"` begin with @, treat as a file name", e);
+                return sqlOrFileName;
+            }
+        } else {
+            return sqlOrFileName;
         }
     }
 
