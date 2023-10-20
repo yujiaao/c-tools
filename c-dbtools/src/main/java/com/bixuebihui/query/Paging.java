@@ -124,23 +124,23 @@ public class Paging<S> {
     Long count=10L;
     List<SqlSort.Sort> sort;
     S searchBean;
-    String dateTimeRangeBeginPrefix = "begin_";
-    String dateTimeRangeEndPrefix = "end_";
+    String rangeBeginPrefix = "begin_";
+    String rangeEndPrefix = "end_";
 
-    public String getDateTimeRangeBeginPrefix() {
-        return dateTimeRangeBeginPrefix;
+    public String getRangeBeginPrefix() {
+        return rangeBeginPrefix;
     }
 
-    public void setDateTimeRangeBeginPrefix(String dateTimeRangeBeginPrefix) {
-        this.dateTimeRangeBeginPrefix = dateTimeRangeBeginPrefix;
+    public void setRangeBeginPrefix(String dateTimeRangeBeginPrefix) {
+        this.rangeBeginPrefix = dateTimeRangeBeginPrefix;
     }
 
-    public String getDateTimeRangeEndPrefix() {
-        return dateTimeRangeEndPrefix;
+    public String getRangeEndPrefix() {
+        return rangeEndPrefix;
     }
 
-    public void setDateTimeRangeEndPrefix(String dateTimeRangeEndPrefix) {
-        this.dateTimeRangeEndPrefix = dateTimeRangeEndPrefix;
+    public void setRangeEndPrefix(String dateTimeRangeEndPrefix) {
+        this.rangeEndPrefix = dateTimeRangeEndPrefix;
     }
 
     public Long getStart() {
@@ -177,7 +177,7 @@ public class Paging<S> {
 
     public <T> ActiveRecord<T> toActiveRecordParams(ActiveRecord<T> ar, Set<String> validFields) {
         BeanMap dest = new BeanMap(searchBean);
-        Map<String, MutablePair<Object, Object>> dateRange = new HashMap<>(16);
+        Map<String, MutablePair<Object, Object>> range = new HashMap<>(16);
 
         Map<String, String> fields = validFields.stream().collect(Collectors.toMap(this::unifyField, y -> y, (x, y) -> x));
 
@@ -185,30 +185,43 @@ public class Paging<S> {
 
             String key = unifyField(((String) k));
 
+            if(v instanceof Date ||
+                    (v instanceof  Number) && ( hasKey(fields.keySet(), key, rangeBeginPrefix) ||
+                            hasKey(fields.keySet(), key, rangeEndPrefix))) {
+
+                if (hasKey(fields.keySet(), key, rangeBeginPrefix)) {
+                    String keyWithoutPrefix = key.substring(rangeBeginPrefix.length());
+                    String originalKey = fields.get(keyWithoutPrefix);
+                    pushLeft(range, originalKey, v);
+                } else if (hasKey(fields.keySet(), key, rangeEndPrefix)) {
+                    String keyWithoutPrefix = key.substring(rangeEndPrefix.length());
+                    String originalKey = fields.get(keyWithoutPrefix);
+                    pushRight(range, originalKey, v);
+                }
+
+            } else
             if (fields.isEmpty() ||  fields.containsKey(key)) {
                 String originalKey = fields.get(key);
-                if (v instanceof Number || v instanceof Boolean || v instanceof Enum) {
+
+ if (v instanceof Number || v instanceof Boolean || v instanceof Enum) {
                     ar.eq(originalKey, v);
                 } else if (v instanceof Object[] || v instanceof Collection) {
                     ar.in(originalKey, v);
                 } else if (v instanceof String) {
-                    ar.like(originalKey, (String) v);
+                    String s = (String )v;
+                    if(s.endsWith("%") || s.endsWith("*")) {
+                        ar.startWith(originalKey, s.substring(0, s.length()-1));
+                    }else if(s.startsWith("%") || s.startsWith("*")) {
+                        ar.like(originalKey, s.substring(1));
+                    }else {
+                        ar.eq(originalKey, s);
+                    }
                 }
             }
-            if (v instanceof Date) {
-                if (hasKey(fields.keySet(), key, dateTimeRangeBeginPrefix)) {
-                    String keyWithoutPrefix = key.substring(dateTimeRangeBeginPrefix.length());
-                    String originalKey = fields.get(keyWithoutPrefix);
-                    pushLeft(dateRange, originalKey, v);
-                } else if (hasKey(fields.keySet(), key, dateTimeRangeEndPrefix)) {
-                    String keyWithoutPrefix = key.substring(dateTimeRangeEndPrefix.length());
-                    String originalKey = fields.get(keyWithoutPrefix);
-                    pushRight(dateRange, originalKey, v);
-                }
-            }
+
         });
 
-        range(dateRange, ar);
+        range(range, ar);
 
         if(start!=null && count!=null) {
             ar.limit(start.intValue(), count.intValue());
@@ -229,10 +242,10 @@ public class Paging<S> {
     }
 
     String unifyField(String s) {
-        if(s.startsWith(dateTimeRangeBeginPrefix)) {
-            return dateTimeRangeBeginPrefix +  s.substring(dateTimeRangeBeginPrefix.length()).toLowerCase().replace("_", "");
-        }else if(s.startsWith(dateTimeRangeEndPrefix)){
-            return dateTimeRangeEndPrefix + s.substring(dateTimeRangeEndPrefix.length()).toLowerCase().replace("_", "");
+        if(s.startsWith(rangeBeginPrefix)) {
+            return rangeBeginPrefix +  s.substring(rangeBeginPrefix.length()).toLowerCase().replace("_", "");
+        }else if(s.startsWith(rangeEndPrefix)){
+            return rangeEndPrefix + s.substring(rangeEndPrefix.length()).toLowerCase().replace("_", "");
         }
         return s.toLowerCase().replace("_", "");
     }
@@ -246,8 +259,8 @@ public class Paging<S> {
         return validFields.contains(keyWithoutPrefix);
     }
 
-    private <T> void range(Map<String, MutablePair<Object, Object>> dateRange, ActiveRecord<T> ar) {
-        dateRange.forEach((k, p) -> {
+    private <T> void range(Map<String, MutablePair<Object, Object>> range, ActiveRecord<T> ar) {
+        range.forEach((k, p) -> {
             if (p.getLeft() != null && p.getRight() != null) {
                 ar.between(k, p.left, p.right);
             } else if (p.left != null) {
@@ -258,16 +271,16 @@ public class Paging<S> {
         });
     }
 
-    private <L, R> void pushLeft(Map<String, MutablePair<L, R>> dateRange, String key, L v) {
-        MutablePair<L, R> pair = dateRange.getOrDefault(key, new MutablePair<>());
+    private <L, R> void pushLeft(Map<String, MutablePair<L, R>> range, String key, L v) {
+        MutablePair<L, R> pair = range.getOrDefault(key, new MutablePair<>());
         pair.setLeft(v);
-        dateRange.putIfAbsent(key, pair);
+        range.putIfAbsent(key, pair);
     }
 
-    private <L, R> void pushRight(Map<String, MutablePair<L, R>> dateRange, String key, R v) {
-        MutablePair<L, R> pair = dateRange.getOrDefault(key, new MutablePair<>());
+    private <L, R> void pushRight(Map<String, MutablePair<L, R>> range, String key, R v) {
+        MutablePair<L, R> pair = range.getOrDefault(key, new MutablePair<>());
         pair.setRight(v);
-        dateRange.putIfAbsent(key, pair);
+        range.putIfAbsent(key, pair);
     }
 
     /**

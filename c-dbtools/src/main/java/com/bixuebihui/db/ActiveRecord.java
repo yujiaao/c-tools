@@ -128,7 +128,7 @@ public interface ActiveRecord<T> extends Record<T>, Customizer<T> {
      * @param values primary key values
      * @return this
      */
-    ActiveRecord<T> in(Pair<String,String > fields, List<Pair<Object,Object>> values);
+    ActiveRecord<T> in(Pair<String,String > fields, List<Pair<?,?>> values);
     /**
      * <p>like.</p>
      *

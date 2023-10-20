@@ -546,6 +546,8 @@ public class TableGen implements DiffHandler {
             props.load(fis);
 
             dbConfig = DatabaseConfig.newInstance(props);
+            dbConfig.setMaxCheckOutCount(10000);
+            dbConfig.setMaxWaitTime(10000);
 
             config = ProjectConfig.readFrom(props, getConfigBaseDir(propertiesFilename));
 

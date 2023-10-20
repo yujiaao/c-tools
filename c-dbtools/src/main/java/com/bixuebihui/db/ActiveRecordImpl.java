@@ -199,7 +199,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
      * @return a {@link ActiveRecord} object.
      */
     @Override
-    public ActiveRecord<T> in(Pair<String, String> fields, List<Pair<Object, Object>> values) {
+    public ActiveRecord<T> in(Pair<String, String> fields, List<Pair<?, ?>> values) {
         if (values == null || values.isEmpty()) {
             throw new IllegalArgumentException("InFilter values must not be empty");
         }

@@ -94,7 +94,7 @@ public class DbImpl<T, V> extends BaseDao<T, V> implements ActiveRecord<T>,
 	}
 
 	@Override
-	public ActiveRecord<T> in(Pair<String, String> fields, List<Pair<Object, Object>> values) {
+	public ActiveRecord<T> in(Pair<String, String> fields, List<Pair<?, ?>> values) {
 		filterStack.in("(" + fields.getLeft() + "," + fields.getRight() + ")",
 				values); //TODO tobe fix params!
 		return this;

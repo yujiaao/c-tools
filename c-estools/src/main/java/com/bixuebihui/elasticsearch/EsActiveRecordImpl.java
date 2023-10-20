@@ -107,7 +107,7 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     }
 
     @Override
-    public ActiveRecord<T> in(Pair<String, String> fields, List<Pair<Object, Object>> values) {
+    public ActiveRecord<T> in(Pair<String, String> fields, List<Pair<?, ?>> values) {
         throw new NotImplementedException();
     }
 

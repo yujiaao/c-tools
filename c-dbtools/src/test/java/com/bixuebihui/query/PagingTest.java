@@ -20,6 +20,7 @@ import java.util.stream.Stream;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class PagingTest  {
+
     static class MyAr extends  AbstractViewBaseDao<User, Integer> {
         MyAr(DataSource cp){
             super(cp);
@@ -54,7 +55,7 @@ public class PagingTest  {
         H2DataSource db = new H2DataSource().init();
         ActiveRecordImpl<User, Integer> ar = new ActiveRecordImpl<>(new MyAr(db.cp));
 
-        Set<String> fields = Stream.of("id", "name", "modifiedTime").map(String::toLowerCase).collect(Collectors.toSet());
+        Set<String> fields = Stream.of("id", "name","age", "modifiedTime").map(String::toLowerCase).collect(Collectors.toSet());
         SqlPocket res;
         ar = (ActiveRecordImpl<User, Integer>) p.toActiveRecordParams(ar, fields);
 
@@ -83,6 +84,35 @@ public class PagingTest  {
         res = ar.getCondStack().toCondition();
         assertEquals(" where id = ? and modifiedtime between ? and ?", res.getCondition().toString());
         ar.clear();
+
+        p.searchBean.end_age= 100;
+
+        ar = (ActiveRecordImpl<User, Integer>) p.toActiveRecordParams(ar, fields);
+        res = ar.getCondStack().toCondition();
+        assertEquals(" where id = ? and modifiedtime between ? and ? and age <= ?", res.getCondition().toString());
+        ar.clear();
+
+
+        p.searchBean.name= "xwx";
+        p.searchBean.end_age= null;
+        p.searchBean.begin_ModifiedTime= null;
+        p.searchBean.end_ModifiedTime= null;
+
+        ar = (ActiveRecordImpl<User, Integer>) p.toActiveRecordParams(ar, fields);
+        res = ar.getCondStack().toCondition();
+        assertEquals(" where name = ? and id = ?", res.getCondition().toString());
+        ar.clear();
+
+        p.searchBean.name= "xwx*";
+        p.searchBean.end_age= null;
+        p.searchBean.begin_ModifiedTime= null;
+        p.searchBean.end_ModifiedTime= null;
+
+        ar = (ActiveRecordImpl<User, Integer>) p.toActiveRecordParams(ar, fields);
+        res = ar.getCondStack().toCondition();
+        assertEquals(" where name like concat(?,'%') and id = ?", res.getCondition().toString());
+        ar.clear();
+
 
     }
 

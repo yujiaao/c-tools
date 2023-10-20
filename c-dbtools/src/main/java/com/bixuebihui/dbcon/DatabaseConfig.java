@@ -38,8 +38,8 @@ public class DatabaseConfig
         className = "";
         dburl = "";
         username = "";
-        maxIdle = 10;
-        maxActive = 30;
+        maxIdle = 2;
+        maxActive = 300;
 
         /**
          *  最大等待时间,毫秒
@@ -51,7 +51,7 @@ public class DatabaseConfig
 
         /** DbcpDataSource & bitmechanicDatasource */
         maxOpenPreparedStatements=200;
-        sleepIntervalInSeconds = 300;
+        sleepIntervalInSeconds = 30;
         setRemoveAbandoned(false);
     }
 
