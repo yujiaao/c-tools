@@ -846,7 +846,7 @@ public class TableGen implements DiffHandler {
     public void runV1(String filename, OutputStream out) {
         initConsole(out);
 
-        if (filename != null && filename.length() > 0) {
+        if (filename != null && !filename.isEmpty()) {
             init(filename);
         }
         IDbHelper dbHelper = getDbHelper(dbConfig);
