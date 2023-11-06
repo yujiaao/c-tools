@@ -1712,7 +1712,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
 
         boolean[]  has = new boolean[1];
         String insertSql = getInsertSqlWithId(has);
-        List<Object> insertObjects = has[0] ? List.of(getInsertObjs(info)) : getInsertObjectsWithId(info);
+        List<Object> insertObjects = has[0] ? getInsertObjectsWithId(info): List.of(getInsertObjs(info)) ;
         beforeChange(info);
         boolean res = 1 <= this.getDbHelper().executeNoQuery(insertSql+suffix, insertObjects.toArray());
         afterInsert(info, res);
