@@ -3,6 +3,7 @@ package com.bixuebihui.db;
 import com.bixuebihui.DbException;
 import com.bixuebihui.jdbc.entity.CountObject;
 import com.bixuebihui.jdbc.entity.CountValue;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
 
@@ -31,6 +32,15 @@ public interface Record<T> {
 	 * @throws DbException if any.
 	 */
 	List<T> findAll() throws DbException;
+
+	/**
+	 * <p>findAll.</p>
+	 * 查询多条
+	 *
+	 * @return a {@link java.util.List} object.
+	 * @throws DbException if any.
+	 */
+	Pair<Long, List<T>> findAllWithCount() throws DbException;
 
 	/**
 	 * <p>findAll.</p>

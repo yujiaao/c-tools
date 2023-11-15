@@ -193,11 +193,21 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
         return this;
     }
 
+    @Override
+    public ActiveRecord<T> gt(String field, Object value) {
+        return greaterThan(field, value);
+    }
+
     /** {@inheritDoc} */
     @Override
     public EsActiveRecord<T> smallerThan(String field, Object value) {
         filterStack.lt(field, value);
         return this;
+    }
+
+    @Override
+    public ActiveRecord<T> lt(String field, Object value) {
+        return smallerThan(field, value);
     }
 
     @Override
@@ -219,11 +229,21 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
         return this;
     }
 
+    @Override
+    public ActiveRecord<T> ge(String field, Object value) {
+        return greaterOrEqualThan(field, value);
+    }
+
     /** {@inheritDoc} */
     @Override
     public EsActiveRecord<T> smallerOrEqualThan(String field, Object value) {
         filterStack.lte(field, value);
         return this;
+    }
+
+    @Override
+    public ActiveRecord<T> le(String field, Object value) {
+        return smallerOrEqualThan(field, value);
     }
 
 
@@ -267,6 +287,22 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
                 return res.stream().map(EsSearchHitResult::get_source).collect(Collectors.toList());
             }
             return Collections.emptyList();
+        } finally {
+            clear();
+        }
+    }
+
+    @Override
+    public Pair<Long, List<T>> findAllWithCount() throws DbException {
+        try {
+            Query where = filterStack.toQuery();
+
+            Pair<Long, List<EsSearchHitResult<T>>> res = operator.selectWithHits(getResultFieldsSet(), getExcludeFieldsSet(), where
+                    , toEsSort(), limit.getBegin(), limit.getEnd(), searchAfter);
+            if(!res.getRight().isEmpty()){
+                return Pair.of( res.getLeft() , res.getRight().stream().map(EsSearchHitResult::get_source).collect(Collectors.toList()));
+            }
+            return Pair.of(0L,Collections.emptyList());
         } finally {
             clear();
         }

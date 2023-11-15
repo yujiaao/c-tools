@@ -55,7 +55,7 @@ public class EsTable extends EasyTable {
 
         String query = filter.toEsObject(filter.toQuery(), rowSelect.getRowStart(),
                 rowSelect.getRowEnd() - rowSelect.getRowStart(), emptySet(),emptySet(), sort, scriptSource, scriptParams, null);
-        return request.esJsonToTableJson(request.search(query), rowSelect.getMaxRows(), rowSelect.getRowStart(), rowSelect.getRowEnd(), rowSelect.getTotalRows(), rowSelect.getPage());
+        return request.esJsonToTableJson(request.search(query, rowSelect.getTotalRows() ), rowSelect.getMaxRows(), rowSelect.getRowStart(), rowSelect.getRowEnd(), rowSelect.getTotalRows(), rowSelect.getPage());
     }
 
     /**
@@ -102,8 +102,8 @@ public class EsTable extends EasyTable {
         return new LimitFactory(id, json).createLimit();
     }
 
-    public static Limit getLimit(String id, Query json) {
-        return  new LimitFactory(id, json).createLimit();
+    public static Limit getLimit(String id, Query query) {
+        return  new LimitFactory(id, query).createLimit();
     }
 
 }

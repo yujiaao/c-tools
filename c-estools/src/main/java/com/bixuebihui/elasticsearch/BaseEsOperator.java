@@ -14,11 +14,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.*;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.NotImplementedException;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.function.Supplier;
 
+import static com.bixuebihui.elasticsearch.EsRequest.getHits;
 import static java.util.Collections.*;
 import static java.util.Collections.emptySet;
 
@@ -52,7 +54,7 @@ public abstract class BaseEsOperator<T, V> implements Record<T> {
 
     public long count(Query query) throws DbException {
         String res = request.search(EsQueryBuilder.buildCount(query));
-        return EsRequest.getHits(res);
+        return getHits(res);
     }
 
     @Override
@@ -128,14 +130,12 @@ public abstract class BaseEsOperator<T, V> implements Record<T> {
 
     @Override
     public <K> List<K> findAll(Class<K> clz) throws DbException {
-        int from = 0;
-        int size = 10;
-        LinkedHashMap<String, String> sort = new LinkedHashMap<>();
-        String res = request.search(EsQueryBuilder.build(Query.match_all(), from, size,
-                Collections.emptySet(), Collections.emptySet(),
-                sort, null, emptyMap(), null, emptyList()));
+        throw new NotImplementedException();
+    }
 
-        return toObjectList(res, clz);
+    @Override
+    public Pair<Long,  List<T>> findAllWithCount() throws DbException {
+        throw new NotImplementedException();
     }
 
 
@@ -344,6 +344,18 @@ public abstract class BaseEsOperator<T, V> implements Record<T> {
             throw new DbException(e);
         }
 
+    }
+
+    public Pair<Long, List<EsSearchHitResult<T>>> selectWithHits(Set<String> resultFields,
+                                                                 Set<String> exludeFields,
+                                                                 Query query, LinkedHashMap<String, String> sort,
+                                                                 int begin, int end, List<Object> searchAfter) {
+        int size = end - begin;
+
+        String res = request.search(EsQueryBuilder.build(query, begin, size, resultFields,
+                exludeFields, sort, null, emptyMap(), null, searchAfter));
+
+        return Pair.of(getHits(res), toEsResultWrapper(res));
     }
 
     static class JsonWapper {

@@ -19,6 +19,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -48,9 +49,10 @@ import static java.util.Collections.emptyMap;
  */
 public class EsRequest {
     public static final String TIMEOUT = "?timeout=1m";
-    static final Logger logger = LoggerFactory.getLogger(EsRequest.class);
     public static final int MAX_REQUEST_DEBUG_INFO_WIDTH = 10_000;
     public static final int MAX_RESPONSE_DEBUG_INFO_WIDTH = 10_000;
+    static final Logger logger = LoggerFactory.getLogger(EsRequest.class);
+    private static final String REFRESH = "refresh=true";
     /**
      * This you have to fill in yourself, you're probably using Jackson's ObjectMapper
      * to load JSON data, and that should fit right in here.
@@ -98,7 +100,6 @@ public class EsRequest {
                     "paging:{totalRows:hits.total}, " +
                     "total: hits.total.value} "
     );
-
     /**
      * after translate will be:
      * [
@@ -126,8 +127,6 @@ public class EsRequest {
     );
     private final String username;
     private final String password;
-
-    private static final String REFRESH = "refresh=true";
     /**
      * index name to search
      * 需要检索的索引
@@ -147,23 +146,22 @@ public class EsRequest {
     Pattern patternForIndices = Pattern.compile("open\\s+[\\.\\w|\\-|\\:+|\\w|\\-|\\:+]+");
     Pattern p = Pattern.compile("\\s+[\\.\\w\\-|\\:+|\\w\\-|\\:+]+");
     String version;
-
     public EsRequest(String host, String username, String password) {
-        this.host = host;
+        setHost(host);
         this.username = username;
         this.password = password;
     }
 
-
     public EsRequest(String host, String username, String password, String indexName) {
-        this.host = host;
+        setHost(host);
         this.username = username;
         this.password = password;
         this.indexName = indexName;
     }
 
+
     public EsRequest(String host, String username, String password, String indexName, String version) {
-        this.host = host;
+        setHost(host);
         this.username = username;
         this.password = password;
         this.indexName = indexName;
@@ -182,14 +180,31 @@ public class EsRequest {
         JsonNode input;
         try {
             input = mapper.readTree(esJson);
-            if (input == null || (input.at("/hits/total") instanceof MissingNode)) {
-                return 0;
-            }
-            return input.at("/hits/total").asLong();
+            return getHits(input);
         } catch (JsonProcessingException e) {
             logger.error("查询结果json格式错误", e);
         }
         return 0;
+    }
+
+    private static long getHits(JsonNode input) {
+        if (input == null || (input.at("/hits/total") instanceof MissingNode)) {
+            return 0;
+        }
+        return input.at("/hits/total").asLong();
+    }
+
+    public static JsonNode getAggTableJsonNode(String esJson,
+            String firstAggName, String secondAggName) throws JsonProcessingException {
+        JsonNode input = mapper.readTree(esJson);
+        // https://datatracker.ietf.org/doc/html/rfc6901
+        if (input == null || (input.at("/aggregations/"+firstAggName+"/buckets") instanceof MissingNode)) {
+            return null;
+        }
+        // Finally this is how you search a structure. There's really not much more to it.
+        JsonNode resultTotal =  exp7aggCount.apply(firstAggName, secondAggName).search(input);
+
+        return resultTotal;
     }
 
     /**
@@ -296,22 +311,8 @@ public class EsRequest {
             ((ObjectNode) paging).put("rowEnd", rowEnd);
             ((ObjectNode) paging).put("rowStart", rowStart);
             ((ObjectNode) paging).put("page", page);
+            ((ObjectNode) paging).put("total", getHits(input));
         }
-        return resultTotal;
-    }
-
-
-
-    public static JsonNode getAggTableJsonNode(String esJson,
-            String firstAggName, String secondAggName) throws JsonProcessingException {
-        JsonNode input = mapper.readTree(esJson);
-        // https://datatracker.ietf.org/doc/html/rfc6901
-        if (input == null || (input.at("/aggregations/"+firstAggName+"/buckets") instanceof MissingNode)) {
-            return null;
-        }
-        // Finally this is how you search a structure. There's really not much more to it.
-        JsonNode resultTotal =  exp7aggCount.apply(firstAggName, secondAggName).search(input);
-
         return resultTotal;
     }
 
@@ -325,6 +326,13 @@ public class EsRequest {
 
     public String getHost() {
         return host;
+    }
+
+    public void setHost(String host) {
+        if (host!=null && host.endsWith("/")) {
+            host = host.substring(0, host.length() - 1);
+        }
+        this.host = host;
     }
 
     public String createDoc(String indexName, List<Document> docs) throws JsonProcessingException {
@@ -405,8 +413,8 @@ public class EsRequest {
     /**
      * http request
      *
-     * @param requestBase
-     * @return
+     * @param requestBase http request
+     * @return response
      */
     private String httpJson(HttpEntityEnclosingRequestBase requestBase, String body) {
         logger.debug("====>>>>");
@@ -469,13 +477,17 @@ public class EsRequest {
 
             return httpJson(getRequest, body);
         } catch (UnsupportedEncodingException | URISyntaxException e) {
-            e.printStackTrace();
+            logger.error("query error", e);
         }
         return EsQueryBuilder.EMPTY_JSON_STRING;
     }
 
     public String search(String rawJson) {
         return query(rawJson, EsQueryBuilder.ACTION_SEARCH);
+    }
+
+    public String search(String rawJson, int trackTotalHits) {
+        return query(rawJson, EsQueryBuilder.ACTION_SEARCH, trackTotalHits);
     }
 
     public int count(String rawJson) {
@@ -487,7 +499,7 @@ public class EsRequest {
             return map.containsKey(EsQueryBuilder.COUNT) ? Integer.parseInt(map.get(EsQueryBuilder.COUNT).toString()) : 0;
 
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            logger.error("count error", e);
             return 0;
         }
 
@@ -503,9 +515,22 @@ public class EsRequest {
 
             return httpJson(getRequest, rawJson);
         } catch (UnsupportedEncodingException | URISyntaxException e) {
-            e.printStackTrace();
+            logger.error("query error", e);
         }
         return EsQueryBuilder.EMPTY_JSON_STRING;
+    }
+
+    /**
+     *
+     * @param rawJson
+     * @param action
+     * @param trackTotalHits @see https://www.elastic.co/cn/blog/faster-retrieval-of-top-hits-in-elasticsearch-with-block-max-wand
+     *
+     * @return
+     */
+    public String query(String rawJson, String action, int trackTotalHits) {
+            action  = action+ "?track_total_hits=" + trackTotalHits;
+            return query(rawJson, action);
     }
 
     public String post(String rawJson, String action, String id) {
@@ -519,7 +544,7 @@ public class EsRequest {
 
             return httpJson(getRequest, rawJson);
         } catch (UnsupportedEncodingException | URISyntaxException e) {
-            e.printStackTrace();
+            logger.error("post error", e);
         }
         return EsQueryBuilder.EMPTY_JSON_STRING;
     }
@@ -553,7 +578,7 @@ public class EsRequest {
 
             return httpJson(getRequest, rawJson);
         } catch (UnsupportedEncodingException | URISyntaxException e) {
-            e.printStackTrace();
+            logger.error("post error", e);
         }
         return EsQueryBuilder.EMPTY_JSON_STRING;
     }
@@ -576,7 +601,7 @@ public class EsRequest {
                 }
             }
         } catch (UnsupportedEncodingException | URISyntaxException e) {
-            e.printStackTrace();
+            logger.error("get all index list error", e);
         }
         return indexList;
     }
@@ -606,7 +631,7 @@ public class EsRequest {
             } else {
                 res = post(EsQueryBuilder.buildUpdate(map), EsQueryBuilder.ACTION_UPDATE ,  id+ TIMEOUT+ref+"&retry_on_conflict=10");
             }
-            /**
+            /*
              * {
              *   "_index" : "my-index-000001",
              *   "_type" : "_doc",
@@ -637,7 +662,7 @@ public class EsRequest {
 
         String res = post(q, action);
 
-        /**
+        /*
          {
          "took": 44,
          "timed_out": false,

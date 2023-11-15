@@ -341,6 +341,22 @@ public class ActiveRecordImplTest {
     void not() {
     }
 
+    @Test
+    void findAllWithCount() {
+        bd.getDbHelper().executeNoQuery(
+                "delete from test1 where 1=1");
+        //生成100条数据
+        for (int i = 0; i < 100; i++) {
+            bd.getDbHelper().executeNoQuery(
+                    "insert into test1(id,name)values(" + i + ",'bacddd"+i+"')");
+        }
+        Pair<Long, List<Object>> id = bd.ar().gt("id", 0).limit(10, 10).findAllWithCount();
+        assertEquals(100, id.getLeft());
+        assertEquals(10, id.getRight().size());
+
+
+    }
+
     public static class T {
         Long id;
         String name;

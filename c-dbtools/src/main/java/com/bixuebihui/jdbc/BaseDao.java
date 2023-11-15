@@ -18,8 +18,10 @@ import com.bixuebihui.util.DbUtils;
 import jakarta.validation.constraints.NotNull;
 import org.apache.commons.beanutils.*;
 import org.apache.commons.beanutils.converters.*;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.text.CaseUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,8 +33,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.sql.*;
 import java.text.SimpleDateFormat;
-import java.util.*;
 import java.util.Date;
+import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -91,6 +93,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     AfterChangeEventHandler<T, ID> afterChangeEventHandler;
     private int dbtype = UNKNOWN;
     private String databaseName;
+    private boolean supportsMultipleResultSets = false;
 
     /**
      * <p>Constructor for BaseDao.</p>
@@ -197,12 +200,12 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         } else if (name.contains("SQLSERVER")) {
             // sqlserver 2000
             res = SQLSERVER;
-        //} else if (name.contains("SQL SERVER 201") || name.contains("SQL SERVER 202")) {
+            //} else if (name.contains("SQL SERVER 201") || name.contains("SQL SERVER 202")) {
 
         } else if (name.contains("SQL SERVER")) {
             res = SQLSERVER_2010_AND_UP; //2010 ~ 2029
             // sql server 2005
-          //  res = SQLSERVER_2005_AND_UP;
+            //  res = SQLSERVER_2005_AND_UP;
         } else if (name.contains("POSTGRESQL")) {
             res = POSTGRESQL;
         } else if (name.contains("H2")) {
@@ -224,8 +227,9 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     public static String getPagingSqlSqlServer2005(String selectSql, int startNum, int endNum) {
         return SqlServer2005PageHelper.getLimitString(selectSql, startNum, endNum);
     }
+
     public static String getPagingSqlSqlServer2010(String selectSql, int startNum, int endNum) {
-        return SqlServer2010PageHelper.getLimitString(selectSql, startNum, endNum-startNum);
+        return SqlServer2010PageHelper.getLimitString(selectSql, startNum, endNum - startNum);
     }
 
     /**
@@ -305,8 +309,12 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      */
     private static String getPagingSqlDerby(String selectSql, int startNum, int endNum) {
 
-        String orderBy = selectSql.indexOf("order by") > 0 ? selectSql.substring(selectSql.indexOf("order by")) : "";
-        selectSql = selectSql.indexOf("order by") > 0 ? selectSql.substring(0, selectSql.indexOf("order by")) : selectSql;
+        String orderBy = selectSql.indexOf("order by") > 0
+                ? selectSql.substring(selectSql.indexOf("order by"))
+                : "";
+        selectSql = selectSql.indexOf("order by") > 0
+                ? selectSql.substring(0, selectSql.indexOf("order by"))
+                : selectSql;
 
         return SELECT_FROM + "(select FR.*,ROW_NUMBER() OVER() AS RN from (" + selectSql
                 + ")as FR " + orderBy + ") as ttt where RN<=" + endNum + " and RN>" + startNum;
@@ -384,7 +392,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @return a {@link java.lang.String} object.
      */
     public static String filterForSql(String sql) {
-        if (sql == null || sql.length() == 0) {
+        if (sql == null || sql.isEmpty()) {
             return "";
         }
         int nLen = sql.length();
@@ -482,6 +490,11 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         }
     }
 
+    static boolean matchField(String sql, String field) {
+        Pattern m = Pattern.compile("[(,]\\s*" + field + "\\s*[),]", CASE_INSENSITIVE | MULTILINE);
+        return m.matcher(sql).find();
+    }
+
     public AfterChangeEventHandler<T, ID> getAfterChangeEventHandler() {
         return afterChangeEventHandler;
     }
@@ -535,6 +548,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
             beforeChange(info, time);
         }
     }
+
     private void beforeChange(List<T> infos) {
         long time = System.currentTimeMillis();
         for (T info : infos) {
@@ -641,7 +655,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         detectDbType();
         if (dbtype == DERBY) {
             return getDateSqlDerby(dt);
-        } else if (dbtype == SQLSERVER || dbtype == SQLSERVER_2005_AND_UP|| dbtype == SQLSERVER_2010_AND_UP || dbtype == ACCESS) {
+        } else if (dbtype == SQLSERVER || dbtype == SQLSERVER_2005_AND_UP || dbtype == SQLSERVER_2010_AND_UP || dbtype == ACCESS) {
             return getDateSqlServer(dt);
         } else if (dbtype == MYSQL) {
             return getDateSqlMySql(dt);
@@ -712,7 +726,6 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         Object o = this.getDbHelper().executeScalar("select 1 from " + getTableName() + " " + where, params);
         return o != null && Integer.parseInt(o.toString()) == 1;
     }
-
 
     public boolean exists(String tableName, String where, Object[] params) {
         Object o = this.getDbHelper().executeScalar("select 1 from " + getTableName(tableName) + " " + where, params);
@@ -787,7 +800,6 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
             afterChangeEventHandler.afterChange(infos, ChangeType.UPDATE);
         }
     }
-
 
     /**
      * <p>update.</p>
@@ -969,6 +981,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
                 try (Connection cn = getDbHelper().getConnection()) {
 
                     dbtype = detectDbType(cn.getMetaData().getDriverName());
+                    supportsMultipleResultSets = cn.getMetaData().supportsMultipleResultSets();
                 } catch (SQLException exception) {
                     throw new DbException(exception);
                 }
@@ -1124,7 +1137,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         } else {
             for (Map<String, Object> h : v) {
                 try {
-                    if (keepCase && getDbType()!= DERBY) { // Derby column name all BIG LETTERS
+                    if (keepCase && getDbType() != DERBY) { // Derby column name all BIG LETTERS
                         v1.add(convertCaseSensitive(h, clz.getConstructor().newInstance()));
                     } else {
                         v1.add(convert(h, clz.getConstructor().newInstance()));
@@ -1222,9 +1235,9 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     public @NotNull
     List<T> selectWithJoin(String fieldList, String whereClause, Object[] params, String orderByClause,
                            int beginNum, int endNum, String tableName) {
-        String tableNameOrSelect = useTablenameOrSelect(fieldList, tableName);
+        String tableNameOrSelect = useTableNameOrSelect(fieldList, tableName);
 
-        String query =  tableNameOrSelect+ " " + whereClause;
+        String query = tableNameOrSelect + " " + whereClause;
         if (this.getDbType() != DERBY) {
             query += orderByClause;
         }
@@ -1233,7 +1246,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
 
     }
 
-    public String useTablenameOrSelect(String fieldList, String tableName) {
+    public String useTableNameOrSelect(String fieldList, String tableName) {
         String tableNameOrSelect = getTableName(tableName);
         if (!tableNameOrSelect.toUpperCase().startsWith("SELECT ")) {
             tableNameOrSelect = "select " + fieldList + " from " + tableNameOrSelect;
@@ -1348,7 +1361,6 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     private String getDeleteWhere(String where) {
         return "delete from " + getTableName() + " " + where;
     }
-
 
     public boolean delete(String where, Object[] whereParams, Connection cn) {
         String sql = getDeleteWhere(where);
@@ -1539,11 +1551,11 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      */
     public void processAllByStep(String where, String orderBy, int stepMax, ProcessHandler<T> handler,
                                  Object[] params, boolean alwaysFromBeginning) {
-        processAllByStep(where, orderBy, stepMax, handler, params,  alwaysFromBeginning, List::isEmpty);
+        processAllByStep(where, orderBy, stepMax, handler, params, alwaysFromBeginning, List::isEmpty);
     }
 
     public void processAllByStep(String where, String orderBy, int stepMax, ProcessHandler<T> handler,
-                                 Object[] params, boolean alwaysFromBeginning, Function<List<T>, Boolean> finished ) {
+                                 Object[] params, boolean alwaysFromBeginning, Function<List<T>, Boolean> finished) {
         List<T> list;
         int beginNum = 0;
         for (list = select(where, params, orderBy, beginNum, beginNum + stepMax);
@@ -1705,34 +1717,30 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         throw new IllegalArgumentException("this method must override!");
     }
 
-    public boolean insertKeepKey(T info){
-        return insertKeepKey(info,"");
+    public boolean insertKeepKey(T info) {
+        return insertKeepKey(info, "");
     }
+
     public boolean insertKeepKey(T info, String suffix) {
 
-        boolean[]  has = new boolean[1];
+        boolean[] has = new boolean[1];
         String insertSql = getInsertSqlWithId(has);
-        List<Object> insertObjects = has[0] ? getInsertObjectsWithId(info): List.of(getInsertObjs(info)) ;
+        List<Object> insertObjects = has[0] ? getInsertObjectsWithId(info) : List.of(getInsertObjs(info));
         beforeChange(info);
-        boolean res = 1 <= this.getDbHelper().executeNoQuery(insertSql+suffix, insertObjects.toArray());
+        boolean res = 1 <= this.getDbHelper().executeNoQuery(insertSql + suffix, insertObjects.toArray());
         afterInsert(info, res);
         return res;
-    }
-
-    static  boolean matchField(String sql, String field){
-        Pattern m = Pattern.compile("[(,]\\s*" + field + "\\s*[),]", CASE_INSENSITIVE|MULTILINE);
-        return m.matcher(sql).find();
     }
 
     private String getInsertSqlWithId(boolean[] outHas) {
 
         String insertSql = this.getInsertSql();
-        if(matchField(insertSql, getKeyName())) {
+        if (matchField(insertSql, getKeyName())) {
             return insertSql;
-        }else{
+        } else {
             insertSql = insertSql.replace(") values (", ","
                     + this.getKeyName() + ") values (?,");
-            outHas[0]  =true;
+            outHas[0] = true;
         }
         return insertSql;
     }
@@ -1793,7 +1801,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     }
 
     String shardNameStrategy(String sql, String shardTableName) {
-        if(StringUtils.isEmpty(shardTableName)){
+        if (StringUtils.isEmpty(shardTableName)) {
             return sql;
         }
         return sql.replaceAll(getTableName(), shardTableName);
@@ -1837,7 +1845,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     }
 
     public boolean insert(T info, String tableShardName) {
-        return insert(info, tableShardName,"");
+        return insert(info, tableShardName, "");
     }
 
     public boolean insert(T info, String tableShardName, String upsertClause) {
@@ -1892,9 +1900,11 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     public boolean updateBatch(T[] infos) {
         return updateBatch(infos, null);
     }
+
     public boolean updateBatch(List<T> infos) {
         return updateBatch(infos, null);
     }
+
     /**
      * Inserts the Agent object values into the database.
      *
@@ -1913,32 +1923,35 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         return res;
     }
 
-    protected String getUpsertClause(){
-        if(StringUtils.isEmpty(this.getKeyName())){
-            throw new DbException("Table "+getTableName()+" has not a primary key for upsert!");
+    protected String getUpsertClause() {
+        if (StringUtils.isEmpty(this.getKeyName())) {
+            throw new DbException("Table " + getTableName() + " has not a primary key for upsert!");
         }
 
-        if(this.getDbType() == MYSQL ){
+        if (this.getDbType() == MYSQL) {
             String subquery = this.getUpdateSql();
-            subquery = subquery.substring(subquery.indexOf(" set ")+4, subquery.indexOf(" where "));
-           return " ON DUPLICATE KEY UPDATE "
-                   +subquery.replaceAll("(\\w+)=(\\?)","$1=values($1)");
-        }else if (this.getDbType() == POSTGRESQL){
-           return "ON CONFLICT ("+this.getKeyName()+") DO UPDATE;";
-        }else{
-           throw new DbException(new SQLFeatureNotSupportedException("Current database not supported upsert natively:"+this.dbtype));
+            subquery = subquery.substring(subquery.indexOf(" set ") + 4, subquery.indexOf(" where "));
+            return " ON DUPLICATE KEY UPDATE "
+                    + subquery.replaceAll("(\\w+)=(\\?)", "$1=values($1)");
+        } else if (this.getDbType() == POSTGRESQL) {
+            return "ON CONFLICT (" + this.getKeyName() + ") DO UPDATE;";
+        } else {
+            throw new DbException(new SQLFeatureNotSupportedException("Current database not supported upsert natively:" + this.dbtype));
         }
     }
+
     public boolean upsertBatch(List<T> infos) {
-        return insertBatchKeepKey(infos, "",true);
+        return insertBatchKeepKey(infos, "", true);
     }
+
     protected boolean upsertBatch(List<T> infos, String shardTableName) {
-        return insertBatchKeepKey(infos, shardTableName,true);
+        return insertBatchKeepKey(infos, shardTableName, true);
     }
 
     public boolean insertBatch(List<T> infos) {
         return insertBatch(infos, null);
     }
+
     public boolean insertBatch(List<T> infos, Connection cn) {
         beforeChange(infos);
         List<Object[]> a = infos.stream().map(this::getInsertObjs).collect(Collectors.toList());
@@ -1953,9 +1966,9 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         String insertSql = getInsertSqlWithId(res1);
         beforeChange(infos);
         boolean res = infos.size() <= this.getDbHelper().executeNoQueryBatch(shardNameStrategy(insertSql, shardTableName)
-                + (useUpsert?getUpsertClause():""),
-                infos.stream().map(info -> res1[0]?
-                getInsertObjectsWithId(info).toArray(): getInsertObjs(info)).collect(Collectors.toList()));
+                        + (useUpsert ? getUpsertClause() : ""),
+                infos.stream().map(info -> res1[0] ?
+                        getInsertObjectsWithId(info).toArray() : getInsertObjs(info)).collect(Collectors.toList()));
         afterUpdate(infos, res);
         return res;
     }
@@ -1967,6 +1980,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         afterUpdate(infos, res);
         return res;
     }
+
     /**
      * <p>updateBatch.</p>
      *
@@ -1984,6 +1998,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         afterUpdate(infos, res);
         return res;
     }
+
     public boolean updateBatch(List<T> infos, Connection cn) {
         beforeChange(infos);
 
@@ -2220,7 +2235,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
 
 
     /**
-     * Select from the database for table "Agent_form"
+     * Select from the database for table
      *
      * @return list of pojo
      */
@@ -2244,5 +2259,28 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     public long importTsvData(String fileName, int batchSize) {
         return DatabaseTools.importTsvData(
                 fileName, this.getTableName(), this.getDbHelper(), batchSize);
+    }
+
+    public Pair<Long, List<T>> selectWithJoinWithCount(String fieldList, String whereClause, Object[] params,
+                                                       String orderByClause, int beginNum, int endNum, String tableName) {
+        if (supportsMultipleResultSets) {
+            String tableNameOrSelect = useTableNameOrSelect(fieldList, tableName);
+
+            String query = tableNameOrSelect + " " + whereClause;
+            String countSql = SELECT_COUNT_FROM + getTableName(tableName) + " " + whereClause + ";\n";
+            if (this.getDbType() != DERBY) {
+                query += orderByClause;
+            }
+            query = getPagingSql(query, beginNum, endNum);
+            return getDbHelper().pageWithCount(countSql + query, ArrayUtils.addAll(params, params), this, ActiveRecord.toFieldsSet(fieldList));
+        }
+        /* in case if not support multi query statements: */
+        else {
+            String sql = "select " + fieldList + " from " + tableName + " " + whereClause + " " + orderByClause + " limit " + beginNum + "," + endNum;
+            String countSql = "select count(*) from " + tableName + " " + whereClause;
+            long count = (long) this.getDbHelper().executeScalar(countSql, params);
+            List<T> list = this.getDbHelper().executeQuery(sql, params, new RowMapperResultReader<>(this));
+            return Pair.of(count, list);
+        }
     }
 }

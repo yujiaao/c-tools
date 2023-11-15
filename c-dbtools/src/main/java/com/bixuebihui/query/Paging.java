@@ -120,8 +120,8 @@ import static com.bixuebihui.jdbc.SqlSort.Sort.ASC;
  */
 public class Paging<S> {
     public static final String ORDER_SPLITER = ":";
-    Long start=0L;
-    Long count=10L;
+    Long start = 0L;
+    Long count = 10L;
     List<SqlSort.Sort> sort;
     S searchBean;
     String rangeBeginPrefix = "begin_";
@@ -185,8 +185,8 @@ public class Paging<S> {
 
             String key = unifyField(((String) k));
 
-            if(v instanceof Date ||
-                    (v instanceof  Number) && ( hasKey(fields.keySet(), key, rangeBeginPrefix) ||
+            if (v instanceof Date ||
+                    (v instanceof Number) && (hasKey(fields.keySet(), key, rangeBeginPrefix) ||
                             hasKey(fields.keySet(), key, rangeEndPrefix))) {
 
                 if (hasKey(fields.keySet(), key, rangeBeginPrefix)) {
@@ -199,21 +199,20 @@ public class Paging<S> {
                     pushRight(range, originalKey, v);
                 }
 
-            } else
-            if (fields.isEmpty() ||  fields.containsKey(key)) {
+            } else if (fields.isEmpty() || fields.containsKey(key)) {
                 String originalKey = fields.get(key);
 
- if (v instanceof Number || v instanceof Boolean || v instanceof Enum) {
+                if (v instanceof Number || v instanceof Boolean || v instanceof Enum) {
                     ar.eq(originalKey, v);
                 } else if (v instanceof Object[] || v instanceof Collection) {
                     ar.in(originalKey, v);
                 } else if (v instanceof String) {
-                    String s = (String )v;
-                    if(s.endsWith("%") || s.endsWith("*")) {
-                        ar.startWith(originalKey, s.substring(0, s.length()-1));
-                    }else if(s.startsWith("%") || s.startsWith("*")) {
+                    String s = (String) v;
+                    if (s.endsWith("%") || s.endsWith("*")) {
+                        ar.startWith(originalKey, s.substring(0, s.length() - 1));
+                    } else if (s.startsWith("%") || s.startsWith("*")) {
                         ar.like(originalKey, s.substring(1));
-                    }else {
+                    } else {
                         ar.eq(originalKey, s);
                     }
                 }
@@ -223,11 +222,11 @@ public class Paging<S> {
 
         range(range, ar);
 
-        if(start!=null && count!=null) {
+        if (start != null && count != null) {
             ar.limit(start.intValue(), count.intValue());
         }
 
-        if(sort!=null) {
+        if (sort != null) {
             this.sort.forEach(sort1 -> {
                         if (sort1.getOrder().equals(ASC)) {
                             ar.asc(sort1.getProperty());
@@ -242,9 +241,9 @@ public class Paging<S> {
     }
 
     String unifyField(String s) {
-        if(s.startsWith(rangeBeginPrefix)) {
-            return rangeBeginPrefix +  s.substring(rangeBeginPrefix.length()).toLowerCase().replace("_", "");
-        }else if(s.startsWith(rangeEndPrefix)){
+        if (s.startsWith(rangeBeginPrefix)) {
+            return rangeBeginPrefix + s.substring(rangeBeginPrefix.length()).toLowerCase().replace("_", "");
+        } else if (s.startsWith(rangeEndPrefix)) {
             return rangeEndPrefix + s.substring(rangeEndPrefix.length()).toLowerCase().replace("_", "");
         }
         return s.toLowerCase().replace("_", "");
@@ -285,16 +284,17 @@ public class Paging<S> {
 
     /**
      * 排序 sortBy=abc:asc,def:desc
+     *
      * @param sortBy
      */
     public void parseSort(String sortBy) {
-        if(!StringUtils.isEmpty(sortBy)) {
+        if (!StringUtils.isEmpty(sortBy)) {
             sort = new ArrayList<>();
-            Arrays.stream(sortBy.split(",")).forEach( sub ->{
-                if(sub.contains(ORDER_SPLITER)){
+            Arrays.stream(sortBy.split(",")).forEach(sub -> {
+                if (sub.contains(ORDER_SPLITER)) {
                     String[] pair = sub.split(ORDER_SPLITER);
                     sort.add(new SqlSort.Sort(pair[0], pair[1]));
-                }else{
+                } else {
                     sort.add(new SqlSort.Sort(sub, ASC));
                 }
             });

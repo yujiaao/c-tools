@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -1041,5 +1042,42 @@ public class DbHelper implements IDbHelper {
                                              @NotNull RowMapper<T> handle, Set<String> returnFields) {
         return executeQuery(sql, params,
                 new RowMapperResultReader<>(handle), returnFields);
+    }
+
+    @Override
+    public <T> Pair<Long, List<T>> pageWithCount(String sql, Object[] params,
+                                                 RowMapper<T> handle, Set<String> returnFields) {
+        Connection cn = getConnection(true);
+        try (PreparedStatement p =   cn.prepareStatement(sql)) {
+            if (ArrayUtils.isNotEmpty(params)) {
+                fillParameter( p, params, null);
+            }
+            boolean res =  p.execute();
+                if(!res) {
+                    throw new DbException("execute sql failed: " + sql);
+                }
+                ResultSet rs = p.getResultSet();
+                if(rs == null) {
+                    throw new DbException("execute sql failed: " + sql);
+                }
+                if(!rs.next()) {
+                    throw new DbException("execute sql failed: " + sql);
+                }
+                long count = rs.getLong(1);
+                if(p.getMoreResults()){
+                    rs = p.getResultSet();
+                    RowMapperResultReader<T> reader = new RowMapperResultReader<>(handle);
+                    return Pair.of(count,  reader.processResultSet(rs, returnFields));
+                } else {
+                    throw new DbException("execute sql failed: " + sql);
+                }
+
+        } catch (SQLException ex) {
+            //可能超时，输出sql和参数
+            dumpSql(ex, sql, params);
+            throw new DbException(ex);
+        } finally {
+            DbUtils.closeQuietly(cn);
+        }
     }
 }

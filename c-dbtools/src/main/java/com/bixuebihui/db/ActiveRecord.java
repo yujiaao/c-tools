@@ -205,6 +205,14 @@ public interface ActiveRecord<T> extends Record<T>, Customizer<T> {
     ActiveRecord<T> greaterThan(String field, Object value);
 
     /**
+     * greater than, same as greaterThan
+     * @param field
+     * @param value
+     * @return
+     */
+    ActiveRecord<T> gt(String field, Object value);
+
+    /**
      * <p>smallerThan.</p>
      *
      * @param field a {@link java.lang.String} object.
@@ -212,6 +220,14 @@ public interface ActiveRecord<T> extends Record<T>, Customizer<T> {
      * @return a {@link ActiveRecord} object.
      */
     ActiveRecord<T> smallerThan(String field, Object value);
+
+    /**
+     * less than, same as smallerThan
+     * @param field
+     * @param value
+     * @return
+     */
+    ActiveRecord<T> lt(String field, Object value);
 
     ActiveRecord<T> isNull(String field);
 
@@ -292,11 +308,28 @@ public interface ActiveRecord<T> extends Record<T>, Customizer<T> {
     ActiveRecord<T> greaterOrEqualThan(String field, Object value);
 
     /**
+     * greater than or equal, same as greaterOrEqualThan
+     * @param field
+     * @param value
+     * @return
+     */
+    ActiveRecord<T> ge(String field, Object value);
+
+    /**
      * @param field db field
      * @param value value to compare
      * @return this
      */
     ActiveRecord<T> smallerOrEqualThan(String field, Object value);
+
+    /**
+     * less than or equal, same as smallerOrEqualThan
+     * @param field
+     * @param value
+     * @return
+     */
+    ActiveRecord<T> le(String field, Object value);
+
 
     /**
      * @param field db field

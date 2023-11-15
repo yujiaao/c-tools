@@ -279,6 +279,11 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
         return this;
     }
 
+    @Override
+    public ActiveRecord<T> gt(String field, Object value) {
+        return greaterThan(field, value);
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -286,6 +291,11 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
     public ActiveRecord<T> smallerThan(String field, Object value) {
         filterStack.smallerThan(field, value);
         return this;
+    }
+
+    @Override
+    public ActiveRecord<T> lt(String field, Object value) {
+        return smallerThan(field, value);
     }
 
     @Override
@@ -309,6 +319,11 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
         return this;
     }
 
+    @Override
+    public ActiveRecord<T> ge(String field, Object value) {
+        return greaterOrEqualThan(field, value);
+    }
+
     /**
      * {@inheritDoc}
      */
@@ -316,6 +331,11 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
     public ActiveRecord<T> smallerOrEqualThan(String field, Object value) {
         filterStack.smallerOrEqualThan(field, value);
         return this;
+    }
+
+    @Override
+    public ActiveRecord<T> le(String field, Object value) {
+        return smallerOrEqualThan(field, value);
     }
 
     @Override
@@ -396,6 +416,22 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
         }
     }
 
+    @Override
+    public Pair<Long, List<T>> findAllWithCount() throws DbException {
+        try {
+            sqlPocket = this.getSql();
+            SqlPocket having = parseHaving();
+            String where = formWhereClause() + parseGroupBy() + having.getCondition();
+            List<Object> list = Arrays.asList(getParams().toArray());
+            list.addAll(having.getParams());
+
+            return operator.selectWithJoinWithCount(resultFields, where, list.toArray(), parseOrder(),
+                    limit.getBegin(), limit.getEnd(), tableName);
+        } finally {
+            clear();
+        }
+    }
+
     protected List<Object> getParams() {
         List<Object> res = sqlPocket.getParams();
         if (operator.getDbType() != DERBY) {
@@ -416,7 +452,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
             List<Object> list = Arrays.asList(getParams().toArray());
             list.addAll(having.getParams());
 
-            String select = operator.useTablenameOrSelect(resultFields, this.getTableName());
+            String select = operator.useTableNameOrSelect(resultFields, this.getTableName());
 
             return operator.select(select, where, parseOrder(), list.toArray(), limit.getBegin(),
                     limit.getEnd(), clz, true);

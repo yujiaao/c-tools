@@ -29,18 +29,12 @@ public class {{className}} implements  {{pojoClassName}}Service{
 
     @Override
     public Pair<Integer, List<{{pojoClassName}}Dto>> queryList(Paging<{{pojoClassName}}SearchCmd> searchCmd) {
-        List<{{pojoClassName}}> infos = {{firstLow pojoClassName}}Manager.ar()
-                    .query(searchCmd).findAll();
+        Pair<Long, List<{{pojoClassName}}>>  infos = {{firstLow pojoClassName}}Manager.ar()
+                    .query(searchCmd).findAllWithCount();
 
-        List<{{pojoClassName}}Dto> collect = {{pojoClassName}}Converter.MAPPER.toDtoList(infos);
+        List<{{pojoClassName}}Dto> collect = {{pojoClassName}}Converter.MAPPER.toDtoList(infos.getRight());
 
-        int count = {{firstLow pojoClassName}}Manager.ar()
-                    .query(searchCmd).count();
-
-
-        // do some thing
-
-        return Pair.of(count, collect);
+        return Pair.of(infos.getLeft().intValue(), collect);
     }
 {{#unless tableInfo.isView}}
     @Override

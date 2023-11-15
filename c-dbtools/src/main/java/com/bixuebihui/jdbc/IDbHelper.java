@@ -1,6 +1,7 @@
 package com.bixuebihui.jdbc;
 
 import jakarta.validation.constraints.NotNull;
+import org.apache.commons.lang3.tuple.Pair;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -107,6 +108,17 @@ public interface IDbHelper {
     @NotNull <T> List<T> executeQuery(String sql, Object[] params, RowMapper<T> handle);
     @NotNull <T> List<T> executeQuery(String sql, Object[] params, RowMapper<T> handle, Set<String> returnFields);
 
+    /**
+     * sql must in the form of "select count(*) from table where ...; select * from table where ... limit 0,10"
+     * attention: allowMultiQueries=true must be set in jdbc url
+     * @param sql  sql must in the form of "select count(*) from table where ...; select * from table where ... limit 0,10"
+     * @param params params for count sql and select sql
+     * @param handle handle for select sql
+     * @param returnFields return fields for select sql
+     * @return Pair of count and list
+     * @param <T> a T object.
+     */
+    @NotNull <T> Pair<Long,List<T>> pageWithCount(String sql, Object[] params, RowMapper<T> handle, Set<String> returnFields);
 
     /**
      * <p>executeNoQuery.</p>
@@ -179,7 +191,9 @@ public interface IDbHelper {
 
     /**
      * 批处里数组, 用于Insert, delete或update
-     *
+     *  also note parameter rewriteBatchedStatements=true
+     *  in jdbc url
+     *  @see <a href="https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-configuration-properties.html">mysql connector-j</a>
      * @param strSql
      *            参数化SQL语句
      * @param params
@@ -235,4 +249,5 @@ public interface IDbHelper {
 	 *
 	 */
 	void close() ;
+
 }

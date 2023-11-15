@@ -198,11 +198,21 @@ public class DbImpl<T, V> extends BaseDao<T, V> implements ActiveRecord<T>,
 		return this;
 	}
 
+	@Override
+	public ActiveRecord<T> gt(String field, Object value) {
+		return null;
+	}
+
 	/** {@inheritDoc} */
 	@Override
 	public ActiveRecord<T> smallerThan(String field, Object value) {
 		filterStack.smallerThan(field, value);
 		return this;
+	}
+
+	@Override
+	public ActiveRecord<T> lt(String field, Object value) {
+		return null;
 	}
 
 	@Override
@@ -315,6 +325,11 @@ public class DbImpl<T, V> extends BaseDao<T, V> implements ActiveRecord<T>,
 		} finally {
 			clear();
 		}
+	}
+
+	@Override
+	public Pair<Long, List<T>> findAllWithCount() throws DbException {
+		return null;
 	}
 
 	@Override
@@ -505,7 +520,17 @@ public class DbImpl<T, V> extends BaseDao<T, V> implements ActiveRecord<T>,
 	}
 
 	@Override
+	public ActiveRecord<T> ge(String field, Object value) {
+		return null;
+	}
+
+	@Override
 	public ActiveRecord<T> smallerOrEqualThan(String field, Object value) {
+		return null;
+	}
+
+	@Override
+	public ActiveRecord<T> le(String field, Object value) {
 		return null;
 	}
 

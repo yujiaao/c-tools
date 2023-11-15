@@ -61,6 +61,7 @@ use dependencies:
      - [ ] support ES aggregation
      - [ ] support ES scroll
      - [ ] support ES reindex
+     - [ ] support multi slave data source
    
 
  
