@@ -4,7 +4,7 @@ import com.bixuebihui.db.PojoValidator;
 import com.bixuebihui.jdbc.IModifiedTime;
 import com.bixuebihui.jdbc.event.AfterChangeEventHandler;
 import com.bixuebihui.jdbc.event.ChangeType;
-import jakarta.validation.constraints.NotNull;
+import javax.validation.constraints.NotNull;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.Converter;

@@ -9,7 +9,7 @@
     <parent>
         <groupId>com.github.yujiaao</groupId>
         <artifactId>c-tools-parent</artifactId>
-        <version>1.15.1.1</version>
+        <version>1.12.2.3</version>
     </parent>
 
     <properties>
@@ -137,7 +137,7 @@
         <dependency>
             <groupId>com.github.yujiaao</groupId>
             <artifactId>jmesa</artifactId>
-            <version>4.5.15</version>
+            <version>4.4.15</version>
             <exclusions>
                 <exclusion>
                     <artifactId>spring-core</artifactId>
@@ -184,8 +184,8 @@
 
         <dependency>
             <groupId>org.glassfish</groupId>
-            <artifactId>jakarta.el</artifactId>
-            <version>5.0.0-M1</version>
+            <artifactId>javax.el</artifactId>
+            <version>3.0.0</version>
         </dependency>
 
         <dependency>
@@ -195,9 +195,9 @@
         </dependency>
 
         <dependency>
-            <groupId>jakarta.servlet.jsp</groupId>
-            <artifactId>jakarta.servlet.jsp-api</artifactId>
-            <version>3.1.0</version>
+            <groupId>javax.servlet.jsp</groupId>
+            <artifactId>javax.servlet.jsp-api</artifactId>
+            <version>2.3.3</version>
             <scope>provided</scope>
         </dependency>
 
@@ -257,7 +257,7 @@
         <dependency>
             <groupId>com.github.yujiaao</groupId>
             <artifactId>c-estools</artifactId>
-            <version>1.15.1.1</version>
+            <version>1.12.2.3</version>
         </dependency>
 
 
@@ -295,8 +295,8 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>jakarta.servlet</groupId>
-            <artifactId>jakarta.servlet-api</artifactId>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
             <version>${servlet.version}</version>
         </dependency>
 

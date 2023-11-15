@@ -138,18 +138,29 @@ public class ElasticSearchFilter extends SqlFilter {
     private void addFilter(Bool criteria, Query filter, Operator upOperator) {
 
         switch (upOperator) {
-            case OR -> criteria.addShould(filter);
-            case NOT -> criteria.addMustNot(filter);
-            default -> criteria.addMust(filter);
+            case OR:
+                criteria.addShould(filter);
+                break;
+            case NOT:
+                criteria.addMustNot(filter);
+                break;
+            default:
+                criteria.addMust(filter);
         }
     }
 
     private void addFilter(Bool criteria, List<Query> filters, Operator upOperator) {
         if (filters.isEmpty()) return;
         switch (upOperator) {
-            case OR -> criteria.addShould(filters).setMinimumShouldMatch(1);
-            case NOT -> criteria.addMustNot(filters);
-            default -> criteria.addMust(filters);
+            case OR:
+                criteria.addShould(filters).setMinimumShouldMatch(1);
+                break;
+            case NOT:
+                criteria.addMustNot(filters);
+                break;
+            default:
+                criteria.addMust(filters);
+                break;
         }
     }
 
@@ -162,77 +173,96 @@ public class ElasticSearchFilter extends SqlFilter {
             filters.forEach(filter -> {
                         Query queryFilter;
                         switch (filter.getComparison()) {
-                            case IS -> {
+                            case IS: {
                                 queryFilter = Query.term(filter.getProperty(), filter.getValue()[0]);
                                 queryFilters.add(queryFilter);
                             }
-                            case IS_NOT -> {
+                            break;
+                            case IS_NOT: {
                                 queryFilter = Query.term(filter.getProperty(), filter.getValue()[0]);
                                 //criteria.addMustNot(queryFilter);
                                 queryNotFilters.add(queryFilter);
                             }
-                            case BETWEEN -> {
+                            break;
+                            case BETWEEN: {
                                 List list = objToList(filter.getValue());
                                 queryFilter = Query.range(null, null).between(filter.getProperty(), list.get(0), list.get(1));
                                 queryFilters.add(queryFilter);
                             }
-                            case NOT_BETWEEN -> {
+                            break;
+
+                            case NOT_BETWEEN: {
                                 List list1 = objToList(filter.getValue());
                                 queryFilter = Query.range(null, null).between(filter.getProperty(), list1.get(0), list1.get(1));
                                 //criteria.addMustNot(queryFilter);
                                 queryNotFilters.add(queryFilter);
                             }
-                            case IS_NULL -> {
+                            break;
+                            case IS_NULL: {
                                 queryFilter = Query.term(filter.getProperty(), null);
                                 queryFilters.add(queryFilter);
                             }
-                            case IS_NOT_NULL -> {
+                            break;
+                            case IS_NOT_NULL: {
                                 queryFilter = Query.term(filter.getProperty(), null);
                                 //criteria.addMustNot(queryFilter);
                                 queryNotFilters.add(queryFilter);
                             }
-                            case GT -> {
+                            break;
+                            case GT: {
                                 queryFilter = Query.range(filter.getProperty(), ImmutableMap.builder().put(Range.GT, objToList(filter.getValue()).get(0)).build());
                                 queryFilters.add(queryFilter);
                             }
-                            case GTE -> {
+                            break;
+                            case GTE: {
                                 queryFilter = Query.range(filter.getProperty(), ImmutableMap.builder().put(Range.GTE, objToList(filter.getValue()).get(0)).build());
                                 queryFilters.add(queryFilter);
                             }
-                            case LT -> {
+                            break;
+                            case LT: {
                                 queryFilter = Query.range(filter.getProperty(), ImmutableMap.builder().put(Range.LT, objToList(filter.getValue()).get(0)).build());
                                 queryFilters.add(queryFilter);
                             }
-                            case LTE -> {
+                            break;
+                            case LTE: {
                                 queryFilter = Query.range(filter.getProperty(), ImmutableMap.builder().put(Range.LTE, objToList(filter.getValue()).get(0)).build());
                                 queryFilters.add(queryFilter);
                             }
-                            case NOT_IN -> {
+                            break;
+                            case NOT_IN: {
                                 queryFilter = Query.terms(filter.getProperty(), Lists.newArrayList(filter.getValue()));
                                 //criteria.addMustNot(queryFilter);
                                 queryNotFilters.add(queryFilter);
                             }
-                            case IN -> {
+                            break;
+                            case IN: {
                                 queryFilter = Query.terms(filter.getProperty(), Lists.newArrayList(filter.getValue()));
                                 queryFilters.add(queryFilter);
                             }
-                            case NOT_EXISTS -> {
+                            break;
+                            case NOT_EXISTS: {
                                 queryFilter = Query.exists(filter.getProperty());
                                 //criteria.addMustNot(queryFilter);
                                 queryNotFilters.add(queryFilter);
                             }
-                            case EXISTS -> {
+                            break;
+                            case EXISTS: {
                                 queryFilter = Query.exists(filter.getProperty());
                                 queryFilters.add(queryFilter);
                             }
-                            case CONTAIN -> {
+                            break;
+                            case CONTAIN: {
                                 queryFilter = Query.match(filter.getProperty(), filter.getValue()[0].toString());
                                 queryFilters.add(queryFilter);
                             }
-                            case WILDCARD -> Arrays.asList(filter.getValue()).forEach(value ->
-                                    criteria.addShould(Query.wildcard(filter.getProperty(), value + "*", 1)));
-                            default -> {
+                            break;
+                            case WILDCARD:
+                                Arrays.asList(filter.getValue()).forEach(value ->
+                                        criteria.addShould(Query.wildcard(filter.getProperty(), value + "*", 1)));
+                                break;
+                            default: {
                             }
+
                         }
                     }
             );
@@ -254,71 +284,88 @@ public class ElasticSearchFilter extends SqlFilter {
         }
 
         switch (filter.getComparison()) {
-            case IS -> {
+            case IS: {
                 queryFilter = Query.term(filter.getProperty(), filter.getValue()[0]);
                 addFilter(criteria, queryFilter, upOperator);
             }
-            case IS_NOT -> {
+            break;
+            case IS_NOT: {
                 queryFilter = Query.term(filter.getProperty(), filter.getValue()[0]);
                 criteria.addMustNot(queryFilter);
             }
-            case BETWEEN -> {
+            break;
+            case BETWEEN: {
                 List list = objToList(filter.getValue());
                 queryFilter = Query.range(null, null).between(filter.getProperty(), list.get(0), list.get(1));
                 addFilter(criteria, queryFilter, upOperator);
             }
-            case NOT_BETWEEN -> {
+            break;
+            case NOT_BETWEEN: {
                 List list1 = objToList(filter.getValue());
                 queryFilter = Query.range(null, null).between(filter.getProperty(), list1.get(0), list1.get(1));
                 criteria.addMustNot(queryFilter);
             }
-            case IS_NULL -> {
+            break;
+            case IS_NULL: {
                 queryFilter = Query.term(filter.getProperty(), null);
                 addFilter(criteria, queryFilter, upOperator);
             }
-            case IS_NOT_NULL -> {
+            break;
+            case IS_NOT_NULL: {
                 queryFilter = Query.term(filter.getProperty(), null);
                 criteria.addMustNot(queryFilter);
             }
-            case GT -> {
+            break;
+            case GT: {
                 queryFilter = Query.range(filter.getProperty(), ImmutableMap.builder().put(Range.GT, objToList(filter.getValue()).get(0)).build());
                 addFilter(criteria, queryFilter, upOperator);
             }
-            case GTE -> {
+            break;
+            case GTE: {
                 queryFilter = Query.range(filter.getProperty(), ImmutableMap.builder().put(Range.GTE, objToList(filter.getValue()).get(0)).build());
                 addFilter(criteria, queryFilter, upOperator);
             }
-            case LT -> {
+            break;
+            case LT: {
                 queryFilter = Query.range(filter.getProperty(), ImmutableMap.builder().put(Range.LT, objToList(filter.getValue()).get(0)).build());
                 addFilter(criteria, queryFilter, upOperator);
             }
-            case LTE -> {
+            break;
+            case LTE: {
                 queryFilter = Query.range(filter.getProperty(), ImmutableMap.builder().put(Range.LTE, objToList(filter.getValue()).get(0)).build());
                 addFilter(criteria, queryFilter, upOperator);
             }
-            case NOT_IN -> {
+            break;
+            case NOT_IN: {
                 queryFilter = Query.terms(filter.getProperty(), Lists.newArrayList(filter.getValue()));
                 criteria.addMustNot(queryFilter);
             }
-            case IN -> {
+            break;
+            case IN: {
                 queryFilter = Query.terms(filter.getProperty(), Lists.newArrayList(filter.getValue()));
                 addFilter(criteria, queryFilter, upOperator);
             }
-            case NOT_EXISTS -> {
+            break;
+            case NOT_EXISTS: {
                 queryFilter = Query.exists(filter.getProperty());
                 criteria.addMustNot(queryFilter);
             }
-            case EXISTS -> {
+            break;
+            case EXISTS: {
                 queryFilter = Query.exists(filter.getProperty());
                 addFilter(criteria, queryFilter, upOperator);
             }
-            case CONTAIN -> {
+            break;
+            case CONTAIN: {
                 queryFilter = Query.match(filter.getProperty(), filter.getValue()[0].toString());
                 addFilter(criteria, queryFilter, upOperator);
             }
-            case WILDCARD -> Arrays.asList(filter.getValue()).forEach(value ->
-                    criteria.addShould(Query.wildcard(filter.getProperty(), value + "*", 1)));
-            default -> {
+            break;
+            case WILDCARD:
+                Arrays.asList(filter.getValue()).forEach(value ->
+                        criteria.addShould(Query.wildcard(filter.getProperty(), value + "*", 1)));
+                break;
+            default: {
             }
         }
     }

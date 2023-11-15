@@ -5,8 +5,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.jmesa.view.editor.expression.ElExpressionCellEditor;
 import org.jmesa.view.editor.expression.Expression;
 
-import jakarta.el.FunctionMapper;
-import jakarta.el.VariableMapper;
+import javax.el.FunctionMapper;
+import javax.el.VariableMapper;
 import java.lang.reflect.Method;
 import java.util.Hashtable;
 import java.util.Map;

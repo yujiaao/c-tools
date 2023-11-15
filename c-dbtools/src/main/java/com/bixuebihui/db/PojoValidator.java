@@ -1,6 +1,6 @@
 package com.bixuebihui.db;
 
-import jakarta.validation.*;
+import javax.validation.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.hibernate.validator.messageinterpolation.ParameterMessageInterpolator;
@@ -69,7 +69,7 @@ public class PojoValidator<T> {
     private String formMessage(Set<ConstraintViolation<T>> res) {
         //ConstraintViolationImpl{interpolatedMessage='最小不能小于10000',
         //propertyPath=id, rootBeanClass=class com.demo.superma.freemarker.Site,
-        //messageTemplate='{jakarta.validation.constraints.Min.message}'}
+        //messageTemplate='{javax.validation.constraints.Min.message}'}
         StringBuilder sb = new StringBuilder();
         for(ConstraintViolation<T> cv: res){
             sb.append(transBean(cv.getRootBeanClass().getName(), cv.getPropertyPath().toString()))

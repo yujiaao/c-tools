@@ -11,7 +11,7 @@
     <groupId>com.github.yujiaao</groupId>
     <artifactId>c-tools-parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.15.1.1</version>
+    <version>1.12.2.3</version>
 
     <modules>
         <module>c-tools-bom</module>
@@ -44,12 +44,12 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <mysql.version>8.0.33</mysql.version>
         <slf4j.version>2.0.6</slf4j.version>
-        <!--        <slf4j.version>1.7.36</slf4j.version>-->
-        <validator.version>8.0.0.Final</validator.version>
-        <jakartaValidation.version>3.0.2</jakartaValidation.version>
+<!--        <validator.version>8.0.0.Final</validator.version>-->
+        <validator.version>6.2.5.Final</validator.version>
+        <javaxValidation.version>2.0.1.Final</javaxValidation.version>
         <hamcrest.version>2.2</hamcrest.version>
         <expressly.version>5.0.0</expressly.version>
-        <servlet.version>5.0.0</servlet.version>
+        <servlet.version>3.1.0</servlet.version>
     </properties>
 
     <dependencies>
@@ -212,7 +212,7 @@
                             <sourceFileExcludes>
                                 <sourceFileExclude>**/module-info.java</sourceFileExclude>
                             </sourceFileExcludes>
-                            <source>17</source>
+                            <source>11</source>
                         </configuration>
                     </plugin>
                     <plugin>

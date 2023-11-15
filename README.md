@@ -51,7 +51,7 @@ use dependencies:
 ## version 1.13.x.x
  
  - org.hibernate.validator:hibernate-validator:8.0.0.Final
- - javax -> jakarta
+ - javax -> javax
 
 
 ## TODO

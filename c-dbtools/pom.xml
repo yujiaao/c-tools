@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.github.yujiaao</groupId>
         <artifactId>c-tools-parent</artifactId>
-        <version>1.15.1.1</version>
+        <version>1.12.2.3</version>
     </parent>
 
     <artifactId>c-dbtools</artifactId>
@@ -114,7 +114,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
-                <version>3.1.2</version>
+                <version>3.3.0</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -180,7 +180,7 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>druid</artifactId>
-            <version>1.2.15</version>
+            <version>1.2.20</version>
             <scope>provided</scope>
         </dependency>
 
@@ -205,16 +205,17 @@
         </dependency>
 
         <dependency>
-            <groupId>jakarta.validation</groupId>
-            <artifactId>jakarta.validation-api</artifactId>
-            <version>${jakartaValidation.version}</version>
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+            <version>${javaxValidation.version}</version>
+
         </dependency>
 
 
         <dependency>
-            <groupId>jakarta.el</groupId>
-            <artifactId>jakarta.el-api</artifactId>
-            <version>5.0.1</version>
+            <groupId>javax.el</groupId>
+            <artifactId>javax.el-api</artifactId>
+            <version>3.0.0</version>
         </dependency>
 
 
@@ -263,8 +264,8 @@
 
         <!-- this can be removed, for web test only -->
         <dependency>
-            <groupId>jakarta.servlet</groupId>
-            <artifactId>jakarta.servlet-api</artifactId>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
             <scope>test</scope>
         </dependency>
 
@@ -285,9 +286,9 @@
 
         <!-- API, java.xml.bind module for java 9 & up-->
         <dependency>
-            <groupId>jakarta.xml.bind</groupId>
-            <artifactId>jakarta.xml.bind-api</artifactId>
-            <version>4.0.0</version>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>2.3.1</version>
             <scope>provided</scope>
         </dependency>
 
@@ -344,7 +345,7 @@
         <dependency>
             <groupId>com.github.yujiaao</groupId>
             <artifactId>common-utils</artifactId>
-            <version>1.15.1.1</version>
+            <version>1.12.2.3</version>
             <scope>compile</scope>
         </dependency>
 
@@ -398,8 +399,8 @@
 
         <dependency>
             <groupId>org.glassfish</groupId>
-            <artifactId>jakarta.el</artifactId>
-            <version>5.0.0-M1</version>
+            <artifactId>javax.el</artifactId>
+            <version>3.0.0</version>
         </dependency>
 
         <dependency>

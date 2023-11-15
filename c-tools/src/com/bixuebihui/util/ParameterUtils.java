@@ -5,8 +5,8 @@
 package com.bixuebihui.util;
 
 import com.bixuebihui.util.other.CMyException;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
@@ -247,7 +247,7 @@ public class ParameterUtils {
         List<FileItem> li = null;
         //try {
             // li = fu.parseRequest(request);
-            new RuntimeException("commons-fileupload not implemented jakarta interface yet!");
+            new RuntimeException("commons-fileupload not implemented javax interface yet!");
         //} catch (FileUploadException e) {
         //    log.error("",e);
         //}

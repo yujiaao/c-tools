@@ -1266,7 +1266,7 @@ public class TableGen implements DiffHandler {
         }
 
         if ("pojo".equals(subPackage) && config.useAnnotation) {
-            out("import jakarta.validation.constraints.*;");
+            out("import javax.validation.constraints.*;");
             out("import org.apache.commons.text.StringEscapeUtils;");
             if (config.useSwagger) {
                 out("import io.swagger.annotations.ApiModel;");
@@ -1304,7 +1304,7 @@ public class TableGen implements DiffHandler {
                 out("import " + config.packageName + ".business." + this.getPojoClassName(table.getName()) + "Manager;");
 
                 out("import org.jmesa.worksheet.WorksheetColumn;");
-                out("importjakarta.servlet.http.HttpServletRequest;");
+                out("importjavax.servlet.http.HttpServletRequest;");
 
                 out("import org.apache.commons.beanutils.ConvertUtilsBean;");
             }

@@ -46,7 +46,7 @@ TableGear 是一款基于 JDBC 标准的高性能ORM引擎。TableGear 底层基
 ## 先决条件
 
 * 最新版本支持 jdk 17 以上
-* 使用 jakarta 替代 javax 命名空间
+* 使用 javax 替代 javax 命名空间
 * Spring Boot 2.7.7
 * 生成的项目可选
   * 依赖 swagger v3

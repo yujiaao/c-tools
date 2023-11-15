@@ -4,9 +4,9 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.util.Assert;
 import org.springframework.web.util.WebUtils;
 
-import jakarta.servlet.*;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import javax.servlet.*;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 
 import java.io.IOException;
@@ -94,7 +94,7 @@ public class MockAsyncContext implements AsyncContext {
 
     @Override
     public void complete() {
-        //TODO this need spring 6.x to use jakarta servlet
+        //TODO this need spring 6.x to use javax servlet
 //        SimpleHttpServletRequest mockRequest = WebUtils.getNativeRequest(this.request,  SimpleHttpServletRequest.class);
 //
 //        if (mockRequest != null) {

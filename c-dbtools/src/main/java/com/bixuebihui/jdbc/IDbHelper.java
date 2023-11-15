@@ -1,6 +1,6 @@
 package com.bixuebihui.jdbc;
 
-import jakarta.validation.constraints.NotNull;
+import javax.validation.constraints.NotNull;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.sql.DataSource;

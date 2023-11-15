@@ -9,8 +9,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.util.*;
 
-import jakarta.servlet.*;
-import jakarta.servlet.http.*;
+import javax.servlet.*;
+import javax.servlet.http.*;
 import java.io.*;
 import java.security.Principal;
 import java.text.ParseException;
@@ -19,7 +19,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Mock implementation of the {@link jakarta.servlet.http.HttpServletRequest} interface.
+ * Mock implementation of the {@link javax.servlet.http.HttpServletRequest} interface.
  *
  * <p>The default, preferred {@link Locale} for the <em>server</em> mocked by this request
  * is {@link Locale#ENGLISH}. This value can be changed via {@link #addPreferredLocale}
@@ -691,7 +691,7 @@ public class SimpleHttpServletRequest implements HttpServletRequest {
      * does <strong>not</strong> take into consideration any locales
      * specified via the {@code Accept-Language} header.
      *
-     * @see jakarta.servlet.ServletRequest#getLocale()
+     * @see javax.servlet.ServletRequest#getLocale()
      * @see #addPreferredLocale(Locale)
      * @see #setPreferredLocales(List)
      */
