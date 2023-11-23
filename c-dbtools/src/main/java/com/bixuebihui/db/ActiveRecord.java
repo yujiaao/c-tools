@@ -445,9 +445,13 @@ public interface ActiveRecord<T> extends Record<T>, Customizer<T> {
 
     default String findAllToCsv(String titles, String onlyFields,  boolean withBom, boolean forceStringForDateTime) throws DbException {
         List<T> list =  findAll();
-        return findAllToCsv(list, titles, onlyFields, withBom, forceStringForDateTime);
+        return findAllToCsv(list, titles, onlyFields, withBom, forceStringForDateTime, null);
     }
 
+    default String findAllToCsv(String titles, String onlyFields, Map<String, CellProcessorAdaptor> customFormatters) throws DbException {
+        List<T> list =  findAll();
+        return findAllToCsv(list, titles, onlyFields, true, false, customFormatters);
+    }
 
 
     class MyCustomCellProcessor extends CellProcessorAdaptor {
@@ -470,9 +474,15 @@ public interface ActiveRecord<T> extends Record<T>, Customizer<T> {
     }
 
     static <T> String findAllToCsv(List<T> list, String titles, String onlyFields) throws DbException {
-        return findAllToCsv(list, titles, onlyFields, false, false);
+        return findAllToCsv(list, titles, onlyFields, false, false, null);
     }
-    static <T> String findAllToCsv(List<T> list, String titles, String onlyFields, boolean withBom, boolean forceStringForDateTime) throws DbException {
+
+    static <T> String findAllToCsv(List<T> list, String titles, String onlyFields, Map<String,CellProcessorAdaptor> customFormatters) throws DbException {
+        return findAllToCsv(list, titles, onlyFields, false, false, customFormatters);
+    }
+    static <T> String findAllToCsv(List<T> list, String titles, String onlyFields,
+                                   boolean withBom, boolean forceStringForDateTime,
+                                   Map<String,CellProcessorAdaptor> customFormatters) throws DbException {
 
         if(list.isEmpty()) return "";
 
@@ -498,14 +508,25 @@ public interface ActiveRecord<T> extends Record<T>, Customizer<T> {
                 CellProcessor[] processors = new CellProcessor[fields.length];
 
                 for (int i = 0; i < fields.length; i++) {
-                    processors[i] = new MyCustomCellProcessor();
+                    if(customFormatters!=null && customFormatters.containsKey(fields[i])) {
+                        processors[i] = customFormatters.get(fields[i]);
+                    }else {
+                        processors[i] = new MyCustomCellProcessor();
+                    }
                 }
                 for (T pojo : list) {
                     beanWriter.write(pojo, fields, processors);
                 }
             }else{
+                CellProcessor[] processors = new CellProcessor[fields.length];
+
+                for (int i = 0; i < fields.length; i++) {
+                    if(customFormatters!=null && customFormatters.containsKey(fields[i])) {
+                        processors[i] = customFormatters.get(fields[i]);
+                    }
+                }
                 for (T pojo : list) {
-                    beanWriter.write(pojo, fields);
+                    beanWriter.write(pojo, fields, processors);
                 }
             }
             beanWriter.close();
