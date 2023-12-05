@@ -809,7 +809,7 @@ public class DbHelper implements IDbHelper {
 
         if (ArrayUtils.isNotEmpty(targetSqlTypes) && targetSqlTypes.length != params.length) {
             throw new DbException(
-                    "Intenal error: The params and the targetSqlTypes must have same length!");
+                    "Internal error: The params and the targetSqlTypes must have same length!");
         }
 
 

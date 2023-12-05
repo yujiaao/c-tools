@@ -118,11 +118,21 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
         return this;
     }
 
+    @Override
+    public ActiveRecord<T> in(String field, SqlString sqlString) {
+        throw new NotImplementedException();
+    }
+
     /** {@inheritDoc} */
     @Override
     public EsActiveRecord<T> notIn(String field, List<?> values) {
         filterStack.notIn(field, values);
         return this;
+    }
+
+    @Override
+    public ActiveRecord<T> notIn(String field, SqlString sqlString) {
+        throw new NotImplementedException();
     }
 
     /** {@inheritDoc} */
