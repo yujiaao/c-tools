@@ -18,6 +18,7 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Set;
 
+import static com.bixuebihui.jdbc.BaseDao.sql;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -338,7 +339,10 @@ public class ActiveRecordImplTest {
 //	}
 
     @Test
-    void not() {
+    void notIn() {
+        SqlPocket sql = bd.ar().notIn("id", sql("select 1 ")).getSql();
+        assertEquals(" where id not in (select 1 )", sql.getCondition().toString());
+        assertEquals(0, sql.getParams().size());
     }
 
     @Test
@@ -348,13 +352,14 @@ public class ActiveRecordImplTest {
         //生成100条数据
         for (int i = 0; i < 100; i++) {
             bd.getDbHelper().executeNoQuery(
-                    "insert into test1(id,name)values(" + i + ",'bacddd"+i+"')");
+                    "insert into test(id,name)values(" + i + ",'bacddd"+i+"')");
         }
-        Pair<Long, List<Object>> id = bd.ar().gt("id", 0).limit(10, 10).findAllWithCount();
-        assertEquals(100, id.getLeft());
-        assertEquals(10, id.getRight().size());
-
-
+        Pair<Long, List<Object>> id = bd.ar()
+                .gt("id", 0)
+                .limit(10, 20)
+                .findAllWithCount();
+        assertEquals(101, id.getLeft());
+        assertEquals(20, id.getRight().size());
     }
 
     public static class T {
@@ -393,7 +398,7 @@ public class ActiveRecordImplTest {
             T t = new T();
             t.id = rs.getLong("id");
             t.name = rs.getString("name");
-            if (set.contains("createtime"))
+            if (set!=null && set.contains("createtime"))
                 t.createtime = rs.getTimestamp("createtime");
             return t;
         }

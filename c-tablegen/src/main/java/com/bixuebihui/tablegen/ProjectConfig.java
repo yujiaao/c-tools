@@ -34,6 +34,7 @@ public class ProjectConfig {
     String removePrefix;
     String versionColName = "version";
     String delColName = "is_del";
+    String sharedModelGroup;
     boolean indexes;
     boolean overWriteAll = false;
     boolean useCustomMetaTable = false;
@@ -121,6 +122,9 @@ public class ProjectConfig {
 
         c.tableOwner = props.getProperty("table_owner");
         LOG.debug("table_owner:" +  c.tableOwner);
+
+        c.sharedModelGroup = props.getProperty("shared_model_group");
+        LOG.debug("shared_model_group:" +  c.sharedModelGroup);
 
         c.indexes = getBooleanCfg(props, "indexes");
         c.r2dbc = getBooleanCfg(props, "r2dbc");
@@ -589,5 +593,13 @@ public class ProjectConfig {
 
     public void setDelColName(String delColName) {
         this.delColName = delColName;
+    }
+
+    public String getSharedModelGroup() {
+        return sharedModelGroup;
+    }
+
+    public void setSharedModelGroup(String sharedModelGroup) {
+        this.sharedModelGroup = sharedModelGroup;
     }
 }

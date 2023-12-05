@@ -134,7 +134,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @param src a {@link java.lang.String} object.
      * @return a {@link SqlString} object.
      */
-    protected static SqlString sql(String src) {
+    public static SqlString sql(String src) {
         return new SqlString(src);
     }
 
@@ -2263,7 +2263,16 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
 
     public Pair<Long, List<T>> selectWithJoinWithCount(String fieldList, String whereClause, Object[] params,
                                                        String orderByClause, int beginNum, int endNum, String tableName) {
-        if (supportsMultipleResultSets) {
+        /* in case if not support multi query statements: */
+        if(!supportsMultipleResultSets || this.getDbType() == DERBY) {
+            String sql = getPagingSql("select " + fieldList + " from " + getTableName(tableName) + " " + whereClause
+                    + " " + orderByClause, beginNum, endNum);
+
+            String countSql = "select count(*) from " + getTableName(tableName) + " " + whereClause;
+            long count = Long.parseLong( this.getDbHelper().executeScalar(countSql, params).toString());
+            List<T> list = this.getDbHelper().executeQuery(sql, params, new RowMapperResultReader<>(this));
+            return Pair.of(count, list);
+        } else {
             String tableNameOrSelect = useTableNameOrSelect(fieldList, tableName);
 
             String query = tableNameOrSelect + " " + whereClause;
@@ -2272,15 +2281,9 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
                 query += orderByClause;
             }
             query = getPagingSql(query, beginNum, endNum);
-            return getDbHelper().pageWithCount(countSql + query, ArrayUtils.addAll(params, params), this, ActiveRecord.toFieldsSet(fieldList));
+            return getDbHelper().pageWithCount(countSql + query, ArrayUtils.addAll(params, params),
+                    this, ActiveRecord.toFieldsSet(fieldList));
         }
-        /* in case if not support multi query statements: */
-        else {
-            String sql = "select " + fieldList + " from " + tableName + " " + whereClause + " " + orderByClause + " limit " + beginNum + "," + endNum;
-            String countSql = "select count(*) from " + tableName + " " + whereClause;
-            long count = (long) this.getDbHelper().executeScalar(countSql, params);
-            List<T> list = this.getDbHelper().executeQuery(sql, params, new RowMapperResultReader<>(this));
-            return Pair.of(count, list);
-        }
+
     }
 }

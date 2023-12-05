@@ -60,6 +60,12 @@ public class DbImpl<T, V> extends BaseDao<T, V> implements ActiveRecord<T>,
 	}
 
 	@Override
+	public ActiveRecord<T> in(String field, SqlString sqlString) {
+		filterStack.in(field, sqlString);
+		return this;
+	}
+
+	@Override
 	public ActiveRecord<T> notIn(String field, Object[] values) {
 		filterStack.notIn(field, values);
 		return this;
@@ -68,6 +74,12 @@ public class DbImpl<T, V> extends BaseDao<T, V> implements ActiveRecord<T>,
 	@Override
 	public ActiveRecord<T> notIn(String field, List<?> values) {
 		filterStack.notIn(field, values);
+		return this;
+	}
+
+	@Override
+	public ActiveRecord<T> notIn(String field, SqlString sqlString) {
+		filterStack.notIn(field, sqlString);
 		return this;
 	}
 

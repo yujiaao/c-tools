@@ -66,6 +66,8 @@ public interface ActiveRecord<T> extends Record<T>, Customizer<T> {
 
     ActiveRecord<T> in(String field, List<?> values);
 
+    ActiveRecord<T> in(String field, SqlString sqlString);
+
 
     /**
      * <p>not in</p>
@@ -78,6 +80,8 @@ public interface ActiveRecord<T> extends Record<T>, Customizer<T> {
     ActiveRecord<T> notIn(String field, Object[] values);
 
     ActiveRecord<T> notIn(String field, List<?> values);
+
+    ActiveRecord<T> notIn(String field, SqlString sqlString);
 
     /**
      * Call this method will reject empty string as where condition value
@@ -451,7 +455,7 @@ public interface ActiveRecord<T> extends Record<T>, Customizer<T> {
 
     default String findAllToCsv(String titles, String onlyFields, Map<String, CellProcessorAdaptor> customFormatters) throws DbException {
         List<T> list =  findAll();
-        return findAllToCsv(list, titles, onlyFields, true, false, customFormatters);
+        return findAllToCsv(list, titles, onlyFields, true, true, customFormatters);
     }
 
 

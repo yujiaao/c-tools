@@ -23,7 +23,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description ="{{tableInfo.comment}}")
 {{/eq}}
-@SharedModel
+@SharedModel("{{sharedModelGroup}}")
+{{/if}}
+{{#if config.useLombok}}
 @Generated("com.github.yujiaao:tablegen")
 {{/if~}}
 public class {{className}} {{interface}} {

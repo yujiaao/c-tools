@@ -61,6 +61,7 @@ public class DtoGenerator extends BaseGenerator {
         v.put("keyObjects", createKeyObjects(keys));
 
         v.put("isView", isView());
+        v.put("sharedModelGroup", config.getSharedModelGroup());
 
         return v;
     }

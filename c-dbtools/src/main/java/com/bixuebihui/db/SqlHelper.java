@@ -526,6 +526,11 @@ public class SqlHelper {
 		return this;
 	}
 
+	public SqlHelper notIn(String field, SqlString sqlString) {
+		filters.add(new NotInFilter(field, sqlString));
+		return this;
+	}
+
 
 	protected abstract static class BaseFilter {
 		protected final String property;
@@ -571,7 +576,8 @@ public class SqlHelper {
 		@Override
 		public SqlPocket build(SqlPocket sb) {
 			if (value instanceof SqlString) {
-				sb.getCondition().append(" and ").append(property).append(" "+op+" (").append(value).append(")");
+				sb.getCondition().append(" and ").append(property).append(" ")
+						.append(op).append(" (").append(value).append(")");
 
 			} else if (!(value instanceof Collection)) {
 				throw new DbException("InFilter must have a Collection value:"
