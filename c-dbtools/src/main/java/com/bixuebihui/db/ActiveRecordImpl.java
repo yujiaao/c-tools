@@ -534,18 +534,16 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
         try {
             sqlPocket = this.getSql();
             SqlPocket having = parseHaving();
-            String where = formWhereClause() + parseGroupBy() + having.getCondition();
+            String whereClause = formWhereClause() + parseGroupBy() + having.getCondition();
             List<Object> list = Arrays.asList(getParams().toArray());
             list.addAll(having.getParams());
 
-            if (where.length() < " where ".length()) {
-                return false;
-            }
+            ensureNotEmptyWhere(whereClause);
 
             if (limit != null && limit.getBegin() == 0 && limit.getEnd() > 0) {
-                LOG.info("DELETE table " + operator.getTableName() + " operation with a limit(" + limit + "), please make sure this is correct:\n" + where);
+                LOG.info("DELETE table " + operator.getTableName() + " operation with a limit(" + limit + "), please make sure this is correct:\n" + whereClause);
             }
-            return operator.delete(where, list.toArray(), cn);
+            return operator.delete(whereClause, list.toArray(), cn);
         } finally {
             clear();
         }
@@ -842,6 +840,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
             Object[] params = getParams().toArray();
             String sql = "update " + operator.getTableName()
                     + " set " + field + "=" + field + "+1 " + whereClause;
+            ensureNotEmptyWhere(whereClause);
             if (cn == null) {
                 return operator.getDbHelper().executeNoQuery(sql, params);
             }
@@ -850,6 +849,12 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
             clear();
         }
 
+    }
+
+    private void ensureNotEmptyWhere(String whereClause) {
+        if (whereClause.length() < " where ".length()) {
+            throw new IllegalArgumentException("where clause must not be empty");
+        }
     }
 
     /**
@@ -864,6 +869,8 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 
             sqlPocket = this.getSql();
             String whereClause = formWhereClause();
+
+            ensureNotEmptyWhere(whereClause);
 
             return operator.update(fields, values, whereClause, getParams().toArray(), cn);
         } finally {

@@ -764,6 +764,9 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         // 如何获取更新数据？
         // 可能需要二次查询，通过 where 查主键id?
         List<Object> allParams = new ArrayList<>();
+
+        ensureWhereNotEmpty(whereClause);
+
         String query = getUpdateSql(fieldNames, values, whereClause, whereParams, allParams);
         int res;
         Object[] params = allParams.toArray();
@@ -775,6 +778,12 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         }
         afterUpdate(params, query, res);
         return res;
+    }
+
+    private void ensureWhereNotEmpty(String whereClause) {
+        if (StringUtils.isBlank(whereClause)) {
+            throw new DbException("whereClause不能为空");
+        }
     }
 
     private void afterUpdate(Object[] params, String query, int res) {
@@ -1363,6 +1372,9 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     }
 
     public boolean delete(String where, Object[] whereParams, Connection cn) {
+
+        ensureWhereNotEmpty(where);
+
         String sql = getDeleteWhere(where);
         int res;
         if (cn == null) {
