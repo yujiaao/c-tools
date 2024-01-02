@@ -683,9 +683,12 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
     @Override
     public boolean exists() throws DbException {
         try {
+            this.limit(0,1);
+
             sqlPocket = this.getSql();
             SqlPocket having = parseHaving();
             String where = formWhereClause() + parseGroupBy() + having.getCondition();
+            where += " " + parseLimitSql();
             List<Object> list = Arrays.asList(getParams().toArray());
             list.addAll(having.getParams());
             return operator.exists(tableName, where, list.toArray());

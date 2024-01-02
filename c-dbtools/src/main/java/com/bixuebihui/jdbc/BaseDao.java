@@ -2204,7 +2204,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     }
 
     public boolean save(T info) {
-        if (getId(info) != null && Integer.parseInt(getId(info).toString()) != 0) {
+        if (getId(info) != null && Long.parseLong(getId(info).toString()) != 0) {
             return updateByKey(info);
         } else {
             return insertAutoIncrement(info);
@@ -2212,7 +2212,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     }
 
     public boolean save(T info, String tableShardName) {
-        if (getId(info) != null && Integer.parseInt(getId(info).toString()) != 0) {
+        if (getId(info) != null && Long.parseLong(getId(info).toString()) != 0) {
             return updateByKey(info, null, tableShardName);
         } else {
             return insertAutoIncrement(info, tableShardName);
