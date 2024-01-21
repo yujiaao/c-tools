@@ -595,7 +595,23 @@ public class SqlFilter {
         /**
          * low level es query
          */
-        QUERY
+        QUERY,
+
+        /**
+         *GET /company/employee/_search
+         * {
+         *     "query" : {
+         *         "match_phrase" : {
+         *             "about" : "rock climbing"
+         *         }
+         *     }
+         * }
+         *
+         * this query also returns "super rock climbing",
+         * "rock climbing and java", any phrase that contains "rock climbing"
+         * but not "rock and climbing"
+         */
+        MATCH_PHRASE
 
     }
 

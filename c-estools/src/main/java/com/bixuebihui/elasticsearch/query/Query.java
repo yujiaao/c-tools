@@ -69,6 +69,20 @@ public class Query extends Params {
     }
 
     /**
+     * match_phrase query.
+     * <p>
+     * https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-match-phrase-query.html
+     *
+     * @param field  field
+     * @param values values
+     * @return MatchPhrase
+     */
+    public static MatchPhrase match_phrase(String field, String values) {
+        return new MatchPhrase(field, values);
+    }
+
+
+    /**
      * multi match query.
      * <p>
      * https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-multi-match-query.html

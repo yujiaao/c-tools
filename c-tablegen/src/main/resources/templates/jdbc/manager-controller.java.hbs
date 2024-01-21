@@ -33,7 +33,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import org.springframework.validation.annotation.Validated;
-
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import com.sdadas.spring2ts.annotations.SharedService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -44,6 +44,7 @@ import java.util.List;
  */
 @SharedService
 @RestController
+@ConditionalOnBean(name = "{{config.alias}}")
 @RequestMapping("/{{snakeCase pojoClassName}}")
 {{#eq config.swaggerVersion "2" ~}}
 @Api(tags = "{{tableInfo.comment}}")

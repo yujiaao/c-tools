@@ -7,11 +7,13 @@ import {{config.packageName}}{{viewModifier}}.dal.{{pojoClassName}}List;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 
 import javax.annotation.processing.Generated;
 
 @Generated("com.github.yujiaao:tablegen")
 @Repository
+@ConditionalOnBean(name = "{{config.alias}}")
 public class {{className}}  extends {{pojoClassName}}List
 {
     {{! writeDALConstructor(tableName); }}

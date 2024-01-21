@@ -47,6 +47,18 @@ class ElasticSearchFilterTest {
     }
 
     @Test
+    void matchPhrase() {
+        ElasticSearchFilter filter = new ElasticSearchFilter();
+        filter.addFilter("title", SqlFilter.Comparison.MATCH_PHRASE, new String[]{ "rock climbing"});
+
+        String res = filter.toEsObject(filter.toQuery(), 0, 10, emptySet(), emptySet(),
+                null, null, emptyMap(), null, emptyList());
+
+        assertEquals("{\"size\":10,\"query\":{\"bool\":{\"must\":[{\"match_phrase\":{\"title\":\"rock climbing\"}}]}}}", res);
+
+    }
+
+    @Test
     void toEsObjectMatch() {
         ElasticSearchFilter filter = new ElasticSearchFilter();
         filter.addFilter("title", SqlFilter.Comparison.CONTAIN, new String[]{"abc 中国"});

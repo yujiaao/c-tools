@@ -15,6 +15,7 @@ import {{config.packageName}}{{viewModifier}}.service.autogenerate.{{pojoClassNa
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 
 import javax.annotation.processing.Generated;
 import java.util.List;
@@ -23,6 +24,7 @@ import static java.util.stream.Collectors.toList;
 
 @Generated("com.github.yujiaao:tablegen")
 @Service
+@ConditionalOnBean(name = "{{config.alias}}")
 public class {{className}} implements  {{pojoClassName}}Service{
     @Autowired
     {{pojoClassName}}Manager {{firstLow pojoClassName}}Manager;

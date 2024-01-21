@@ -488,7 +488,7 @@ public class ProjectConfig {
             while (st.hasMoreElements()) {
                 name = st.nextToken().trim();
                 tablesList.put(name, name);
-                LOG.info(name);
+//                LOG.info(name);
             }
         }
     }
@@ -507,7 +507,7 @@ public class ProjectConfig {
             while (st.hasMoreElements()) {
                 String name = st.nextToken().trim();
                 viewList.put(name.substring(0,name.indexOf(":")), parseViewBody(name.substring(name.indexOf(":")+1)));
-                LOG.info(name);
+//                LOG.info(name);
             }
         }
     }
