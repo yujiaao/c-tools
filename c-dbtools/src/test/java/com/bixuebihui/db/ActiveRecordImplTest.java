@@ -16,6 +16,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import static com.bixuebihui.jdbc.BaseDao.sql;
@@ -342,6 +343,13 @@ public class ActiveRecordImplTest {
     void notIn() {
         SqlPocket sql = bd.ar().notIn("id", sql("select 1 ")).getSql();
         assertEquals(" where id not in (select 1 )", sql.getCondition().toString());
+        assertEquals(0, sql.getParams().size());
+    }
+
+    @Test
+    void inNull() {
+        SqlPocket sql = bd.ar().in("id", Optional.ofNullable(null)).getSql();
+        assertEquals(" ", sql.getCondition().toString());
         assertEquals(0, sql.getParams().size());
     }
 

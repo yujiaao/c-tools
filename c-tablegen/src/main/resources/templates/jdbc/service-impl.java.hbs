@@ -24,7 +24,6 @@ import static java.util.stream.Collectors.toList;
 
 @Generated("com.github.yujiaao:tablegen")
 @Service
-@ConditionalOnBean(name = "{{config.alias}}")
 public class {{className}} implements  {{pojoClassName}}Service{
     @Autowired
     {{pojoClassName}}Manager {{firstLow pojoClassName}}Manager;

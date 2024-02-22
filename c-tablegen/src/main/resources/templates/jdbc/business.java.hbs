@@ -13,7 +13,6 @@ import javax.annotation.processing.Generated;
 
 @Generated("com.github.yujiaao:tablegen")
 @Repository
-@ConditionalOnBean(name = "{{config.alias}}")
 public class {{className}}  extends {{pojoClassName}}List
 {
     {{! writeDALConstructor(tableName); }}
