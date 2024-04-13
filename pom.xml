@@ -11,7 +11,7 @@
     <groupId>com.github.yujiaao</groupId>
     <artifactId>c-tools-parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.15.2.4</version>
+    <version>1.15.3.1</version>
 
     <modules>
         <module>c-tools-bom</module>
@@ -30,6 +30,7 @@
         <module>c-estools</module>
 
         <module>c-jsongen-es-demo</module>
+<!--        <module>c-dbtools-spring</module>-->
 
 
     </modules>
@@ -42,7 +43,7 @@
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <mysql.version>8.0.33</mysql.version>
+        <mysql.version>8.2.0</mysql.version>
         <slf4j.version>2.0.6</slf4j.version>
         <!--        <slf4j.version>1.7.36</slf4j.version>-->
         <validator.version>8.0.0.Final</validator.version>
@@ -50,6 +51,8 @@
         <hamcrest.version>2.2</hamcrest.version>
         <expressly.version>5.0.0</expressly.version>
         <servlet.version>5.0.0</servlet.version>
+
+        <spring2ts.version>1.1.12</spring2ts.version>
     </properties>
 
     <dependencies>
@@ -213,6 +216,7 @@
                                 <sourceFileExclude>**/module-info.java</sourceFileExclude>
                             </sourceFileExcludes>
                             <source>17</source>
+                            <release>17</release>
                         </configuration>
                     </plugin>
                     <plugin>

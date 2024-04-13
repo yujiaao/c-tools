@@ -49,13 +49,20 @@ public class TableSetInfo implements KeyInfo {
         return Math.min(list.size(), desiredPos);
     }
 
+    private static void fillSQLServerTableComment(IDbHelper dbHelper, TableInfo tableInfo ) {
+        String tableName =tableInfo.getName();
+        Map<String, String> map = TableUtils.getTableCommentForSQLServer(dbHelper, List.of(tableName));
+        tableInfo.setComment(map.get(tableName));
+    }
+
+
     /**
-     * this below two methods are valid only for MySQL
+     * this below two methods is valid only for MySQL
      * @param conn database connection
      * @param tableInfo table structure
-     * @return
+     * tableInfo with comment
      */
-    private static void fillComment(Connection conn, TableInfo tableInfo ) {
+    private static void fillMySQLComment(Connection conn, TableInfo tableInfo ) {
         String tableName =tableInfo.getName();
         try( Statement showTableStatement = conn.createStatement();
              ResultSet showTableResultSet = showTableStatement.executeQuery("show create table " + tableName)
@@ -70,25 +77,19 @@ public class TableSetInfo implements KeyInfo {
         }
     }
 
-    private static void fillTableComment(IDbHelper dbHelper, TableInfo tableInfo ) {
-        String tableName =tableInfo.getName();
-        Map<String, String> map = TableUtils.getTableCommentForSQLServer(dbHelper, List.of(tableName));
-
-        tableInfo.setComment(map.get(tableName));
-    }
 
     protected static  void findFieldComment(String tableName, List<ColumnData> fields, String tableSql) {
         String fieldSql = tableSql.substring(tableSql.indexOf("(") + 1, tableSql.lastIndexOf(")"));
-        String[] fieldDescs = StringUtils.split(fieldSql, "\n");
+        String[] fieldDesc = StringUtils.split(fieldSql, "\n");
         Map<String, ColumnData> commentMap = new HashMap<>();
         for (ColumnData fieldInfo : fields) {
             commentMap.put(fieldInfo.getName().toUpperCase(), fieldInfo);
         }
-        for (String fieldDesc : fieldDescs) {
-            String trim = StringUtils.trim(fieldDesc);
+        for (String desc : fieldDesc) {
+            String trim = StringUtils.trim(desc);
             String fieldName = StringUtils.split(trim, " ")[0].toUpperCase();
             fieldName = replaceForIdentifier(fieldName);
-            String upper = fieldDesc.toUpperCase();
+            String upper = desc.toUpperCase();
             if (upper.contains("AUTO_INCREMENT")) {
                 if (Arrays.asList(StringUtils.split(upper, " ")).contains("AUTO_INCREMENT")) {
                     commentMap.get(fieldName).setAutoIncrement(true);
@@ -103,7 +104,7 @@ public class TableSetInfo implements KeyInfo {
             if (commentMap.containsKey(fieldName)) {
                 commentMap.get(fieldName).setComment(comment);
             } else {
-                LOG.info("table:"+tableName+",fileName:"+fieldDesc);
+                LOG.info("table:"+tableName+",fileName:"+desc);
             }
         }
     }
@@ -403,8 +404,8 @@ public class TableSetInfo implements KeyInfo {
      * 12. PAGES==0, int => TYPE 为 tableIndexStatisic 时，它是用于表的页数，否则它是用于当前索引的页数。
      * 13。 FILTER_CONDITION==null, String => 过滤器条件，如果有的话。（可能为 null）
      * @param config generator configuration
-     * @param dbHelper
-     * @param tableName
+     * @param dbHelper database helper
+     * @param tableName table name
      */
     protected void initIndex(ProjectConfig config, IDbHelper dbHelper, String tableName) {
         // use a hashmap to temporarily store the indexes as well
@@ -467,7 +468,6 @@ public class TableSetInfo implements KeyInfo {
     /**
      * Retrieves all the table data required.
      *
-     * @throws IOException
      */
     public synchronized void getTableData(ProjectConfig config, IDbHelper dbHelper,  DatabaseMetaData metaData) throws SQLException, IOException {
 
@@ -506,9 +506,9 @@ public class TableSetInfo implements KeyInfo {
 
                     // table & column's  comment
                     if(isMysql(metaData)) {
-                        fillComment(cn, table);
+                        fillMySQLComment(cn, table);
                     }else if(isSQLServer(metaData)){
-                        fillTableComment(dbHelper, table);
+                        fillSQLServerTableComment(dbHelper, table);
                     }
                 }
 
@@ -535,7 +535,6 @@ public class TableSetInfo implements KeyInfo {
     /**
      * Retrieves all the table data required.
      *
-     * @throws IOException
      */
     public synchronized void getOnFlyViewData(ProjectConfig config, IDbHelper dbHelper) throws SQLException, IOException {
 
@@ -546,38 +545,33 @@ public class TableSetInfo implements KeyInfo {
         LinkedHashMap<String, TableInfo> viewInfos = new LinkedHashMap<>();
 
         try(Connection cn = dbHelper.getConnection()) {
-            if (CollectionUtils.isEmpty(viewInfos)) {
+            int dbType = BaseDao.detectDbType(cn.getMetaData().getDriverName());
 
-                int dbType = BaseDao.detectDbType(cn.getMetaData().getDriverName());
+            for (String name : config.getViewList().keySet()) {
+                String originalSql = config.getViewList().get(name);
+                String sql = addLimit(originalSql, dbType);
 
-                for (String name : config.getViewList().keySet()) {
-                    String originalSql = config.getViewList().get(name);
-                    String sql = addLimit(originalSql, dbType);
+                dbHelper.executeQuery(sql,
+                        new Object[0], new RowMapperResultReader<>((rs, index, set) -> null){
+                            @Override
+                            public  List<Object> processResultSet(ResultSet rs, Set<String> set){
 
-                    dbHelper.executeQuery(sql,
-                            new Object[0], new RowMapperResultReader<>((rs, index, set) -> null){
-                                @Override
-                                public  List<Object> processResultSet(ResultSet rs, Set<String> set){
-
-                                    try {
-                                        TableInfo info = OnFlyViewUtils.getColumnData(rs.getMetaData(), name, dbType, config.getR2dc());
-                                        info.setComment(originalSql);
-                                        info.setViewSql(originalSql);
-                                        viewInfos.put(name, info);
-                                    } catch (SQLException e) {
-                                        LOG.error("getOnFlyViewData", e);
-                                    }
-
-                                    return Collections.emptyList();
+                                try {
+                                    TableInfo info = OnFlyViewUtils.getColumnData(rs.getMetaData(), name, dbType, config.getR2dc());
+                                    info.setComment(name);
+                                    info.setViewSql(originalSql);
+                                    viewInfos.put(name, info);
+                                } catch (SQLException e) {
+                                    LOG.error("getOnFlyViewData", e);
                                 }
-                            });
 
-                }
+                                return Collections.emptyList();
+                            }
+                        });
 
-                setViewInfos(viewInfos);
-            } else {
-                LOG.info("tableNames already set, retrieve from db skipped.");
             }
+
+            setViewInfos(viewInfos);
 
         }
 

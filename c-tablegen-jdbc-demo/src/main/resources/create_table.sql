@@ -9,6 +9,9 @@ CREATE TABLE IF NOT EXISTS test_gen (id int(11) NOT NULL AUTO_INCREMENT COMMENT 
                                  age smallint DEFAULT NULL COMMENT '这里是年龄',
                                      birth datetime DEFAULT NULL COMMENT '这里是日期！',
                                      edu_id int DEFAULT NULL COMMENT '教育程度',
+                                    gender enum('男','女') DEFAULT NULL COMMENT '性别',
+                                    sex tinyint(1) DEFAULT NULL COMMENT '性别',
+                                    child bool DEFAULT NULL COMMENT '是否有孩子',
                                 PRIMARY KEY (id),
                                 KEY  t_edu_id(edu_id),
                                 CONSTRAINT  key_edu_id_fk  FOREIGN  KEY  (edu_id)  REFERENCES  t_edu (id)

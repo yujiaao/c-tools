@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.github.yujiaao</groupId>
         <artifactId>c-tools-parent</artifactId>
-        <version>1.15.2.4</version>
+        <version>1.15.3.1</version>
     </parent>
 
     <artifactId>c-tools</artifactId>
@@ -13,30 +13,7 @@
     <description>common tools for web development</description>
 
     <build>
-        <sourceDirectory>src</sourceDirectory>
-        <testSourceDirectory>test</testSourceDirectory>
-        <outputDirectory>target/classes</outputDirectory>
-        <testOutputDirectory>target/test-classes</testOutputDirectory>
 
-        <resources>
-            <resource>
-                <directory>src</directory>
-                <excludes>
-                    <exclude>**/*.xml</exclude>
-                    <exclude>**/*.xsd</exclude>
-                    <exclude>**/*.dtd</exclude>
-                    <exclude>**/*.sql</exclude>
-                    <exclude>**/*.properties</exclude>
-                    <exclude>**/*.java</exclude>
-                </excludes>
-            </resource>
-        </resources>
-        <testResources>
-            <testResource>
-                <directory>test</directory>
-
-            </testResource>
-        </testResources>
         <plugins>
 
             <plugin>

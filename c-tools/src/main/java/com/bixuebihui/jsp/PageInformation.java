@@ -35,6 +35,7 @@ public class PageInformation {
     /**
      * @deprecated
      */
+    @Deprecated
     public void calculatePage() {
         this.cp = this.currentPage;
         calculate();

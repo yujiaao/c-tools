@@ -185,8 +185,8 @@ public class Paging<S> {
 
             String key = unifyField(((String) k));
 
-            if (v instanceof Date ||
-                    (v instanceof Number) && (hasKey(fields.keySet(), key, rangeBeginPrefix) ||
+            if (((v instanceof Date)  ||  (v instanceof Number) || (v instanceof String) )
+                            && (hasKey(fields.keySet(), key, rangeBeginPrefix) ||
                             hasKey(fields.keySet(), key, rangeEndPrefix))) {
 
                 if (hasKey(fields.keySet(), key, rangeBeginPrefix)) {

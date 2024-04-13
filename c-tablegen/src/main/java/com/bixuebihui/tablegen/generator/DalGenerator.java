@@ -56,7 +56,7 @@ public class DalGenerator extends BaseGenerator {
                 objs.append(",");
             }
         }
-        if (objs.lastIndexOf(",") == objs.length() - 1) {
+        if (objs.toString().contains(",") && objs.lastIndexOf(",") == objs.length() - 1) {
             objs.deleteCharAt(objs.length() - 1);
         }
         return objs.toString();
@@ -258,7 +258,7 @@ public class DalGenerator extends BaseGenerator {
 
         v.put("insertObjects", makeInsertObjects( config.isUseAutoincrement(), cols, config.getVersionColName()));
         v.put("updateObjects", makeUpdateObjects(keys, cols, config.isUseAutoincrement(), config.getVersionColName()));
-        v.put("insertSql", makeInsertSql(tableName, config.isUseAutoincrement(), cols));
+        v.put("insertSql", makeInsertSql(config.isUseAutoincrement(), cols));
         v.put("updateSql", makeUpdateSql(tableName, keys, cols, config.isUseAutoincrement(), config.getVersionColName()));
 
 
@@ -281,7 +281,7 @@ public class DalGenerator extends BaseGenerator {
 
     private Object makeUpdateSql(String tableName, List<String> keys, List<ColumnData> cols, boolean useAutoincrement, String versionColName) {
         return
-        "update "+tableName+" set \"\n    +\"" +
+        "update \"+this.getTableName()+\" set \"\n    +\"" +
         cols.stream().filter(c -> !this.setInfo.getTableKeys(tableName).contains(c.getName()) && isInsertAndUpdatableField(c, useAutoincrement))
                 .map(columnData ->{
 
@@ -294,8 +294,8 @@ public class DalGenerator extends BaseGenerator {
     }
 
 
-    private String makeInsertSql(String tableName, boolean useAutoincrement, List<ColumnData> cols) {
-        return  "insert into "+tableName+"\"\n    +\" ( "+
+    private String makeInsertSql(boolean useAutoincrement, List<ColumnData> cols) {
+        return  "insert into \"+this.getTableName()+\n\" ( "+
         cols.stream().filter(it -> isInsertAndUpdatableField(it, useAutoincrement))
                 .map(it -> decorFieldIfIsKeyword(it.getName(), this.getDbType())).collect(Collectors.joining(", "))
                         +")\"\n    +\" values (\"\n    +\""

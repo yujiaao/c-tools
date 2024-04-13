@@ -714,8 +714,10 @@ public class DbHelper implements IDbHelper {
             throws SQLException {
         if ("TINYINT".equals(colTypeName) && rsmdQuery.getPrecision(i) == 1) {
             columnMap.put(colName, rset.getBoolean(i));
-        } else if ("TINYINT".equals(colTypeName) || "TINYINT UNSIGNED".equals(colTypeName)) {
+        } else if ("TINYINT".equals(colTypeName) ) {
             columnMap.put(colName, rset.getByte(i));
+        } else if ("TINYINT UNSIGNED".equals(colTypeName)) {
+            columnMap.put(colName, rset.getShort(i));
         } else if (rsmdQuery.getScale(i) <= 0) {
             // BigDecimal or Integer
             if (rset.getObject(i) instanceof BigDecimal) {
@@ -734,7 +736,6 @@ public class DbHelper implements IDbHelper {
             }
         } else {
             columnMap.put(colName, rset.getDouble(i));
-
         }
     }
 

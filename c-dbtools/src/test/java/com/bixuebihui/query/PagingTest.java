@@ -114,6 +114,19 @@ public class PagingTest  {
         ar.clear();
 
 
+        p.searchBean.begin_name= "a";
+        p.searchBean.end_name= "z";
+        p.searchBean.name= null;
+        p.searchBean.id = null;
+        p.searchBean.begin_ModifiedTime= null;
+        p.searchBean.end_ModifiedTime= null;
+
+        ar = (ActiveRecordImpl<User, Integer>) p.toActiveRecordParams(ar, fields);
+        res = ar.getCondStack().toCondition();
+        assertEquals(" where name between ? and ?", res.getCondition().toString());
+        ar.clear();
+
+
     }
 
 

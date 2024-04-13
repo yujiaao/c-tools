@@ -23,6 +23,7 @@ public class CMyString {
      * @deprecated Method isEmptyStr is deprecated
      */
 
+    @Deprecated
     public static boolean isEmptyStr(String _string) {
         return _string == null || _string.trim().length() == 0;
     }
@@ -213,7 +214,7 @@ public class CMyString {
     /**
      * @deprecated Method toUnicode is deprecated
      */
-
+    @Deprecated
     public static String toUnicode(String _strSrc) {
         return toISO_8859(_strSrc);
     }
@@ -913,7 +914,7 @@ public class CMyString {
     /**
      * @deprecated Method cutStr is deprecated
      */
-
+    @Deprecated
     public static String cutStr(String _string, int _length) {
         return truncateStr(_string, _length);
     }

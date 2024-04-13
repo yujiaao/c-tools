@@ -21,20 +21,26 @@ public class PojoValidator<T> {
     static final Logger logger = LoggerFactory.getLogger(PojoValidator.class);
 
     Validator validator;
-
-    static ValidatorFactory factory = Validation.byDefaultProvider()
-            .configure()
-            .messageInterpolator(new ParameterMessageInterpolator())
-            .buildValidatorFactory();
+    static ValidatorFactory factory;
+    static {
+        try {
+            factory = Validation.byDefaultProvider()
+                    .configure()
+                    .messageInterpolator(new ParameterMessageInterpolator())
+                    .buildValidatorFactory();
+        } catch (Exception e) {
+            logger.warn("Validator init error, annotation constrains will not work", e);
+        }
+    }
 
     public PojoValidator() {
         try {
-            validator = factory.getValidator();
+            if(factory!=null) {
+                validator = factory.getValidator();
+            }
         }catch (Exception e){
             logger.warn("Validator init error, annotation constrains will not work", e);
-            e.printStackTrace();
         }
-
     }
 
     /**

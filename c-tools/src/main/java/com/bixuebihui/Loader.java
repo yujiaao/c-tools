@@ -46,6 +46,7 @@ public class Loader  {
    *  @return URL to resource or null.
    *  @deprecated as of 1.2.
    */
+  @Deprecated
   public static URL getResource(String resource, Class clazz) {
       return getResource(resource);
   }
@@ -130,15 +131,15 @@ public class Loader  {
     InvocationTargetException {
 
     // Are we running on a JDK 1.2 or later system?
-    Method method = null;
+    Method method;
     try {
-      method = Thread.class.getMethod("getContextClassLoader", null);
+      method = Thread.class.getMethod("getContextClassLoader", (Class<?>[]) null);
     } catch (NoSuchMethodException e) {
       // We are running on JDK 1.1
       return null;
     }
 
-    return (ClassLoader) method.invoke(Thread.currentThread(), null);
+    return (ClassLoader) method.invoke(Thread.currentThread(), (Object[]) null);
   }
 
 

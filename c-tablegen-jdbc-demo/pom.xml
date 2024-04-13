@@ -5,7 +5,7 @@
     <parent>
         <artifactId>c-tools-parent</artifactId>
         <groupId>com.github.yujiaao</groupId>
-        <version>1.15.2.4</version>
+        <version>1.15.3.1</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -115,6 +115,12 @@
             <version>2.11.0</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.github.yujiaao.spring2ts</groupId>
+            <artifactId>spring2ts-annotations</artifactId>
+            <version>${spring2ts.version}</version>
+            <scope>provided</scope>
+        </dependency>
 
     </dependencies>
     <build>

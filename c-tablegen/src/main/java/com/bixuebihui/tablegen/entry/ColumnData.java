@@ -22,7 +22,7 @@ public class ColumnData implements Serializable {
             "BINARY", "VARBINARY", "LONGVARBINARY", "NULL",
             "OTHER", "TEXT", "CLOB", "NVARCHAR",
             "NTEXT", "DATETIME", "SYSNAME", "VARBINARY",
-            "NCHAR"};
+            "NCHAR", "BOOL", "BOOLEAN"};
     boolean isAutoIncrement;
     boolean isR2dbc=false;
     /**
@@ -80,6 +80,9 @@ public class ColumnData implements Serializable {
 // use in between drivers/databases.
 //
         // convert JDBC type to sqlTypes index
+        //mysql enum origType=1 -> char
+        //mysql tinyint(1) origType=-7 -> byte
+        //mysql bool origType=-7 -> byte
 
         switch (type) {
 
