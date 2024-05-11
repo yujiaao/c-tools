@@ -181,6 +181,10 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
      */
     @Override
     public ActiveRecord<T> in(String field, Object values) {
+        if(values == Optional.empty()){
+            LOG.debug(this.getTableName(), field, " in filter values is empty, ignore it");
+            return this;
+        }
         if (!(values instanceof Collection) && !(values instanceof SqlString)) {
             throw new IllegalArgumentException("InFilter values must be Collection or SqlString objects");
         }

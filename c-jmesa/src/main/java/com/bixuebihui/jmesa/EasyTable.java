@@ -132,7 +132,7 @@ public class EasyTable extends BasicWebUI {
     }
 
     public String[] getColLabelsFromDb(String sql) throws SQLException {
-        try(Connection cn = service.getDbHelper().getConnection()) {
+        try(Connection cn = service.getDbHelper().getConnection(true)) {
             return MiniSqlParser.getByDb(cn, sql).colNames;
         }
     }

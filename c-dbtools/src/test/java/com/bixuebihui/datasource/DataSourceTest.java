@@ -40,7 +40,7 @@ public class DataSourceTest {
 						"mysqlEncoding=utf8&" +
 						"useSSL=false&" +
 						"connectTimeout=200" +
-						"&socketTimeout=1000");
+						"&socketTimeout=1000&allowMultiQueries=true");
 
 	}
 

@@ -32,7 +32,8 @@ public class ActiveRecordImplTest {
     @BeforeEach
     protected void setUp() {
         DbcpDataSource ds = new DbcpDataSource();
-        ds.setDatabaseConfig(DataSourceTest.getConfigDerby());
+       // ds.setDatabaseConfig(DataSourceTest.getConfigDerby());
+        ds.setDatabaseConfig(DataSourceTest.getConfig());
         DbHelper db = new DbHelper();
         db.setDataSource(ds);
         cn = db.getConnection();
@@ -164,8 +165,9 @@ public class ActiveRecordImplTest {
     @Test
     public void testTableNameOverride() {
 
-        String obj = ((ActiveRecordImpl) bd.ar().tableName("t1")).getVectorSql("abc");
-        assertEquals("select abc from t1", obj.trim());
+        String obj = ((ActiveRecordImpl) bd.ar().tableName("t1").limit(10, 20))
+                .getVectorSql("abc");
+        assertEquals("select abc from t1     limit 10,20", obj.trim());
 
     }
 
@@ -348,8 +350,8 @@ public class ActiveRecordImplTest {
 
     @Test
     void inNull() {
-        SqlPocket sql = bd.ar().in("id", Optional.ofNullable(null)).getSql();
-        assertEquals(" ", sql.getCondition().toString());
+        SqlPocket sql = bd.ar().in("id", Optional.empty()).getSql();
+        assertEquals("", sql.getCondition().toString());
         assertEquals(0, sql.getParams().size());
     }
 

@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.github.yujiaao</groupId>
         <artifactId>c-tools-parent</artifactId>
-        <version>1.15.3.1</version>
+        <version>1.15.3.2</version>
     </parent>
 
     <artifactId>c-dbtools</artifactId>
@@ -221,8 +221,11 @@
         <!-- https://mvnrepository.com/artifact/org.apache.derby/derby -->
         <dependency>
             <groupId>org.apache.derby</groupId>
+
             <artifactId>derby</artifactId>
-            <version>10.15.2.0</version> <!-- java 9 & higher -->
+<!--            <version>10.17.1.0</version> --> <!-- java 17 & higher -->
+            <version>10.16.1.1</version>
+            <!-- java 9 & higher -->
 <!--            <version>10.14.2.0</version> &lt;!&ndash; java 8 & higher&ndash;&gt;-->
             <scope>test</scope>
         </dependency>
@@ -344,7 +347,7 @@
         <dependency>
             <groupId>com.github.yujiaao</groupId>
             <artifactId>common-utils</artifactId>
-            <version>1.15.3.1</version>
+            <version>1.15.3.2</version>
             <scope>compile</scope>
         </dependency>
 
