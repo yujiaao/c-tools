@@ -531,6 +531,7 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
         return query(searchBean, Set.of(operator.getAllFields().toArray(new String[0])));
     }
 
+
     @Override
     public int count() throws DbException {
         return (int) operator.count(filterStack.toQuery());
@@ -795,4 +796,10 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     public EsActiveRecord<T> paramsInterceptor(Function<List<Object>, List<Object>> groupInterceptor) {
         return this;
     }
+
+    @Override
+    public EsActiveRecord<T> coreSqlInterceptor(Function<String, String> coreSqlInterceptor) {
+        return this;
+    }
+
 }

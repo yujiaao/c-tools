@@ -45,14 +45,13 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
     private Function<SqlSort, SqlSort> sortInterceptor = it -> it;
     private Function<SqlGroup, SqlGroup> groupInterceptor = it -> it;
     private Function<List<Object>, List<Object>> paramsInterceptor = it -> it;
+    private Function<String, String> coreSqlInterceptor = it -> it;
     private SqlPocket sqlPocket;
     private boolean useLast = false;
     private String tableAlias;
     private String tableName;
     private String resultFields = " * ";
     private List<String> joins;
-
-
     /**
      * <p>Constructor for ActiveRecordImpl.</p>
      *
@@ -61,7 +60,6 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
     public ActiveRecordImpl(BaseDao<T, V> operator) {
         init(operator);
     }
-
     /**
      * <p>Constructor for ActiveRecordImpl.</p>
      *
@@ -88,6 +86,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
         this.havingStack = new SqlHelper(src.havingStack);
         this.groupByClause = new SqlGroup(src.groupByClause);
     }
+
 
     public SqlLimit getLimit() {
         return limit;
@@ -493,6 +492,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
             }
             res = " " + this.tableAlias + " " + join + " " + res;
         }
+        coreSqlInterceptor.apply(res);
         return res;
     }
 
@@ -960,5 +960,13 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
         this.paramsInterceptor = paramsInterceptor;
         return this;
     }
+
+
+    @Override
+    public ActiveRecord<T> coreSqlInterceptor(Function<String, String> coreSqlInterceptor) {
+        this.coreSqlInterceptor = coreSqlInterceptor;
+        return this;
+    }
+
 
 }

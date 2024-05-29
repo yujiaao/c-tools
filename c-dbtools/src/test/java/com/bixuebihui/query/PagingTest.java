@@ -129,6 +129,27 @@ public class PagingTest  {
 
     }
 
+    @Test
+    void sorter() throws SQLException {
+        Paging<User> p = new Paging<>();
+        p.searchBean =  new User();
+        p.parseSort("name:asc,id:desc,modifiedTime:descend");
+
+        assertEquals("[{property='name', order='asc'}, {property='id', order='desc'}, {property='modifiedTime', order='desc'}]", p.sort.toString());
+
+        H2DataSource db = new H2DataSource().init();
+        ActiveRecordImpl<User, Integer> ar = new ActiveRecordImpl<>(new MyAr(db.cp));
+
+        Set<String> fields = Stream.of("id", "name","age", "modified_time").map(String::toLowerCase).collect(Collectors.toSet());
+
+        ar = (ActiveRecordImpl<User, Integer>) p.toActiveRecordParams(ar, fields);
+
+        String res = ar.parseOrder();
+
+        assertEquals(" order by name asc,id desc,modified_time desc", res);
+
+    }
+
 
 
     @ParameterizedTest

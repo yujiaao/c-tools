@@ -20,6 +20,7 @@ import java.io.StringWriter;
 import java.lang.reflect.Field;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -457,6 +458,8 @@ public interface ActiveRecord<T> extends Record<T>, Customizer<T> {
         List<T> list =  findAll();
         return findAllToCsv(list, titles, onlyFields, true, true, customFormatters);
     }
+
+    ActiveRecord<T> coreSqlInterceptor(Function<String, String> coreSqlInterceptor);
 
 
     class MyCustomCellProcessor extends CellProcessorAdaptor {

@@ -228,10 +228,11 @@ public class Paging<S> {
 
         if (sort != null) {
             this.sort.forEach(sort1 -> {
-                        if (sort1.getOrder().equals(ASC)) {
-                            ar.asc(sort1.getProperty());
+                String fieldName = propertyNameToFieldName(unifyField(sort1.getProperty()), fields);
+                if (sort1.getOrder().equals(ASC)) {
+                            ar.asc(fieldName);
                         } else {
-                            ar.desc(sort1.getProperty());
+                            ar.desc(fieldName);
                         }
                     }
             );
@@ -239,6 +240,11 @@ public class Paging<S> {
 
         return ar;
     }
+
+    String propertyNameToFieldName(String propertyName, Map<String, String> validFields){
+        return validFields.getOrDefault(propertyName, propertyName);
+    }
+
 
     String unifyField(String s) {
         if (s.startsWith(rangeBeginPrefix)) {
@@ -281,6 +287,8 @@ public class Paging<S> {
         pair.setRight(v);
         range.putIfAbsent(key, pair);
     }
+
+
 
     /**
      * 排序 sortBy=abc:asc,def:desc
