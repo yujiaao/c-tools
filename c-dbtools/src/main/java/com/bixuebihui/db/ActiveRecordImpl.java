@@ -492,8 +492,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
             }
             res = " " + this.tableAlias + " " + join + " " + res;
         }
-        coreSqlInterceptor.apply(res);
-        return res;
+        return coreSqlInterceptor.apply(res);
     }
 
     public void clear() {
