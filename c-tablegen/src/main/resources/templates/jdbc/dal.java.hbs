@@ -316,45 +316,31 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
     }
 {{/each}}
 {{! foreign key }}
-{{#if config.indexes}}{{#if indexData.[0]}}
+{{!-- {{#if config.indexes}}{{#if indexData.[0]}} --}}
 
-    /**
-    * Select from the database for table {{tableName}} by index  {{#each indexData as | field |}}{{field.name}}{{#unless @last}},{{/unless}}{{/each}}
-    */
-    public List<{{pojoClassName}}> selectByIndex({{#each indexData as | field |}}{{colType tableName field.name}} {{field.name}}{{#unless @last}},{{/unless}}{{/each}})
-    {
-        String query = "select * from {{tableName}}";
-        String where = " where {{#each this.indexData}} {{this}}=?{{#unless @last}} and {{/unless}}{{/each}}";
-        String query = query + where ;
+{{!--     /** --}}
+{{!--     * Select from the database for table {{tableName}} by index  {{#each indexData as | field |}}{{field.name}}{{#unless @last}},{{/unless}}{{/each}} --}}
+{{!--     */ --}}
+{{!--     public List<{{pojoClassName}}> selectByIndex({{#each indexData as | field |}}{{colType tableName field.name}} {{field.name}}{{#unless @last}},{{/unless}}{{/each}}) --}}
+{{!--     { --}}
+{{!--         String query = "select * from {{tableName}}"; --}}
+{{!--         String where = " where {{#each this.indexData}} {{this}}=?{{#unless @last}} and {{/unless}}{{/each}}"; --}}
+{{!--         String query = query + where ; --}}
 
-        List<{{pojoClassName}}> info = dbHelper.executeQuery(query, Object[]{
-          {{#each indexData}} {{this}} {{#unless @last}}, {{/unless}} {{/each}} } , new RowMapperResultReader<" + getPojoClassName(tableName) + ">(this));");
-        if(info!=null && info.size()>0) {
-          return  info.get(0);
-        }
-        return null;
-    }
+{{!--         List<{{pojoClassName}}> info = dbHelper.executeQuery(query, Object[]{ --}}
+{{!--           {{#each indexData}} {{this}} {{#unless @last}}, {{/unless}} {{/each}} } , new RowMapperResultReader<" + getPojoClassName(tableName) + ">(this));"); --}}
+{{!--         if(info!=null && info.size()>0) { --}}
+{{!--           return  info.get(0); --}}
+{{!--         } --}}
+{{!--         return null; --}}
+{{!--     } --}}
 
-{{/if}}{{/if}}
-{{!
-            if (config.indexes) {
-            List<String> indexData = getTableIndexes(tableName); // updates the indexData
-                // variable
-                if (isNotEmpty(indexData)) {
-                writeSelect(tableName, indexData, "selectByIndex", colData);
-                writeSelectAll(tableName, indexData, false, "selectAllLikeIndex", true, colData);
+{{!-- {{/if}}{{/if}} --}}
 
-                writeUpdate(tableName, indexData, "updateByIndex", false, false, colData);
-                writeUpdate(tableName, indexData, "updateByIndex", true, false, colData);
+{{#if config.indexes}}
+    {{{ indexWriter }}}
+{{/if}}
 
-                writeDelete(tableName, indexData, "deleteByIndex", false, colData);
-                writeDelete(tableName, indexData, "deleteByIndex", true, colData);
-                writeCount(indexData, false, "countByIndex", colData);
-                writeCount(indexData, true, "countLikeIndex", colData);
-
-                }
-            }
-}}
 {{!  writeInsertDummy(tableName, keyData, "insertDummy", colData);  }}
 {{#unless tableInfo.isView}}
     /**
