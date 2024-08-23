@@ -41,10 +41,13 @@ public class ActiveRecordImplTest {
         	db.executeNoQuery("drop table test", cn);
         	db.executeNoQuery("drop table test1", cn);
         }catch (Exception e){}
+        try{
         db.executeNoQuery(
                 "create table test(id int, name varchar(100), value int default 0, createtime timestamp)", cn);
         db.executeNoQuery(
                 "create table test1(id int, name varchar(100))", cn);
+        }catch (Exception e){
+        }
         bd = new BD(db);
         bd.getDbHelper().executeNoQuery(
                 "insert into test(id,name, createtime)values(123,'bac'," +
@@ -354,6 +357,37 @@ public class ActiveRecordImplTest {
         assertEquals("", sql.getCondition().toString());
         assertEquals(0, sql.getParams().size());
     }
+
+    @Test
+    void interceptorDemo(){
+        //case 1
+        SqlPocket basic = bd.ar().filterInterceptor(sqlHelper -> sqlHelper.eq("id", 123))
+                .paramsInterceptor(list -> list).getSql();
+
+        assertEquals(" where id = ?", basic.getCondition().toString());
+        assertEquals(1, basic.getParams().size());
+
+        //case 2
+        SqlPocket  useFul= bd.ar().filterInterceptor(sql    -> new SqlHelper(sql){
+                        @Override
+                        public SqlPocket toCondition() {
+                            return new SqlPocket(){
+                                @Override
+                                public StringBuffer getCondition() {
+                                    return new StringBuffer(" where id = ?");
+                                }
+                                @Override public List<Object> getParams() {
+                                    return List.of(123);
+                                }
+                            };
+                        }
+                })
+                .getSql();
+
+        assertEquals(" where id = ?", useFul.getCondition().toString());
+        assertEquals(1, useFul.getParams().size());
+    }
+
 
     @Test
     void findAllWithCount() {
