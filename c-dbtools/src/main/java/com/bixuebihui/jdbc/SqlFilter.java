@@ -304,6 +304,19 @@ public class SqlFilter {
         return this;
     }
 
+    public SqlFilter addFilter(String property, Comparison comparison, SqlString value) {
+        if (!useNullAsCondition && value == null) {
+            return this;
+        }
+        if (filters == null) {
+            filters = new ArrayList<>();
+        }
+
+        filters.add(new Filter(property, comparison, value));
+
+        return this;
+    }
+
     /**
      * 增加
      *
@@ -409,6 +422,14 @@ public class SqlFilter {
 
     public SqlFilter in(String field, List<?> value) {
         return this.addFilter(field, Comparison.IN, value);
+    }
+
+    public SqlFilter in(String field, SqlString value) {
+        return this.addFilter(field, Comparison.IN, value);
+    }
+
+    public SqlFilter notIn(String field, SqlString value) {
+        return this.addFilter(field, Comparison.NOT_IN, value);
     }
 
     public SqlFilter notIn(String field, Object[] value) {
@@ -630,6 +651,12 @@ public class SqlFilter {
             this.property = property;
             this.comparison = comparison;
             this.value = value.toArray();
+        }
+
+        public Filter(String property, Comparison comparison, SqlString value) {
+            this.property = property;
+            this.comparison = comparison;
+            this.value = new Object[]{value};
         }
 
         public String getProperty() {

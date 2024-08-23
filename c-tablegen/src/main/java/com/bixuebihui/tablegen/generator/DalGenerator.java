@@ -1,9 +1,13 @@
 package com.bixuebihui.tablegen.generator;
 
+import com.bixuebihui.tablegen.GenException;
 import com.bixuebihui.tablegen.TableGen;
 import com.bixuebihui.tablegen.entry.ColumnData;
 import com.github.jknack.handlebars.Handlebars;
+import org.apache.commons.io.output.StringBuilderWriter;
 
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -24,15 +28,10 @@ public class DalGenerator extends BaseGenerator {
 
 
     public static String makeInsertObjects(boolean useAutoincrement, List<ColumnData> columnData, String versionColName) {
-        return makeInsertObjects( false, emptyList(), useAutoincrement, false, columnData, versionColName);
+        return makeInsertObjects(false, emptyList(), useAutoincrement, false, columnData, versionColName);
     }
 
-    @Override
-    String getTemplateFileName() {
-        return "dal.java";
-    }
-
-    private static String makeInsertObjects(boolean skipKey, List<String>keys,
+    private static String makeInsertObjects(boolean skipKey, List<String> keys,
                                             boolean useAutoincrement, boolean skipVersionColumn,
                                             List<ColumnData> columnData, String versionColName) {
         StringBuilder objs = new StringBuilder();
@@ -46,7 +45,7 @@ public class DalGenerator extends BaseGenerator {
             ) {
                 continue;
             }
-            if(skipKey && keys.contains(cd.getName())){
+            if (skipKey && keys.contains(cd.getName())) {
                 continue;
             }
 
@@ -63,7 +62,7 @@ public class DalGenerator extends BaseGenerator {
     }
 
     public static String makeUpdateObjects(List<String> params, List<ColumnData> columnData, boolean use_autoincrement, String versionColName) {
-        boolean  skipKey =true;
+        boolean skipKey = true;
         return makeInsertObjects(skipKey, params, use_autoincrement, true, columnData, versionColName) + "," +
                 createKeyObjects(params);
     }
@@ -156,7 +155,7 @@ public class DalGenerator extends BaseGenerator {
 
             get = firstUp(cd.getName()) + get;
 
-            sb.append(INDENT).append(INDENT).append("if (containsIgnoreCase("+ucol+", fields)){\n");
+            sb.append(INDENT).append(INDENT).append("if (containsIgnoreCase(" + ucol + ", fields)){\n");
             sb.append(INDENT).append(INDENT).append(INDENT).append("res.set" + get).append("\n");
             sb.append(INDENT).append(INDENT).append("}\n");
 
@@ -166,7 +165,6 @@ public class DalGenerator extends BaseGenerator {
         sb.append(INDENT).append("}\n");
         return sb.toString();
     }
-
 
     /**
      * Writes out the mapRow method. The mapRow method interprets the returned
@@ -245,6 +243,11 @@ public class DalGenerator extends BaseGenerator {
     }
 
     @Override
+    String getTemplateFileName() {
+        return "dal.java";
+    }
+
+    @Override
     protected Map<String, Object> getContextMap(String tableName) {
         Map<String, Object> v = super.getContextMap(tableName);
         List<ColumnData> cols = getColsInfo(tableName);
@@ -256,7 +259,7 @@ public class DalGenerator extends BaseGenerator {
                 , config.getDelColName()));
 
 
-        v.put("insertObjects", makeInsertObjects( config.isUseAutoincrement(), cols, config.getVersionColName()));
+        v.put("insertObjects", makeInsertObjects(config.isUseAutoincrement(), cols, config.getVersionColName()));
         v.put("updateObjects", makeUpdateObjects(keys, cols, config.isUseAutoincrement(), config.getVersionColName()));
         v.put("insertSql", makeInsertSql(config.isUseAutoincrement(), cols));
         v.put("updateSql", makeUpdateSql(tableName, keys, cols, config.isUseAutoincrement(), config.getVersionColName()));
@@ -271,36 +274,54 @@ public class DalGenerator extends BaseGenerator {
 
         v.put("isView", isView());
         v.put("mapRow", mapRow(cols, this.getPojoClassName(tableName)));
-        if(config.getR2dc()) {
+        if (config.getR2dc()) {
             v.put("mapRow", mapRowR2dbc(cols, this.getPojoClassName(tableName)));
-        }else {
+        } else {
             v.put("mapRow", mapRow(cols, this.getPojoClassName(tableName)));
         }
+        v.put("indexWriter", this.getIndexWriter(tableName));
         return v;
+    }
+
+    private String getIndexWriter(String tableName) {
+
+        try (StringBuilderWriter writer = new StringBuilderWriter()) {
+
+            TableGen tableGen = new TableGen(System.out);
+            tableGen.setCurrentOutput(writer);
+            tableGen.setConfig(this.config);
+            tableGen.setSetInfo(this.setInfo);
+            tableGen.writeForIndex(tableName, this.getColsInfo(tableName));
+
+            return writer.toString();
+        } catch (GenException | IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private Object makeUpdateSql(String tableName, List<String> keys, List<ColumnData> cols, boolean useAutoincrement, String versionColName) {
         return
-        "update \"+this.getTableName()+\" set \"\n    +\"" +
-        cols.stream().filter(c -> !this.setInfo.getTableKeys(tableName).contains(c.getName()) && isInsertAndUpdatableField(c, useAutoincrement))
-                .map(columnData ->{
+                "update \"+this.getTableName()+\" set \"\n    +\"" +
+                        cols.stream().filter(c -> !this.setInfo.getTableKeys(tableName).contains(c.getName()) && isInsertAndUpdatableField(c, useAutoincrement))
+                                .map(columnData -> {
 
-                    String columnName = decorFieldIfIsKeyword(columnData.getName(), this.getDbType());
+                                            String columnName = decorFieldIfIsKeyword(columnData.getName(), this.getDbType());
 
-                    return columnData.getName().equals(versionColName) ? columnName +"=" + columnName+"+1"
-                            :  columnName +"=?";}
-                ).collect(Collectors.joining(","));
+                                            return columnData.getName().equals(versionColName) ? columnName + "=" + columnName + "+1"
+                                                    : columnName + "=?";
+                                        }
+                                ).collect(Collectors.joining(","));
 
     }
 
 
     private String makeInsertSql(boolean useAutoincrement, List<ColumnData> cols) {
-        return  "insert into \"+this.getTableName()+\n\" ( "+
-        cols.stream().filter(it -> isInsertAndUpdatableField(it, useAutoincrement))
-                .map(it -> decorFieldIfIsKeyword(it.getName(), this.getDbType())).collect(Collectors.joining(", "))
-                        +")\"\n    +\" values (\"\n    +\""
-                        +cols.stream().filter(it -> isInsertAndUpdatableField(it, useAutoincrement))
-                .map(column -> "?").collect(Collectors.joining(","))+")";
+        return "insert into \"+this.getTableName()+\n\" ( " +
+                cols.stream().filter(it -> isInsertAndUpdatableField(it, useAutoincrement))
+                        .map(it -> decorFieldIfIsKeyword(it.getName(), this.getDbType())).collect(Collectors.joining(", "))
+                + ")\"\n    +\" values (\"\n    +\""
+                + cols.stream().filter(it -> isInsertAndUpdatableField(it, useAutoincrement))
+                .map(column -> "?").collect(Collectors.joining(",")) + ")";
     }
 
     @Override
@@ -335,8 +356,8 @@ public class DalGenerator extends BaseGenerator {
 
     String getFirstKeyName(String tableName) {
         List<String> keyData = getKeyData(tableName);
-        if(!isNotEmpty(keyData)) {
-            LOG.warn("Table '"+tableName+"' have not a  primary key, this may be a error");
+        if (!isNotEmpty(keyData)) {
+            LOG.warn("Table '" + tableName + "' have not a  primary key, this may be a error");
         }
         return getPrimaryKeyName(keyData);
     }

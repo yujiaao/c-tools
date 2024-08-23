@@ -29,6 +29,12 @@ public class DataSourceTest {
 	private static final Logger LOG = LoggerFactory.getLogger(DataSourceTest.class);
 	protected static DatabaseConfig cfg = new DatabaseConfig();
 	static {
+		/**
+		 * Execute the following sql to create a test database and user:
+		 *  create database test  default character set utf8mb4 collate utf8mb4_unicode_ci;
+		 *  create user 'test' identified by 'test123';
+		 *  grant all privileges on test.* to  'test'@'%' ;
+		 */
 		cfg.setAlias("test1");
 		cfg.setClassName("com.mysql.cj.jdbc.Driver");
 		cfg.setUsername("test");

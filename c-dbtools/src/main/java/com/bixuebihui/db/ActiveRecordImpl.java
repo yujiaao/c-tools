@@ -45,14 +45,13 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
     private Function<SqlSort, SqlSort> sortInterceptor = it -> it;
     private Function<SqlGroup, SqlGroup> groupInterceptor = it -> it;
     private Function<List<Object>, List<Object>> paramsInterceptor = it -> it;
+    private Function<String, String> coreSqlInterceptor = it -> it;
     private SqlPocket sqlPocket;
     private boolean useLast = false;
     private String tableAlias;
     private String tableName;
     private String resultFields = " * ";
     private List<String> joins;
-
-
     /**
      * <p>Constructor for ActiveRecordImpl.</p>
      *
@@ -61,7 +60,6 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
     public ActiveRecordImpl(BaseDao<T, V> operator) {
         init(operator);
     }
-
     /**
      * <p>Constructor for ActiveRecordImpl.</p>
      *
@@ -89,6 +87,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
         this.groupByClause = new SqlGroup(src.groupByClause);
     }
 
+
     public SqlLimit getLimit() {
         return limit;
     }
@@ -98,7 +97,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
     }
 
     public String getTableName() {
-        return tableName == null ? operator.getTableName() : tableName;
+        return coreSqlInterceptor.apply(tableName == null ? operator.getTableName() : tableName);
     }
 
     public String getResultFields() {
@@ -426,7 +425,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
             list.addAll(having.getParams());
 
             return operator.selectWithJoin(resultFields, where, list.toArray(), parseOrder(),
-                    limit.getBegin(), limit.getEnd(), tableName);
+                    limit.getBegin(), limit.getEnd(), getTableName());
         } finally {
             clear();
         }
@@ -442,7 +441,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
             list.addAll(having.getParams());
 
             return operator.selectWithJoinWithCount(resultFields, where, list.toArray(), parseOrder(),
-                    limit.getBegin(), limit.getEnd(), tableName);
+                    limit.getBegin(), limit.getEnd(), getTableName());
         } finally {
             clear();
         }
@@ -519,7 +518,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
             List<Object> list = Arrays.asList(getParams().toArray());
             list.addAll(having.getParams());
             List<T> res = operator.selectWithJoin(resultFields, where, list.toArray(), parseOrder(),
-                    SqlLimit.LIMIT_ONE.getBegin(), SqlLimit.LIMIT_ONE.getEnd(), tableName);
+                    SqlLimit.LIMIT_ONE.getBegin(), SqlLimit.LIMIT_ONE.getEnd(), getTableName());
             if (!res.isEmpty()) {
                 return res.get(0);
             }
@@ -695,7 +694,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
             where += " " + parseLimitSql();
             List<Object> list = Arrays.asList(getParams().toArray());
             list.addAll(having.getParams());
-            return operator.exists(tableName, where, list.toArray());
+            return operator.exists(getTableName(), where, list.toArray());
         } finally {
             clear();
         }
@@ -960,5 +959,13 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
         this.paramsInterceptor = paramsInterceptor;
         return this;
     }
+
+
+    @Override
+    public ActiveRecord<T> coreSqlInterceptor(Function<String, String> coreSqlInterceptor) {
+        this.coreSqlInterceptor = coreSqlInterceptor;
+        return this;
+    }
+
 
 }

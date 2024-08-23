@@ -1,4 +1,7 @@
 package com.bixuebihui.db;
+
+import java.io.Serializable;
+
 /**
  * 这个用于产生原生sql,
  * 使用场景类似于 update table1 set a = a+1 中的a+1,
@@ -7,7 +10,7 @@ package com.bixuebihui.db;
  * @author xingwx
  * @version $Id: $Id
  */
-public class SqlString {
+public class SqlString implements Serializable {
 	private String content;
 
     /**

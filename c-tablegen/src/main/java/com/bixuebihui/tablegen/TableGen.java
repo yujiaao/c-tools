@@ -44,6 +44,7 @@ import com.bixuebihui.util.DbUtils;
 import com.bixuebihui.util.other.CMyFile;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.output.StringBuilderWriter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.text.CaseUtils;
@@ -76,7 +77,7 @@ public class TableGen implements DiffHandler {
     private static final Logger LOG = LoggerFactory.getLogger(TableGen.class);
     static String[] genericFiles = {"BaseList"};
     TableSetInfo setInfo = new TableSetInfo();
-    BufferedWriter currentOutput;
+    Writer currentOutput;
     /**
      * Writes out the variables initial value if not null able.
      */
@@ -1026,24 +1027,7 @@ public class TableGen implements DiffHandler {
             sw.split();
             trace("foreignKeys :" + sw.getSplitTime());
 
-            if (config.indexes) {
-                Map<String, List<String>> indexData = setInfo.getTableIndexes(tableName);
-                // variable
-                for (String indexName : indexData.keySet()) {
-                    List<String> cols = indexData.get(indexName);
-                    String name = firstUp(indexName);
-                    writeSelect(tableName, cols, "selectBy" + name, colData);
-                    writeSelectAll(tableName, cols, false, "selectAllLike" + name, true, colData);
-
-                    writeUpdate(tableName, cols, "updateBy" + name, false, false, colData);
-                    writeUpdate(tableName, cols, "updateBy" + name, true, false, colData);
-
-                    writeDelete(tableName, cols, "deleteBy" + name, false, colData);
-                    writeDelete(tableName, cols, "deleteBy" + name, true, colData);
-                    writeCount(cols, false, "countBy" + name, colData);
-                    writeCount(cols, true, "countLike" + name, colData);
-                }
-            }
+            writeForIndex(tableName, colData);
 
             writeInsertDummy(tableName, keyData, colData);
             out("}");
@@ -1055,6 +1039,27 @@ public class TableGen implements DiffHandler {
         }
         sw.split();
         trace("after close:" + sw.getSplitTime());
+    }
+
+    public void writeForIndex(String tableName, List<ColumnData> colData) throws IOException, GenException {
+        if (config.indexes) {
+            Map<String, List<String>> indexData = setInfo.getTableIndexes(tableName);
+            // variable
+            for (String indexName : indexData.keySet()) {
+                List<String> cols = indexData.get(indexName);
+                String name = firstUp(indexName);
+                writeSelect(tableName, cols, "selectBy" + name, colData);
+                writeSelectAll(tableName, cols, false, "selectAllLike" + name, true, colData);
+
+                writeUpdate(tableName, cols, "updateBy" + name, false, false, colData);
+                writeUpdate(tableName, cols, "updateBy" + name, true, false, colData);
+
+                writeDelete(tableName, cols, "deleteBy" + name, false, colData);
+                writeDelete(tableName, cols, "deleteBy" + name, true, colData);
+                writeCount(cols, false, "countBy" + name, colData);
+                writeCount(cols, true, "countLike" + name, colData);
+            }
+        }
     }
 
     String getPojoClassName(String tableName) {
@@ -1421,7 +1426,7 @@ public class TableGen implements DiffHandler {
      */
     void writeSelectAll(String tableName, List<String> params, boolean customWhere, String methodName, boolean bLike, List<ColumnData> columnData)
             throws IOException {
-        String query = "select * from \" + getTableName() + \" \"";
+        String query = "select * from \" + getTableName() + ";
         String where = createPreparedWhereClause(params, bLike, columnData);
         String objs = createPreparedObjects(params, bLike, columnData);
 
@@ -1447,8 +1452,8 @@ public class TableGen implements DiffHandler {
     /**
      * Writes out the Select function.
      */
-    void writeSelect(String tableName, List<String> params, String methodName, List<ColumnData> columnData) throws IOException, GenException {
-        String query = "select * from \" + getTableName() + \" \"";
+    void writeSelect(String tableName, List<String> params, String methodName, List<ColumnData> columnData) throws IOException {
+        String query = "select * from \" + getTableName() + ";
         String where = createPreparedWhereClause(params, false, columnData);
         String objs = createPreparedObjects(params, false, columnData);
 
@@ -1862,4 +1867,15 @@ public class TableGen implements DiffHandler {
         }
     }
 
+    public void setConfig(ProjectConfig config) {
+        this.config = config;
+    }
+
+    public void setSetInfo(TableSetInfo setInfo) {
+        this.setInfo = setInfo;
+    }
+
+    public void setCurrentOutput(Writer writer) {
+        this.currentOutput = writer;
+    }
 }

@@ -645,6 +645,11 @@ public class DbImpl<T, V> extends BaseDao<T, V> implements ActiveRecord<T>,
 		return query(searchBean, emptySet());
 	}
 
+	@Override
+	public ActiveRecord<T> coreSqlInterceptor(Function<String, String> coreSqlInterceptor) {
+		return null;
+	}
+
 
 	/** {@inheritDoc} */
 	@Override
