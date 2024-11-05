@@ -62,6 +62,7 @@ use dependencies:
      - [ ] support ES scroll
      - [ ] support ES reindex
      - [ ] support multi slave data source
+     - [ ] support shadow table, shadow db for stress testing, debug
    
 
  
