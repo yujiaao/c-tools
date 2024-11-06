@@ -21,7 +21,7 @@ import java.util.function.Function;
 import static java.util.Collections.emptySet;
 
 /**
- * Created with IntelliJ IDEA. User: Administrator Date: 13-4-18 Time: 下午5:59 To
+ * This simplified implementation is for test only.
  * change this template use File | Settings | File Templates.
  *
  * @author xingwx
@@ -146,7 +146,7 @@ public class DbImpl<T, V> extends BaseDao<T, V> implements ActiveRecord<T>,
 	 * column doesn’t have to match the value you specify in the BETWEEN condition.
 	 * For example, if you specify the letter range D-G and there is a book whose name equals “dune”
 	 * (first letter is in lowercase), the name of this book will also be retrieved.
-	 *
+	 * <p>
 	 * General Guidelines
 	 * In a MySQL BETWEEN operator, the lower limit must be specified before the upper limit.
 	 * ```
@@ -155,12 +155,12 @@ public class DbImpl<T, V> extends BaseDao<T, V> implements ActiveRecord<T>,
 	 * WHERE  bookPrice BETWEEN 80 AND 20
 	 * ```
 	 * -- No error will be generated and no rows will be returned either.
-	 *
+	 * <p>
 	 * The MySQL BETWEEN operator is inclusive. For example, when you use
 	 * the MySQL BETWEEN operator to retrieve the books whose price is in
 	 * the range between 50 and 90, the result retrieves all of these books,
 	 * including those whose price equals 50 or 90.
-	 *
+	 * <p>
 	 * SELECT bookID, bookName, bookPrice
 	 * FROM books
 	 * WHERE  bookPrice BETWEEN 50 AND 90
@@ -172,7 +172,7 @@ public class DbImpl<T, V> extends BaseDao<T, V> implements ActiveRecord<T>,
 	 * @param field a {@link java.lang.String} object.
 	 * @param leftValue a {@link java.lang.Object} object.
 	 * @param rightValue a {@link java.lang.Object} object.
-	 * @return
+	 * @return a {@link com.bixuebihui.db.ActiveRecord} object.
 	 */
 	@Override
 	public ActiveRecord<T> between(String field, Object leftValue, Object rightValue) {
@@ -616,10 +616,12 @@ public class DbImpl<T, V> extends BaseDao<T, V> implements ActiveRecord<T>,
 	}
 
 
-	/** {@inheritDoc} */
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
-	public ActiveRecord<T> fields(String resultFields) {
-		this.resultFields = resultFields;
+	public ActiveRecord<T> fields(String... fields) {
+		this.resultFields = fields.length==1 ? fields[0] : String.join(",", fields);
 		return this;
 	}
 

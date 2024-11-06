@@ -382,13 +382,13 @@ public interface ActiveRecord<T> extends Record<T>, Customizer<T> {
      */
     ActiveRecord<T> tableName(String partitionTableName);
 
+
     /**
-     * <p>fields.</p>
-     *
-     * @param resultFields a {@link java.lang.String} object.
-     * @return a {@link ActiveRecord} object.
+     * return ResultSet fields
+     * @param fields table or view fields
+     * @return this
      */
-    ActiveRecord<T> fields(String resultFields);
+    ActiveRecord<T> fields(String... fields);
 
     /**
      * <p>join.</p>

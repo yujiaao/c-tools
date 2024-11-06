@@ -500,9 +500,12 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
         throw new NotImplementedException();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public EsActiveRecord<T> fields(String resultFields) {
-        this.resultFields = resultFields;
+    public ActiveRecord<T> fields(String... fields) {
+        this.resultFields = fields.length==1 ? fields[0] : String.join(",", fields);
         return this;
     }
 

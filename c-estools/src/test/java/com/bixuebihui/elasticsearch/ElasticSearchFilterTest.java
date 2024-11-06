@@ -330,7 +330,7 @@ class ElasticSearchFilterTest {
         String res = filter.toEsObject(query, 0, 10, emptySet(), emptySet(), null, null, emptyMap(), null, searchAfter);
 
         System.out.println(res);
-        assertEquals("{\"size\":10,\"query\":{\"bool\":{\"should\":[{\"bool\":{\"must\":[{\"range\":{\"a1\":{\"gte\":99}}},{\"range\":{\"a2\":{\"gte\":99}}}]}},{\"bool\":{\"must\":[{\"range\":{\"b1\":{\"gte\":100}}},{\"range\":{\"b2\":{\"gte\":101}}}]}}],\"minimum_should_match\":1}}}"
+        assertEquals("{\"search_after\":[123,\"abc\"],\"size\":10,\"query\":{\"bool\":{\"must\":[{\"range\":{\"a1\":{\"gte\":99}}}]}}}"
                 ,res);
     }
 

@@ -766,10 +766,11 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
      * {@inheritDoc}
      */
     @Override
-    public ActiveRecord<T> fields(String resultFields) {
-        this.resultFields = resultFields;
+    public ActiveRecord<T> fields(String... fields) {
+        this.resultFields = fields.length==1 ? fields[0] : String.join(",", fields);
         return this;
     }
+
 
     /**
      * {@inheritDoc}

@@ -44,6 +44,59 @@ public class EsQueryBuilder {
     public static final String SCRIPT_PARAMS = "params";
     public static final String SORT = "sort";
 
+    /**
+     * In Elasticsearch, search_after is a pagination technique used for efficient retrieval of results after an initial set of results has been fetched.
+     * 1. The need for search_after
+     * Traditional pagination methods in Elasticsearch like using from and size have limitations. When using from and size,
+     * Elasticsearch has to calculate the starting point (from) and then retrieve the specified number of results (size).
+     * As the offset (from) gets larger, the performance can degrade because the system has to skip over a large number
+     * of documents to get to the desired page.
+     * search_after, on the other hand, provides a more efficient way to paginate through large result sets.
+     * It works based on the sort order of the results.
+     * 2. How it works
+     * Initial search: You first perform a search query with a specific sorting order. For example,
+     * if you are searching for documents in an index of products and you want to sort them by price in ascending order.
+     * The query might look like this:
+     * ```json
+     * {
+     *     "query": {
+     *         "match_all": {}
+     *     },
+     *     "sort": [
+     *         {
+     *             "price": "asc"
+     *         }
+     *     ]
+     * }
+     * This query will return the first page of results sorted by price.
+     * Retrieving subsequent pages: In the response of the first search, you will get a set of documents along with
+     * a set of values that represent the sort order of the last document in the result set. For example,
+     * if the last document in the first page had a price value of 10.00, you can use this value
+     * to perform a search_after query. The search_after query would look like this:
+     * ```json
+     * {
+     *     "query": {
+     *         "match_all": {}
+     *     },
+     *     "sort": [
+     *         {
+     *             "price": "asc"
+     *         }
+     *     ],
+     *     "search_after": [
+     *         10.00
+     *     ]
+     * }
+     * ```
+     * This query will return the next page of results after the document with a price of 10.00 in the ascending price sort order.
+     * 3. Considerations and limitations
+     * Sort order consistency: The search_after parameter depends on the sort order.
+     * If the sort order of the query changes between requests, the results will be incorrect.
+     * You must ensure that the sort order remains the same for all search_after - based pagination requests.
+     * Initialization: You need to perform an initial search to get the values to use for the first search_after query.
+     * This means that you can't directly jump to a specific page using search_after without first performing
+     * an initial search to establish the starting point for pagination.
+     */
     public static final String SEARCH_AFTER = "search_after";
 
 
@@ -88,13 +141,17 @@ public class EsQueryBuilder {
      * 	}
      * }
      *
-     * @param query
-     * @param from
-     * @param size
-     * @param commaSeparatedIncludeFields
-     * @param excludesFields
-     * @param sort
-     * @return
+     * @param query query object
+     * @param from from
+     * @param size size
+     * @param commaSeparatedIncludeFields include fields
+     * @param excludesFields exclude fields
+     * @param sort sort fields
+     * @param scriptSource script source
+     * @param scriptParams script params
+     * @param aggs aggregation object
+     * @param searchAfter
+     * @return json string
      */
     public static String build(Query query, int from, int size,
                                Set<String> commaSeparatedIncludeFields,

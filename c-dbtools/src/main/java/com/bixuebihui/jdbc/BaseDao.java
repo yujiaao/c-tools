@@ -146,7 +146,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @param fields a {@link java.lang.String} object.
      * @return an array of {@link java.lang.String} objects.
      */
-    protected static String[] fields(String... fields) {
+    protected static String[] getReturnFields(String... fields) {
         return fields;
     }
 

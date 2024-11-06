@@ -187,9 +187,12 @@ public class EsRequest {
         return 0;
     }
 
-    private static long getHits(JsonNode input) {
+    private static Long getHits(JsonNode input) {
         if (input == null || (input.at("/hits/total") instanceof MissingNode)) {
-            return 0;
+            return null;
+        }
+        if(input.at("/hits/total/value").isNumber()) {
+            return input.at("/hits/total/value").asLong();
         }
         return input.at("/hits/total").asLong();
     }
@@ -311,7 +314,11 @@ public class EsRequest {
             ((ObjectNode) paging).put("rowEnd", rowEnd);
             ((ObjectNode) paging).put("rowStart", rowStart);
             ((ObjectNode) paging).put("page", page);
-            ((ObjectNode) paging).put("total", getHits(input));
+            Long total = getHits(input);
+            if(total!=null) {
+                ((ObjectNode) paging).put("totalRows", total);
+            }
+
         }
         return resultTotal;
     }
