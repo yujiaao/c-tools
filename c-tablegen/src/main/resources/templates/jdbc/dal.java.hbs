@@ -5,7 +5,9 @@ package {{config.packageName}}{{viewModifier}}.dal;
 import java.sql.*;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 import javax.sql.DataSource;
 import {{config.packageName}}{{viewModifier}}.business.*;
 import {{config.packageName}}{{viewModifier}}.pojo.*;
@@ -45,7 +47,7 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
         public static String[] getAllFields() {
             return new String[] { {{#each fields}}{{constantName this.name}}{{#unless @last}}, {{/unless}}{{/each}} };
         }
-        public static String getKeyFields(){
+        public static String[] getKeyFields(){
             return new String[] {
             {{#each keys~}}
                 F.{{constantName this}}{{#unless @last}}, {{/unless}}
@@ -96,7 +98,7 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
         Map<String, Object> map = new java.util.HashMap<>();
         Set<String> localExcludeFields = Stream.of(excludeFields).map(x -> getFieldAlias(x.toLowerCase(Locale.ROOT))).collect(Collectors.toSet());
         {{#each fields ~}}
-        if(!containsIgnoreCase(localExcludeFields, F.{{constantName this.name}})){
+        if(!containsIgnoreCase(F.{{constantName this.name}}, localExcludeFields)){
             map.put(F.{{constantName this.name}}, info.get{{firstUp this.name}}());
         }
         {{/each~}}
