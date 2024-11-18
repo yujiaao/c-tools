@@ -1,7 +1,10 @@
 package com.bixuebihui.datasource;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 
+import com.bixuebihui.dbcon.DatabaseConfig;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledIf;
 import org.slf4j.Logger;
@@ -10,6 +13,8 @@ import org.slf4j.LoggerFactory;
 import com.bixuebihui.ConnectionManager;
 import junit.framework.TestCase;
 import org.junit.jupiter.api.condition.DisabledIf;
+
+import static org.junit.Assert.assertSame;
 
 public class BitmechanicDataSourceTest  {
 
@@ -24,6 +29,49 @@ public class BitmechanicDataSourceTest  {
 
 		DataSourceTest.dataSourceTest(ds);
 	}
+
+	@Test
+	@EnabledIf("com.bixuebihui.datasource.DataSourceTest#isMysqlAvailable")
+	public void testGetConnection1() throws SQLException {
+		BitmechanicDataSource ds = new BitmechanicDataSource();
+		ds.setAlias("test1");
+		DatabaseConfig cfg = new DatabaseConfig();
+		cfg.setClassName("com.mysql.cj.jdbc.Driver");
+		cfg.setUsername("test");
+		cfg.setPassword("test123");
+		cfg.setMaxCheckOutCount(10);
+		cfg.setDburl(
+				"jdbc:mysql://localhost:3306/test?autoReconnect=true" +
+						"&useUnicode=true&" +
+						"characterEncoding=utf-8&" +
+						"mysqlEncoding=utf8&" +
+						"useSSL=false&" +
+						"connectTimeout=200" +
+						"&socketTimeout=1000&allowMultiQueries=true");
+
+		ds.setDatabaseConfig(cfg);
+		ds.getDatabaseConfig().setMaxActive(1);
+
+		Connection cn = ds.getConnection();
+		Assertions.assertNotNull(cn);
+		Assertions.assertTrue(cn.isValid(1));
+		Connection cn2 = ds.getConnection();
+		Assertions.assertNotNull(cn2);
+		Assertions.assertTrue(cn2.isValid(1));
+		Assertions.assertNotSame(cn, cn2);
+
+		cn.close();
+		for(int i=0; i< cfg.getMaxCheckOutCount()-1; i++) {
+			Connection cn3 = ds.getConnection();
+			Assertions.assertNotNull(cn3);
+			Assertions.assertTrue(cn3.isValid(1));
+			System.out.println("i="+i+"\ncn3="+cn3);
+			Assertions.assertSame(cn, cn3);
+			cn3.close();
+		}
+	}
+
+
 
 	@Test
 	@EnabledIf("com.bixuebihui.datasource.DataSourceTest#isMysqlAvailable")

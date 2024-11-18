@@ -69,7 +69,7 @@ public class ServiceGenerator extends BaseGenerator {
         super.additionalSetting(handlebars);
         // usage: {{type tableName colName}}
         handlebars.registerHelper("colType", (tableName, options) -> getColType(options.param(0), this.setInfo.getTableCols((String) tableName)));
-        handlebars.registerHelper("isKey", (tableName, options) -> this.setInfo.getTableKeys((String) tableName).contains(options.param(0)));
+
 
         // usage: {{where tableName}}
         handlebars.registerHelper("where", (tableName, options) ->

@@ -57,8 +57,6 @@ public class EsDalGenerator extends BaseGenerator {
     protected Map<String, Object> getContextMap(String tableName) {
         Map<String, Object> v = super.getContextMap(tableName);
 
-
-
         v.put("keys", keyInfo.getTableKeys(tableName));
 
         String keyType = this.getFirstKeyType();

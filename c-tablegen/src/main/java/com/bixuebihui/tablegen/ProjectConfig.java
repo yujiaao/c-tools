@@ -31,6 +31,11 @@ public class ProjectConfig {
     String jspDir;
     String schema;
     String addPrefix;
+
+    public void setRemovePrefix(String removePrefix) {
+        this.removePrefix = removePrefix;
+    }
+
     String removePrefix;
     String versionColName = "version";
     String delColName = "is_del";

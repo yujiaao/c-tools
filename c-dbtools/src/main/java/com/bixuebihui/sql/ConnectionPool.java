@@ -152,7 +152,7 @@ public class ConnectionPool {
         numRequests = 0;
         numWaits = 0;
         numCheckoutTimeout = 0;
-        connVector = new ArrayList<>(maxConn);
+        connVector =  new Vector<>(maxConn);
 
         trace = false;
         cacheStatements = true;
@@ -288,8 +288,7 @@ public class ConnectionPool {
         numRequests++;
         do {
             do {
-                for (int i = 0; i < connVector.size(); i++) {
-                    PooledConnection pooledconnection = connVector.get(i);
+                for (PooledConnection pooledconnection : connVector) {
                     if (pooledconnection.getLock()) {
                         return releaseConnection(pooledconnection);
                     }

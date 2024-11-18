@@ -271,6 +271,8 @@ public class DalGenerator extends BaseGenerator {
         v.put("whereNoLike", TableGen.createPreparedWhereClause(keys,
                 false, cols));
         v.put("keyObjects", createKeyObjects(keys));
+        v.put("keys", keys);
+
 
         v.put("isView", isView());
         v.put("mapRow", mapRow(cols, this.getPojoClassName(tableName)));
@@ -282,6 +284,7 @@ public class DalGenerator extends BaseGenerator {
         v.put("indexWriter", this.getIndexWriter(tableName));
         return v;
     }
+
 
     private String getIndexWriter(String tableName) {
 
@@ -352,6 +355,8 @@ public class DalGenerator extends BaseGenerator {
             boolean like = options.param(0);
             return TableGen.createPreparedWhereClause(this.setInfo.getTableKeys((String) tableName), like, this.setInfo.getTableCols((String) tableName));
         });
+
+
     }
 
     String getFirstKeyName(String tableName) {

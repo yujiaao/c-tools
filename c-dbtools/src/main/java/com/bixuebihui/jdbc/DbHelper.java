@@ -1013,22 +1013,23 @@ public class DbHelper implements IDbHelper {
     @Override
     public @NotNull <T> List<T> executeQuery(String sql, Object[] params,
                                              @NotNull RowMapperResultReader<T> handle, Set<String> returnFields) {
-        Connection cn = getConnection(true);
-        try (Statement p = ArrayUtils.isNotEmpty(params) ? cn.prepareStatement(sql) : cn.createStatement()) {
-            if (p instanceof PreparedStatement) {
-                fillParameter((PreparedStatement) p, params, null);
-            }
-            try (ResultSet rs = (p instanceof PreparedStatement) ? ((PreparedStatement) p).executeQuery() : p.executeQuery(sql)) {
-                return handle.processResultSet(rs, returnFields);
-            }
-        } catch (SQLException ex) {
-            //可能超时，输出sql和参数
-            dumpSql(ex, sql, params);
-            throw new DbException(ex);
-        } finally {
-            DbUtils.closeQuietly(cn);
-        }
 
+        try(Connection cn = getConnection(true)) {
+            try (Statement p = ArrayUtils.isNotEmpty(params) ? cn.prepareStatement(sql) : cn.createStatement()) {
+                if (p instanceof PreparedStatement) {
+                    fillParameter((PreparedStatement) p, params, null);
+                }
+                try (ResultSet rs = (p instanceof PreparedStatement) ? ((PreparedStatement) p).executeQuery() : p.executeQuery(sql)) {
+                    return handle.processResultSet(rs, returnFields);
+                }
+            } catch (SQLException ex) {
+                //可能超时，输出sql和参数
+                dumpSql(ex, sql, params);
+                throw new DbException(ex);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

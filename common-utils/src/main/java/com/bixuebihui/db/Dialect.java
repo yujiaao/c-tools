@@ -25,4 +25,40 @@ public class Dialect {
     /** Constant <code>H2=8</code> */
     public static final int H2 = 8;
 
+
+    /**
+     * <p>detectDbType.</p>
+     *
+     * @param driverName a {@link java.lang.String} object.
+     * @return a int.
+     */
+    public static int detectDbType(String driverName) {
+        int res = UNKNOWN;
+        String name = driverName.toUpperCase();
+        if (name.contains("ORACLE")) {
+            res = ORACLE;
+        } else if (name.contains("DERBY")) {
+            res = DERBY;
+        } else if (name.contains("MYSQL")) {
+            res = MYSQL;
+        } else if (name.contains("SQLSERVER")) {
+            // sqlserver 2000
+            res = SQLSERVER;
+            //} else if (name.contains("SQL SERVER 201") || name.contains("SQL SERVER 202")) {
+
+        } else if (name.contains("SQL SERVER")) {
+            res = SQLSERVER_2010_AND_UP; //2010 ~ 2029
+            // sql server 2005
+            //  res = SQLSERVER_2005_AND_UP;
+        } else if (name.contains("POSTGRESQL")) {
+            res = POSTGRESQL;
+        } else if (name.contains("H2")) {
+            res = H2;
+        } else if (name.contains("ACCESS")) {
+            res = ACCESS;
+        }
+        return res;
+    }
+
+
 }

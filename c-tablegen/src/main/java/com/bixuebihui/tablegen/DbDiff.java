@@ -117,11 +117,13 @@ public class DbDiff {
 
     private void storeTableData( List<String> tab2, boolean isR2dbc) throws SQLException {
 
-        for (String t : tab2) {
+        try(Connection cn = dbHelper2.getConnection()) {
+            for (String t : tab2) {
 
-            List<ColumnData> c = getColumns(dbHelper2, db2, t, isR2dbc).getFields();
+                List<ColumnData> c = getColumns(dbHelper2, cn.getMetaData(), db2, t, isR2dbc).getFields();
 
-            addTableData(t, c);
+                addTableData(t, c);
+            }
         }
 
     }
@@ -144,9 +146,9 @@ public class DbDiff {
         }
     }
 
-    protected TableInfo getColumns(IDbHelper dbHelper, Database database, String tableName, boolean isR2dbc)
+    protected TableInfo getColumns(IDbHelper dbHelper, DatabaseMetaData metaData, Database database, String tableName, boolean isR2dbc)
             throws SQLException {
-        return  TableUtils.getColumnData(dbHelper,  database.catalog, database.schema, tableName, isR2dbc);
+        return  TableUtils.getColumnData(dbHelper,metaData, database.catalog, database.schema, tableName, isR2dbc);
     }
 
     public void compareColumns(String tableName, boolean isR2dbc) throws SQLException, IOException {
@@ -162,24 +164,32 @@ public class DbDiff {
             }
 
         } else {
-            cols1 = getColumns(dbHelper1, db1, tableName, isR2dbc).getFields();
+            try(Connection cn = dbHelper1.getConnection()) {
+                TableInfo tableInfo = getColumns(dbHelper1, cn.getMetaData(), db1, tableName, isR2dbc);
+                cols1 = tableInfo.getFields();
+            }
         }
 
 
-        List<ColumnData> cols2 = getColumns(dbHelper2, db2, tableName,isR2dbc).getFields();
+        try(Connection cn = dbHelper2.getConnection()) {
+            TableInfo tableInfo = getColumns(dbHelper2, cn.getMetaData(), db2, tableName, isR2dbc);
+            List<ColumnData> cols2 = tableInfo.getFields();
+            if (dumpDiffCols(cols1, cols2)) {
 
+                /*
+                 * 当表不一致时，通知所有handler处理表的不一致
+                 */
+                for (DiffHandler dh : diffHandlerList) {
+                    dh.processTableDiff(tableName);
+                }
 
-        if (dumpDiffCols(cols1, cols2)) {
-
-            /*
-             * 当表不一致时，通知所有handler处理表的不一致
-             */
-            for (DiffHandler dh : diffHandlerList) {
-                dh.processTableDiff(tableName);
+                LOG.debug("====>" + tableName + " changed");
             }
 
-            LOG.debug("====>" + tableName + " changed");
         }
+
+
+
     }
 
     /**
