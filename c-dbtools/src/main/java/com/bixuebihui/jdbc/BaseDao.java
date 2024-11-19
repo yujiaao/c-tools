@@ -42,6 +42,7 @@ import java.util.stream.Collectors;
 
 import static com.bixuebihui.db.Dialect.*;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static java.util.regex.Pattern.MULTILINE;
 
@@ -792,7 +793,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         return update(fieldNames, params, whereClause, new Object[]{}, null);
     }
 
-    protected String getUpdateSql(List<String> excludeFields) {
+    protected String getUpdateSql(Set<String> excludeFields) {
         return "update "+this.getTableName()+" set "
                 + questionSetPair(getAllFields(), excludeFields) +
                 " where "+questionAndPair(getKeyFields());
@@ -829,7 +830,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         return StringUtils.join(keyFields, "=? and ") + "=? ";
     }
 
-    protected String questionSetPair(List<String> objects, List<String> excludeFields) {
+    protected String questionSetPair(List<String> objects, Set<String> excludeFields) {
         if(excludeFields==null || excludeFields.isEmpty()){
             return questionSetPair(objects);
         }
@@ -1714,7 +1715,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         return new Object[0];
     }
 
-    protected Object[] getUpdateObjs(T info, List<String> excludeFields) {
+    protected Object[] getUpdateObjs(T info, Set<String> excludeFields) {
         assert info != null;
         return new Object[0];
     }
@@ -1772,15 +1773,13 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      */
     @Override
     public boolean updateByKey(T info) {
-        return updateByKey(info, emptyList());
+        return updateByKey(info, emptySet());
     }
 
-    public boolean updateByKey(T info, List<String> excludeFields) {
+    public boolean updateByKey(T info, Set<String> excludeFields) {
         beforeChange(info);
-
-        boolean res = 1 == getDbHelper().executeNoQuery(getUpdateSql(excludeFields), getUpdateObjs(info));
+        boolean res = 1 == getDbHelper().executeNoQuery(getUpdateSql(excludeFields), getUpdateObjs(info, excludeFields));
         afterUpdate(info, res);
-
         return res;
     }
 
@@ -1924,7 +1923,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     }
 
 
-    public boolean updateBatch(List<T> infos, List<String> excludeFields) {
+    public boolean updateBatch(List<T> infos, Set<String> excludeFields) {
         return updateBatch(infos, null, excludeFields);
     }
 
@@ -2022,10 +2021,10 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         return res;
     }
 
-    public boolean updateBatch(List<T> infos, Connection cn, List<String> excludeFields) {
+    public boolean updateBatch(List<T> infos, Connection cn, Set<String> excludeFields) {
         beforeChange(infos);
 
-        List<Object[]> a = infos.stream().map(this::getUpdateObjs).collect(Collectors.toList());
+        List<Object[]> a = infos.stream().map(it -> getUpdateObjs(it, excludeFields)).collect(Collectors.toList());
 
         boolean res = infos.size() == getDbHelper().executeNoQueryBatch(getUpdateSql(excludeFields), a, cn);
 

@@ -7,7 +7,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
+import java.util.Locale;
 import javax.sql.DataSource;
 import {{config.packageName}}{{viewModifier}}.business.*;
 import {{config.packageName}}{{viewModifier}}.pojo.*;
@@ -94,15 +95,11 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
    }
 
     @Override
-    protected Map<String, Object> getUpdateObjs({{pojoClassName}}  info, Set<String> excludeFields){
-        Map<String, Object> map = new java.util.HashMap<>();
-        Set<String> localExcludeFields = Stream.of(excludeFields).map(x -> getFieldAlias(x.toLowerCase(Locale.ROOT))).collect(Collectors.toSet());
-        {{#each fields ~}}
-        if(!containsIgnoreCase(F.{{constantName this.name}}, localExcludeFields)){
-            map.put(F.{{constantName this.name}}, info.get{{firstUp this.name}}());
-        }
-        {{/each~}}
-        return map;
+    protected Object[] getUpdateObjs({{pojoClassName}}  info, Set<String> excludeFields){
+        List<Object> list = new java.util.ArrayList<>();
+        Set<String> localExcludeFields =(excludeFields==null?emptySet():excludeFields).stream().map(x -> getFieldAlias(x.toLowerCase(Locale.ROOT))).collect(Collectors.toSet());
+        {{updateObjectsWithExcludeFields}}
+        return list.toArray();
     }
 {{/unless}}
 
