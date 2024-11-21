@@ -12,14 +12,14 @@ import java.util.Locale;
 import javax.sql.DataSource;
 import {{config.packageName}}{{viewModifier}}.business.*;
 import {{config.packageName}}{{viewModifier}}.pojo.*;
-import com.bixuebihui.jdbc.RowMapperResultReader;
-import com.bixuebihui.DbException;
 {{#if tableInfo.isView}}
 import com.bixuebihui.jdbc.AbstractViewBaseDao;
 {{else}}
 import {{config.packageName}}.BaseList;
 {{/if}}
 import javax.annotation.processing.Generated;
+
+import static java.util.Collections.emptySet;
 
 @Generated("com.github.yujiaao:tablegen")
 public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{{else}}BaseList{{/if}}<{{pojoClassName}}, {{{firstKeyType}}}>
@@ -97,7 +97,8 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
     @Override
     protected Object[] getUpdateObjs({{pojoClassName}}  info, Set<String> excludeFields){
         List<Object> list = new java.util.ArrayList<>();
-        Set<String> localExcludeFields =(excludeFields==null?emptySet():excludeFields).stream().map(x -> getFieldAlias(x.toLowerCase(Locale.ROOT))).collect(Collectors.toSet());
+        Set<String> localExcludeFields =excludeFields==null?emptySet():excludeFields.stream()
+            .map(x -> getFieldAlias(x.toLowerCase(Locale.ROOT))).collect(Collectors.toSet());
         {{updateObjectsWithExcludeFields}}
         return list.toArray();
     }
