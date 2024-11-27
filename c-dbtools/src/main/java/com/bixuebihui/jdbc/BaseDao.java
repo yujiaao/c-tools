@@ -18,6 +18,7 @@ import com.bixuebihui.util.DbUtils;
 import jakarta.validation.constraints.NotNull;
 import org.apache.commons.beanutils.*;
 import org.apache.commons.beanutils.converters.*;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
@@ -483,11 +484,20 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         return databaseName;
     }
 
+    /**
+     * must override this method
+     * @return a {@link java.lang.String} field names.
+     */
     public List<String> getAllFields() {
         return emptyList();
     }
+
+    /**
+     * must override this method
+     * @return a {@link java.lang.String} primary key field names.
+     */
     public List<String> getKeyFields() {
-        return emptyList();
+        return getKeyName()!=null? List.of(getKeyName()): emptyList();
     }
 
     /**
@@ -794,8 +804,11 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     }
 
     protected String getUpdateSql(Set<String> excludeFields) {
+        List<String> updateFields = getAllFields();
+        updateFields.removeAll(excludeFields);
+
         return "update "+this.getTableName()+" set "
-                + questionSetPair(getAllFields(), excludeFields) +
+                + questionSetPair(updateFields, excludeFields) +
                 " where "+questionAndPair(getKeyFields());
     }
 
@@ -1773,7 +1786,10 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      */
     @Override
     public boolean updateByKey(T info) {
-        return updateByKey(info, emptySet());
+        beforeChange(info);
+        boolean res = 1 == getDbHelper().executeNoQuery(getUpdateSql(), getUpdateObjs(info));
+        afterUpdate(info, res);
+        return res;
     }
 
     public boolean updateByKey(T info, Set<String> excludeFields) {
@@ -1811,6 +1827,8 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         beforeChange(info);
         return 1 == getDbHelper().executeNoQuery(getUpdateSql(), getUpdateObjs(info), cn);
     }
+
+
 
     public boolean updateByKey(T info, Connection cn, String tableShardName) {
         beforeChange(info);

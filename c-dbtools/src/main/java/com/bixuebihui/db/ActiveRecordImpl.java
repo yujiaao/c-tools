@@ -40,12 +40,12 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
     BaseDao<T, V> operator;
     Connection cn;
     private boolean keepNullForNumberField = false;
-    private Function<SqlHelper, SqlHelper> filterInterceptor = it -> it;
-    private Function<SqlHelper, SqlHelper> havingInterceptor = it -> it;
-    private Function<SqlSort, SqlSort> sortInterceptor = it -> it;
-    private Function<SqlGroup, SqlGroup> groupInterceptor = it -> it;
-    private Function<List<Object>, List<Object>> paramsInterceptor = it -> it;
-    private Function<String, String> coreSqlInterceptor = it -> it;
+    private Function<SqlHelper, SqlHelper> filterInterceptor = Function.identity();
+    private Function<SqlHelper, SqlHelper> havingInterceptor = Function.identity();
+    private Function<SqlSort, SqlSort> sortInterceptor = Function.identity();
+    private Function<SqlGroup, SqlGroup> groupInterceptor = Function.identity();
+    private Function<List<Object>, List<Object>> paramsInterceptor = Function.identity();
+    private Function<String, String> coreSqlInterceptor = Function.identity();
     private SqlPocket sqlPocket;
     private boolean useLast = false;
     private String tableAlias;
