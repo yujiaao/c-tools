@@ -90,7 +90,7 @@ public class DalGenerator extends BaseGenerator {
             }
 
             objs.append("    if(!containsIgnoreCase(F.").append(columnNameToConstantName(cd.getName())).append(", localExcludeFields)){\n")
-                    .append("      list.add(info.get").append(firstUp(cd.getName())).append("());\n")
+                    .append("        list.add(info.get").append(firstUp(cd.getName())).append("());\n")
                     .append("    }\n");
 
         }

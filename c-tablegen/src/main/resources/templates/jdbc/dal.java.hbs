@@ -96,10 +96,14 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
 
     @Override
     protected Object[] getUpdateObjs({{pojoClassName}}  info, Set<String> excludeFields){
+        if(excludeFields==null || excludeFields.isEmpty()){
+            return getUpdateObjs(info);
+        }
         List<Object> list = new java.util.ArrayList<>();
-        Set<String> localExcludeFields =excludeFields==null?emptySet():excludeFields.stream()
+        Set<String> localExcludeFields = excludeFields.stream()
             .map(x -> getFieldAlias(x.toLowerCase(Locale.ROOT))).collect(Collectors.toSet());
-        {{updateObjectsWithExcludeFields}}
+
+{{updateObjectsWithExcludeFields}}
         return list.toArray();
     }
 {{/unless}}

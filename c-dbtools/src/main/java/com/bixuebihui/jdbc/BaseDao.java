@@ -804,11 +804,14 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     }
 
     protected String getUpdateSql(Set<String> excludeFields) {
-        List<String> updateFields = getAllFields();
-        updateFields.removeAll(excludeFields);
+        List<String> updateFields = new ArrayList<>(getAllFields());
+        updateFields.removeAll(getKeyFields());
 
+        if(!CollectionUtils.isEmpty(excludeFields)){
+            updateFields.removeAll(excludeFields);
+        }
         return "update "+this.getTableName()+" set "
-                + questionSetPair(updateFields, excludeFields) +
+                + questionSetPair(updateFields) +
                 " where "+questionAndPair(getKeyFields());
     }
 
@@ -843,13 +846,6 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         return StringUtils.join(keyFields, "=? and ") + "=? ";
     }
 
-    protected String questionSetPair(List<String> objects, Set<String> excludeFields) {
-        if(excludeFields==null || excludeFields.isEmpty()){
-            return questionSetPair(objects);
-        }
-        objects.removeAll(excludeFields);
-        return questionSetPair(objects);
-    }
 
     protected String getUpdateSql(String[] fields, Object[] values, String whereClause, Object[] whereParams, List<Object> allParams) {
         if (fields == null || fields.length == 0) {
@@ -1729,6 +1725,9 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     }
 
     protected Object[] getUpdateObjs(T info, Set<String> excludeFields) {
+        if(excludeFields == null || excludeFields.isEmpty()) {
+            return getUpdateObjs(info);
+        }
         assert info != null;
         return new Object[0];
     }
