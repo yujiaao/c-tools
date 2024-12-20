@@ -1,5 +1,6 @@
 package com.bixuebihui.jdbc.aop;
 
+import com.bixuebihui.jdbc.IDbHelper;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.collections.map.LRUMap;

@@ -4,7 +4,6 @@ package {{config.packageName}}{{viewModifier}}.dto;
 
 import java.sql.*;
 import java.io.Serializable;
-import jakarta.validation.constraints.*;
 import org.apache.commons.text.StringEscapeUtils;
 
 import javax.annotation.processing.Generated;
@@ -13,7 +12,6 @@ import javax.annotation.processing.Generated;
 {{#if config.useSwagger}}
 {{#eq config.swaggerVersion "2" }}
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiModelProperty;
 import com.sdadas.spring2ts.annotations.SharedModel;
 

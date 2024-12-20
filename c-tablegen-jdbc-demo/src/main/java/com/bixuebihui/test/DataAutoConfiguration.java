@@ -1,6 +1,7 @@
 package com.bixuebihui.test;
 
 
+import com.bixuebihui.codec.EncryptDecryptServiceBase64Impl;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
@@ -34,4 +35,8 @@ public class DataAutoConfiguration {
         return new DataSourceTransactionManager(mysqlDataSource());
     }
 
+    @Bean
+    public EncryptDecryptServiceBase64Impl encdec() {
+        return new EncryptDecryptServiceBase64Impl();
+    }
 }

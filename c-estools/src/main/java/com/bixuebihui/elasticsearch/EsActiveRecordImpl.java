@@ -216,6 +216,11 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     }
 
     @Override
+    public ActiveRecord<T> sql(String field, Object... value) {
+        throw new NotImplementedException();
+    }
+
+    @Override
     public ActiveRecord<T> lt(String field, Object value) {
         return smallerThan(field, value);
     }

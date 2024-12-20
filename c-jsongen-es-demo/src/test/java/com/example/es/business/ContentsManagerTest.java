@@ -29,6 +29,10 @@ class ContentsManagerTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+
+        //create index if not exists
+        //chejiahaoContentsManager.createIndex();
+
     }
 
 
@@ -63,7 +67,7 @@ class ContentsManagerTest {
     @Test
     void testInsert() {
         boolean result = chejiahaoContentsManager.save(new Contents());
-        Assertions.assertEquals(true, result);
+        Assertions.assertTrue(result);
     }
 
     @Test

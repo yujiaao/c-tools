@@ -309,6 +309,12 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
     }
 
     @Override
+    public ActiveRecord<T> sql(String field, Object... value) {
+        filterStack.sql(field, value);
+        return this;
+    }
+
+    @Override
     public ActiveRecord<T> lt(String field, Object value) {
         return smallerThan(field, value);
     }

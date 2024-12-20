@@ -226,6 +226,17 @@ public interface ActiveRecord<T> extends Record<T>, Customizer<T> {
      */
     ActiveRecord<T> smallerThan(String field, Object value);
 
+
+    /**
+     * use for native function use such as sql("json_contains(field, ?)", value)
+     *  or sql("json_contains_any(field, ?)", value),
+     *  which value is a json array such as [1,2,3], or ["x","y","z"] etc.
+     * @param field may be a function expression
+     * @param value value as function parameter
+     * @return this
+     */
+    ActiveRecord<T> sql(String field, Object... value);
+
     /**
      * less than, same as smallerThan
      * @param field

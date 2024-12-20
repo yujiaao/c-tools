@@ -6,17 +6,17 @@ import java.util.stream.Collectors;
 /**
  * support one or multiple strings encryption
  */
-public class EncryptDecryptServiceBase64Impl {
+public class EncryptDecryptServiceBase64Impl implements EncryptDecryptService {
     /**
      * encrypt a string
      * @param str the string to be encrypted
      * @return the encrypted string
      */
-    String encrypt(String str){
+    public String encrypt(String str){
         return java.util.Base64.getEncoder().encodeToString(str.getBytes());
     }
 
-    List<String> encrypt(List<String> list) {
+    public List<String> encrypt(List<String> list) {
        return list.stream().map(this::encrypt).collect(Collectors.toList());
     }
 
@@ -25,11 +25,11 @@ public class EncryptDecryptServiceBase64Impl {
      * @param str the string to be decrypted
      * @return the decrypted string
      */
-    String decrypt(String str){
+    public String decrypt(String str){
         return new String(java.util.Base64.getDecoder().decode(str));
     }
 
-    List<String> decrypt(List<String> list) {
+    public List<String> decrypt(List<String> list) {
         return list.stream().map(this::decrypt).collect(Collectors.toList());
     }
 }

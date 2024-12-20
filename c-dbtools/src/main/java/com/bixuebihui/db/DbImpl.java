@@ -223,8 +223,15 @@ public class DbImpl<T, V> extends BaseDao<T, V> implements ActiveRecord<T>,
 	}
 
 	@Override
+	public ActiveRecord<T> sql(String field, Object... value) {
+		filterStack.sql(field, value);
+		return this;
+	}
+
+	@Override
 	public ActiveRecord<T> lt(String field, Object value) {
-		return null;
+		filterStack.smallerThan(field, value);
+		return this;
 	}
 
 	@Override

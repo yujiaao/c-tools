@@ -13,6 +13,11 @@ public interface EncryptDecryptService {
      */
     String encrypt(String str);
 
+    /**
+     * encrypt a list of strings
+     * @param list the list of strings to be encrypted
+     * @return the list of encrypted strings
+     */
     List<String> encrypt(List<String> list);
 
     /**
@@ -22,5 +27,10 @@ public interface EncryptDecryptService {
      */
     String decrypt(String str);
 
+    /**
+     * decrypt a list of strings
+     * @param list the list of strings to be decrypted
+     * @return the list of decrypted strings
+     */
     List<String> decrypt(List<String> list);
 }
