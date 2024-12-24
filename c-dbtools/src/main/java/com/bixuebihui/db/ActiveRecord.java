@@ -36,7 +36,10 @@ import static java.util.Collections.emptySet;
  * @author xingwx
  * @version $Id: $Id
  */
-public interface ActiveRecord<T> extends Record<T>, Customizer<T> {
+public interface ActiveRecord<T>
+        extends Record<T>,
+        Customizer<T>,
+        StatisticRecord<T> {
 
     /**
      * Constant <code>ORDER_ASC=0</code>
@@ -113,7 +116,6 @@ public interface ActiveRecord<T> extends Record<T>, Customizer<T> {
      * JDBC ResultSet 的getInt, getLong, getDouble, getFloat等方法，不论数据库中是否存储为null，都返回0，或者0.0。
      * 注意：这个wasNull判断一定要紧跟在你想要判断非空的那个字段取动作之后，否则它判断的就不是你所期望的那个column值了。
      *
-     * @return
      */
     ActiveRecord<T> keepNullForNumberField();
 

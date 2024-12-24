@@ -18,6 +18,7 @@ import java.util.*;
 import java.util.function.Function;
 
 import static com.bixuebihui.db.Dialect.*;
+import static com.bixuebihui.jdbc.BaseDao.getFieldAlias;
 
 /**
  * Created with IntelliJ IDEA. User: Administrator Date: 13-4-18 Time: 下午5:57 To
@@ -667,6 +668,14 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
     @Override
     public int count() throws DbException {
         try {
+           return innerCount();
+        } finally {
+            clear();
+        }
+    }
+
+    private int innerCount() throws DbException {
+
             sqlPocket = this.getSql();
             SqlPocket having = parseHaving();
             String where = formWhereClause() + parseGroupBy() + having.getCondition();
@@ -681,9 +690,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
             }
 
             return operator.countWhere(tableNameAlias, innerSelect ? "" : where, list.toArray());
-        } finally {
-            clear();
-        }
+
     }
 
     /**
@@ -975,4 +982,16 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
     }
 
 
+    @Override
+    public Object percentile(String field, float portion) throws DbException {
+        int count = this.innerCount();
+        if (count == 0) {
+            return 0;
+        }
+
+        return this.fields(field)
+                .desc(field)
+                .limit((int) ((count-1) * (1-portion)), 1)
+                .get(getFieldAlias(field));
+    }
 }

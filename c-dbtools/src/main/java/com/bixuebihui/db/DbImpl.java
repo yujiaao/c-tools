@@ -755,4 +755,9 @@ public class DbImpl<T, V> extends BaseDao<T, V> implements ActiveRecord<T>,
 	public ActiveRecord<T> paramsInterceptor(Function<List<Object>, List<Object>> groupInterceptor) {
 		return null;
 	}
+
+	@Override
+	public Object percentile(String field, float portion) throws DbException {
+		return null;
+	}
 }

@@ -810,4 +810,9 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
         return this;
     }
 
+    @Override
+    public Object percentile(String field, float portion) throws DbException {
+        //return operator.percentile(field, portion);
+        throw new NotImplementedException();
+    }
 }

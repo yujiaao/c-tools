@@ -13,7 +13,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.aop.framework.ProxyFactory;
 
-import java.lang.reflect.Proxy;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -411,6 +410,12 @@ public class ActiveRecordImplTest {
                 .findAllWithCount();
         assertEquals(102, id.getLeft());
         assertEquals(20, id.getRight().size());
+    }
+
+    @Test
+    void percentile() {
+        Object res = bd.ar().percentile("id", 0.5f);
+        assertEquals(234, res);
     }
 
     public static class T {
