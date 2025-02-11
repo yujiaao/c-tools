@@ -804,6 +804,10 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     }
 
     protected String getUpdateSql(Set<String> excludeFields) {
+        if(excludeFields==null || excludeFields.isEmpty()){
+            return getUpdateSql();
+        }
+
         List<String> updateFields = new ArrayList<>(getAllFields());
         updateFields.removeAll(getKeyFields());
 
