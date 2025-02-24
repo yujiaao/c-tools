@@ -16,7 +16,7 @@ public class ServiceGenerator extends BaseGenerator {
 
 
     @Override
-    String getTemplateFileName() {
+    String getTemplateFileName(String tableName) {
         return "service.java";
     }
 

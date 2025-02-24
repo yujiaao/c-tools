@@ -24,7 +24,7 @@ public class EsDalGenerator extends BaseGenerator {
     private int keyIndex;
 
     @Override
-    String getTemplateFileName() {
+    String getTemplateFileName(String tableName) {
         return "dal.java";
     }
 

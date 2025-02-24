@@ -11,7 +11,6 @@ import java.util.List;
 * @author xwx
 */
 @Mapper
-@Mapper(componentModel="spring")
 public interface {{className}} {
     {{className}} MAPPER = Mappers.getMapper({{className}}.class);
 
@@ -25,15 +24,6 @@ public interface {{className}} {
     List<{{pojoClassName}}> toDaoList(List<{{pojoClassName}}Dto> info);
 
 
-    @Mapping(target="x",ignore = true)
-    // other mappings
-    Target map( Source source, @Context MyService service);
-
-    @AfterMapping
-    default void map( @MappingTarget Target.X target, Source.ID source, @Context MyService service) {
-    target.set( service.findById( source.getId() ) );
-    }
-
     /*
         @AfterMapping
         public void doAfter(ShopDTO shopDTO, @MappingTarget ShopVo shopVo){
@@ -42,4 +32,3 @@ public interface {{className}} {
             }
     */
 }
-

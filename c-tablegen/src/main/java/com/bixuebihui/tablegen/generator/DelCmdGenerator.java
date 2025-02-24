@@ -20,7 +20,7 @@ public class DelCmdGenerator extends BaseGenerator {
     }
 
     @Override
-    String getTemplateFileName() {
+    String getTemplateFileName(String tableName) {
         return "del-cmd.java";
     }
 

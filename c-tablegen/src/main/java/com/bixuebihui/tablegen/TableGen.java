@@ -66,7 +66,7 @@ import static com.bixuebihui.tablegen.TableGenConfig.PROPERTIES_FILENAME;
 import static com.bixuebihui.tablegen.generator.DalGenerator.*;
 
 /**
- * 思路决定出路，创新才有发展，整合才能壮大
+ * 思路决定出路，创新才有发展，整合才能壮大，聚焦才能成功
  *
  * @author xingwx
  */

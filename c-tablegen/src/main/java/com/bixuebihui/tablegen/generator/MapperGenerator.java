@@ -16,7 +16,10 @@ public class MapperGenerator extends BaseGenerator {
 
 
     @Override
-    String getTemplateFileName() {
+    String getTemplateFileName(String tableName) {
+        if(this.config.getEncryptedFields().containsKey(tableName)){
+            return "mapper-encrypted.java";
+        }
         return "mapper.java";
     }
 
@@ -71,6 +74,8 @@ public class MapperGenerator extends BaseGenerator {
         // usage: {{type tableName colName}}
         handlebars.registerHelper("colType", (tableName, options) -> getColType(options.param(0), this.setInfo.getTableCols((String) tableName)));
         handlebars.registerHelper("isKey", (tableName, options) -> this.setInfo.getTableKeys((String) tableName).contains(options.param(0)));
+        handlebars.registerHelper("isEncryptedField", (tableName, options) ->
+                this.config.getEncryptedFields().get((String) tableName).contains(options.param(0)));
 
         // usage: {{where tableName}}
         handlebars.registerHelper("where", (tableName, options) ->

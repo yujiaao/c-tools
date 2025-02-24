@@ -176,7 +176,7 @@ public abstract class BaseGenerator implements Generator {
      * template file name
      * @return template file name
      */
-    abstract String getTemplateFileName();
+    abstract String getTemplateFileName(String tableName);
 
 
     public static String getPojoClassName(String tableName, ProjectConfig config, TableSetInfo setInfo) {
@@ -248,7 +248,7 @@ public abstract class BaseGenerator implements Generator {
     public String generate(String tableName, int index) throws IOException {
         Handlebars handlebars = getHandlebars();
 
-        Template template = handlebars.compile(getTemplateFileName());
+        Template template = handlebars.compile(getTemplateFileName(tableName));
 
         Map<String, Object> v = getContextMap(tableName);
         return template.apply(Context.newBuilder(v).resolver(

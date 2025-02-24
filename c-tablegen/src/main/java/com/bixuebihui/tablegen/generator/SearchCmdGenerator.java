@@ -16,7 +16,7 @@ public class SearchCmdGenerator extends BaseGenerator {
 
 
     @Override
-    String getTemplateFileName() {
+    String getTemplateFileName(String tableName) {
         return "search-cmd.java";
     }
 

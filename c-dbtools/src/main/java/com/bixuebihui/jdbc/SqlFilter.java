@@ -2,7 +2,7 @@ package com.bixuebihui.jdbc;
 
 import com.bixuebihui.db.KeywordsUtils;
 import com.bixuebihui.db.SqlString;
-import com.google.common.collect.Lists;
+
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
@@ -134,7 +134,7 @@ public class SqlFilter {
 
             criteria.append(subGroups.stream().map((it) -> {
                         SqlObject sqlObject = it.toSqlObject();
-                        params.addAll(Lists.newArrayList(sqlObject.getParameters()));
+                        params.addAll(Arrays.asList(sqlObject.getParameters()));
 
                         return sqlObject.getSqlString().substring("where".length());
                     }).collect(Collectors.joining(") " + joinOperator.toString() + " ("))
@@ -150,7 +150,7 @@ public class SqlFilter {
             for (SqlFilter it : orCond) {
                 SqlObject subObj = it.toSqlObject();
                 criteria.append(" or (").append(subObj.getSqlString().substring("where".length())).append(")");
-                params.addAll(Lists.newArrayList(subObj.getParameters()));
+                params.addAll(Arrays.asList(subObj.getParameters()));
             }
         }
 
@@ -263,7 +263,7 @@ public class SqlFilter {
                 sub = sub.replace("?", filter.value[0].toString());
             } else if (filter.comparison != Comparison.EXISTS
                     && filter.comparison != Comparison.NOT_EXISTS) {
-                params.addAll(Lists.newArrayList(filter.value));
+                params.addAll(Arrays.asList(filter.value));
             }
         }
 

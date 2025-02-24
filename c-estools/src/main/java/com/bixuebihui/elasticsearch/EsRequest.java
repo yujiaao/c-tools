@@ -16,9 +16,7 @@ import io.burt.jmespath.jackson.JacksonRuntime;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.*;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
@@ -401,17 +399,19 @@ public class EsRequest {
 
     public String getFromUrl(String url, String body, String method) {
 
-
-        try {
-            HttpWithJsonEntity getRequest =
-                    HttpWithJsonEntity.builder()
-                            .withUrl(url)
-                            .withBodyEntry(body)
-                            .withMethod(method)
-                            .build();
-            return httpJson(getRequest, body);
+        try
+        {
+            if (body != null) {
+                HttpWithJsonEntity request = HttpWithJsonEntity.builder()
+                        .withUrl(url)
+                        .withMethod(method).withBodyEntry(body).build();
+                return httpJson(request, body);
+            }else {
+                HttpGet request = new HttpGet(url);
+                return httpJson(request, null);
+            }
         } catch (URISyntaxException | UnsupportedEncodingException e) {
-            logger.error("get from url: " + url, e);
+            logger.error("get from url: {}", url, e);
         }
         return null;
 
@@ -423,13 +423,15 @@ public class EsRequest {
      * @param requestBase http request
      * @return response
      */
-    private String httpJson(HttpEntityEnclosingRequestBase requestBase, String body) {
+    private String httpJson(HttpRequestBase requestBase, String body) {
         logger.debug("====>>>>");
         logger.debug(requestBase.toString() + "\n" + StringUtils.abbreviate(body, MAX_REQUEST_DEBUG_INFO_WIDTH)
                 +"\n"+(body!=null && body.length()> MAX_REQUEST_DEBUG_INFO_WIDTH ?"...":""));
 
-        if (StringUtils.isNotBlank(body) && requestBase.getEntity() == null) {
-            requestBase.setEntity(new StringEntity(body, ContentType.APPLICATION_JSON));
+        if (StringUtils.isNotBlank(body) &&
+                requestBase instanceof HttpEntityEnclosingRequestBase &&
+                ((HttpEntityEnclosingRequestBase)requestBase).getEntity() == null) {
+            ((HttpEntityEnclosingRequestBase)requestBase).setEntity(new StringEntity(body, ContentType.APPLICATION_JSON));
         }
 
 

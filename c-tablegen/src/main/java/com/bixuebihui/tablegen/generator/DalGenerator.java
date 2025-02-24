@@ -276,7 +276,7 @@ public class DalGenerator extends BaseGenerator {
     }
 
     @Override
-    String getTemplateFileName() {
+    String getTemplateFileName(String tableName) {
         return "dal.java";
     }
 

@@ -18,7 +18,7 @@ public class ControllerGenerator extends BaseGenerator {
 
 
     @Override
-    String getTemplateFileName() {
+    String getTemplateFileName(String tableName) {
         return "manager-controller.java";
     }
 

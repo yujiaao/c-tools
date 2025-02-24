@@ -14,7 +14,7 @@ public class BaseListGenerator extends BaseGenerator{
 
 
     @Override
-    String getTemplateFileName() {
+    String getTemplateFileName(String tableName) {
         return "baselist.java";
     }
 
