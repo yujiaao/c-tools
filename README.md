@@ -63,8 +63,9 @@ use dependencies:
      - [ ] support ES reindex
      - [ ] support multi slave data source
 
-     - [ ] update, updateBatch with exclude fields 
+     - [√] update, updateBatch with exclude fields 
 
+     - [ ] for make column chart, do data sampling with every column
    
 
  
