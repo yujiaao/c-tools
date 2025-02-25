@@ -14,16 +14,20 @@ package com.bixuebihui.test.dal;
 import java.sql.*;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.Locale;
 import javax.sql.DataSource;
+import com.bixuebihui.jdbc.RowMapperResultReader;
 import com.bixuebihui.test.business.*;
 import com.bixuebihui.test.pojo.*;
-import com.bixuebihui.jdbc.RowMapperResultReader;
-import com.bixuebihui.DbException;
 
 import com.bixuebihui.test.BaseList;
 
 import javax.annotation.processing.Generated;
+
+import static java.util.Collections.emptySet;
 
 @Generated("com.github.yujiaao:tablegen")
 public class TEduList  extends BaseList<TEdu, Integer>
@@ -48,11 +52,22 @@ public class TEduList  extends BaseList<TEdu, Integer>
         public static String[] getAllFields() {
             return new String[] { ID, DEGREE };
         }
+        public static String[] getKeyFields(){
+            return new String[] {
+            F.ID
+            
+            };
+        }
     }
 
     @Override
     public List<String> getAllFields(){
         return Arrays.asList(F.getAllFields());
+    }
+
+    @Override
+    public List<String> getKeyFields(){
+        return Arrays.asList(F.getKeyFields());
     }
 
 
@@ -63,16 +78,15 @@ public class TEduList  extends BaseList<TEdu, Integer>
 
    @Override
    protected String getInsertSql(){
-       return "insert into t_edu"
-    +" ( degree)"
+       return "insert into "+this.getTableName()+
+" ( degree)"
     +" values ("
     +"?)";
    }
 
-
     @Override
     protected String getUpdateSql(){
-        return "update t_edu set "
+        return "update "+this.getTableName()+" set "
     +"degree=? where id=?";
     }
 
@@ -86,6 +100,23 @@ public class TEduList  extends BaseList<TEdu, Integer>
    protected Object[] getUpdateObjs(TEdu  info){
       return new Object[]{ info.getDegree(),info.getId() };
    }
+
+    @Override
+    protected Object[] getUpdateObjs(TEdu  info, Set<String> excludeFields){
+        if(excludeFields==null || excludeFields.isEmpty()){
+            return getUpdateObjs(info);
+        }
+        List<Object> list = new java.util.ArrayList<>();
+        Set<String> localExcludeFields = excludeFields.stream()
+            .map(x -> getFieldAlias(x.toLowerCase(Locale.ROOT))).collect(Collectors.toSet());
+
+    if(!containsIgnoreCase(F.DEGREE, localExcludeFields)){
+        list.add(info.getDegree());
+    }
+  list.add(info.getId());
+
+        return list.toArray();
+    }
 
 
 
@@ -153,7 +184,6 @@ public class TEduList  extends BaseList<TEdu, Integer>
 
 
 
-
       
       
           
@@ -186,6 +216,8 @@ public class TEduList  extends BaseList<TEdu, Integer>
 
 
 
+
+    
 
 
 

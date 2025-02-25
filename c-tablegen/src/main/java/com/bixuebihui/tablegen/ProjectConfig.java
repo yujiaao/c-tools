@@ -11,6 +11,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static java.util.Collections.emptyMap;
+
 /**
  * @author xwx
  */
@@ -181,6 +183,9 @@ public class ProjectConfig {
 
     private static Map<String, List<String>> toMap(String encryptedFields) {
         Map<String, List<String>> res = new HashMap<>();
+        if(StringUtils.isBlank(encryptedFields)) {
+            return emptyMap();
+        }
 
         String formatError= "encrypt field setting format error: must be `encrypted_fields=table1:field1,field2;table2:field3`";
         Arrays.stream(encryptedFields.split(";")).forEach(it -> {
