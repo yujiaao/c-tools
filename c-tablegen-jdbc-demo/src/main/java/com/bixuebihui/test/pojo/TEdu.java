@@ -39,7 +39,6 @@ public class TEdu  implements Serializable {
     
     /**
     * degree 这里是名称！ 
-    * NotNull, default value: NULL
     */
     @Size(max=100)
     @ApiModelProperty("这里是名称！")
