@@ -36,7 +36,9 @@ class PojoGeneratorTest {
         gen.init(this.getClass().getResource("/tablegen.properties").getPath());
         String res = gen.getTargetFileName("test");
 
-        assertThat( res, Matchers.endsWith("src/main/java/com/exapmle/mytest/pojo/Test.java"));
+        res = res.replace("\\", "/");
+
+        assertThat( res, Matchers.endsWith("src/main/java/com/bixuebihui/test/pojo/Test.java"));
     }
 
     @Test

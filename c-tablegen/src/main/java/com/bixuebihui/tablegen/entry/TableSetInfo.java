@@ -510,24 +510,23 @@ public class TableSetInfo implements KeyInfo {
 
         if (CollectionUtils.isEmpty(col)) {
 
+            String catalog = config.getCatalog();
+            String schema = config.getSchema();
+            boolean isR2dbc = config.getR2dc();
             //表名
             List<String> tableNames =
-                    TableUtils.getTableData(metaData, config.getCatalog(), config.getSchema(),
+                    TableUtils.getTableData(metaData, catalog, schema,
                             config.getTableOwner(), config.getTablesList(), config.getExcludeTablesList());
 
             LOG.info("find tables:{}", tableNames);
             LinkedHashMap<String, TableInfo> tables = new LinkedHashMap<>();
             for (String name : tableNames) {
-                LOG.info("extract info for table:{}", name);
-                TableInfo table = new TableInfo(name);
+                TableInfo table = getTableInfoWithComment(dbHelper, metaData, name, catalog, schema, isR2dbc);
 
-                // Fill columns info
-                TableInfo newInfo = TableUtils.getColumnData(dbHelper, metaData, config.getCatalog(), config.getSchema(), name, config.getR2dc());
-                table.setFields(newInfo.getFields());
                 tables.put(name, table);
 
                 // Primary keys info
-                List<String> keyData = TableUtils.getTableKeys(metaData, config.getCatalog(), config.getSchema(), name);
+                List<String> keyData = TableUtils.getTableKeys(metaData, catalog, schema, name);
                 getKeyCache().put(name, keyData);
 
                 // foreign keys import info
@@ -539,14 +538,7 @@ public class TableSetInfo implements KeyInfo {
                 // index info
                 initIndex(config, metaData, name);
 
-                // table & column's  comment
-                if (isMysql(metaData)) {
-                    try (Connection cn = dbHelper.getConnection()) {
-                        fillMySQLComment(cn, table);
-                    }
-                } else if (isSQLServer(metaData)) {
-                    fillSQLServerTableComment(dbHelper, table);
-                }
+
             }
 
             setTableInfos(tables);
@@ -565,13 +557,34 @@ public class TableSetInfo implements KeyInfo {
                     config.getBaseDir() + config.getExtraSetting(), getTableDataExt()));
         }
 
+    }
 
+    public static TableInfo getTableInfoWithComment(IDbHelper dbHelper, DatabaseMetaData metaData, String name, String catalog, String schema, boolean isR2dbc) throws SQLException {
+        LOG.info("extract info for table:{}", name);
+        TableInfo table = new TableInfo(name);
+
+        // Fill columns info
+        TableInfo newInfo = TableUtils.getColumnData(dbHelper, metaData, catalog, schema, name, isR2dbc);
+        table.setFields(newInfo.getFields());
+        fillComment(dbHelper, metaData, table);
+        return table;
+    }
+
+    private static void fillComment(IDbHelper dbHelper, DatabaseMetaData metaData, TableInfo table) throws SQLException {
+        // table & column's  comment
+        if (isMysql(metaData)) {
+            try (Connection cn = dbHelper.getConnection()) {
+                fillMySQLComment(cn, table);
+            }
+        } else if (isSQLServer(metaData)) {
+            fillSQLServerTableComment(dbHelper, table);
+        }
     }
 
     /**
      * Retrieves all the table data required.
      */
-    public synchronized void getOnFlyViewData(ProjectConfig config, IDbHelper dbHelper) throws SQLException, IOException {
+    public synchronized void getOnFlyViewData(ProjectConfig config, IDbHelper dbHelper, DatabaseMetaData metaData) throws SQLException, IOException {
 
         if (config.getViewList() == null) {
             return;
@@ -592,7 +605,8 @@ public class TableSetInfo implements KeyInfo {
                             public List<Object> processResultSet(ResultSet rs, Set<String> set) {
 
                                 try {
-                                    TableInfo info = OnFlyViewUtils.getColumnData(rs.getMetaData(), name, dbType, config.getR2dc());
+                                    TableInfo info = OnFlyViewUtils.getColumnData(rs.getMetaData(),
+                                            name, dbType, config, cn, dbHelper, metaData);
                                     info.setComment(name);
                                     info.setViewSql(originalSql);
                                     viewInfos.put(name, info);

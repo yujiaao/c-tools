@@ -22,8 +22,8 @@ public class BeanFactory {
     }
 
 
-    public static boolean isSinglton(String beanId) {
-        return springBeanZK.isSinglton(beanId);
+    public static boolean isSingleton(String beanId) {
+        return springBeanZK.isSingleton(beanId);
     }
 
 

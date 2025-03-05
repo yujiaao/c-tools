@@ -27,7 +27,7 @@ public class SpringBean {
     }
 
 
-    public boolean isSinglton(String resourceId) {
+    public boolean isSingleton(String resourceId) {
         return getXMLlBeanFactory().isSingleton(resourceId);
     }
 
@@ -55,7 +55,7 @@ public class SpringBean {
     private synchronized void initFactory() {
         if (beanFactory == null) {
 
-            Resource resource = null;
+            Resource resource;
 
             URL url = Loader.getResource(beanConfigFile);
             if (url == null) {

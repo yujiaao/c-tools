@@ -44,7 +44,6 @@ import com.bixuebihui.util.DbUtils;
 import com.bixuebihui.util.other.CMyFile;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.output.StringBuilderWriter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.text.CaseUtils;
@@ -855,7 +854,7 @@ public class TableGen implements DiffHandler {
             makeDir();
             DatabaseMetaData meta = connect(dbHelper.getConnection());
             setInfo.getTableData(config, dbHelper, meta);
-            setInfo.getOnFlyViewData(config, dbHelper);
+            setInfo.getOnFlyViewData(config, dbHelper, meta);
 
             /*
              * 如果generator_all == yes，则生成所有表 否则，进行本地快照和数据库的比对
