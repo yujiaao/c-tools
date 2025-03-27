@@ -21,8 +21,20 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Disabled
 public class TableGenTest {
 
+
 	@Test
-	public void testRunEs() throws SQLException {
+	public void testRunSlow() {
+		TableGen tg = new TableGen(System.out);
+		System.out.println(this.getClass().getResource("/tablegen_mysql_new.properties")
+				.getFile());
+
+		tg.run(this.getClass().getResource("/tablegen_mysql_new.properties").getFile());
+
+	}
+
+
+	@Test
+	public void testRunEs() {
 		TableGen tg = new TableGen(System.out);
 		System.out.println(this.getClass().getResource("/es.properties")
 			.getFile());

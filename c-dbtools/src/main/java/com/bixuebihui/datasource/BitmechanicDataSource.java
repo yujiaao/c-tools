@@ -85,7 +85,7 @@ public class BitmechanicDataSource implements DataSource, INamingPool {
     @Override
     public Connection getConnection(String username, String password)
             throws SQLException {
-        throw new SQLException("Not implenment this method!");
+        throw new SQLException("Not implemented this method!");
     }
 
     /**

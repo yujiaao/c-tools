@@ -45,6 +45,7 @@ public class ProjectConfig {
     boolean generateAll=false;
     boolean r2dbc=false;
     boolean readWriteSeparate=false;
+    boolean foreignKeys = false;
     /**
      * additional settings, used for comments, data checking, interfaces, etc.
      */
@@ -127,6 +128,8 @@ public class ProjectConfig {
         LOG.debug("shared_model_group:" +  c.sharedModelGroup);
 
         c.indexes = getBooleanCfg(props, "indexes");
+        c.foreignKeys = getBooleanCfg(props, "foreign_keys");
+
         c.r2dbc = getBooleanCfg(props, "r2dbc");
 
         c.readWriteSeparate = getBooleanCfg(props, "read_write_separate");
@@ -185,6 +188,14 @@ public class ProjectConfig {
             res.addAll(Arrays.asList(property.trim().split(",")));
         }
         return res;
+    }
+
+    public boolean isForeignKeys() {
+        return foreignKeys;
+    }
+
+    public void setForeignKeys(boolean foreignKeys) {
+        this.foreignKeys = foreignKeys;
     }
 
     public String getSwaggerVersion() {
