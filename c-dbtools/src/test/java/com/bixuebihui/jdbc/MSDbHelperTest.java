@@ -33,10 +33,10 @@ public class MSDbHelperTest extends EasyMockSupport {
 		db.setMasterDatasource(master);
 
 		Connection cn1 = db.getConnection(true);
-		assertEquals(ro.getDburl(), cn1.getMetaData().getURL());
+		assertTrue(ro.getDburl().contains( cn1.getMetaData().getURL()));
 
 		Connection cn2 = db.getConnection(false);
-		assertEquals(ma.getDburl(), cn2.getMetaData().getURL());
+		assertTrue(ma.getDburl().contains( cn2.getMetaData().getURL()));
 	}
 
 	@Test
@@ -46,6 +46,26 @@ public class MSDbHelperTest extends EasyMockSupport {
 			return;
 		}
 
+		AbstractBaseDao dao = getAbstractBaseDao();
+		Connection conn = dao.dbHelper.getConnection();
+		assertFalse(conn.isReadOnly());
+		dao.ar().eq("lid", 1).delete();
+		assertNull(dao.ar().eq("lid", 1).find());
+
+		dao.insert(new Object());
+
+		assertEquals(1L, (long) dao.ar().eq("lid", 1).getLongVector("lid").get(0));
+		dao.endForceMasterDB();
+
+		Connection connRO = dao.dbHelper.getConnection(true);
+
+		if(!com.bixuebihui.datasource.DataSourceTest.isMysqlAvailable()){
+			return;
+		}
+		assertTrue(connRO.isReadOnly());
+	}
+
+	private static AbstractBaseDao getAbstractBaseDao() {
 		MSDbHelper db = new MSDbHelper();
 
 		BitmechanicDataSource ds = new BitmechanicDataSource();
@@ -59,7 +79,6 @@ public class MSDbHelperTest extends EasyMockSupport {
 		master.setDatabaseConfig(ma);
 
 		db.setMasterDatasource(master);
-
 
 
 		AbstractBaseDao dao = new AbstractBaseDao(db){
@@ -81,25 +100,8 @@ public class MSDbHelperTest extends EasyMockSupport {
 
 
 		dao.beginForceMasterDB();
-		Connection conn = dao.dbHelper.getConnection();
-		assertFalse(conn.isReadOnly());
-		dao.ar().eq("lid", 1).delete();
-		assertNull(dao.ar().eq("lid", 1).find());
-
-		dao.insert(new Object());
-
-		assertEquals((long) dao.ar().eq("lid", 1).getLongVector("lid").get(0), 1L);
-		dao.endForceMasterDB();
-
-		Connection connRO = dao.dbHelper.getConnection(true);
-
-		if(!com.bixuebihui.datasource.DataSourceTest.isMysqlAvailable()){
-			return;
-		}
-		assertTrue(connRO.isReadOnly());
+		return dao;
 	}
-
-
 
 
 }

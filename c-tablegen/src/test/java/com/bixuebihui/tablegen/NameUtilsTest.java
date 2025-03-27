@@ -2,8 +2,10 @@ package com.bixuebihui.tablegen;
 
 import com.google.common.base.CaseFormat;
 import org.apache.commons.text.CaseUtils;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
 class NameUtilsTest {
@@ -49,11 +51,9 @@ class NameUtilsTest {
     void getConfigBaseDir() {
         String path = NameUtilsTest.class.getResource("/tablegen.properties").getPath();
         String res = NameUtils.getConfigBaseDir(path);
-        if(OSType.getOSType() == OSType.Windows) {
-            assertTrue(res.endsWith("target\\test-classes\\"));
-        }else{
-            assertTrue(res.endsWith("target/test-classes/"));
-        }
+
+            assertThat(res, Matchers.endsWith("target/test-classes/"));
+
 
     }
 

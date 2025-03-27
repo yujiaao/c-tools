@@ -59,7 +59,7 @@ public class PojoGenerator extends BaseGenerator{
     }
 
     @Override
-    String getTemplateFileName() {
+    String getTemplateFileName(String tableName) {
         return "pojo.java";
     }
 

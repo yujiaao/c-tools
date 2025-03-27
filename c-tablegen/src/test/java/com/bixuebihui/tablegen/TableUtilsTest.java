@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.util.StopWatch;
 import org.springframework.util.comparator.BooleanComparator;
 
+import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -24,24 +25,31 @@ public class TableUtilsTest {
     @BeforeAll
     public static void setUp() {
         TableGen t = new TableGen();
-        t.init(TableUtilsTest.class.getResource("/tablegen.properties").getPath());
+        t.init(getPath());
         dbHelper = t.getDbHelper(t.getDbConfig());
+    }
+
+    private static String getPath() {
+        return TableUtilsTest.class.getResource("/tablegen.properties").getPath();
     }
 
     @Test
     public void testGetTableKeys() throws SQLException {
 
-        DatabaseMetaData meta = dbHelper.getConnection().getMetaData();
-        ResultSet primaryKeys = meta.getPrimaryKeys(null, null, "VRMS_PRJMAPCOLLEGES");
-        while (primaryKeys.next()) {
-            String primaryKeyColumn = primaryKeys.getString("COLUMN_NAME");
-            System.out.println("Primary Key Column: " + primaryKeyColumn);
-        }
+        try(Connection cn = dbHelper.getConnection()) {
+            DatabaseMetaData meta = cn.getMetaData();
+            try(ResultSet primaryKeys = meta.getPrimaryKeys(null, null, "employees")) {
+                while (primaryKeys.next()) {
+                    String primaryKeyColumn = primaryKeys.getString("COLUMN_NAME");
+                    System.out.println("Primary Key Column: " + primaryKeyColumn);
+                }
 
 
-        List<String> v = TableUtils.getTableKeys(dbHelper, null, null, "VRMS_PRJMAPCOLLEGES");
-        for (String s : v) {
-            System.out.println(s);
+                List<String> v = TableUtils.getTableKeys(meta, null, null, "employees");
+                for (String s : v) {
+                    System.out.println(s);
+                }
+            }
         }
     }
 
@@ -83,7 +91,7 @@ public class TableUtilsTest {
     @Test
     public void testGetTableData() throws SQLException {
         TableGen t = new TableGen();
-        t.init("tablegen.properties");
+        t.init(getPath());
 
         DatabaseMetaData metaData = t.connect(dbHelper.getConnection());
 
@@ -94,7 +102,7 @@ public class TableUtilsTest {
         List<String> v = TableUtils.getTableData(metaData, catalog, schema, null, t.getConfig().tablesList, t.getConfig().excludeTablesList);
         for (String s : v) {
             System.out.println(s);
-            TableInfo cols = TableUtils.getColumnData(dbHelper, catalog, schema, s,false);
+            TableInfo cols = TableUtils.getColumnData(dbHelper, metaData, catalog, schema, s,false);
             for (ColumnData col : cols.getFields()) {
                 System.out.println(col);
             }
@@ -107,7 +115,7 @@ public class TableUtilsTest {
     @Test
     public void testRun() throws SQLException {
 
-        TableGen.main(new String[]{"tablegen.properties"});
+        TableGen.main(new String[]{getPath()});
 
     }
 
@@ -149,7 +157,7 @@ public class TableUtilsTest {
         DatabaseMetaData metaData = dbHelper.getConnection().getMetaData();
         String tableName = "VRMS_ALLOWANCE";
         String catalog = "WESTPLAN";
-        List<ColumnData> v = TableUtils.getColumnData(dbHelper, catalog, null, tableName,false).getFields();
+        List<ColumnData> v = TableUtils.getColumnData(dbHelper, metaData, catalog, null, tableName,false).getFields();
         for (ColumnData c : v) {
             System.out.println(c);
         }
@@ -162,7 +170,7 @@ public class TableUtilsTest {
         //create table test1(id int auto_increment, num decimal(10,6) , primary key(id));
 
         String tableName = "t_metatable";
-        List<ColumnData> v = TableUtils.getColumnData(dbHelper,  null, null, tableName,false).getFields();
+        List<ColumnData> v = TableUtils.getColumnData(dbHelper,  meta,null, null, tableName,false).getFields();
         for (ColumnData s : v) {
             System.out.println(s + ", java type = " + s.getJavaType());
         }
@@ -170,7 +178,7 @@ public class TableUtilsTest {
 
     @org.junit.jupiter.api.Test
     void getTableImportedKeys() throws SQLException {
-        String tableName = "Businesses_details";
+        String tableName = "employees";
         List<ForeignKeyDefinition> res = TableUtils.getTableImportedKeys(dbHelper.getConnection().getMetaData(),
                 "test", "test", tableName);
         assertEquals(1, res.size());
@@ -189,12 +197,12 @@ public class TableUtilsTest {
     @org.junit.jupiter.api.Test
     void getTableExportedKeys() throws SQLException {
         List<ForeignKeyDefinition> res = TableUtils.getTableExportedKeys(dbHelper.getConnection().getMetaData(),
-                "test", "test", "Businesses");
+                "test", "test", "departments");
         assertEquals(1, res.size());
     }
 
     @org.junit.jupiter.api.Test
-    void getAllMySQLExportKeys() throws SQLException {
+    void getAllMySQLExportKeys() {
         Map<String, List<ForeignKeyDefinition>> res = TableUtils.getAllMySQLImportKeys(dbHelper, "test");
         for (List<ForeignKeyDefinition> list : res.values()) {
             for (ForeignKeyDefinition fk : list) {

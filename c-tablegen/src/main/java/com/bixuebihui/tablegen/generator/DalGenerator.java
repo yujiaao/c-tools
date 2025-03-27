@@ -67,6 +67,39 @@ public class DalGenerator extends BaseGenerator {
                 createKeyObjects(params);
     }
 
+    public static String makeUpdateObjectsWithExcludeFields(List<String> keys, List<ColumnData> columnData,
+                                                            boolean use_autoincrement, String versionColName) {
+        StringBuilder objs = new StringBuilder();
+        boolean useVersion = containsColName(columnData, versionColName);
+        /**
+         * {{#each fields ~}}
+         *         if(!containsIgnoreCase(F.{{constantName this.name}}, localExcludeFields)){
+         *             list.add(info.get{{firstUp this.name}}());
+         *         }
+         *         {{/each~}}
+         */
+        for (ColumnData cd : columnData) {
+            if (use_autoincrement && cd.isAutoIncrement()
+                    || (useVersion && cd.getName().equalsIgnoreCase(versionColName))
+                    || !isInsertAndUpdatableField(cd, use_autoincrement)
+            ) {
+                continue;
+            }
+            if (keys.contains(cd.getName())) {
+                continue;
+            }
+
+            objs.append("    if(!containsIgnoreCase(F.").append(columnNameToConstantName(cd.getName())).append(", localExcludeFields)){\n")
+                    .append("        list.add(info.get").append(firstUp(cd.getName())).append("());\n")
+                    .append("    }\n");
+
+        }
+
+         return objs+
+               keys.stream().map(key -> "  list.add(info.get"+firstUp(key)+"());\n").collect(Collectors.joining());
+    }
+
+
     public static String createKeyObjects(List<String> params) {
         return getParamGattersString(params);
     }
@@ -243,7 +276,7 @@ public class DalGenerator extends BaseGenerator {
     }
 
     @Override
-    String getTemplateFileName() {
+    String getTemplateFileName(String tableName) {
         return "dal.java";
     }
 
@@ -261,8 +294,9 @@ public class DalGenerator extends BaseGenerator {
 
         v.put("insertObjects", makeInsertObjects(config.isUseAutoincrement(), cols, config.getVersionColName()));
         v.put("updateObjects", makeUpdateObjects(keys, cols, config.isUseAutoincrement(), config.getVersionColName()));
+        v.put("updateObjectsWithExcludeFields", makeUpdateObjectsWithExcludeFields(keys, cols, config.isUseAutoincrement(), config.getVersionColName()));
         v.put("insertSql", makeInsertSql(config.isUseAutoincrement(), cols));
-        v.put("updateSql", makeUpdateSql(tableName, keys, cols, config.isUseAutoincrement(), config.getVersionColName()));
+        v.put("updateSql", makeUpdateSql(keys, cols, config.isUseAutoincrement(), config.getVersionColName()));
 
 
         v.put("firstKeyType", this.getPrimaryKeyType(tableName));
@@ -271,6 +305,8 @@ public class DalGenerator extends BaseGenerator {
         v.put("whereNoLike", TableGen.createPreparedWhereClause(keys,
                 false, cols));
         v.put("keyObjects", createKeyObjects(keys));
+        v.put("keys", keys);
+
 
         v.put("isView", isView());
         v.put("mapRow", mapRow(cols, this.getPojoClassName(tableName)));
@@ -282,6 +318,7 @@ public class DalGenerator extends BaseGenerator {
         v.put("indexWriter", this.getIndexWriter(tableName));
         return v;
     }
+
 
     private String getIndexWriter(String tableName) {
 
@@ -299,10 +336,11 @@ public class DalGenerator extends BaseGenerator {
         }
     }
 
-    private Object makeUpdateSql(String tableName, List<String> keys, List<ColumnData> cols, boolean useAutoincrement, String versionColName) {
+    private Object makeUpdateSql(List<String> keys, List<ColumnData> cols, boolean useAutoincrement, String versionColName) {
         return
                 "update \"+this.getTableName()+\" set \"\n    +\"" +
-                        cols.stream().filter(c -> !this.setInfo.getTableKeys(tableName).contains(c.getName()) && isInsertAndUpdatableField(c, useAutoincrement))
+                        cols.stream().filter(c -> !keys.contains(c.getName())
+                                        && isInsertAndUpdatableField(c, useAutoincrement))
                                 .map(columnData -> {
 
                                             String columnName = decorFieldIfIsKeyword(columnData.getName(), this.getDbType());
@@ -352,6 +390,8 @@ public class DalGenerator extends BaseGenerator {
             boolean like = options.param(0);
             return TableGen.createPreparedWhereClause(this.setInfo.getTableKeys((String) tableName), like, this.setInfo.getTableCols((String) tableName));
         });
+
+
     }
 
     String getFirstKeyName(String tableName) {

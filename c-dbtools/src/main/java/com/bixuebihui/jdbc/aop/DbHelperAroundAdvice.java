@@ -1,5 +1,6 @@
 package com.bixuebihui.jdbc.aop;
 
+import com.bixuebihui.jdbc.IDbHelper;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.collections.map.LRUMap;
@@ -123,9 +124,9 @@ public class DbHelperAroundAdvice implements MethodInterceptor {
                 ss.setCount(ss.getCount() + 1);
                 ss.setTotalTime(ss.getTotalTime() + thisTime);
                 if (thisTime > SqlStat.VERY_SLOW_QUERY) {
-                    LOG.error("[AOP] Query is VERY SLOW: " + thisTime + " sql=" + sql);
+                    LOG.error("[AOP] Query is VERY SLOW: {} sql={}", thisTime, sql);
                 } else if (thisTime > SqlStat.SLOW_QUERY) {
-                    LOG.warn("[AOP] Query is SLOW: " + thisTime + " sql=" + sql);
+                    LOG.warn("[AOP] Query is SLOW: {} sql={}", thisTime, sql);
                 }
             }
 

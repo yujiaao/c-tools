@@ -14,7 +14,7 @@ public class PomGenerator extends BaseGenerator implements Generator {
     }
 
     @Override
-    String getTemplateFileName() {
+    String getTemplateFileName(String tableName) {
         return "pom.xml";
     }
 

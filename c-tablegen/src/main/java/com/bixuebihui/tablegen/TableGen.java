@@ -45,7 +45,6 @@ import com.bixuebihui.util.DbUtils;
 import com.bixuebihui.util.other.CMyFile;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.output.StringBuilderWriter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
 import org.apache.commons.text.CaseUtils;
@@ -67,7 +66,7 @@ import static com.bixuebihui.tablegen.TableGenConfig.PROPERTIES_FILENAME;
 import static com.bixuebihui.tablegen.generator.DalGenerator.*;
 
 /**
- * 思路决定出路，创新才有发展，整合才能壮大
+ * 思路决定出路，创新才有发展，整合才能壮大，聚焦才能成功
  *
  * @author xingwx
  */
@@ -856,7 +855,7 @@ public class TableGen implements DiffHandler {
             makeDir();
             DatabaseMetaData meta = connect(cn);
             setInfo.getTableData(config, dbHelper, meta);
-            setInfo.getOnFlyViewData(config, dbHelper);
+            setInfo.getOnFlyViewData(config, dbHelper, meta);
 
             /*
              * 如果generator_all == yes，则生成所有表 否则，进行本地快照和数据库的比对

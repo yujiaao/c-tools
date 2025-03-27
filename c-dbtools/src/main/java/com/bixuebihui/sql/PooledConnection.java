@@ -7,6 +7,7 @@ import com.bixuebihui.algorithm.RemoveActionImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
 import java.sql.*;
 import java.util.Map;
 import java.util.Properties;
@@ -554,10 +555,10 @@ public class PooledConnection implements Connection, Runnable {
 
 	private final ConnectionPool pool;
 	private Connection conn;
-	private boolean locked;
+	private volatile boolean locked;
 	private long lastAccess;
 	private long lastCheckin;
-	private int checkoutCount;
+	private volatile int checkoutCount;
 	private PooledStatement theStatement;
 	int totalStatements;
 	int preparedCalls;

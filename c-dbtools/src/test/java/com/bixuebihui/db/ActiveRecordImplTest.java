@@ -5,11 +5,13 @@ import com.bixuebihui.datasource.DbcpDataSource;
 import com.bixuebihui.jdbc.AbstractBaseDao;
 import com.bixuebihui.jdbc.DbHelper;
 import com.bixuebihui.jdbc.IDbHelper;
+import com.bixuebihui.jdbc.aop.DbHelperAroundAdvice;
 import com.bixuebihui.jdbc.entity.CountObject;
 import com.bixuebihui.jdbc.entity.CountValue;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.aop.framework.ProxyFactory;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -46,6 +48,7 @@ public class ActiveRecordImplTest {
                 "create table test(id int, name varchar(100), value int default 0, createtime timestamp)", cn);
         db.executeNoQuery(
                 "create table test1(id int, name varchar(100))", cn);
+
         }catch (Exception e){
         }
         bd = new BD(db);
@@ -58,9 +61,12 @@ public class ActiveRecordImplTest {
                         bd.getTimestampSql("2017-10-10 01:01:01.0")
                         + ")");
         bd.getDbHelper().executeNoQuery(
+                "insert into test(id,name)values(456,'[\"张三\",\"李四\",\"王五\"]')");
+        bd.getDbHelper().executeNoQuery(
                 "insert into test1(id,name)values(123,'bacqqq')");
         bd.getDbHelper().executeNoQuery(
                 "insert into test1(id,name)values(234,'bacddd')");
+
 
         // boolean res = JDBCUtils.tableOrViewExists(null, null, "%", cn);
     }
@@ -179,9 +185,9 @@ public class ActiveRecordImplTest {
 
         CountValue res = bd.ar().countSum("id");
 
-        assertEquals(357.0, res.getValue());
+        assertEquals(813.0, res.getValue());
 
-        assertEquals(2, res.getCount());
+        assertEquals(3, res.getCount());
     }
 
     @Test
@@ -402,8 +408,14 @@ public class ActiveRecordImplTest {
                 .gt("id", 0)
                 .limit(10, 20)
                 .findAllWithCount();
-        assertEquals(101, id.getLeft());
+        assertEquals(102, id.getLeft());
         assertEquals(20, id.getRight().size());
+    }
+
+    @Test
+    void percentile() {
+        Object res = bd.ar().percentile("id", 0.5f);
+        assertEquals(234, res);
     }
 
     public static class T {
@@ -434,7 +446,12 @@ public class ActiveRecordImplTest {
 
     static class BD extends AbstractBaseDao {
         public BD(IDbHelper db) {
+            //use DbHelperAroundAdvice
             super(db);
+            LOG.atDebug().log("BD created");
+            ProxyFactory obj = new ProxyFactory(db);
+            obj.addAdvice(new DbHelperAroundAdvice());
+            dbHelper = (IDbHelper) obj.getProxy();
         }
 
         @Override
@@ -451,6 +468,21 @@ public class ActiveRecordImplTest {
         public String getTableName() {
             return "test";
         }
+    }
+
+    @Test
+    public void testSql() {
+    assertEquals(3, bd.ar().findAll().size());
+
+        ActiveRecord<Object> a = bd.ar().eq("id", 456).sql("JSON_CONTAINS(name, '\"李四\"')");
+        System.out.printf(a.getSql().getCondition().toString());
+        System.out.printf(a.getSql().getParams().toString());
+        List<Object> res = a.findAll();
+        assertEquals(1, res.size());
+        // the below code is not supported by mariadb 11.3.2
+//        res = bd.ar().sql("JSON_CONTAINS_ANY(name, '[\"李四\",\"赵六\"]')" ).findAll();
+//        assertEquals(1, res.size());
+
     }
 
 }

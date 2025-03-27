@@ -1,14 +1,13 @@
 package com.bixuebihui.tablegen.generator;
 
 
+import com.bixuebihui.db.Dialect;
 import com.bixuebihui.dbcon.DatabaseConfig;
 import com.bixuebihui.jdbc.BaseDao;
 import com.bixuebihui.jdbc.IDbHelper;
-import com.bixuebihui.tablegen.GenException;
-import com.bixuebihui.tablegen.NameUtils;
-import com.bixuebihui.tablegen.ProjectConfig;
-import com.bixuebihui.tablegen.TableGen;
+import com.bixuebihui.tablegen.*;
 import com.bixuebihui.tablegen.entry.ColumnData;
+import com.bixuebihui.tablegen.entry.TableInfo;
 import com.bixuebihui.tablegen.entry.TableSetInfo;
 import com.github.jknack.handlebars.Context;
 import com.github.jknack.handlebars.Handlebars;
@@ -19,6 +18,7 @@ import com.github.jknack.handlebars.context.JavaBeanValueResolver;
 import com.github.jknack.handlebars.context.MapValueResolver;
 import com.github.jknack.handlebars.context.MethodValueResolver;
 import com.github.jknack.handlebars.helper.ConditionalHelpers;
+import com.github.jknack.handlebars.helper.StringHelpers;
 import com.github.jknack.handlebars.io.ClassPathTemplateLoader;
 import com.github.jknack.handlebars.io.TemplateLoader;
 import org.apache.commons.lang.StringUtils;
@@ -29,6 +29,7 @@ import org.springframework.util.CollectionUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.*;
@@ -113,7 +114,7 @@ public abstract class BaseGenerator implements Generator {
         this.dbConfig = dbConfig;
         this.setInfo = setInfo;
         this.esConfig = prop;
-        this.dbType = BaseDao.detectDbType(dbConfig.getDburl());
+        this.dbType = Dialect.detectDbType(dbConfig.getDburl());
     }
 
     protected List<ColumnData> getColsInfo(String tableName) {
@@ -156,9 +157,11 @@ public abstract class BaseGenerator implements Generator {
 
     public synchronized void readDbMetaData(DatabaseConfig dbConfig) throws SQLException, InstantiationException, IOException, IllegalAccessException {
         IDbHelper helper = TableGen.getDbHelper(dbConfig);
-        DatabaseMetaData metaData = helper.getConnection().getMetaData();
-        setInfo.getTableData(config, helper, metaData);
-        setInfo.getOnFlyViewData(config, helper);
+        try(Connection cn = helper.getConnection()) {
+            DatabaseMetaData metaData = cn.getMetaData();
+            setInfo.getTableData(config, helper, metaData);
+            setInfo.getOnFlyViewData(config, helper, metaData);
+        }
     }
 
     /**
@@ -173,20 +176,25 @@ public abstract class BaseGenerator implements Generator {
      * template file name
      * @return template file name
      */
-    abstract String getTemplateFileName();
+    abstract String getTemplateFileName(String tableName);
 
 
-
-    public String getPojoClassName(String tableName) {
+    public static String getPojoClassName(String tableName, ProjectConfig config, TableSetInfo setInfo) {
         String classname = setInfo.tableName2ClassName(tableName);
+        String prefix = config.getAddPrefix() == null ? "" : config.getAddPrefix();
         if (tableName.equals(classname)) {
-            return config.getAddPrefix() + firstUp(removePrefix(tableName, config.getRemovePrefix()));
+            return prefix + firstUp(removePrefix(tableName, config.getRemovePrefix()));
         } else {
-            return config.getAddPrefix() + classname;
+            return prefix + classname;
         }
     }
 
-    protected  String removePrefix(String tableName, String removePrefix){
+
+    public String getPojoClassName(String tableName) {
+        return getPojoClassName(tableName, config, setInfo);
+    }
+
+    protected static String removePrefix(String tableName, String removePrefix){
        return StringUtils.removeStart(tableName, removePrefix);
     }
 
@@ -240,7 +248,7 @@ public abstract class BaseGenerator implements Generator {
     public String generate(String tableName, int index) throws IOException {
         Handlebars handlebars = getHandlebars();
 
-        Template template = handlebars.compile(getTemplateFileName());
+        Template template = handlebars.compile(getTemplateFileName(tableName));
 
         Map<String, Object> v = getContextMap(tableName);
         return template.apply(Context.newBuilder(v).resolver(
@@ -263,8 +271,9 @@ public abstract class BaseGenerator implements Generator {
             }
 
         }else{
-            if (setInfo.getTableInfos().get(tableName) != null) {
-                v.put("tableInfo", setInfo.getTableInfos().get(tableName));
+            LinkedHashMap<String, TableInfo> tableInfos = setInfo.getTableInfos();
+            if (tableInfos!=null && tableInfos.get(tableName) != null) {
+                v.put("tableInfo", tableInfos.get(tableName));
                 v.put("fields", setInfo.getTableCols(tableName));
                 v.put("keys", setInfo.getTableKeys(tableName));
                 v.put("importKeys", setInfo.getTableImportedKeys(tableName));
@@ -321,26 +330,10 @@ public abstract class BaseGenerator implements Generator {
         loader.setSuffix(".hbs");
 
         Handlebars handlebars = new Handlebars(loader);
-        handlebars.registerHelper("firstUp", (name, options) -> NameUtils.firstUp((String) name));
-        handlebars.registerHelper("getPojoClassName", (tableName, options) -> this.getPojoClassName((String) tableName));
-        handlebars.registerHelper("constantName", (name, options) -> NameUtils.columnNameToConstantName((String) name));
-        handlebars.registerHelper("firstLow", (name, options) -> NameUtils.firstLow((String) name));
-
-        handlebars.registerHelper("join", (items, options) -> StringUtils.join((Object[]) items, options.param(0)));
-        handlebars.registerHelper("typeDefaultValue", (typeName, options) -> TableGen.defaultTypeValue().get(typeName));
-        handlebars.registerHelper("unboxType", (type, options) -> TableGen.unboxType((String) type));
-
-//        handlebars.registerHelper("isInsertAndUpdatableField", (col, options) ->
-//                isInsertAndUpdatableField((ColumnData) col, config.isUseAutoincrement()));
 
         handlebars.registerHelpers(ConditionalHelpers.class);
-
-        //copied from AssignHelper
-        handlebars.registerHelper("let", (String variableName, Options options) -> {
-            CharSequence finalValue = options.apply(options.fn);
-            options.context.data(variableName, finalValue.toString().trim());
-            return null;
-        });
+        handlebars.registerHelpers(StringHelpers.class);
+        handlebars.registerHelpers(new HelperSource(config, setInfo));
 
         additionalSetting(handlebars);
         return handlebars;
@@ -397,12 +390,7 @@ public abstract class BaseGenerator implements Generator {
 
 
     public static boolean containsColName(List<ColumnData> cols, String colName) {
-        for (ColumnData col : cols) {
-            if (col.getName().equalsIgnoreCase(colName)) {
-                return true;
-            }
-        }
-        return false;
+        return TableUtils.isExistsCol(cols, colName);
     }
 
 

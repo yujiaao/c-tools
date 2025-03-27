@@ -7,7 +7,7 @@ Configuration:
   Properties: # 定义全局变量
     Property:
       - name: log.level.console
-        value: INFO
+        value: DEBUG
       - name: log.path
         # “sys:”表示：如果VM参数中没指定这个变量值，则使用本文件中定义的缺省全局变量值
         # ${sys:catalina.home} 指向tomcat安装目录

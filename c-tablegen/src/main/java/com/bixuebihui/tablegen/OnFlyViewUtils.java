@@ -1,18 +1,20 @@
 package com.bixuebihui.tablegen;
 
-import com.bixuebihui.jdbc.BaseDao;
+import com.bixuebihui.jdbc.IDbHelper;
 import com.bixuebihui.tablegen.entry.ColumnData;
 import com.bixuebihui.tablegen.entry.TableInfo;
-
+import com.bixuebihui.tablegen.entry.TableSetInfo;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.data.util.Pair;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static java.sql.ResultSetMetaData.columnNullable;
 import static com.bixuebihui.db.Dialect.*;
+import static org.springframework.data.util.Pair.toMap;
 
 /**
  * Suitable to use when view is not available, for example the DBA not allowed to create view for some reasons.
@@ -21,7 +23,7 @@ import static com.bixuebihui.db.Dialect.*;
  */
 public class OnFlyViewUtils {
 
-    public static TableInfo getColumnData(ResultSetMetaData rs, String onFlyViewName, int dbType, boolean isR2dbc) throws SQLException {
+    public static TableInfo getColumnData(ResultSetMetaData rs, String onFlyViewName, int dbType, ProjectConfig config, Connection cn, IDbHelper dbHelper, DatabaseMetaData metaData) throws SQLException {
         List<ColumnData> colData = new ArrayList<>();
 
         ColumnData cd;
@@ -33,6 +35,8 @@ public class OnFlyViewUtils {
         String remarks;
 
         Set<String> existsFields = new HashSet<>();
+        Map<String, String> colFromTable = new HashMap<>();
+
 
         try {
             for (int i=1; i<=rs.getColumnCount(); i++) {
@@ -64,10 +68,11 @@ public class OnFlyViewUtils {
                 // size e.g. varchar(20)
                 colCols = rs.getColumnDisplaySize(i);
                 cd = new ColumnData(colName, colType, colCols, isNullable,
-                        isAutoIncrement, decimalDigits, null, remarks, isR2dbc);
+                        isAutoIncrement, decimalDigits, null, remarks, config.getR2dc());
                 colData.add(cd);
 
                 existsFields.add(cd.getName().toLowerCase());
+                colFromTable.put(colName, rs.getTableName(i));
             }
         } catch (SQLException e) {
             System.err.println("Table name:" );
@@ -80,9 +85,56 @@ public class OnFlyViewUtils {
         TableInfo tableInfo = new TableInfo(onFlyViewName);
         tableInfo.setFields(colData);
         tableInfo.setView(true);
+        fillComment(tableInfo, colFromTable, config, cn, dbHelper, metaData);
 
         return tableInfo;
 
     }
+
+    private static void fillComment(TableInfo tableInfo, Map<String, String> colFromTable,
+                                    ProjectConfig config, Connection cn, IDbHelper dbHelper, DatabaseMetaData metaData) throws SQLException {
+        if(colFromTable.isEmpty()){
+            return;
+        }
+        Map<String, TableInfo> tableInfoMap = colFromTable.values().stream()
+                .distinct()
+                .filter(tableName -> !StringUtils.isBlank(tableName))
+                .map(tableName -> {
+                    try {
+                        return Pair.of(tableName, TableSetInfo.getTableInfoWithComment(
+                                dbHelper, metaData,
+                                tableName, config.getCatalog(), config.getSchema(), config.getR2dc()));
+
+                    } catch (SQLException e) {
+                        throw new RuntimeException(e);
+                    }
+                }).collect(toMap());
+
+        for(ColumnData cd : tableInfo.getFields()){
+            String tableName = colFromTable.get(cd.getName());
+            if(StringUtils.isEmpty(tableName)){
+                continue;
+            }
+
+            TableInfo plainTableInfo = tableInfoMap.get(tableName);
+            if(plainTableInfo!=null){
+                String remark = (plainTableInfo.getFields().stream()
+                        .filter(c -> c.getName().equalsIgnoreCase(cd.getName()))
+                        .map(ColumnData::getRemarks)
+                        .findFirst()
+                        .orElse(cd.getRemarks()));
+                String comment = (plainTableInfo.getFields().stream()
+                        .filter(c -> c.getName().equalsIgnoreCase(cd.getName()))
+                        .map(ColumnData::getComment)
+                        .findFirst()
+                        .orElse(cd.getComment()));
+                cd.setRemarks(remark);
+                cd.setComment(comment);
+            }
+        }
+
+
+    }
+
 
 }

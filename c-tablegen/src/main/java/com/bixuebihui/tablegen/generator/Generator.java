@@ -46,6 +46,5 @@ public interface Generator {
                 System.out.println(tableName + ": " + fileName);
             }
         }
-
     }
 }

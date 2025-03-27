@@ -20,7 +20,7 @@ public class DtoGenerator extends BaseGenerator {
 
 
     @Override
-    String getTemplateFileName() {
+    String getTemplateFileName(String tableName) {
         return "dto.java";
     }
 
@@ -95,9 +95,11 @@ public class DtoGenerator extends BaseGenerator {
             return TableGen.createPreparedWhereClause(this.setInfo.getTableKeys((String) tableName), like, this.setInfo.getTableCols((String) tableName));
         });
 
+        boolean isView = this instanceof IView;
 
         handlebars.registerHelper("columnAnnotation", (col, options) ->
-                TableUtils.getColumnAnnotation(config, setInfo, options.param(0),(ColumnData) col, false));
+                TableUtils.getColumnAnnotation(config, setInfo,
+                        options.param(0),(ColumnData) col, false));
 
         handlebars.registerHelper("columnDescription", (col, options) -> TableUtils.getColumnDescription(config,
                 setInfo.getColumnsExtInfo(options.param(0)), options.param(0), (ColumnData)col));

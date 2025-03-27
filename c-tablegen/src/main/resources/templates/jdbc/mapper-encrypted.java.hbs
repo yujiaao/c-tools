@@ -1,0 +1,100 @@
+package {{config.packageName}}{{viewModifier}}.converter;
+
+import {{config.packageName}}{{viewModifier}}.pojo.*;
+import {{config.packageName}}{{viewModifier}}.dto.*;
+import org.mapstruct.Mapper;
+import org.mapstruct.factory.Mappers;
+import com.bixuebihui.codec.EncryptDecryptService;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Function;
+
+/**
+* @author xwx
+*/
+@Mapper
+public interface {{className}} {
+    {{className}} MAPPER = Mappers.getMapper({{className}}.class);
+
+    {{pojoClassName}}Dto toDto({{pojoClassName}} info);
+
+    {{pojoClassName}} toDao({{pojoClassName}}Dto info);
+
+    List<{{pojoClassName}}Dto> toDtoList(List<{{pojoClassName}}> info);
+
+    List<{{pojoClassName}}> toDaoList(List<{{pojoClassName}}Dto> info);
+
+    default {{pojoClassName}}Dto toDtoDec({{pojoClassName}} info, EncryptDecryptService encryptDecryptService){
+       {{pojoClassName}}Dto res = toDto(info);
+       List<String> listStr = strCollector(info);
+       List<String>  encStr = encryptDecryptService.decrypt(listStr);
+       if(!encStr.isEmpty() && encStr.size()==listStr.size()) {
+          strSettersDto(res, encStr,0);
+       }
+       return res;
+   }
+
+    default {{pojoClassName}} toDaoEnc({{pojoClassName}}Dto info, EncryptDecryptService encryptDecryptService){
+       {{pojoClassName}}  res = toDao(info);
+       List<String> listStr = strCollectorDto(info);
+       List<String>  encStr = encryptDecryptService.encrypt(listStr);
+       if(!encStr.isEmpty() && encStr.size()==listStr.size()) {
+           strSetters(res, encStr,0);
+       }
+       return res;
+    }
+
+
+
+    default List<{{pojoClassName}}> toDaoListEnc(List<{{pojoClassName}}Dto> info, EncryptDecryptService encryptDecryptService) {
+        List<{{pojoClassName}}> res = toDaoList(info);
+        List<String> listStr = res.stream().map({{className}}::strCollector)
+                .flatMap(List::stream).toList();
+
+        List<String> encStr = encryptDecryptService.encrypt(listStr);
+        int index=0;
+        if(!encStr.isEmpty() && encStr.size()==listStr.size()) {
+          for ({{pojoClassName}} it: res) {
+            index = strSetters(it, encStr, index);
+          }
+        }
+        return res;
+    }
+
+
+    default List<{{pojoClassName}}Dto> toDtoListDec(List<{{pojoClassName}}> info, EncryptDecryptService encryptDecryptService) {
+        List<{{pojoClassName}}Dto> res = toDtoList(info);
+        List<String> listStr = res.stream().map({{className}}::strCollectorDto)
+            .flatMap(List::stream).toList();
+        List<String> encStr = encryptDecryptService.decrypt(listStr);
+        int index=0;
+        if(!encStr.isEmpty() && encStr.size()==listStr.size()) {
+            for ({{pojoClassName}}Dto it: res) {
+                index = strSettersDto(it, encStr, index);
+            }
+        }
+        return res;
+    }
+
+
+    private static List<String> strCollector({{pojoClassName}} u) {
+        return Arrays.asList({{#each encryptedFields}} u.get{{firstUp this}}() {{#unless @last}}, {{/unless}}{{/each}});
+    }
+
+    private static List<String> strCollectorDto({{pojoClassName}}Dto u) {
+        return Arrays.asList({{#each encryptedFields}} u.get{{firstUp this}}() {{#unless @last}}, {{/unless}}{{/each}});
+    }
+
+    private static int strSettersDto({{pojoClassName}}Dto u, List<String> decStr, int index) {
+        {{#each encryptedFields ~}}u.set{{firstUp this}}(decStr.get(index++));
+        {{/each}}
+        return index;
+    }
+
+    private static int strSetters({{pojoClassName}} u, List<String> encStr, int index) {
+        {{#each encryptedFields ~}}u.set{{firstUp this}}(encStr.get(index++));
+        {{/each}}
+        return index;
+    }
+}

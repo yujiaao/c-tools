@@ -62,6 +62,10 @@ use dependencies:
      - [ ] support ES scroll
      - [ ] support ES reindex
      - [ ] support multi slave data source
+
+     - [√] update, updateBatch with exclude fields 
+
+     - [ ] for make column chart, do data sampling with every column
    
 
  

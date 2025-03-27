@@ -20,7 +20,7 @@ public class DelCmdGenerator extends BaseGenerator {
     }
 
     @Override
-    String getTemplateFileName() {
+    String getTemplateFileName(String tableName) {
         return "del-cmd.java";
     }
 
@@ -58,9 +58,6 @@ public class DelCmdGenerator extends BaseGenerator {
     @Override
     protected void additionalSetting(Handlebars handlebars) {
         super.additionalSetting(handlebars);
-
-        handlebars.registerHelper("isRangeType", (typeName, options) ->
-                List.of("Timestamp", "Date", "DateTime", "Time").contains((String)typeName));
 
 
         handlebars.registerHelper("columnAnnotation", (col, options) ->

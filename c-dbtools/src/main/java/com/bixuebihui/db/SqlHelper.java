@@ -390,6 +390,10 @@ public class SqlHelper {
 		return this;
 	}
 
+	public SqlHelper sql(String nativeFunctionExpression, Object... values) {
+		filters.add(new FuncFilter(nativeFunctionExpression, values));
+		return this;
+	}
 
 	/**
 	 * <p>ne.</p>
@@ -767,6 +771,26 @@ public class SqlHelper {
 		public NotBetweenFilter(String property, Object valueLeft, Object valueRight) {
 			super(property, valueLeft, valueRight);
 			operator = " not between ";
+		}
+	}
+
+	protected static class FuncFilter extends BaseFilter {
+		public FuncFilter(String property, Object ... values) {
+			super(property, values);
+		}
+
+		@Override
+		public SqlPocket build(SqlPocket pkt) {
+			pkt.getCondition().append(" and ").append(property);
+
+			if (value!=null && value instanceof Collection && !((Collection<?>) value).isEmpty()) {
+				pkt.getParams().addAll((Collection<?>) value);
+			}else if(value!=null && value.getClass().isArray()){
+				pkt.getParams().addAll(Arrays.asList((Object[]) value));
+			}else if(value!=null){
+				pkt.getParams().add(value);
+			}
+			return pkt;
 		}
 	}
 

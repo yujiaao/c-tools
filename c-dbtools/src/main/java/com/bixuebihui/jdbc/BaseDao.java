@@ -18,6 +18,7 @@ import com.bixuebihui.util.DbUtils;
 import jakarta.validation.constraints.NotNull;
 import org.apache.commons.beanutils.*;
 import org.apache.commons.beanutils.converters.*;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
@@ -42,6 +43,7 @@ import java.util.stream.Collectors;
 
 import static com.bixuebihui.db.Dialect.*;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.emptySet;
 import static java.util.regex.Pattern.CASE_INSENSITIVE;
 import static java.util.regex.Pattern.MULTILINE;
 
@@ -146,7 +148,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @param fields a {@link java.lang.String} object.
      * @return an array of {@link java.lang.String} objects.
      */
-    protected static String[] fields(String... fields) {
+    protected static String[] getReturnFields(String... fields) {
         return fields;
     }
 
@@ -182,39 +184,6 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         return "'" + SQLUtil.escapeString(s) + "'";
     }
 
-    /**
-     * <p>detectDbType.</p>
-     *
-     * @param driverName a {@link java.lang.String} object.
-     * @return a int.
-     */
-    public static int detectDbType(String driverName) {
-        int res = UNKNOWN;
-        String name = driverName.toUpperCase();
-        if (name.contains("ORACLE")) {
-            res = ORACLE;
-        } else if (name.contains("DERBY")) {
-            res = DERBY;
-        } else if (name.contains("MYSQL")) {
-            res = MYSQL;
-        } else if (name.contains("SQLSERVER")) {
-            // sqlserver 2000
-            res = SQLSERVER;
-            //} else if (name.contains("SQL SERVER 201") || name.contains("SQL SERVER 202")) {
-
-        } else if (name.contains("SQL SERVER")) {
-            res = SQLSERVER_2010_AND_UP; //2010 ~ 2029
-            // sql server 2005
-            //  res = SQLSERVER_2005_AND_UP;
-        } else if (name.contains("POSTGRESQL")) {
-            res = POSTGRESQL;
-        } else if (name.contains("H2")) {
-            res = H2;
-        } else if (name.contains("ACCESS")) {
-            res = ACCESS;
-        }
-        return res;
-    }
 
     /**
      * MS SQL Server 2005 and up
@@ -434,8 +403,8 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     /**
      * contain field check
      *
-     * @param field
-     * @param fields
+     * @param field field name
+     * @param fields field set
      * @return true if fields is empty or contains field, ignore
      */
     protected static boolean containsIgnoreCase(String field, Set<String> fields) {
@@ -464,7 +433,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
 
     public static String getPagingSql(String driverName, String selectSql, int startNum, int endNum) {
 
-        int dbtype = detectDbType(driverName);
+        int dbtype = Dialect.detectDbType(driverName);
 
         return getPagingSql(selectSql, startNum, endNum, dbtype);
 
@@ -515,8 +484,20 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         return databaseName;
     }
 
+    /**
+     * must override this method
+     * @return a {@link java.lang.String} field names.
+     */
     public List<String> getAllFields() {
         return emptyList();
+    }
+
+    /**
+     * must override this method
+     * @return a {@link java.lang.String} primary key field names.
+     */
+    public List<String> getKeyFields() {
+        return getKeyName()!=null? List.of(getKeyName()): emptyList();
     }
 
     /**
@@ -822,6 +803,22 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         return update(fieldNames, params, whereClause, new Object[]{}, null);
     }
 
+    protected String getUpdateSql(Set<String> excludeFields) {
+        if(excludeFields==null || excludeFields.isEmpty()){
+            return getUpdateSql();
+        }
+
+        List<String> updateFields = new ArrayList<>(getAllFields());
+        updateFields.removeAll(getKeyFields());
+
+        if(!CollectionUtils.isEmpty(excludeFields)){
+            updateFields.removeAll(excludeFields);
+        }
+        return "update "+this.getTableName()+" set "
+                + questionSetPair(updateFields) +
+                " where "+questionAndPair(getKeyFields());
+    }
+
     /**
      * <p>getUpdateSql.</p>
      *
@@ -836,10 +833,23 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
             throw new DbException("参数fieldNames不能为空");
         }
 
-        String res = StringUtils.join(fieldNames, "=?, ") + "=? ";
+        String res = questionSetPair(fieldNames);
 
         return "update " + this.getTableName() + " set " + res + whereClause;
     }
+
+    private static String questionSetPair(String[] fieldNames) {
+        return StringUtils.join(fieldNames, "=?, ") + "=? ";
+    }
+
+    private static String questionSetPair(List<String> fieldNames) {
+        return StringUtils.join(fieldNames, "=?, ") + "=? ";
+    }
+
+    protected static String questionAndPair(List<String> keyFields) {
+        return StringUtils.join(keyFields, "=? and ") + "=? ";
+    }
+
 
     protected String getUpdateSql(String[] fields, Object[] values, String whereClause, Object[] whereParams, List<Object> allParams) {
         if (fields == null || fields.length == 0) {
@@ -989,7 +999,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
             if (getDbHelper() != null) {
                 try (Connection cn = getDbHelper().getConnection()) {
 
-                    dbtype = detectDbType(cn.getMetaData().getDriverName());
+                    dbtype = Dialect.detectDbType(cn.getMetaData().getDriverName());
                     supportsMultipleResultSets = cn.getMetaData().supportsMultipleResultSets();
                 } catch (SQLException exception) {
                     throw new DbException(exception);
@@ -1718,6 +1728,14 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         return new Object[0];
     }
 
+    protected Object[] getUpdateObjs(T info, Set<String> excludeFields) {
+        if(excludeFields == null || excludeFields.isEmpty()) {
+            return getUpdateObjs(info);
+        }
+        assert info != null;
+        return new Object[0];
+    }
+
     /**
      * <p>getInsertObjs.</p>
      *
@@ -1772,12 +1790,18 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     @Override
     public boolean updateByKey(T info) {
         beforeChange(info);
-
         boolean res = 1 == getDbHelper().executeNoQuery(getUpdateSql(), getUpdateObjs(info));
         afterUpdate(info, res);
-
         return res;
     }
+
+    public boolean updateByKey(T info, Set<String> excludeFields) {
+        beforeChange(info);
+        boolean res = 1 == getDbHelper().executeNoQuery(getUpdateSql(excludeFields), getUpdateObjs(info, excludeFields));
+        afterUpdate(info, res);
+        return res;
+    }
+
 
     public boolean updateByKey(T info, String shardTableName) {
         beforeChange(info);
@@ -1806,6 +1830,8 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         beforeChange(info);
         return 1 == getDbHelper().executeNoQuery(getUpdateSql(), getUpdateObjs(info), cn);
     }
+
+
 
     public boolean updateByKey(T info, Connection cn, String tableShardName) {
         beforeChange(info);
@@ -1917,6 +1943,11 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         return updateBatch(infos, null);
     }
 
+
+    public boolean updateBatch(List<T> infos, Set<String> excludeFields) {
+        return updateBatch(infos, null, excludeFields);
+    }
+
     /**
      * Inserts the Agent object values into the database.
      *
@@ -2011,12 +2042,12 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         return res;
     }
 
-    public boolean updateBatch(List<T> infos, Connection cn) {
+    public boolean updateBatch(List<T> infos, Connection cn, Set<String> excludeFields) {
         beforeChange(infos);
 
-        List<Object[]> a = infos.stream().map(this::getUpdateObjs).collect(Collectors.toList());
+        List<Object[]> a = infos.stream().map(it -> getUpdateObjs(it, excludeFields)).collect(Collectors.toList());
 
-        boolean res = infos.size() == getDbHelper().executeNoQueryBatch(getUpdateSql(), a, cn);
+        boolean res = infos.size() == getDbHelper().executeNoQueryBatch(getUpdateSql(excludeFields), a, cn);
 
         afterUpdate(infos, res);
         return res;

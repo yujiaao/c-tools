@@ -5,18 +5,22 @@ package {{config.packageName}}{{viewModifier}}.dal;
 import java.sql.*;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.Locale;
 import javax.sql.DataSource;
+import com.bixuebihui.jdbc.RowMapperResultReader;
 import {{config.packageName}}{{viewModifier}}.business.*;
 import {{config.packageName}}{{viewModifier}}.pojo.*;
-import com.bixuebihui.jdbc.RowMapperResultReader;
-import com.bixuebihui.DbException;
 {{#if tableInfo.isView}}
 import com.bixuebihui.jdbc.AbstractViewBaseDao;
 {{else}}
 import {{config.packageName}}.BaseList;
 {{/if}}
 import javax.annotation.processing.Generated;
+
+import static java.util.Collections.emptySet;
 
 @Generated("com.github.yujiaao:tablegen")
 public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{{else}}BaseList{{/if}}<{{pojoClassName}}, {{{firstKeyType}}}>
@@ -45,11 +49,23 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
         public static String[] getAllFields() {
             return new String[] { {{#each fields}}{{constantName this.name}}{{#unless @last}}, {{/unless}}{{/each}} };
         }
+        public static String[] getKeyFields(){
+            return new String[] {
+            {{#each keys~}}
+                F.{{constantName this}}{{#unless @last}}, {{/unless}}
+            {{/each}}
+            };
+        }
     }
 
     @Override
     public List<String> getAllFields(){
         return Arrays.asList(F.getAllFields());
+    }
+
+    @Override
+    public List<String> getKeyFields(){
+        return Arrays.asList(F.getKeyFields());
     }
 
 {{#unless tableInfo.isView}}
@@ -62,7 +78,6 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
    protected String getInsertSql(){
        return "{{{insertSql}}}";
    }
-
 
     @Override
     protected String getUpdateSql(){
@@ -79,6 +94,19 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
    protected Object[] getUpdateObjs({{pojoClassName}}  info){
       return new Object[]{ {{updateObjects}} };
    }
+
+    @Override
+    protected Object[] getUpdateObjs({{pojoClassName}}  info, Set<String> excludeFields){
+        if(excludeFields==null || excludeFields.isEmpty()){
+            return getUpdateObjs(info);
+        }
+        List<Object> list = new java.util.ArrayList<>();
+        Set<String> localExcludeFields = excludeFields.stream()
+            .map(x -> getFieldAlias(x.toLowerCase(Locale.ROOT))).collect(Collectors.toSet());
+
+{{updateObjectsWithExcludeFields}}
+        return list.toArray();
+    }
 {{/unless}}
 
 {{#if tableInfo.isView}}
@@ -174,7 +202,6 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
 {{/unless}}
 {{! writeGetNextKey(keyData, colData); }}
 {{#if hasKey}}{{#unless tableInfo.isView}}
-
       {{#gt keys.size 1}}
           public {{{firstKeyType}}} getNextKey(){
             throw new IllegalStateException("no autokey for union keys");
@@ -315,27 +342,6 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
         return x.selectBy{{this.fKTableName}}__{{this.fKColumnName}}({{#each this.pKColList}} {{name}} {{#unless @last}},{{/unless}} {{/each}});
     }
 {{/each}}
-{{! foreign key }}
-{{!-- {{#if config.indexes}}{{#if indexData.[0]}} --}}
-
-{{!--     /** --}}
-{{!--     * Select from the database for table {{tableName}} by index  {{#each indexData as | field |}}{{field.name}}{{#unless @last}},{{/unless}}{{/each}} --}}
-{{!--     */ --}}
-{{!--     public List<{{pojoClassName}}> selectByIndex({{#each indexData as | field |}}{{colType tableName field.name}} {{field.name}}{{#unless @last}},{{/unless}}{{/each}}) --}}
-{{!--     { --}}
-{{!--         String query = "select * from {{tableName}}"; --}}
-{{!--         String where = " where {{#each this.indexData}} {{this}}=?{{#unless @last}} and {{/unless}}{{/each}}"; --}}
-{{!--         String query = query + where ; --}}
-
-{{!--         List<{{pojoClassName}}> info = dbHelper.executeQuery(query, Object[]{ --}}
-{{!--           {{#each indexData}} {{this}} {{#unless @last}}, {{/unless}} {{/each}} } , new RowMapperResultReader<" + getPojoClassName(tableName) + ">(this));"); --}}
-{{!--         if(info!=null && info.size()>0) { --}}
-{{!--           return  info.get(0); --}}
-{{!--         } --}}
-{{!--         return null; --}}
-{{!--     } --}}
-
-{{!-- {{/if}}{{/if}} --}}
 
 {{#if config.indexes}}
     {{{ indexWriter }}}

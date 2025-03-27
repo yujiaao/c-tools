@@ -36,7 +36,10 @@ import static java.util.Collections.emptySet;
  * @author xingwx
  * @version $Id: $Id
  */
-public interface ActiveRecord<T> extends Record<T>, Customizer<T> {
+public interface ActiveRecord<T>
+        extends Record<T>,
+        Customizer<T>,
+        StatisticRecord<T> {
 
     /**
      * Constant <code>ORDER_ASC=0</code>
@@ -113,7 +116,6 @@ public interface ActiveRecord<T> extends Record<T>, Customizer<T> {
      * JDBC ResultSet 的getInt, getLong, getDouble, getFloat等方法，不论数据库中是否存储为null，都返回0，或者0.0。
      * 注意：这个wasNull判断一定要紧跟在你想要判断非空的那个字段取动作之后，否则它判断的就不是你所期望的那个column值了。
      *
-     * @return
      */
     ActiveRecord<T> keepNullForNumberField();
 
@@ -225,6 +227,17 @@ public interface ActiveRecord<T> extends Record<T>, Customizer<T> {
      * @return a {@link ActiveRecord} object.
      */
     ActiveRecord<T> smallerThan(String field, Object value);
+
+
+    /**
+     * use for native function use such as sql("json_contains(field, ?)", value)
+     *  or sql("json_contains_any(field, ?)", value),
+     *  which value is a json array such as [1,2,3], or ["x","y","z"] etc.
+     * @param field may be a function expression
+     * @param value value as function parameter
+     * @return this
+     */
+    ActiveRecord<T> sql(String field, Object... value);
 
     /**
      * less than, same as smallerThan
@@ -382,13 +395,13 @@ public interface ActiveRecord<T> extends Record<T>, Customizer<T> {
      */
     ActiveRecord<T> tableName(String partitionTableName);
 
+
     /**
-     * <p>fields.</p>
-     *
-     * @param resultFields a {@link java.lang.String} object.
-     * @return a {@link ActiveRecord} object.
+     * return ResultSet fields
+     * @param fields table or view fields
+     * @return this
      */
-    ActiveRecord<T> fields(String resultFields);
+    ActiveRecord<T> fields(String... fields);
 
     /**
      * <p>join.</p>

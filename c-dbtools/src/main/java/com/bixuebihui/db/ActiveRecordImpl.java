@@ -18,6 +18,7 @@ import java.util.*;
 import java.util.function.Function;
 
 import static com.bixuebihui.db.Dialect.*;
+import static com.bixuebihui.jdbc.BaseDao.getFieldAlias;
 
 /**
  * Created with IntelliJ IDEA. User: Administrator Date: 13-4-18 Time: 下午5:57 To
@@ -40,12 +41,12 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
     BaseDao<T, V> operator;
     Connection cn;
     private boolean keepNullForNumberField = false;
-    private Function<SqlHelper, SqlHelper> filterInterceptor = it -> it;
-    private Function<SqlHelper, SqlHelper> havingInterceptor = it -> it;
-    private Function<SqlSort, SqlSort> sortInterceptor = it -> it;
-    private Function<SqlGroup, SqlGroup> groupInterceptor = it -> it;
-    private Function<List<Object>, List<Object>> paramsInterceptor = it -> it;
-    private Function<String, String> coreSqlInterceptor = it -> it;
+    private Function<SqlHelper, SqlHelper> filterInterceptor = Function.identity();
+    private Function<SqlHelper, SqlHelper> havingInterceptor = Function.identity();
+    private Function<SqlSort, SqlSort> sortInterceptor = Function.identity();
+    private Function<SqlGroup, SqlGroup> groupInterceptor = Function.identity();
+    private Function<List<Object>, List<Object>> paramsInterceptor = Function.identity();
+    private Function<String, String> coreSqlInterceptor = Function.identity();
     private SqlPocket sqlPocket;
     private boolean useLast = false;
     private String tableAlias;
@@ -305,6 +306,12 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
     @Override
     public ActiveRecord<T> smallerThan(String field, Object value) {
         filterStack.smallerThan(field, value);
+        return this;
+    }
+
+    @Override
+    public ActiveRecord<T> sql(String field, Object... value) {
+        filterStack.sql(field, value);
         return this;
     }
 
@@ -661,6 +668,14 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
     @Override
     public int count() throws DbException {
         try {
+           return innerCount();
+        } finally {
+            clear();
+        }
+    }
+
+    private int innerCount() throws DbException {
+
             sqlPocket = this.getSql();
             SqlPocket having = parseHaving();
             String where = formWhereClause() + parseGroupBy() + having.getCondition();
@@ -675,9 +690,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
             }
 
             return operator.countWhere(tableNameAlias, innerSelect ? "" : where, list.toArray());
-        } finally {
-            clear();
-        }
+
     }
 
     /**
@@ -766,10 +779,11 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
      * {@inheritDoc}
      */
     @Override
-    public ActiveRecord<T> fields(String resultFields) {
-        this.resultFields = resultFields;
+    public ActiveRecord<T> fields(String... fields) {
+        this.resultFields = fields.length==1 ? fields[0] : String.join(",", fields);
         return this;
     }
+
 
     /**
      * {@inheritDoc}
@@ -968,4 +982,16 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
     }
 
 
+    @Override
+    public Object percentile(String field, float portion) throws DbException {
+        int count = this.innerCount();
+        if (count == 0) {
+            return 0;
+        }
+
+        return this.fields(field)
+                .desc(field)
+                .limit((int) ((count-1) * (1-portion)), 1)
+                .get(getFieldAlias(field));
+    }
 }

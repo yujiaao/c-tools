@@ -48,7 +48,7 @@ public class RowMapperResultReader<T> {
      */
     public @NotNull List<T> processResultSet(ResultSet rs, Set<String> fields) throws SQLException {
         if(res==null){
-            res = new ArrayList<T>();
+            res = new ArrayList<>();
         }else{
             res.clear();
         }

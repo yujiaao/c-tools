@@ -1,10 +1,14 @@
 package com.bixuebihui.tablegen.entry;
 
 import com.bixuebihui.algorithm.LRULinkedHashMap;
+import com.bixuebihui.db.Dialect;
 import com.bixuebihui.generated.tablegen.business.T_metatableManager;
 import com.bixuebihui.generated.tablegen.pojo.T_metacolumn;
 import com.bixuebihui.generated.tablegen.pojo.T_metatable;
-import com.bixuebihui.jdbc.*;
+import com.bixuebihui.jdbc.IDbHelper;
+import com.bixuebihui.jdbc.JDBCUtils;
+import com.bixuebihui.jdbc.RowMapperResultReader;
+import com.bixuebihui.jdbc.SqlFileExecutor;
 import com.bixuebihui.tablegen.*;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -150,6 +154,27 @@ public class TableSetInfo implements KeyInfo {
         return classCommentTmp;
     }
 
+    static String insertTop1(String sql) {
+        if (sql.contains(" top ") || sql.contains(" TOP ")) {
+            return sql;
+        }
+
+        StringTokenizer tokenizer = new StringTokenizer(sql);
+        StringBuilder sb = new StringBuilder();
+        boolean first = true;
+        while (tokenizer.hasMoreElements()) {
+            String next = tokenizer.nextElement().toString();
+            if (first && next.equalsIgnoreCase("select")) {
+                sb.append("select top 1 ");
+                first = false;
+            } else {
+                sb.append(next).append(" ");
+            }
+        }
+        sb.deleteCharAt(sb.length() - 1);
+        return sb.toString();
+    }
+
     public LinkedHashMap<String, TableInfo> getViewInfos() {
         return viewInfos;
     }
@@ -188,6 +213,14 @@ public class TableSetInfo implements KeyInfo {
     }
 
     public List<ColumnData> getTableCols(String tableName) {
+        if(this.getTableInfos()==null){
+            LOG.error("tableInfos is null");
+            return Collections.emptyList();
+        }
+        if(this.getTableInfos().get(tableName)==null){
+            LOG.error("tableInfos.get("+tableName+") is null");
+            return Collections.emptyList();
+        }
         return this.getTableInfos().get(tableName).getFields();
     }
 
@@ -300,7 +333,7 @@ public class TableSetInfo implements KeyInfo {
         return ht;
     }
 
-    public boolean insertOrUpdateMetatable(T_metatable metatable, T_metatableManager daoMetaTable) throws SQLException {
+    public boolean insertOrUpdateMetatable(T_metatable metatable, T_metatableManager daoMetaTable) {
         if (metatable.getTid() <= 0) {
             return daoMetaTable.insertAutoNewKey(metatable);
         } else {
@@ -308,7 +341,7 @@ public class TableSetInfo implements KeyInfo {
         }
     }
 
-    public boolean initTableData(LinkedHashMap<String, TableInfo> tableNames, T_metatableManager daoMetaTable) throws SQLException {
+    public boolean initTableData(LinkedHashMap<String, TableInfo> tableNames, T_metatableManager daoMetaTable) {
         if (tableNames != null) {
             T_metatable[] infos = new T_metatable[tableNames.size()];
             int i = 0;
@@ -410,7 +443,7 @@ public class TableSetInfo implements KeyInfo {
      * @param dbHelper  database helper
      * @param tableName table name
      */
-    protected void initIndex(ProjectConfig config, IDbHelper dbHelper, String tableName) {
+    protected void initIndex(ProjectConfig config, DatabaseMetaData metaData, String tableName) {
         // use a hashmap to temporarily store the indexes as well
         // so we can avoid duplicate values.
         String primary = "PRIMARY";
@@ -426,7 +459,7 @@ public class TableSetInfo implements KeyInfo {
          * unique : 该参数为 true 时，仅返回惟一值的索引；该参数为 false 时，返回所有索引，不管它们是否惟一
          * approximate : 该参数为 true 时，允许结果是接近的数据值或这些数据值以外的值；该参数为 false 时，要求结果是精确结果
          */
-        try (ResultSet r = dbHelper.getConnection().getMetaData().getIndexInfo(config.getCatalog(), config.getSchema(), tableName, false, false)) {
+        try (ResultSet r = metaData.getIndexInfo(config.getCatalog(), config.getSchema(), tableName, false, false)) {
             while (r.next()) {
                 indexName = r.getString(6);
                 //skip primary key, 主键不处理
@@ -448,27 +481,24 @@ public class TableSetInfo implements KeyInfo {
         indexCache.put(tableName, indexData);
     }
 
+    private void initExportKeys(ProjectConfig config, IDbHelper dbHelper, DatabaseMetaData metaData, String tableName) throws SQLException {
 
-    private void initExportKeys(ProjectConfig config, IDbHelper dbHelper, String tableName) throws SQLException {
-        if (config.isForeignKeys()) {
-            try (Connection cn = dbHelper.getConnection()) {
-                DatabaseMetaData metaData = cn.getMetaData();
-                if (isMysql(metaData)) {
-                    //针对mysql的优化, 一次加载全部外键
-                    if (getForeignKeyExCache().isEmpty()) {
-                        getForeignKeyExCache().putAll(TableUtils.getAllMySQLExportKeys(dbHelper, config.getTableOwner()));
-                    }
-                    if (getForeignKeyExCache().containsKey(tableName)) {
-                        LOG.info(tableName + " has  ExportKey in cache:" + getForeignKeyExCache().get(tableName));
-                    } else {
-                        LOG.debug(tableName + " does not have a ExportKey in cache");
-                    }
-                    return;
+
+            if (isMysql(metaData)) {
+                //针对mysql的优化, 一次加载全部外键
+                if (getForeignKeyExCache().isEmpty()) {
+                    getForeignKeyExCache().putAll(TableUtils.getAllMySQLExportKeys(dbHelper, config.getTableOwner()));
                 }
-                List<ForeignKeyDefinition> foreignKeyData = TableUtils.getTableExportedKeys(metaData, config.getCatalog(), config.getTableOwner(), tableName);
-                getForeignKeyExCache().put(tableName, foreignKeyData);
+                if (getForeignKeyExCache().containsKey(tableName)) {
+                    LOG.info(tableName + " has  ExportKey in cache:" + getForeignKeyExCache().get(tableName));
+                } else {
+                    LOG.debug(tableName + " does not have a ExportKey in cache");
+                }
+                return;
             }
-        }
+            List<ForeignKeyDefinition> foreignKeyData = TableUtils.getTableExportedKeys(metaData, config.getCatalog(), config.getTableOwner(), tableName);
+            getForeignKeyExCache().put(tableName, foreignKeyData);
+
     }
 
     /**
@@ -478,71 +508,85 @@ public class TableSetInfo implements KeyInfo {
 
         LinkedHashMap<String, TableInfo> col = getTableInfos();
 
-        try (Connection cn = dbHelper.getConnection()) {
-            if (CollectionUtils.isEmpty(col)) {
-                //表名
-                List<String> tableNames =
-                        TableUtils.getTableData(metaData, config.getCatalog(), config.getSchema(),
-                                config.getTableOwner(), config.getTablesList(), config.getExcludeTablesList());
 
-                LOG.info("find tables:" + tableNames);
+            if (CollectionUtils.isEmpty(col)) {
+    String catalog = config.getCatalog();
+            String schema = config.getSchema();
+            boolean isR2dbc = config.getR2dc();
+            //表名
+            List<String> tableNames =
+                    TableUtils.getTableData(metaData, catalog, schema,
+                            config.getTableOwner(), config.getTablesList(), config.getExcludeTablesList());
+
+            LOG.info("find tables:{}" , tableNames);
                 LinkedHashMap<String, TableInfo> tables = new LinkedHashMap<>();
                 for (String name : tableNames) {
-                    TableInfo table = new TableInfo(name);
+                    TableInfo table = getTableInfoWithComment(dbHelper, metaData, name, catalog, schema, isR2dbc);
 
-                    // Fill columns info
-                    TableInfo newInfo = TableUtils.getColumnData(dbHelper, config.getCatalog(), config.getSchema(), name, config.getR2dc());
-                    table.setFields(newInfo.getFields());
-                    tables.put(name, table);
+                tables.put(name, table);
 
-                    // Primary keys info
-                    List<String> keyData = TableUtils.getTableKeys(dbHelper, config.getCatalog(), config.getSchema(), name);
-                    getKeyCache().put(name, keyData);
+                // Primary keys info
+                List<String> keyData = TableUtils.getTableKeys(metaData, catalog, schema, name);
+                getKeyCache().put(name, keyData);
 
-                    if (config.isForeignKeys()) {
+                if (config.isForeignKeys()) {
                         // foreign keys import info
-                        initImportKeys(config, dbHelper, name);
+                        initImportKeys(config, dbHelper, metaData, name);
 
                         // foreign keys export info
-                        initExportKeys(config, dbHelper, name);
+                        initExportKeys(config, dbHelper, metaData,name);
                     }
 
+                // index info
+                initIndex(config, metaData, name);
 
-                    // index info
-                    initIndex(config, dbHelper, name);
 
-                    // table & column's  comment
-                    if (isMysql(metaData)) {
-                        fillMySQLComment(cn, table);
-                    } else if (isSQLServer(metaData)) {
-                        fillSQLServerTableComment(dbHelper, table);
-                    }
-                }
-
-                setTableInfos(tables);
-            } else {
-                LOG.info("tableNames already set, retrieve from db skipped.");
             }
 
-            // Custom meta info from db table
-            if (config.isUseCustomMetaTable()) {
-                setTableDataExt(getTableDataExt(dbHelper, getTableInfos()));
-            }
+            setTableInfos(tables);
+        } else {
+            LOG.info("tableNames already set, retrieve from db skipped.");
+        }
 
-            // Custom meta info from xml
-            if (StringUtils.isNotEmpty(config.getExtraSetting())) {
-                setTableDataExt(getExtraTableDataFromXml(
-                        config.getBaseDir() + config.getExtraSetting(), getTableDataExt()));
-            }
+        // Custom meta info from db table
+        if (config.isUseCustomMetaTable()) {
+            setTableDataExt(getTableDataExt(dbHelper, getTableInfos()));
+        }
+
+        // Custom meta info from xml
+        if (StringUtils.isNotEmpty(config.getExtraSetting())) {
+            setTableDataExt(getExtraTableDataFromXml(
+                    config.getBaseDir() + config.getExtraSetting(), getTableDataExt()));
         }
 
     }
 
+    public static TableInfo getTableInfoWithComment(IDbHelper dbHelper, DatabaseMetaData metaData, String name, String catalog, String schema, boolean isR2dbc) throws SQLException {
+        LOG.info("extract info for table:{}", name);
+        TableInfo table = new TableInfo(name);
+
+        // Fill columns info
+        TableInfo newInfo = TableUtils.getColumnData(dbHelper, metaData, catalog, schema, name, isR2dbc);
+        table.setFields(newInfo.getFields());
+        fillComment(dbHelper, metaData, table);
+        return table;
+    }
+
+    private static void fillComment(IDbHelper dbHelper, DatabaseMetaData metaData, TableInfo table) throws SQLException {
+        // table & column's  comment
+        if (isMysql(metaData)) {
+            try (Connection cn = dbHelper.getConnection()) {
+                fillMySQLComment(cn, table);
+            }
+        } else if (isSQLServer(metaData)) {
+            fillSQLServerTableComment(dbHelper, table);
+        }
+    }
 
     /**
      * Retrieves all the table data required.
      */
-    public synchronized void getOnFlyViewData(ProjectConfig config, IDbHelper dbHelper) throws SQLException, IOException {
+    public synchronized void getOnFlyViewData(ProjectConfig config, IDbHelper dbHelper, DatabaseMetaData metaData) throws SQLException, IOException {
 
         if (config.getViewList() == null) {
             return;
@@ -551,7 +595,7 @@ public class TableSetInfo implements KeyInfo {
         LinkedHashMap<String, TableInfo> viewInfos = new LinkedHashMap<>();
 
         try (Connection cn = dbHelper.getConnection()) {
-            int dbType = BaseDao.detectDbType(cn.getMetaData().getDriverName());
+            int dbType = Dialect.detectDbType(cn.getMetaData().getDriverName());
 
             for (String name : config.getViewList().keySet()) {
                 String originalSql = config.getViewList().get(name);
@@ -563,7 +607,8 @@ public class TableSetInfo implements KeyInfo {
                             public List<Object> processResultSet(ResultSet rs, Set<String> set) {
 
                                 try {
-                                    TableInfo info = OnFlyViewUtils.getColumnData(rs.getMetaData(), name, dbType, config.getR2dc());
+                                    TableInfo info = OnFlyViewUtils.getColumnData(rs.getMetaData(),
+                                            name, dbType, config, cn, dbHelper, metaData);
                                     info.setComment(name);
                                     info.setViewSql(originalSql);
                                     viewInfos.put(name, info);
@@ -596,43 +641,24 @@ public class TableSetInfo implements KeyInfo {
         return sql;
     }
 
-    static String insertTop1(String sql) {
-        if (sql.contains(" top ") || sql.contains(" TOP ")) {
-            return sql;
-        }
+    private void initImportKeys(ProjectConfig config, IDbHelper dbHelper, DatabaseMetaData metaData, String tableName) throws SQLException {
 
-        StringTokenizer tokenizer = new StringTokenizer(sql);
-        StringBuilder sb = new StringBuilder();
-        boolean first = true;
-        while (tokenizer.hasMoreElements()) {
-            String next = tokenizer.nextElement().toString();
-            if (first && next.equalsIgnoreCase("select")) {
-                sb.append("select top 1 ");
-                first = false;
-            } else {
-                sb.append(next).append(" ");
-            }
-        }
-        sb.deleteCharAt(sb.length() - 1);
-        return sb.toString();
-    }
 
-    private void initImportKeys(ProjectConfig config, IDbHelper dbHelper, String tableName) throws SQLException {
-        DatabaseMetaData metaData = dbHelper.getConnection().getMetaData();
         if (isMysql(metaData)) {
             //针对mysql的优化, 一次加载全部外键
             if (getForeignKeyImCache().isEmpty()) {
                 getForeignKeyImCache().putAll(TableUtils.getAllMySQLImportKeys(dbHelper, config.getTableOwner()));
             }
             if (getForeignKeyImCache().containsKey(tableName)) {
-                LOG.info(tableName + " has  ImportKey in cache:" + getForeignKeyImCache().get(tableName));
+                LOG.info( "{} has  ImportKey in cache:{}" , tableName, getForeignKeyImCache().get(tableName));
             } else {
-                LOG.debug(tableName + "have not a ImportKey in cache");
+                LOG.debug( "{} have not a ImportKey in cache", tableName);
+                }
+                return;
+
             }
-            return;
-        }
-        List<ForeignKeyDefinition> foreignKeyData = TableUtils.getTableImportedKeys(metaData, config.getCatalog(), config.getTableOwner(), tableName);
-        getForeignKeyImCache().put(tableName, foreignKeyData);
+            List<ForeignKeyDefinition> foreignKeyData = TableUtils.getTableImportedKeys(metaData, config.getCatalog(), config.getTableOwner(), tableName);
+            getForeignKeyImCache().put(tableName, foreignKeyData);
     }
 
     /**

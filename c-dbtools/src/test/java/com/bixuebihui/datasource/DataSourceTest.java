@@ -21,19 +21,18 @@ import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class DataSourceTest {
 
 	private static final Logger LOG = LoggerFactory.getLogger(DataSourceTest.class);
 	protected static DatabaseConfig cfg = new DatabaseConfig();
 	static {
-		/**
-		 * Execute the following sql to create a test database and user:
-		 *  create database test  default character set utf8mb4 collate utf8mb4_unicode_ci;
-		 *  create user 'test' identified by 'test123';
-		 *  grant all privileges on test.* to  'test'@'%' ;
+		/*
+		  Execute the following sql to create a test database and user:
+		   create database test  default character set utf8mb4 collate utf8mb4_unicode_ci;
+		   create user 'test' identified by 'test123';
+		   grant all privileges on test.* to  'test'@'%' ;
 		 */
 		cfg.setAlias("test1");
 		cfg.setClassName("com.mysql.cj.jdbc.Driver");
@@ -72,35 +71,53 @@ public class DataSourceTest {
 		return mybd.ar().limit(0, count).getLongVector("lid");
 	}
 
+	static Connection getConnection(DataSource ds) throws SQLException {
+		Connection cn  = ds.getConnection();
+        assertNotNull(cn);
+		if(cn.isClosed()){
+			LOG.error("connection is closed");
+			LOG.error("try get another");
+			return ds.getConnection();
+		}
+		return cn;
+	}
+
 	public static  void dataSourceTest(DataSource ds) throws SQLException {
 		Date dtStart = new Date();
+		String sql="";
+		try(Connection cn = getConnection(ds)) {
+			sql = getDummySql(cn);
+		}
+		try(Connection cn = getConnection(ds)) {
 
-		String sql = getDummySql(ds.getConnection());
+			for (int i = 0; i < 20; i++) {
+				ResultSet rs = null;
+				Statement stmt = null;
+				try {
+					if(!cn.isClosed()) {
+						stmt = cn.createStatement();
+					}else{
+						LOG.error("connection is closed in loop i="+i);
+						return;
+					}
 
-		for (int i = 0; i < 20; i++) {
-			Connection cn = null;
-			ResultSet rs = null;
-			Statement stmt = null;
-			try {
-				cn = ds.getConnection();
-				stmt = cn.createStatement();
+					rs = stmt.executeQuery("select 1+" + i + " " + sql);
 
-				rs = stmt.executeQuery("select 1+" + i + " " + sql);
-
-				if (rs.next()) {
-					assertEquals(1 + i, rs.getInt(1));
-				} else {
-					LOG.info("dataSourceTest error select");
+					if (rs.next()) {
+						assertEquals(1 + i, rs.getInt(1));
+					} else {
+						LOG.info("dataSourceTest error select");
+					}
+				} catch (SQLException e) {
+					e.printStackTrace();
+					throw e;
+				} finally {
+					DbUtils.closeQuietly(stmt);
+					DbUtils.closeQuietly(rs);
 				}
-			} catch (SQLException e) {
-				e.printStackTrace();
-				throw e;
-
-			} finally {
-
-				DbUtils.closeQuietly(cn, stmt, rs);
 			}
 		}
+
 		Date dtEnd = new Date();
 		LOG.info(ds + " used time:" + (dtEnd.getTime() - dtStart.getTime()) / 1000.0);
 	}

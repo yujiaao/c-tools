@@ -7,10 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -180,8 +177,11 @@ public class TableSetInfoTest {
         t.init(TableSetInfoTest.class.getResource("/tablegen.properties").getPath());
 
         String testGen = "test_gen";
-        setInfo.initIndex(t.getConfig(), dbHelper, testGen);
-        System.out.println(setInfo.getTableIndexes(testGen));
+        try(Connection cn = dbHelper.getConnection()) {
+            DatabaseMetaData metaData = cn.getMetaData();
+            setInfo.initIndex(t.getConfig(), metaData, testGen);
+            System.out.println(setInfo.getTableIndexes(testGen));
+        }
     }
 
     @Test

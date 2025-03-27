@@ -2,6 +2,7 @@ package com.bixuebihui.tablegen;
 
 import com.bixuebihui.cache.DictionaryCache;
 import com.bixuebihui.cache.DictionaryItem;
+import com.bixuebihui.db.Dialect;
 import com.bixuebihui.db.KeywordsUtils;
 import com.bixuebihui.generated.tablegen.pojo.T_metacolumn;
 import com.bixuebihui.jdbc.*;
@@ -26,27 +27,25 @@ import static com.bixuebihui.db.Dialect.*;
  */
 public class TableUtils {
     private static final Logger LOG = LoggerFactory.getLogger(TableUtils.class);
-    private static StopWatch stopWatch = new StopWatch();
+    private static final StopWatch stopWatch = new StopWatch();
     private static boolean first = true;
 
     private static void start(String taskName) {
         stopWatch.start(taskName);
     }
 
-    private static void end() {
+    private static void end(int dbType) {
         stopWatch.stop();
         if (stopWatch.getLastTaskTimeMillis() > 500) {
-            String info = stopWatch.getLastTaskName() + " took:" + stopWatch.getLastTaskTimeMillis() +
-                    "\nYour DB metadata is slow, By using the tip given there : http://www.mysqlperformanceblog.com/2011/12/23/solving-information_schema-slowness/\n" +
-                    "If you use MySQL, try set this in my.cnf :\n" +
-                    "innodb_stats_on_metadata=0" +
-                    "\n and  set " +
-                    "useInformationSchema=true" +
-                    "\n in db url \n";
-            if (first) {
+            if (first && dbType == MYSQL) {
                 first = false;
-                LOG.warn(info);
-            } else {
+                String info = stopWatch.getLastTaskName() + " took:" + stopWatch.getLastTaskTimeMillis() +
+                        "\nYour DB metadata is slow, By using the tip given there : http://www.mysqlperformanceblog.com/2011/12/23/solving-information_schema-slowness/\n" +
+                        "If you use MySQL, try set this in my.cnf :\n" +
+                        "innodb_stats_on_metadata=0" +
+                        "\n and  set " +
+                        "useInformationSchema=true" +
+                        "\n in db url \n";
                 LOG.warn(info);
             }
         } else {
@@ -68,13 +67,12 @@ public class TableUtils {
      *
      * @throws SQLException if any
      */
-    public static List<String> getTableKeys(IDbHelper helper,
+    public static List<String> getTableKeys(DatabaseMetaData metaData,
                                             String catalog, String schema, String tableName)
             throws SQLException {
         start("getTableKeys");
-        DatabaseMetaData metaData = helper.getConnection().getMetaData();
 
-        List<String> keyData = new ArrayList<>();
+        Map<String, String> keyData = new LinkedHashMap();
         ResultSet r = null;
         try {
             String key;
@@ -91,49 +89,48 @@ public class TableUtils {
                 key = r.getString(4);
                 seq = r.getInt(5);
 
-                boolean existsCol = false;
-                for (String dt : keyData) {
-                    if (dt.equalsIgnoreCase(key)) {
-                        existsCol = true;
-                        break;
-                    }
-                }
+                boolean existsCol = keyData.containsKey(key);
+
                 if (existsCol) {
                     continue;
                 }
                 keyMap.put(seq, key);
+                keyData.put(key, key);
             }
-            keyData.addAll(keyMap.values());
+            //keyData.addAll(keyMap);
             if(keyData.isEmpty()){
-                LOG.warn("No primary key found for table " + tableName+" using driver metadata");
-                keyData.addAll(descTable(metaData, tableName));
+                LOG.warn("No primary key found for table {} using driver metadata", tableName);
+                return new ArrayList<>(descTable(metaData, tableName));
             }
 
         } catch (SQLException e) {
             System.err.println("Error whilst getting keys for " + tableName);
             e.printStackTrace(System.err);
         } finally {
-            end();
+            end(detectDbType(metaData.getDriverName()));
             DbUtils.close(r);
         }
 
-        return keyData;
+        return new ArrayList<>(keyData.keySet());
     }
 
     private static Collection<String> descTable(DatabaseMetaData metaData, String tableName) throws SQLException {
         //same db can't get primary key by metadata, try `desc table`
-        String sql = "desc " + tableName;
-        List<String> keyData = new ArrayList<>();
-        new DbHelper(metaData.getConnection()).executeQuery(sql, resultset -> {
-            String key = resultset.getString(1);
-            //for mysql
-            if (resultset.getString(4).equalsIgnoreCase("PRI") ||
-                    //for StarRocks
-                    resultset.getString(4).equalsIgnoreCase("true")) {
-                keyData.add(key);
-            }
-        });
-        return keyData;
+        if(isMysql(metaData)) {
+            String sql = "desc " + tableName;
+            List<String> keyData = new ArrayList<>();
+            new DbHelper(metaData.getConnection()).executeQuery(sql, resultset -> {
+                String key = resultset.getString(1);
+                //for mysql
+                if (resultset.getString(4).equalsIgnoreCase("PRI") ||
+                        //for StarRocks
+                        resultset.getString(4).equalsIgnoreCase("true")) {
+                    keyData.add(key);
+                }
+            });
+            return keyData;
+        }
+        return Collections.emptyList();
     }
 
     /**
@@ -207,7 +204,7 @@ public class TableUtils {
                 foreignKeyData.add(f);
             }
         } finally {
-            end();
+            end(detectDbType(metaData.getDriverName()));
             DbUtils.close(r);
         }
         return foreignKeyData;
@@ -259,7 +256,7 @@ public class TableUtils {
                 foreignKeyData.add(f);
             }
         } finally {
-            end();
+            end(detectDbType(metaData.getDriverName()));
             DbUtils.close(r);
         }
         return foreignKeyData;
@@ -322,10 +319,9 @@ public class TableUtils {
      * @param dbHelper datasource helper
      * @param databaseName database name
      * @return result of schema
-     * @throws SQLException if any
      */
-    public static Map<String, List<ForeignKeyDefinition>> getAllMySQLExportKeys(IDbHelper dbHelper, String databaseName) throws SQLException {
-        String sql = "SELECT\n" +
+    public static Map<String, List<ForeignKeyDefinition>> getAllMySQLExportKeys(IDbHelper dbHelper, String databaseName) {
+        String sql = "SELECT " +
                 "    A.REFERENCED_TABLE_NAME AS PKTABLE_NAME,  -- 3*\n" +
                 "    A.REFERENCED_COLUMN_NAME AS PKCOLUMN_NAME, -- 4*\n" +
                 "    A.TABLE_NAME AS FKTABLE_NAME,    -- 7* \n" +
@@ -403,7 +399,7 @@ public class TableUtils {
      * AND A.REFERENCED_TABLE_SCHEMA IS NOT NULL
      * ORDER BY A.REFERENCED_TABLE_SCHEMA , A.REFERENCED_TABLE_NAME , A.ORDINAL_POSITION
      */
-    public static Map<String, List<ForeignKeyDefinition>> getAllMySQLImportKeys(IDbHelper dbHelper, String databaseName) throws SQLException {
+    public static Map<String, List<ForeignKeyDefinition>> getAllMySQLImportKeys(IDbHelper dbHelper, String databaseName) {
         String sql = "SELECT \t\n" +
                 "    A.REFERENCED_TABLE_NAME AS PKTABLE_NAME,   -- 3 *\n" +
                 "    A.REFERENCED_COLUMN_NAME AS PKCOLUMN_NAME, -- 4 *\t\n" +
@@ -560,7 +556,7 @@ public class TableUtils {
                 }
             }
         } finally {
-            end();
+            end(detectDbType(metaData.getDriverName()));
             DbUtils.close(tables);
         }
         return tableNames;
@@ -673,94 +669,92 @@ public class TableUtils {
      *
      *
      */
-    public static TableInfo getColumnData(IDbHelper dbHelper,
+    public static TableInfo getColumnData(IDbHelper dbHelper,DatabaseMetaData metaData,
                                                  String catalog, String schema, String tableName, boolean isR2dbc) throws SQLException {
         start("getColumnData");
         List<ColumnData> colData = new ArrayList<>();
 
-        DatabaseMetaData metaData = dbHelper.getConnection().getMetaData();
-        ResultSet rs = metaData.getColumns(catalog, schema, tableName, "%");
+            try(ResultSet rs = metaData.getColumns(catalog, schema, tableName, "%")) {
 
-        int dbType = BaseDao.detectDbType(metaData.getDriverName());
+                int dbType = Dialect.detectDbType(metaData.getDriverName());
 
-        Map<String, String > columnComment= new HashMap<>();
-        if( dbType == SQLSERVER|| dbType==SQLSERVER_2005_AND_UP || dbType==SQLSERVER_2010_AND_UP){
-            columnComment = getColumnCommentForSQLServer(dbHelper, tableName);
-        }
-
-        ColumnData cd;
-        int colType;
-        int colCols;
-        int decimalDigits = 0;
-        boolean isNullable;
-        boolean isAutoIncrement;
-        String defaultValue;
-        String remarks;
-
-        try {
-            while (rs.next()) {
-
-                String colName = rs.getString(4);
-
-                // Oracle system columns
-                if (colName.contains("#"))
-                {
-                    continue;
-                }
-                if (isExistsCol(colData, colName)) {
-                    break;
+                Map<String, String> columnComment = new HashMap<>();
+                if (dbType == SQLSERVER || dbType == SQLSERVER_2005_AND_UP || dbType == SQLSERVER_2010_AND_UP) {
+                    columnComment = getColumnCommentForSQLServer(dbHelper, tableName);
                 }
 
-                // 17
-                isNullable = KeywordsUtils.isYes(rs.getString("IS_NULLABLE"));
+                ColumnData cd;
+                int colType;
+                int colCols;
+                int decimalDigits = 0;
+                boolean isNullable;
+                boolean isAutoIncrement;
+                String defaultValue;
+                String remarks;
 
-                //Access driver have not a column named IS_AUTOINCREMENT
-                // 23
-                isAutoIncrement = (dbType != ACCESS) && KeywordsUtils.isYes(rs.getString("IS_AUTOINCREMENT"));
+                try {
+                    while (rs.next()) {
 
-                String digits = rs.getString("DECIMAL_DIGITS");
-                if (StringUtils.isNumeric(digits)) {
-                    decimalDigits = Integer.parseInt(digits);
+                        String colName = rs.getString(4);
+
+                        // Oracle system columns
+                        if (colName.contains("#")) {
+                            continue;
+                        }
+                        if (isExistsCol(colData, colName)) {
+                            break;
+                        }
+
+                        // 17
+                        isNullable = KeywordsUtils.isYes(rs.getString("IS_NULLABLE"));
+
+                        //Access driver have not a column named IS_AUTOINCREMENT
+                        // 23
+                        isAutoIncrement = (dbType != ACCESS) && KeywordsUtils.isYes(rs.getString("IS_AUTOINCREMENT"));
+
+                        String digits = rs.getString("DECIMAL_DIGITS");
+                        if (StringUtils.isNumeric(digits)) {
+                            decimalDigits = Integer.parseInt(digits);
+                        }
+
+                        // REMARKS String => 描述列的注释（可为 null）
+                        remarks = rs.getString("REMARKS");
+                        if (remarks == null && (dbType == SQLSERVER_2010_AND_UP || dbType == SQLSERVER_2005_AND_UP || dbType == SQLSERVER)) {
+                            remarks = columnComment.get(colName);
+                        }
+
+                        //COLUMN_DEF String => 该列的默认值，当值在单引号内时应被解释为一个字符串（可为 null）
+                        defaultValue = rs.getString("COLUMN_DEF");
+
+                        // column type (XOPEN values)
+                        colType = rs.getInt(5);
+                        // size e.g. varchar(20)
+                        colCols = rs.getInt(7);
+                        cd = new ColumnData(colName, colType, colCols, isNullable,
+                                isAutoIncrement, decimalDigits, defaultValue, remarks, isR2dbc);
+                        colData.add(cd);
+                    }
+                } catch (SQLException e) {
+                    System.err.println("Driver name:" + metaData.getDriverName());
+
+                    for (int i = 0; i < rs.getMetaData().getColumnCount(); i++) {
+                        System.err.println(i + " : " + rs.getMetaData().getColumnName(i + 1) + " -> " + rs.getMetaData().getColumnLabel(i + 1));
+                    }
+                    throw e;
+                } finally {
+                    end(dbType);
                 }
-
-                // REMARKS String => 描述列的注释（可为 null）
-                remarks = rs.getString("REMARKS");
-                if(remarks==null && (dbType == SQLSERVER_2010_AND_UP || dbType == SQLSERVER_2005_AND_UP || dbType==SQLSERVER)){
-                    remarks = columnComment.get(colName);
-                }
-
-                //COLUMN_DEF String => 该列的默认值，当值在单引号内时应被解释为一个字符串（可为 null）
-                defaultValue = rs.getString("COLUMN_DEF");
-
-                // column type (XOPEN values)
-                colType = rs.getInt(5);
-                // size e.g. varchar(20)
-                colCols = rs.getInt(7);
-                cd = new ColumnData(colName, colType, colCols, isNullable,
-                        isAutoIncrement, decimalDigits, defaultValue, remarks, isR2dbc);
-                colData.add(cd);
             }
-        } catch (SQLException e) {
-            System.err.println("Driver name:" + metaData.getDriverName());
+            TableInfo tableInfo = new TableInfo(tableName);
+            tableInfo.setFields(colData);
 
-            for (int i = 0; i < rs.getMetaData().getColumnCount(); i++) {
-                System.err.println(i + " : " + rs.getMetaData().getColumnName(i + 1) + " -> " + rs.getMetaData().getColumnLabel(i + 1));
-            }
-            throw e;
-        } finally {
-            end();
-            DbUtils.close(rs);
-        }
-        TableInfo tableInfo = new TableInfo(tableName);
-        tableInfo.setFields(colData);
-
-        return tableInfo;
+            return tableInfo;
 
     }
 
     private static Map<String, String> getColumnCommentForSQLServer(IDbHelper dbHelper, String tableName) {
-        String sql ="SELECT\n" +
-                "    B.name AS column_name,\n" +
+        String sql ="SELECT " +
+                "    B.name AS column_name, " +
                 "    C.value AS column_description\n" +
                 "FROM sys.tables A\n" +
                 "         INNER JOIN sys.columns B ON B.object_id = A.object_id\n" +
@@ -798,9 +792,9 @@ public class TableUtils {
     }
 
 
-    private static boolean isExistsCol(List<ColumnData> colData, String colName) {
-        for (ColumnData dt : colData) {
-            if (dt.getName().equalsIgnoreCase(colName)) {
+    public static boolean isExistsCol(List<ColumnData> colData, String colName) {
+        for (ColumnData col : colData) {
+            if (col.getName().equalsIgnoreCase(colName)) {
                 return true;
             }
         }
@@ -880,7 +874,7 @@ public class TableUtils {
                 }
                 if (isNeedNotNullAnnotation(config, cd)) {
                     if (sb.indexOf("@NotNull") < 0) {
-                        if (sb.length() > 0) {
+                        if (!sb.isEmpty()) {
                             sb.append("    ");
                         }
                         sb.append("@NotNull\n");
@@ -889,7 +883,7 @@ public class TableUtils {
             }
 
             if(config.useSwagger && StringUtils.isNotBlank(cd.getComment())){
-                if(sb.length()>0){
+                if(!sb.isEmpty()){
                     sb.append("    ");
                 }
                 if(config.getSwaggerVersion().equals("2")) {

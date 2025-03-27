@@ -29,7 +29,7 @@ public class EsJsonSchemaGenerator extends BaseGenerator {
     String getClassSuffix(){return CLASS_SUFFIX;}
 
     @Override
-    String getTemplateFileName() {
+    String getTemplateFileName(String tableName) {
         return "business.java";
     }
 
