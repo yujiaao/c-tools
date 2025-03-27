@@ -7,7 +7,7 @@ import java.io.Serializable;
 import org.apache.commons.text.StringEscapeUtils;
 
 import javax.annotation.processing.Generated;
-
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 {{#if config.useSwagger}}
 {{#eq config.swaggerVersion "2" }}
@@ -34,6 +34,9 @@ public class {{className}} {{interface}} {
      * {{columnDescription this tableName}}
      */
     {{{columnAnnotation this tableName}}}
+    {{#eq "Timestamp" type~}}
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
+    {{/eq~}}
     protected {{javaType}}  {{firstLow name}};
 {{/each}}
 
