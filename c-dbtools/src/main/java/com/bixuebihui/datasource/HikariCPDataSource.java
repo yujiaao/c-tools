@@ -1,16 +1,10 @@
 package com.bixuebihui.datasource;
 
-import com.bixuebihui.ConnectionManager;
 import com.bixuebihui.dbcon.DatabaseConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
-import javax.sql.DataSource;
-import java.io.PrintWriter;
-import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * <p>HikariCPDataSource adapter class.</p>
