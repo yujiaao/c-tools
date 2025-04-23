@@ -15,7 +15,7 @@
 	],
 	"engines": {
 		"vscode": "^1.43.0"
-	},	
+	},
 	"main": "./client/out/extension",
 	"contributes": {
 		"configuration": {
@@ -41,16 +41,21 @@
 				}
 			}
 		},
-
-		"languages": [{
-			"id": "tablegear",
-			"extensions": [".properties"],
-			"aliases": ["Tablegear", "tablegen"],
-			"filenames": [],
-			"firstLine": "^.*\\balias=.*\\b",
-			"configuration": "./language-configuration.json"
-		}]
-		
+		"languages": [
+			{
+				"id": "tablegear",
+				"extensions": [
+					".properties"
+				],
+				"aliases": [
+					"Tablegear",
+					"tablegen"
+				],
+				"filenames": [],
+				"firstLine": "^.*\\balias=.*\\b",
+				"configuration": "./language-configuration.json"
+			}
+		]
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
@@ -67,5 +72,8 @@
 		"eslint": "^7.26.0",
 		"mocha": "^8.3.2",
 		"typescript": "^4.2.3"
+	},
+	"dependencies": {
+		"lsp-tabgear": "file:"
 	}
 }

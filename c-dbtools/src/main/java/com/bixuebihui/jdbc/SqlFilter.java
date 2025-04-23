@@ -632,8 +632,12 @@ public class SqlFilter {
          * "rock climbing and java", any phrase that contains "rock climbing"
          * but not "rock and climbing"
          */
-        MATCH_PHRASE
+        MATCH_PHRASE,
 
+        /**
+         * es more_like_this query, use tf-idf to calculate the score & sort by score
+         */
+        MORE_LIKE_THIS,
     }
 
     public static class Filter {
