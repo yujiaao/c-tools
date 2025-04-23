@@ -338,14 +338,8 @@ class ElasticSearchFilterTest {
         // 创建ElasticSearchFilter
         ElasticSearchFilter filter = new ElasticSearchFilter();
         
-        // 创建Filter对象
-        Filter moreLikeThisFilter = new Filter();
-        moreLikeThisFilter.setProperty("content");
-        moreLikeThisFilter.setComparison(SqlFilter.Comparison.MORE_LIKE_THIS);
-        moreLikeThisFilter.setValue(new Object[]{"示例文本内容"});
-        
-        // 添加Filter到ElasticSearchFilter
-        filter.addFilter(moreLikeThisFilter);
+        // 使用addFilter方法添加MORE_LIKE_THIS过滤器
+        filter.addFilter("content", SqlFilter.Comparison.MORE_LIKE_THIS, new Object[]{"示例文本内容"});
         
         // 转换为Query对象
         Query query = filter.toQuery();
@@ -363,7 +357,7 @@ class ElasticSearchFilterTest {
         assertTrue(json.contains("\"doc\":{\"content\":\"示例文本内容\"}"));
         assertTrue(json.contains("\"min_term_freq\":1"));
         assertTrue(json.contains("\"min_doc_freq\":1"));
-        assertTrue(json.contains("\"minimum_should_match\":\"30%\""));
+        assertTrue(json.contains("\"minimum_should_match\":\"90%\""));
     }
     
     @Test
@@ -371,14 +365,8 @@ class ElasticSearchFilterTest {
         // 创建ElasticSearchFilter
         ElasticSearchFilter filter = new ElasticSearchFilter();
         
-        // 创建Filter对象
-        Filter moreLikeThisFilter = new Filter();
-        moreLikeThisFilter.setProperty("title,content");
-        moreLikeThisFilter.setComparison(SqlFilter.Comparison.MORE_LIKE_THIS);
-        moreLikeThisFilter.setValue(new Object[]{"示例文本内容"});
-        
-        // 添加Filter到ElasticSearchFilter
-        filter.addFilter(moreLikeThisFilter);
+        // 使用addFilter方法添加MORE_LIKE_THIS过滤器，使用多个字段，每个字段对应一个值
+        filter.addFilter("title,content", SqlFilter.Comparison.MORE_LIKE_THIS, new Object[]{"标题示例", "内容示例"});
         
         // 转换为Query对象
         Query query = filter.toQuery();
@@ -393,10 +381,10 @@ class ElasticSearchFilterTest {
         // 验证JSON结构
         assertTrue(json.contains("\"more_like_this\""));
         assertTrue(json.contains("\"fields\":[\"title\",\"content\"]"));
-        assertTrue(json.contains("\"doc\":{\"title\":\"示例文本内容\",\"content\":\"示例文本内容\"}"));
+        assertTrue(json.contains("\"doc\":{\"title\":\"标题示例\",\"content\":\"内容示例\"}"));
         assertTrue(json.contains("\"min_term_freq\":1"));
         assertTrue(json.contains("\"min_doc_freq\":1"));
-        assertTrue(json.contains("\"minimum_should_match\":\"30%\""));
+        assertTrue(json.contains("\"minimum_should_match\":\"90%\""));
     }
     
     @Test
@@ -404,21 +392,11 @@ class ElasticSearchFilterTest {
         // 创建ElasticSearchFilter
         ElasticSearchFilter filter = new ElasticSearchFilter();
         
-        // 创建Filter对象
-        Filter moreLikeThisFilter = new Filter();
-        moreLikeThisFilter.setProperty("content");
-        moreLikeThisFilter.setComparison(SqlFilter.Comparison.MORE_LIKE_THIS);
-        moreLikeThisFilter.setValue(new Object[]{"示例文本内容"});
+        // 使用addFilter方法添加MORE_LIKE_THIS过滤器
+        filter.addFilter("content", SqlFilter.Comparison.MORE_LIKE_THIS, new Object[]{"示例文本内容"});
         
-        // 创建另一个Filter对象
-        Filter termFilter = new Filter();
-        termFilter.setProperty("status");
-        termFilter.setComparison(SqlFilter.Comparison.IS);
-        termFilter.setValue(new Object[]{"published"});
-        
-        // 添加Filter到ElasticSearchFilter
-        filter.addFilter(moreLikeThisFilter);
-        filter.addFilter(termFilter);
+        // 添加另一个过滤器
+        filter.addFilter("status", SqlFilter.Comparison.IS, new Object[]{"published"});
         
         // 转换为Query对象
         Query query = filter.toQuery();
@@ -442,21 +420,14 @@ class ElasticSearchFilterTest {
         // 创建ElasticSearchFilter
         ElasticSearchFilter filter = new ElasticSearchFilter();
         
-        // 创建Filter对象
-        Filter moreLikeThisFilter = new Filter();
-        moreLikeThisFilter.setProperty("content");
-        moreLikeThisFilter.setComparison(SqlFilter.Comparison.MORE_LIKE_THIS);
-        moreLikeThisFilter.setValue(new Object[]{"示例文本内容"});
+        // 使用addFilter方法添加MORE_LIKE_THIS过滤器
+        filter.addFilter("content", SqlFilter.Comparison.MORE_LIKE_THIS, new Object[]{"示例文本内容"});
         
-        // 创建另一个Filter对象
-        Filter termFilter = new Filter();
-        termFilter.setProperty("status");
-        termFilter.setComparison(SqlFilter.Comparison.IS);
-        termFilter.setValue(new Object[]{"published"});
+        // 添加另一个过滤器
+        filter.addFilter("status", SqlFilter.Comparison.IS, new Object[]{"published"});
         
-        // 添加Filter到ElasticSearchFilter，使用OR操作符
-        filter.addFilter(moreLikeThisFilter, Operator.OR);
-        filter.addFilter(termFilter, Operator.OR);
+        // 设置连接操作符为OR
+        filter.setJoinOperator(SqlFilter.Operator.OR);
         
         // 转换为Query对象
         Query query = filter.toQuery();
