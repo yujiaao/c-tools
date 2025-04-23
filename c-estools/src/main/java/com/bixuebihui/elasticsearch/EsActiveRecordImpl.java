@@ -40,7 +40,6 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     ElasticSearchFilter havingStack;
     BaseEsOperator<T, V> operator;
     Set<String> excludeFieldsSet = emptySet();
-    private boolean useLast=false;
     private String resultFields;
 
     private List<Object> searchAfter;
@@ -357,7 +356,6 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
         this.limit = SqlLimit.LIMIT_MAX;
         this.fields("");
         this.excludeFieldsSet = emptySet();
-        useLast = false;
     }
 
 

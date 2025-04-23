@@ -2,7 +2,6 @@ package com.bixuebihui.elasticsearch;
 
 import com.bixuebihui.elasticsearch.aggregation.AbstractAggregation;
 import com.bixuebihui.elasticsearch.query.Bool;
-import com.bixuebihui.elasticsearch.query.MoreLikeThis;
 import com.bixuebihui.elasticsearch.query.Query;
 import com.bixuebihui.elasticsearch.query.Range;
 import com.bixuebihui.jdbc.SqlFilter;
@@ -261,7 +260,7 @@ public class ElasticSearchFilter extends SqlFilter {
         addFilter(criteria, queryFilters, upOperator);
     }
 
-    
+
 
     private Query getMoreLikeThis(Filter filter) {
         Query queryFilter;

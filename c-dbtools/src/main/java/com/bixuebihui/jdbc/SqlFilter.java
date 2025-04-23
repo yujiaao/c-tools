@@ -490,6 +490,27 @@ public class SqlFilter {
         return this.addFilter(field, Comparison.START_WITH, new Object[]{value});
     }
 
+    public SqlFilter moreLikeThis(String field, Object value) {
+        return this.addFilter(field, Comparison.MORE_LIKE_THIS, new Object[]{value});
+    }
+
+    public SqlFilter moreLikeThis(Map<String, Object> condition) {
+        List<String> fields = new ArrayList<>();
+        List<Object> values = new ArrayList<>();
+        for (Entry<String, Object> entry : condition.entrySet()) {
+            String key = entry.getKey();
+            Object value = entry.getValue();
+
+            if (!this.isUseNullAsCondition() && value == null) {
+                continue;
+            }
+            fields.add(key);
+            values.add(value);
+        }
+        return this.addFilter(fields.stream().collect(Collectors.joining(",")),
+         Comparison.MORE_LIKE_THIS, values);
+    }
+
     public List<SqlFilter> getSubGroups() {
         return subGroups;
     }
