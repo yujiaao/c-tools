@@ -12,6 +12,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyMap;
+import static java.util.stream.Collectors.toList;
 
 /**
  * @author xwx
@@ -196,9 +197,9 @@ public class ProjectConfig {
                 String[] tableFieldPair = it.split(":");
                 if (tableFieldPair.length == 2) {
                     if (res.get(tableFieldPair[0]) == null) {
-                        res.put(tableFieldPair[0], new ArrayList<>(Arrays.stream(tableFieldPair[1].split(",")).toList()));
+                        res.put(tableFieldPair[0], new ArrayList<>(Arrays.stream(tableFieldPair[1].split(",")).collect(toList())));
                     } else {
-                        res.get(tableFieldPair[0]).addAll(Arrays.stream(tableFieldPair[1].split(",")).toList());                 }
+                        res.get(tableFieldPair[0]).addAll(Arrays.stream(tableFieldPair[1].split(",")).collect(toList()));                 }
                 }else{
                     LOG.error(formatError);
                 }
@@ -219,6 +220,14 @@ public class ProjectConfig {
             res.addAll(Arrays.asList(property.trim().split(",")));
         }
         return res;
+    }
+
+    public boolean isForeignKeys() {
+        return foreignKeys;
+    }
+
+    public void setForeignKeys(boolean foreignKeys) {
+        this.foreignKeys = foreignKeys;
     }
 
     public Map<String, List<String>> getEncryptedFields() {

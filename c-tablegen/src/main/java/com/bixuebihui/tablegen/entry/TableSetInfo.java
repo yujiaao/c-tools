@@ -55,7 +55,7 @@ public class TableSetInfo implements KeyInfo {
 
     private static void fillSQLServerTableComment(IDbHelper dbHelper, TableInfo tableInfo) {
         String tableName = tableInfo.getName();
-        Map<String, String> map = TableUtils.getTableCommentForSQLServer(dbHelper, List.of(tableName));
+        Map<String, String> map = TableUtils.getTableCommentForSQLServer(dbHelper, Collections.singletonList(tableName));
         tableInfo.setComment(map.get(tableName));
     }
 
@@ -440,7 +440,6 @@ public class TableSetInfo implements KeyInfo {
      * 13。 FILTER_CONDITION==null, String => 过滤器条件，如果有的话。（可能为 null）
      *
      * @param config    generator configuration
-     * @param dbHelper  database helper
      * @param tableName table name
      */
     protected void initIndex(ProjectConfig config, DatabaseMetaData metaData, String tableName) {
