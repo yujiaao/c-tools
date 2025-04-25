@@ -571,6 +571,12 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     }
 
     @Override
+    public EsActiveRecord<T> moreLikeThis(Map<String, Object> fieldValueMap, Map<String, Object> otherParams) {
+        filterStack.moreLikeThis(fieldValueMap, otherParams);
+        return this;
+    }
+
+    @Override
     public List<CountValueObj> aggregationList(List<String> groupByFields,
                                                Map<String, GroupFunction> termFieldAggFunctionMap, Set<String> textFieldsNeededConvertToDouble)  {
         return  operator.aggregationList(filterStack.toQuery(), groupByFields, termFieldAggFunctionMap, textFieldsNeededConvertToDouble);

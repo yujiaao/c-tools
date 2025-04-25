@@ -280,14 +280,37 @@ public class ElasticSearchFilter extends SqlFilter {
             throw new IllegalArgumentException("fields length is not equal to value length");
         }
 
+        int minTermFreq = 1;
+        int minDocFreq = 1;
+        int maxQueryTerms = 50;
+        double boostTerms = 1.5;
+        String minimumShouldMatch = "90%";
+
+        if (filter.getOtherParams() != null) {
+            if (filter.getOtherParams().containsKey("min_term_freq")) {
+                minTermFreq = Integer.parseInt(filter.getOtherParams().get("min_term_freq").toString());
+            }
+            if (filter.getOtherParams().containsKey("min_doc_freq")) {
+                minDocFreq = Integer.parseInt(filter.getOtherParams().get("min_doc_freq").toString());
+            }
+            if (filter.getOtherParams().containsKey("max_query_terms")) {
+                maxQueryTerms = Integer.parseInt(filter.getOtherParams().get("max_query_terms").toString());
+            }
+            if (filter.getOtherParams().containsKey("boost_terms")) {
+                boostTerms = Double.parseDouble(filter.getOtherParams().get("boost_terms").toString());
+            }
+            if (filter.getOtherParams().containsKey("minimum_should_match")) {
+                minimumShouldMatch = filter.getOtherParams().get("minimum_should_match").toString();
+            }
+        }
         queryFilter = Query.more_like_this()
                 .setFields(Arrays.asList(fields))
                 .setDocFields(docFields)
-                .setMinTermFreq(1)
-                .setMinDocFreq(1)
-                .setMaxQueryTerms(50)
-                .setBoostTerms(1.5)
-                .setMinimumShouldMatch("90%");
+                .setMinTermFreq(minTermFreq)
+                .setMinDocFreq(minDocFreq)
+                .setMaxQueryTerms(maxQueryTerms)
+                .setBoostTerms(boostTerms)
+                .setMinimumShouldMatch(minimumShouldMatch);
         return queryFilter;
     }
 
