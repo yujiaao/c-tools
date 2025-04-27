@@ -34,6 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import org.springframework.validation.annotation.Validated;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.web.bind.annotation.RequestBody;
 import com.sdadas.spring2ts.annotations.SharedService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -137,6 +138,7 @@ public class  {{className}} {
         {{else~}}
             @Parameter(required ="true", description = "{{tableName}} 数据对象")
         {{/eq~}}
+            @RequestBody
             {{pojoClassName}}Dto  dto, HttpServletRequest request) {
 
         BaseModel<{{pojoClassName}}Dto> res = new BaseModel<>();

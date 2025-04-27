@@ -25,8 +25,12 @@ public class TableUtilsTest {
     @BeforeAll
     public static void setUp() {
         TableGen t = new TableGen();
-        t.init(TableUtilsTest.class.getResource("/tablegen.properties").getPath());
+        t.init(getPath());
         dbHelper = t.getDbHelper(t.getDbConfig());
+    }
+
+    private static String getPath() {
+        return TableUtilsTest.class.getResource("/tablegen.properties").getPath();
     }
 
     @Test
@@ -34,14 +38,14 @@ public class TableUtilsTest {
 
         try(Connection cn = dbHelper.getConnection()) {
             DatabaseMetaData meta = cn.getMetaData();
-            try(ResultSet primaryKeys = meta.getPrimaryKeys(null, null, "VRMS_PRJMAPCOLLEGES")) {
+            try(ResultSet primaryKeys = meta.getPrimaryKeys(null, null, "employees")) {
                 while (primaryKeys.next()) {
                     String primaryKeyColumn = primaryKeys.getString("COLUMN_NAME");
                     System.out.println("Primary Key Column: " + primaryKeyColumn);
                 }
 
 
-                List<String> v = TableUtils.getTableKeys(meta, null, null, "VRMS_PRJMAPCOLLEGES");
+                List<String> v = TableUtils.getTableKeys(meta, null, null, "employees");
                 for (String s : v) {
                     System.out.println(s);
                 }
@@ -87,7 +91,7 @@ public class TableUtilsTest {
     @Test
     public void testGetTableData() throws SQLException {
         TableGen t = new TableGen();
-        t.init("tablegen.properties");
+        t.init(getPath());
 
         DatabaseMetaData metaData = t.connect(dbHelper.getConnection());
 
@@ -111,7 +115,7 @@ public class TableUtilsTest {
     @Test
     public void testRun() throws SQLException {
 
-        TableGen.main(new String[]{"tablegen.properties"});
+        TableGen.main(new String[]{getPath()});
 
     }
 
@@ -174,7 +178,7 @@ public class TableUtilsTest {
 
     @org.junit.jupiter.api.Test
     void getTableImportedKeys() throws SQLException {
-        String tableName = "Businesses_details";
+        String tableName = "employees";
         List<ForeignKeyDefinition> res = TableUtils.getTableImportedKeys(dbHelper.getConnection().getMetaData(),
                 "test", "test", tableName);
         assertEquals(1, res.size());
@@ -193,12 +197,12 @@ public class TableUtilsTest {
     @org.junit.jupiter.api.Test
     void getTableExportedKeys() throws SQLException {
         List<ForeignKeyDefinition> res = TableUtils.getTableExportedKeys(dbHelper.getConnection().getMetaData(),
-                "test", "test", "Businesses");
+                "test", "test", "departments");
         assertEquals(1, res.size());
     }
 
     @org.junit.jupiter.api.Test
-    void getAllMySQLExportKeys() throws SQLException {
+    void getAllMySQLExportKeys() {
         Map<String, List<ForeignKeyDefinition>> res = TableUtils.getAllMySQLImportKeys(dbHelper, "test");
         for (List<ForeignKeyDefinition> list : res.values()) {
             for (ForeignKeyDefinition fk : list) {

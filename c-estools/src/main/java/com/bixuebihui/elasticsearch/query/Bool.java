@@ -95,15 +95,6 @@ public class Bool extends Query {
         return (Bool) this.setParam("boost", boost);
     }
 
-    /**
-     * Sets the minimum number of should clauses to match.
-     *
-     * @param minimum int|string  Minimum value
-     * @return this
-     */
-    public Bool setMinimumShouldMatch(int minimum) {
-        return (Bool) this.setParam("minimum_should_match", minimum);
-    }
 
     /**
      * Converts array to an object in case no queries are added.
@@ -117,5 +108,9 @@ public class Bool extends Query {
         }
 
         return super.toArray();
+    }
+
+    public Bool setMinimumShouldMatch(int i) {
+        return (Bool) this.setParam("minimum_should_match", i);
     }
 }

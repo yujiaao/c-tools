@@ -474,7 +474,7 @@ public class ActiveRecordImplTest {
     public void testSql() {
     assertEquals(3, bd.ar().findAll().size());
 
-        ActiveRecord<Object> a = bd.ar().sql("JSON_CONTAINS(name, '\"李四\"')");
+        ActiveRecord<Object> a = bd.ar().eq("id", 456).sql("JSON_CONTAINS(name, '\"李四\"')");
         System.out.printf(a.getSql().getCondition().toString());
         System.out.printf(a.getSql().getParams().toString());
         List<Object> res = a.findAll();

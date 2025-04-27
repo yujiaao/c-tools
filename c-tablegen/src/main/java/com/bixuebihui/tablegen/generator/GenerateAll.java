@@ -118,14 +118,12 @@ public class GenerateAll implements DiffHandler {
 
                 IDbHelper helper = TableGen.getDbHelper(generator.dbConfig);
 
-                Connection conn =  helper.getConnection();
-                try {
+
+                try (Connection conn =  helper.getConnection()){
                     DbDiff dd = new DbDiff(helper, helper, getTableDataFromLocalCache(), conn, generator.config.getCatalog(),
                             generator.config.getSchema());
                     dd.addDiffHandler(this);
                     dd.compareTables(generator.config.getR2dc());
-                } finally {
-                    DbUtils.close(conn);
                 }
             }
 

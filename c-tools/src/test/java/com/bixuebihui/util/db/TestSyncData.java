@@ -50,7 +50,7 @@ public class TestSyncData extends EasyMockSupport {
 
 	@Test
 	public void testSyncTable() throws SQLException{
-		List<Map<String, Object>> v = new Vector();
+		List<Map<String, Object>> v = new Vector<>();
 		Map h = niceMock(Hashtable.class);
 		v.add(h);
 

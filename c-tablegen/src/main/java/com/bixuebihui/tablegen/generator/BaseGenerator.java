@@ -160,7 +160,7 @@ public abstract class BaseGenerator implements Generator {
         try(Connection cn = helper.getConnection()) {
             DatabaseMetaData metaData = cn.getMetaData();
             setInfo.getTableData(config, helper, metaData);
-            setInfo.getOnFlyViewData(config, helper);
+            setInfo.getOnFlyViewData(config, helper, metaData);
         }
     }
 

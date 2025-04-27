@@ -5,7 +5,7 @@
     <parent>
         <artifactId>c-tools-parent</artifactId>
         <groupId>com.github.yujiaao</groupId>
-        <version>1.15.9.5</version>
+        <version>1.15.10.2</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -194,8 +194,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>16</source>
-                    <target>16</target>
+                    <release>17</release>
                 </configuration>
             </plugin>
 

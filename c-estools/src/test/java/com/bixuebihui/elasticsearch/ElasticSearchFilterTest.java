@@ -3,24 +3,20 @@ package com.bixuebihui.elasticsearch;
 import com.bixuebihui.elasticsearch.aggregation.DateHistogram;
 import com.bixuebihui.elasticsearch.aggregation.EsAggregationBuilder;
 import com.bixuebihui.elasticsearch.aggregation.Terms;
-import com.bixuebihui.elasticsearch.processor.Sort;
 import com.bixuebihui.elasticsearch.query.Query;
 import com.bixuebihui.jdbc.SqlFilter;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-
 import static java.util.Collections.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ElasticSearchFilterTest {
+
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeEach
     void setUp() {
@@ -334,5 +330,117 @@ class ElasticSearchFilterTest {
                 ,res);
     }
 
-
+    @Test
+    void testMoreLikeThisQuery() throws Exception {
+        // 创建ElasticSearchFilter
+        ElasticSearchFilter filter = new ElasticSearchFilter();
+        
+        // 使用addFilter方法添加MORE_LIKE_THIS过滤器
+        filter.addFilter("content", SqlFilter.Comparison.MORE_LIKE_THIS, new Object[]{"示例文本内容"});
+        
+        // 转换为Query对象
+        Query query = filter.toQuery();
+        
+        // 验证Query对象
+        assertNotNull(query);
+        
+        // 转换为JSON并验证
+        String json = objectMapper.writeValueAsString(query.toArray());
+        System.out.println("MoreLikeThis Query JSON: " + json);
+        
+        // 验证JSON结构
+        assertTrue(json.contains("\"more_like_this\""));
+        assertTrue(json.contains("\"fields\":[\"content\"]"));
+        assertTrue(json.contains("\"doc\":{\"content\":\"示例文本内容\"}"));
+        assertTrue(json.contains("\"min_term_freq\":1"));
+        assertTrue(json.contains("\"min_doc_freq\":1"));
+        assertTrue(json.contains("\"minimum_should_match\":\"90%\""));
+    }
+    
+    @Test
+    void testMoreLikeThisWithMultipleFields() throws Exception {
+        // 创建ElasticSearchFilter
+        ElasticSearchFilter filter = new ElasticSearchFilter();
+        
+        // 使用addFilter方法添加MORE_LIKE_THIS过滤器，使用多个字段，每个字段对应一个值
+        filter.addFilter("title,content", SqlFilter.Comparison.MORE_LIKE_THIS, new Object[]{"标题示例", "内容示例"});
+        
+        // 转换为Query对象
+        Query query = filter.toQuery();
+        
+        // 验证Query对象
+        assertNotNull(query);
+        
+        // 转换为JSON并验证
+        String json = objectMapper.writeValueAsString(query.toArray());
+        System.out.println("MoreLikeThis with multiple fields JSON: " + json);
+        
+        // 验证JSON结构
+        assertTrue(json.contains("\"more_like_this\""));
+        assertTrue(json.contains("\"fields\":[\"title\",\"content\"]"));
+        assertTrue(json.contains("\"doc\":{\"title\":\"标题示例\",\"content\":\"内容示例\"}"));
+        assertTrue(json.contains("\"min_term_freq\":1"));
+        assertTrue(json.contains("\"min_doc_freq\":1"));
+        assertTrue(json.contains("\"minimum_should_match\":\"90%\""));
+    }
+    
+    @Test
+    void testMoreLikeThisWithBoolQuery() throws Exception {
+        // 创建ElasticSearchFilter
+        ElasticSearchFilter filter = new ElasticSearchFilter();
+        
+        // 使用addFilter方法添加MORE_LIKE_THIS过滤器
+        filter.addFilter("content", SqlFilter.Comparison.MORE_LIKE_THIS, new Object[]{"示例文本内容"});
+        
+        // 添加另一个过滤器
+        filter.addFilter("status", SqlFilter.Comparison.IS, new Object[]{"published"});
+        
+        // 转换为Query对象
+        Query query = filter.toQuery();
+        
+        // 验证Query对象
+        assertNotNull(query);
+        
+        // 转换为JSON并验证
+        String json = objectMapper.writeValueAsString(query.toArray());
+        System.out.println("MoreLikeThis with bool query JSON: " + json);
+        
+        // 验证JSON结构
+        assertTrue(json.contains("\"bool\""));
+        assertTrue(json.contains("\"must\""));
+        assertTrue(json.contains("\"more_like_this\""));
+        assertTrue(json.contains("\"term\""));
+    }
+    
+    @Test
+    void testMoreLikeThisWithOrOperator() throws Exception {
+        // 创建ElasticSearchFilter
+        ElasticSearchFilter filter = new ElasticSearchFilter();
+        
+        // 使用addFilter方法添加MORE_LIKE_THIS过滤器
+        filter.addFilter("content", SqlFilter.Comparison.MORE_LIKE_THIS, new Object[]{"示例文本内容"});
+        
+        // 添加另一个过滤器
+        filter.addFilter("status", SqlFilter.Comparison.IS, new Object[]{"published"});
+        
+        // 设置连接操作符为OR
+        filter.setJoinOperator(SqlFilter.Operator.OR);
+        
+        // 转换为Query对象
+        Query query = filter.toQuery();
+        
+        // 验证Query对象
+        assertNotNull(query);
+        
+        // 转换为JSON并验证
+        String json = objectMapper.writeValueAsString(query.toArray());
+        System.out.println("MoreLikeThis with OR operator JSON: " + json);
+        
+        // 验证JSON结构
+        assertTrue(json.contains("\"bool\""));
+        assertTrue(json.contains("\"should\""));
+        assertTrue(json.contains("\"more_like_this\""));
+        assertTrue(json.contains("\"term\""));
+        assertTrue(json.contains("\"minimum_should_match\":1"));
+    }
 }

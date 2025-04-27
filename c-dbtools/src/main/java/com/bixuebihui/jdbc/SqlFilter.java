@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 
 import static com.bixuebihui.db.Dialect.MYSQL;
+import static java.util.Collections.emptyMap;
 
 
 /**
@@ -292,6 +293,10 @@ public class SqlFilter {
     }
 
     public SqlFilter addFilter(String property, Comparison comparison, List<?> value) {
+       return addFilter(property, comparison, value, emptyMap());
+    }
+
+    public SqlFilter addFilter(String property, Comparison comparison, List<?> value, Map<String, Object> otherParams) {
         if (!useNullAsCondition && value == null) {
             return this;
         }
@@ -299,7 +304,7 @@ public class SqlFilter {
             filters = new ArrayList<>();
         }
 
-        filters.add(new Filter(property, comparison, value));
+        filters.add(new Filter(property, comparison, value, otherParams));
 
         return this;
     }
@@ -490,6 +495,42 @@ public class SqlFilter {
         return this.addFilter(field, Comparison.START_WITH, new Object[]{value});
     }
 
+    public SqlFilter moreLikeThis(String field, Object value) {
+        return this.addFilter(field, Comparison.MORE_LIKE_THIS, new Object[]{value});
+    }
+
+    /**
+     *
+     * @param fieldValueMap field:value map
+     * *       "fields": [
+     *          *         "title",
+     *          *         "description"
+     *          *       ]
+     ]
+     * @param otherParams  other params, like:
+     *        "min_term_freq": 1,
+     *                 "max_query_terms": 12
+     *                 "minimum_should_match": "75%"
+     *                 "min_doc_freq": 5
+     * @return SqlFilter
+     */
+    public SqlFilter moreLikeThis(Map<String, Object> fieldValueMap, Map<String, Object> otherParams) {
+        List<String> fields = new ArrayList<>();
+        List<Object> values = new ArrayList<>();
+        for (Entry<String, Object> entry : fieldValueMap.entrySet()) {
+            String key = entry.getKey();
+            Object value = entry.getValue();
+
+            if (!this.isUseNullAsCondition() && value == null) {
+                continue;
+            }
+            fields.add(key);
+            values.add(value);
+        }
+        return this.addFilter(String.join(",", fields),
+         Comparison.MORE_LIKE_THIS, values, otherParams);
+    }
+
     public List<SqlFilter> getSubGroups() {
         return subGroups;
     }
@@ -632,8 +673,12 @@ public class SqlFilter {
          * "rock climbing and java", any phrase that contains "rock climbing"
          * but not "rock and climbing"
          */
-        MATCH_PHRASE
+        MATCH_PHRASE,
 
+        /**
+         * es more_like_this query, use tf-idf to calculate the score & sort by score
+         */
+        MORE_LIKE_THIS,
     }
 
     public static class Filter {
@@ -641,22 +686,55 @@ public class SqlFilter {
         private final Object[] value;
         private final Comparison comparison;
 
+        /**
+         * 用于more_like_this等查询时，需要传入参数，如：
+         * {
+         *   "query": {
+         *     "more_like_this": {
+         *       "fields": ["title", "description"],
+         *       "like": "rock climbing",
+         *       "min_term_freq": 1,
+         *       "max_query_terms": 12
+         *       "minimum_should_match": "75%"
+         *       "min_doc_freq": 5
+         *     }
+         }
+         */
+        private final Map<String,Object> params;
+
+        public Filter(String property, Comparison comparison, Object[] value, Map<String,Object> params) {
+            this.property = property;
+            this.comparison = comparison;
+            this.value = value;
+            this.params = params;
+        }
+
+        public Filter(String property, Comparison comparison, List<?> value, Map<String,Object> params) {
+            this.property = property;
+            this.comparison = comparison;
+            this.value = value.toArray();
+            this.params = params;
+        }
+
         public Filter(String property, Comparison comparison, Object[] value) {
             this.property = property;
             this.comparison = comparison;
             this.value = value;
+            this.params = emptyMap();
         }
 
         public Filter(String property, Comparison comparison, List<?> value) {
             this.property = property;
             this.comparison = comparison;
             this.value = value.toArray();
+            this.params = emptyMap();
         }
 
         public Filter(String property, Comparison comparison, SqlString value) {
             this.property = property;
             this.comparison = comparison;
             this.value = new Object[]{value};
+            this.params = emptyMap();
         }
 
         public String getProperty() {
@@ -669,6 +747,10 @@ public class SqlFilter {
 
         public Object[] getValue() {
             return value;
+        }
+
+        public Map<String, Object> getOtherParams() {
+            return params;
         }
     }
 

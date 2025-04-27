@@ -883,7 +883,7 @@ public class TableUtils {
             }
 
             if(config.useSwagger && StringUtils.isNotBlank(cd.getComment())){
-                if(sb.length()>0){
+                if(!sb.isEmpty()){
                     sb.append("    ");
                 }
                 if(config.getSwaggerVersion().equals("2")) {

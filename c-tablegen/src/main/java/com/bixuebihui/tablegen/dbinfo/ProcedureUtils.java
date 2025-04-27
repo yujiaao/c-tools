@@ -9,6 +9,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -159,17 +160,15 @@ public class ProcedureUtils {
 	public static List<ProcedureInfo> getProcedure(DatabaseMetaData metaData,
 			String catalog, String schema, String tableOwner,
 			Map<String, String> includeList,
-			Map<String, String> excludeList) throws SQLException {
+			Map<String, String> excludeList)  {
 
 		List<ProcedureInfo> procedures;
 
-		ResultSet tables = metaData.getProcedures(catalog, schema, "%");
+		try (ResultSet tables = metaData.getProcedures(catalog, schema, "%")){
 
-
-		try {
 			procedures = new ArrayList<>();
 
-			String tableName = "";
+			String tableName;
 
 			while (tables.next()) {
 
@@ -177,8 +176,8 @@ public class ProcedureUtils {
 
 				if (tableOwner != null
 						&& owner != null
-						&& !tableOwner.toUpperCase().equals(
-								owner.toUpperCase())) {
+						&& !tableOwner.equalsIgnoreCase(
+                        owner)) {
 					 LOG.debug("tableOwner is :" + tableOwner + " skip: "
 					 + owner);
 					continue;
@@ -202,8 +201,9 @@ public class ProcedureUtils {
 				}
 
 			}
-		} finally {
-			DbUtils.close(tables);
+		}catch (SQLException e) {
+			LOG.error(e.getMessage());
+			return Collections.emptyList();
 		}
 		return procedures;
 	}
