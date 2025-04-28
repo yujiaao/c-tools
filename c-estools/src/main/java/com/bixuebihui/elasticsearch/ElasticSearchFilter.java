@@ -264,20 +264,20 @@ public class ElasticSearchFilter extends SqlFilter {
 
     private Query getMoreLikeThis(Filter filter) {
         Query queryFilter;
-        Map<String, String> docFields = new HashMap<>();
+        List<String> docContent = new ArrayList<>();
 
         String[] fields = filter.getProperty().contains(",") ? filter.getProperty().split(",")
                 : new String[] { filter.getProperty() };
 
-        int valueIndex = 0;
-        if (fields.length == filter.getValue().length) {
-            for (String field : fields) {
-                String value = filter.getValue()[valueIndex].toString();
-                docFields.put(field, value);
-                valueIndex++;
-            }
-        } else {
+
+        if (fields.length != filter.getValue().length) {
             throw new IllegalArgumentException("fields length is not equal to value length");
+        }
+
+
+        List<String> list = new ArrayList<>();
+        for (Object value : filter.getValue()) {
+            list.add(value.toString());
         }
 
         int minTermFreq = 1;
@@ -305,7 +305,7 @@ public class ElasticSearchFilter extends SqlFilter {
         }
         queryFilter = Query.more_like_this()
                 .setFields(Arrays.asList(fields))
-                .setDocFields(docFields)
+                .setDoc(list)
                 .setMinTermFreq(minTermFreq)
                 .setMinDocFreq(minDocFreq)
                 .setMaxQueryTerms(maxQueryTerms)

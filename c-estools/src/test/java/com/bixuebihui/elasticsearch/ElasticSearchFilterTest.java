@@ -1,5 +1,6 @@
 package com.bixuebihui.elasticsearch;
 
+import com.bixuebihui.db.SqlString;
 import com.bixuebihui.elasticsearch.aggregation.DateHistogram;
 import com.bixuebihui.elasticsearch.aggregation.EsAggregationBuilder;
 import com.bixuebihui.elasticsearch.aggregation.Terms;
@@ -39,6 +40,19 @@ class ElasticSearchFilterTest {
                 null, null, emptyMap(), null, emptyList());
 
         assertEquals("{\"size\":10,\"query\":{\"bool\":{\"must\":[{\"range\":{\"age\":{\"from\":10,\"to\":15}}},{\"range\":{\"height\":{\"gt\":100}}}]}}}", res);
+
+    }
+
+    @Test
+    void moreLikeThis() {
+        ElasticSearchFilter filter = new ElasticSearchFilter();
+        filter.addFilter("age", SqlFilter.Comparison.BETWEEN, new Integer[]{10, 15});
+        filter.addFilter("title,content", SqlFilter.Comparison.MORE_LIKE_THIS, new String[]{"this is a title", "this is the content of a beautiful text"});
+
+        String res = filter.toEsObject(filter.toQuery(), 0, 10, emptySet(), emptySet(),
+                null, null, emptyMap(), null, emptyList());
+
+        assertEquals("{\"size\":10,\"query\":{\"bool\":{\"must\":[{\"range\":{\"age\":{\"from\":10,\"to\":15}}},{\"more_like_this\":{\"max_query_terms\":50,\"boost_terms\":1.5,\"min_doc_freq\":1,\"like\":[\"this is a title\",\"this is the content of a beautiful text\"],\"min_term_freq\":1,\"minimum_should_match\":\"90%\",\"fields\":[\"title\",\"content\"]}}]}}}", res);
 
     }
 
