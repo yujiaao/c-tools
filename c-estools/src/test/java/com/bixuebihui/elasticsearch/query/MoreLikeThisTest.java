@@ -27,7 +27,7 @@ class MoreLikeThisTest {
         mlt.setFields(Arrays.asList("title", "content"));
 
         // 设置文档字段
-        mlt.setDocField("title", "示例标题");
+        mlt.setDoc(List.of("示例标题"));
 
         // 设置其他参数
         mlt.setMinTermFreq(1)
@@ -63,7 +63,7 @@ class MoreLikeThisTest {
         fieldTexts.put("title", "示例标题");
         fieldTexts.put("content", "这是一个示例内容，用于测试MoreLikeThis查询");
         fieldTexts.put("tags", "测试,示例,Elasticsearch");
-        mlt.setDocFields(fieldTexts);
+        mlt.setDoc(fieldTexts.values().stream().toList());
 
         // 设置其他参数
         mlt.setMinTermFreq(2)

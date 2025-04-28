@@ -116,45 +116,14 @@ public class MoreLikeThis extends Query {
     /**
      * 设置文档
      * 
-     * @param docs 文档列表
-     * @return this
-     */
-    public MoreLikeThis setDocs(List<Map<String, Object>> docs) {
-        return (MoreLikeThis) this.setParam("docs", docs);
-    }
-
-    /**
-     * 设置文档
-     * 
      * @param doc 文档
      * @return this
      */
-    public MoreLikeThis setDoc(Map<String, Object> doc) {
-        return (MoreLikeThis) this.setParam("doc", doc);
+    public MoreLikeThis setDoc(List<String> doc) {
+        return (MoreLikeThis) this.setParam("like", doc);
     }
 
-    /**
-     * 设置文档字段
-     * 
-     * @param field 字段名
-     * @param text 文本内容
-     * @return this
-     */
-    public MoreLikeThis setDocField(String field, String text) {
-        Map<String, Object> doc = new HashMap<>();
-        doc.put(field, text);
-        return this.setDoc(doc);
-    }
 
-    /**
-     * 设置文档字段
-     * 
-     * @param fieldTexts 字段文本映射
-     * @return this
-     */
-    public MoreLikeThis setDocFields(Map<String, String> fieldTexts) {
-        return (MoreLikeThis) this.setParam("doc", fieldTexts);
-    }
 
     /**
      * 设置包含字段
