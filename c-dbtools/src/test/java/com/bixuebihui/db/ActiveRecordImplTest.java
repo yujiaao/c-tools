@@ -18,6 +18,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -151,6 +152,17 @@ public class ActiveRecordImplTest {
                 .in("id", new Object[]{123, 234})
                 .update(new String[]{"value", "name"},
                         new Object[]{new SqlString("value+1"), "wow*"});
+        assertEquals(2, res);
+        long inc = Long.parseLong(bd.ar().eq("ID", 123).get("value").toString());
+        assertEquals(1, inc);
+    }
+
+    @Test
+    public void testUpdateMap() {
+        int res = bd.ar()
+                .in("id", new Object[]{123, 234})
+                .update(Map.of("value", new SqlString("value+1"),
+                        "name", "wow*"));
         assertEquals(2, res);
         long inc = Long.parseLong(bd.ar().eq("ID", 123).get("value").toString());
         assertEquals(1, inc);

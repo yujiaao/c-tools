@@ -213,6 +213,11 @@ public abstract class BaseEsOperator<T, V> implements Record<T> {
         throw new NotImplementedException();
     }
 
+    @Override
+    public int update(Map<String,Object> keyValuePairs) throws DbException {
+        throw new NotImplementedException();
+    }
+
     public int update(String _id, String[] fields, Object[] values) throws DbException {
         return update(_id, fields, values, true);
     }
@@ -224,6 +229,15 @@ public abstract class BaseEsOperator<T, V> implements Record<T> {
         }
         try {
             return request.update(_id, map, refresh);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            throw new DbException(e.getMessage());
+        }
+    }
+
+    public int update(String _id, Map<String, Object> kv, boolean refresh) throws DbException {
+        try {
+            return request.update(_id, kv, refresh);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             throw new DbException(e.getMessage());

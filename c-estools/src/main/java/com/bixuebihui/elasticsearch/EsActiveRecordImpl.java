@@ -688,6 +688,16 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     }
 
     @Override
+    public int update(Map<String, Object> keyValuePairs) throws DbException {
+        try {
+            return operator.request.updateByQuery(filterStack.toQuery(), keyValuePairs, true, true);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            throw new DbException(e.getMessage());
+        }
+    }
+
+    @Override
     public int update(String field, Object value) throws DbException {
         HashMap<String, Object> map = Maps.newHashMap();
 

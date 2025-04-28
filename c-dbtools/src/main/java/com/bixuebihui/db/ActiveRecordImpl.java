@@ -902,6 +902,29 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
      * {@inheritDoc}
      */
     @Override
+    public int update(Map<String, Object> keyValuePairs) throws DbException {
+        try {
+
+            sqlPocket = this.getSql();
+            String whereClause = formWhereClause();
+
+            ensureNotEmptyWhere(whereClause);
+            String[] fields = keyValuePairs.keySet().toArray(new String[0]);
+            Object[] values = new Object[fields.length];
+            for (int i = 0; i < fields.length; i++) {
+                values[i] = keyValuePairs.get(fields[i]);
+            }
+
+            return operator.update(fields, values, whereClause, getParams().toArray(), cn);
+        } finally {
+            clear();
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public int update(@NotNull String fields, Object values) throws DbException {
         return update(new String[]{fields}, new Object[]{values});
     }

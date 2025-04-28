@@ -15,6 +15,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -704,6 +705,11 @@ public class DbImpl<T, V> extends BaseDao<T, V> implements ActiveRecord<T>,
 	 */
 	@Override
 	public int update(String[] fields, Object[] values) {
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public int update(Map<String, Object> keyValuePairs) throws DbException {
 		throw new NotImplementedException();
 	}
 
