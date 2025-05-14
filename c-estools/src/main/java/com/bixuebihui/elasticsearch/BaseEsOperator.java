@@ -6,7 +6,6 @@ import com.bixuebihui.db.Record;
 import com.bixuebihui.db.SqlPocket;
 import com.bixuebihui.elasticsearch.aggregation.*;
 import com.bixuebihui.elasticsearch.query.Query;
-import com.bixuebihui.jdbc.SqlFilter;
 import com.bixuebihui.jdbc.entity.CountObject;
 import com.bixuebihui.jdbc.entity.CountValue;
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -18,11 +17,9 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.function.Supplier;
 
 import static com.bixuebihui.elasticsearch.EsRequest.getHits;
 import static java.util.Collections.*;
-import static java.util.Collections.emptySet;
 
 /**
  * @author xwx
@@ -34,8 +31,8 @@ public abstract class BaseEsOperator<T, V> implements Record<T> {
         this.request = request;
     }
 
-    public static JsonWapper builder() {
-        return new JsonWapper();
+    public static JsonWrapper builder() {
+        return new JsonWrapper();
     }
 
     public EsRequest getRequest() {
@@ -44,7 +41,16 @@ public abstract class BaseEsOperator<T, V> implements Record<T> {
 
     @Override
     public T find() throws DbException {
-        throw new NotImplementedException();
+        int from = 0;
+        int size = 1;
+        LinkedHashMap<String, String> sort = new LinkedHashMap<>();
+        String res = request.search(EsQueryBuilder.build(Query.match_all(), from, size,
+                Collections.emptySet(), Collections.emptySet(), sort, null,
+                emptyMap(), null, emptyList()));
+
+        Wrapper<T> w = toObjectWrapper(res, size);
+
+        return w.data.get(0);
     }
 
     @Override
@@ -66,11 +72,11 @@ public abstract class BaseEsOperator<T, V> implements Record<T> {
         return emptyList();
     }
 
-    public Wrapper<T> toObjectWrapper(String jsonString) {
+    public Wrapper<T> toObjectWrapper(String jsonString, int maxRow) {
         try {
 
-            String json = request.esJsonToTableJson(jsonString, 0, 0, 0, 0, 0);
-            JsonWapper wapper = builder();
+            String json = request.esJsonToTableJson(jsonString, maxRow, 0, 0, 0, 0);
+            JsonWrapper wapper = builder();
             JavaType type = wapper.getObjectMapper().getTypeFactory().constructParametricType(Wrapper.class, getType());
             Wrapper<T> res = wapper.getObjectMapper().readValue(json, type);
             return res;
@@ -80,10 +86,14 @@ public abstract class BaseEsOperator<T, V> implements Record<T> {
         }
     }
 
+    public Wrapper<T> toObjectWrapper(String jsonString) {
+       return toObjectWrapper(jsonString, 1);
+    }
+
     public List<EsSearchHitResult<T>> toEsResultWrapper(String jsonString) {
         try {
 
-            JsonWapper wrapper = builder();
+            JsonWrapper wrapper = builder();
             JavaType inner = wrapper.getObjectMapper().getTypeFactory().constructParametricType(EsSearchHitResult.class, getType());
             JavaType type = wrapper.getObjectMapper().getTypeFactory().constructParametricType(List.class, inner);
 
@@ -123,7 +133,7 @@ public abstract class BaseEsOperator<T, V> implements Record<T> {
                 Collections.emptySet(), Collections.emptySet(), sort, null,
                 emptyMap(), null, emptyList()));
 
-        Wrapper<T> w = toObjectWrapper(res);
+        Wrapper<T> w = toObjectWrapper(res, size);
 
         return w.data;
     }
@@ -298,7 +308,7 @@ public abstract class BaseEsOperator<T, V> implements Record<T> {
         String res = request.search(EsQueryBuilder.build(query, begin, size, resultFields, exludeFields, sort,
                 null, emptyMap(), null, searchAfter));
 
-        return toObjectWrapper(res);
+        return toObjectWrapper(res, end-begin);
     }
 
     public List<EsSearchHitResult<T>> select(Set<String> resultFields, Set<String> exludeFields,
@@ -372,7 +382,7 @@ public abstract class BaseEsOperator<T, V> implements Record<T> {
         return Pair.of(getHits(res), toEsResultWrapper(res));
     }
 
-    static class JsonWapper {
+    static class JsonWrapper {
         private ObjectMapper objectMapper;
 
         public ObjectMapper getObjectMapper() {
