@@ -388,6 +388,62 @@ public class EsRequest {
         return httpJson(post, sb.toString());
     }
 
+    /**
+     * 批量更新文档，支持通过mixIn来忽略特定字段
+     * @param indexName 索引名称
+     * @param docs 要更新的文档列表
+     * @param getId 获取文档ID的函数
+     * @param refresh 是否立即刷新
+     * @param mixIn 用于JSON序列化的mixIn类，可以包含@JsonIgnoreProperties注解
+     * @return 更新结果
+     * @throws JsonProcessingException 如果JSON处理出错
+     * 
+     * 使用示例：
+     * <pre>
+     * // 创建一个mixIn类来忽略特定字段
+     * @JsonIgnoreProperties({"field1", "field2"})
+     * abstract class MyMixIn {}
+     * 
+     * // 使用updateBatch方法
+     * String result = esRequest.updateBatch(
+     *     "my_index",
+     *     documents,
+     *     doc -> doc.getId(),
+     *     true,
+     *     MyMixIn.class
+     * );
+     * </pre>
+     */
+    public <T> String updateBatch(String indexName, List<T> docs, Function<T, String> getId, boolean refresh, Class<?> mixIn) throws JsonProcessingException {
+        HttpEntityEnclosingRequestBase post = new HttpPost(host + "/" + EsQueryBuilder.ACTION_BULK + (refresh ? "?" + REFRESH : ""));
+        StringBuilder sb = new StringBuilder();
+
+        ObjectMapper tempMapper = mapper.copy();
+        if (mixIn != null) {
+            tempMapper.addMixIn(docs.get(0).getClass(), mixIn);
+        }
+
+        for (T doc : docs) {
+            Map<String, Object> convert = Maps.newHashMap();
+            Map<String, Object> message = Maps.newHashMap();
+            message.put("_index", indexName);
+            
+            String id = getId.apply(doc);
+            if (id == null) {
+                throw new IllegalArgumentException("Document ID cannot be null for update operation");
+            }
+            message.put("_id", id);
+            message.put("_type", "_doc");
+            convert.put("update", message);
+            sb.append(tempMapper.writeValueAsString(convert)).append("\n");
+
+            Map<String, Object> docMap = Maps.newHashMap();
+            docMap.put("doc", doc);
+            sb.append(tempMapper.writeValueAsString(docMap)).append("\n");
+        }
+
+        return httpJson(post, sb.toString());
+    }
 
     public String createIndex(String indexName) {
 

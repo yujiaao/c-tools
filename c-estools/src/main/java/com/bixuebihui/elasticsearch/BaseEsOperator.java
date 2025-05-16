@@ -50,7 +50,7 @@ public abstract class BaseEsOperator<T, V> implements Record<T> {
 
         Wrapper<T> w = toObjectWrapper(res, size);
 
-        return w.data.get(0);
+        return w.items.get(0);
     }
 
     @Override
@@ -75,7 +75,7 @@ public abstract class BaseEsOperator<T, V> implements Record<T> {
     public Wrapper<T> toObjectWrapper(String jsonString, int maxRow) {
         try {
 
-            String json = request.esJsonToTableJson(jsonString, maxRow, 0, 0, 0, 0);
+            String json = request.esJsonToTableJson(jsonString, maxRow, 0, maxRow, 0, maxRow);
             JsonWrapper wapper = builder();
             JavaType type = wapper.getObjectMapper().getTypeFactory().constructParametricType(Wrapper.class, getType());
             Wrapper<T> res = wapper.getObjectMapper().readValue(json, type);
@@ -135,7 +135,7 @@ public abstract class BaseEsOperator<T, V> implements Record<T> {
 
         Wrapper<T> w = toObjectWrapper(res, size);
 
-        return w.data;
+        return w.items;
     }
 
     @Override
@@ -448,18 +448,18 @@ public abstract class BaseEsOperator<T, V> implements Record<T> {
     }
 
     public static class Wrapper<T> {
-        List<T> data;
+        List<T> items;
         Paging paging;
         String caption;
         List<String> titles;
         List<String> _id;
 
-        public List<T> getData() {
-            return data;
+        public List<T> getItems() {
+            return items;
         }
 
-        public void setData(List<T> data) {
-            this.data = data;
+        public void setItems(List<T> items) {
+            this.items = items;
         }
 
         public Paging getPaging() {

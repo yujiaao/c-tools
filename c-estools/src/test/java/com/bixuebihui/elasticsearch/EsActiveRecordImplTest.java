@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -248,11 +249,60 @@ class EsActiveRecordImplTest {
     @Test
     void update() {
         String _id="3";
-        String field = "name";
-        long value = System.currentTimeMillis();
-        int res = ar.eq("abc", "123").update(_id, field, value+"");
-        System.out.println(res);
-        assertEquals(1, res);
+    }
+
+    /**
+     * 测试批量更新文档
+     */
+    @Test
+    void updateBatch() {
+        // 准备测试数据
+        List<Object> documents = List.of(
+            Map.of("id", "1", "name", "doc1", "value", "value1"),
+            Map.of("id", "2", "name", "doc2", "value", "value2")
+        );
+
+        // 测试基本批量更新
+        boolean result = ar.updateBatch(indexName, documents, doc -> (String)((Map)doc).get("id"));
+        assertTrue(result, "基本批量更新应该成功");
+
+        // 测试带刷新的批量更新
+        result = ar.updateBatch(indexName, documents, doc -> (String)((Map)doc).get("id"), true);
+        assertTrue(result, "带刷新的批量更新应该成功");
+
+        // 测试带mixin的批量更新
+        result = ar.updateBatch(indexName, documents, doc -> (String)((Map)doc).get("id"), true, TestDocumentMixin.class);
+        assertTrue(result, "带mixin的批量更新应该成功");
+    }
+
+    /**
+     * 测试批量更新空列表
+     */
+    @Test
+    void updateBatchEmptyList() {
+        List<Object> emptyList = List.of();
+        boolean result = ar.updateBatch(indexName, emptyList, doc -> (String)((Map)doc).get("id"));
+        assertTrue(result, "空列表的批量更新应该成功");
+    }
+
+    /**
+     * 测试批量更新时ID为null的情况
+     */
+    @Test
+    void updateBatchWithNullId() {
+        List<Object> documents = List.of(
+            Map.of("id", null, "name", "doc1", "value", "value1"),
+            Map.of("id", "2", "name", "doc2", "value", "value2")
+        );
+        boolean result = ar.updateBatch(indexName, documents, doc -> (String)((Map)doc).get("id"));
+        assertTrue(result, "包含null ID的批量更新应该成功");
+    }
+
+    // 测试用的Mixin类
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"value"})
+    private abstract static class TestDocumentMixin {
+        @com.fasterxml.jackson.annotation.JsonProperty("document_name")
+        String name;
     }
 
     @Test

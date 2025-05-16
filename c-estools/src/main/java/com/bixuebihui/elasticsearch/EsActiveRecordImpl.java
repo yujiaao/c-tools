@@ -367,8 +367,8 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
         try {
            BaseEsOperator.Wrapper<T> res = operator.selectWithJoin(getResultFieldsSet(), getExcludeFieldsSet(), filterStack.toQuery() , toEsSort(),
                     SqlLimit.LIMIT_ONE.getBegin(), SqlLimit.LIMIT_ONE.getEnd(), searchAfter);
-            if (res!=null && res.data !=null && !res.data.isEmpty()) {
-                return res.data.get(0);
+            if (res!=null && res.items !=null && !res.items.isEmpty()) {
+                return res.items.get(0);
             }
             return null;
         } finally {
@@ -773,6 +773,7 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     public boolean insertBatch(String indexName, List<T> infos, Function<T, String> getId) {
         return insertBatch( indexName,infos,getId, false);
     }
+    
     public boolean insertBatch(String indexName, List<T> infos, Function<T, String> getId, boolean refresh) {
         try {
             String response =  operator.request.insertBatch(indexName, infos,
@@ -792,6 +793,70 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
             LOG.error(e.getMessage(), e);
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * 批量更新文档
+     * @param indexName 索引名称
+     * @param infos 要更新的文档列表
+     * @param getId 获取文档ID的函数
+     * @param refresh 是否立即刷新
+     * @param mixIn 用于JSON序列化的mixin类。用于自定义对象的序列化行为，例如：
+     *             1. 忽略某些字段：使用@JsonIgnore注解
+     *             2. 重命名字段：使用@JsonProperty注解
+     *             3. 自定义序列化：使用@JsonSerialize注解
+     *             示例：
+     *             <pre>
+     *             @JsonIgnoreProperties({"password", "secret"})
+     *             abstract class UserMixin {
+     *                 @JsonProperty("user_name")
+     *                 String name;
+     *             }
+     *             // 使用时：
+     *             updateBatch("users", users, User::getId, true, UserMixin.class);
+     *             </pre>
+     * @return 更新是否成功
+     */
+    public boolean updateBatch(String indexName, List<T> infos, Function<T, String> getId, boolean refresh, Class<?> mixIn) {
+        try {
+            String response = operator.request.updateBatch(indexName, infos,
+                    (t) -> (getId!=null) ? StringUtils.trimToNull(getId.apply(t)):null, refresh, mixIn);
+
+            ObjectMapper mapper = EsRequest.getMapper();
+            JsonNode jsonNode = mapper.readTree(response);
+
+            LOG.debug(response);
+
+            String errorField = "errors";
+            return jsonNode.has(errorField) && !jsonNode.get(errorField).asBoolean();
+
+        } catch (JsonProcessingException e) {
+            LOG.error(e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * 批量更新文档
+     * @param indexName 索引名称
+     * @param infos 要更新的文档列表
+     * @param getId 获取文档ID的函数
+     * @param refresh 是否立即刷新
+     * @return 更新是否成功
+     */
+    public boolean updateBatch(String indexName, List<T> infos, Function<T, String> getId, boolean refresh) {
+        return updateBatch(indexName, infos, getId, refresh, null);
+    }
+
+    /**
+     * 批量更新文档，默认不刷新
+     * @param indexName 索引名称
+     * @param infos 要更新的文档列表
+     * @param getId 获取文档ID的函数
+     * @return 更新是否成功
+     */
+    public boolean updateBatch(String indexName, List<T> infos, Function<T, String> getId) {
+        return updateBatch(indexName, infos, getId, false);
     }
 
     @Override
