@@ -338,6 +338,20 @@ public abstract class BaseDao<T, ID> {
         return res;
     }
 
+    public boolean updateBatch(List<T> infos, boolean refresh) {
+        return ar().updateBatch(getIndexName(), infos, (t) ->{
+            ID v  = getId(t);
+            return v != null ? v.toString() : null;
+        }, refresh);
+    }
+
+    public boolean updateBatch(List<T> infos, boolean refresh, Class<?> mixInClass) {
+        return ar().updateBatch(getIndexName(), infos, (t) ->{
+            ID v  = getId(t);
+            return v != null ? v.toString() : null;
+        }, refresh, mixInClass, true);
+    }
+
     /**
      * <p>getIDs.</p>
      *

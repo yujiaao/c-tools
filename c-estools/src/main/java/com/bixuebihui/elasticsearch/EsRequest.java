@@ -414,7 +414,7 @@ public class EsRequest {
      * );
      * </pre>
      */
-    public <T> String updateBatch(String indexName, List<T> docs, Function<T, String> getId, boolean refresh, Class<?> mixIn) throws JsonProcessingException {
+    public <T> String updateBatch(String indexName, List<T> docs, Function<T, String> getId, boolean refresh, Class<?> mixIn, boolean docAsUpsert) throws JsonProcessingException {
         HttpEntityEnclosingRequestBase post = new HttpPost(host + "/" + EsQueryBuilder.ACTION_BULK + (refresh ? "?" + REFRESH : ""));
         StringBuilder sb = new StringBuilder();
 
@@ -439,6 +439,8 @@ public class EsRequest {
 
             Map<String, Object> docMap = Maps.newHashMap();
             docMap.put("doc", doc);
+            docMap.put("doc_as_upsert", true);
+
             sb.append(tempMapper.writeValueAsString(docMap)).append("\n");
         }
 

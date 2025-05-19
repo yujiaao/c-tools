@@ -801,6 +801,7 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
      * @param infos 要更新的文档列表
      * @param getId 获取文档ID的函数
      * @param refresh 是否立即刷新
+     * @param upsert 是否插入不存在的文档
      * @param mixIn 用于JSON序列化的mixin类。用于自定义对象的序列化行为，例如：
      *             1. 忽略某些字段：使用@JsonIgnore注解
      *             2. 重命名字段：使用@JsonProperty注解
@@ -817,10 +818,10 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
      *             </pre>
      * @return 更新是否成功
      */
-    public boolean updateBatch(String indexName, List<T> infos, Function<T, String> getId, boolean refresh, Class<?> mixIn) {
+    public boolean updateBatch(String indexName, List<T> infos, Function<T, String> getId, boolean refresh, Class<?> mixIn, boolean upsert) {
         try {
             String response = operator.request.updateBatch(indexName, infos,
-                    (t) -> (getId!=null) ? StringUtils.trimToNull(getId.apply(t)):null, refresh, mixIn);
+                    (t) -> (getId!=null) ? StringUtils.trimToNull(getId.apply(t)):null, refresh, mixIn, upsert);
 
             ObjectMapper mapper = EsRequest.getMapper();
             JsonNode jsonNode = mapper.readTree(response);
@@ -845,7 +846,7 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
      * @return 更新是否成功
      */
     public boolean updateBatch(String indexName, List<T> infos, Function<T, String> getId, boolean refresh) {
-        return updateBatch(indexName, infos, getId, refresh, null);
+        return updateBatch(indexName, infos, getId, refresh, null, true);
     }
 
     /**
