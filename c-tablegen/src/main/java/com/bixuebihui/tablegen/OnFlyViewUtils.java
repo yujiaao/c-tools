@@ -117,17 +117,17 @@ public class OnFlyViewUtils {
             }
 
             TableInfo plainTableInfo = tableInfoMap.get(tableName);
-            if(plainTableInfo!=null){
+            if(plainTableInfo!=null && plainTableInfo.getFields() != null){
                 String remark = (plainTableInfo.getFields().stream()
-                        .filter(c -> c.getName().equalsIgnoreCase(cd.getName()))
-                        .map(ColumnData::getRemarks)
+                        .filter(c -> c != null && c.getName() != null && c.getName().equalsIgnoreCase(cd.getName()))
+                        .map(c -> c.getRemarks() != null ? c.getRemarks() : "")
                         .findFirst()
-                        .orElse(cd.getRemarks()));
+                        .orElse(cd.getRemarks() != null ? cd.getRemarks() : ""));
                 String comment = (plainTableInfo.getFields().stream()
-                        .filter(c -> c.getName().equalsIgnoreCase(cd.getName()))
-                        .map(ColumnData::getComment)
+                        .filter(c -> c != null && c.getName() != null && c.getName().equalsIgnoreCase(cd.getName()))
+                        .map(c -> c.getComment() != null ? c.getComment() : "")
                         .findFirst()
-                        .orElse(cd.getComment()));
+                        .orElse(cd.getComment() != null ? cd.getComment() : ""));
                 cd.setRemarks(remark);
                 cd.setComment(comment);
             }

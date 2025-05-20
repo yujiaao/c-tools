@@ -3,7 +3,7 @@
     <parent>
         <artifactId>c-tools-parent</artifactId>
         <groupId>com.github.yujiaao</groupId>
-        <version>1.15.10.12</version>
+        <version>1.15.10.13</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
