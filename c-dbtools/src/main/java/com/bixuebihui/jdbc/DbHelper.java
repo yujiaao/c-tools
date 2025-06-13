@@ -1063,7 +1063,9 @@ public class DbHelper implements IDbHelper {
                     throw new DbException("execute sql failed: " + sql);
                 }
                 if(!rs.next()) {
-                    throw new DbException("execute sql failed: " + sql);
+                   //fix bug: no result set
+                    return Pair.of(0L, Collections.emptyList());
+                    //throw new DbException("execute sql failed: " + sql);
                 }
                 long count = rs.getLong(1);
                 if(p.getMoreResults()){
