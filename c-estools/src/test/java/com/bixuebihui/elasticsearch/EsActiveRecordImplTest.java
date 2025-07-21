@@ -271,7 +271,9 @@ class EsActiveRecordImplTest {
         assertTrue(result, "带刷新的批量更新应该成功");
 
         // 测试带mixin的批量更新
-        result = ar.updateBatch(indexName, documents, doc -> (String)((Map)doc).get("id"), true, TestDocumentMixin.class);
+        result = ar.updateBatch(indexName, documents,
+                doc -> (String)((Map)doc).get("id"), true, TestDocumentMixin.class,
+                true);
         assertTrue(result, "带mixin的批量更新应该成功");
     }
 
