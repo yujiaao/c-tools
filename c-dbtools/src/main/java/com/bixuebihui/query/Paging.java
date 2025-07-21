@@ -5,6 +5,8 @@ import com.bixuebihui.jdbc.SqlSort;
 import org.apache.commons.beanutils.BeanMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -119,6 +121,7 @@ import static com.bixuebihui.jdbc.SqlSort.Sort.ASC;
  * 成功为pojo赋值，包括级联属性address。
  */
 public class Paging<S> {
+    Logger logger = LoggerFactory.getLogger(Paging.class);
     public static final String ORDER_SPLITER = ":";
     Long start = 0L;
     Long count = 10L;
@@ -229,7 +232,10 @@ public class Paging<S> {
         if (sort != null) {
             this.sort.forEach(sort1 -> {
                 String fieldName = propertyNameToFieldName(unifyField(sort1.getProperty()), fields);
-                if (sort1.getOrder().equals(ASC)) {
+                if (fieldName == null) {
+                    logger.error("Invalid sort field: {}", sort1.getProperty());
+                   // throw new IllegalArgumentException("Invalid sort field: " + sort1.getProperty());
+                }else  if (sort1.getOrder().equals(ASC)) {
                             ar.asc(fieldName);
                         } else {
                             ar.desc(fieldName);
@@ -242,7 +248,7 @@ public class Paging<S> {
     }
 
     String propertyNameToFieldName(String propertyName, Map<String, String> validFields){
-        return validFields.getOrDefault(propertyName, propertyName);
+        return validFields.get(propertyName);
     }
 
 

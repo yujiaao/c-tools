@@ -57,7 +57,7 @@ public class SqlSort {
      */
     @Override
     public String toString() {
-        if (sorts.size() <= 0) {
+        if (sorts.isEmpty()) {
             return "";
         }
 
