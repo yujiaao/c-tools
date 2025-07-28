@@ -3,6 +3,8 @@ package com.bixuebihui.jdbc;
 import com.bixuebihui.DbException;
 import com.bixuebihui.shardingjdbc.core.constant.SQLType;
 import com.bixuebihui.shardingjdbc.core.hint.HintManagerHolder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -17,7 +19,7 @@ import java.sql.SQLException;
  * @version $Id: $Id
  */
 public class MSDbHelper extends DbHelper {
-
+    private static final Logger LOG = LoggerFactory.getLogger(MSDbHelper.class);
 	/**
 	 * The DML_FLAG adopted from ShadingJDBC
 	 */
@@ -47,7 +49,11 @@ public class MSDbHelper extends DbHelper {
                 return masterDatasource.getConnection();
             }
             Connection conn = super.getConnection();
-            conn.setReadOnly(readOnly);
+            try{
+                conn.setReadOnly(true);
+            }catch (SQLException e){
+                LOG.warn("set connection readOnly failed", e);
+            }
             return conn;
         }catch (SQLException e){
             throw new DbException(e);
