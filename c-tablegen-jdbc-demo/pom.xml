@@ -8,9 +8,26 @@
         <version>1.15.11.1</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-
     <artifactId>c-tablegen-jdbc-demo</artifactId>
 
+    <licenses>
+
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <developers>
+        <developer>
+            <id>yujiaao</id>
+            <name>Wanxiang Xing</name> <!-- 必选：开发者姓名 -->
+            <email>yujiaao@msn.com</email>
+            <roles>
+                <role>Developer</role> <!-- 可选：角色描述 -->
+            </roles>
+        </developer>
+    </developers>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
         <maven.compiler.source>17</maven.compiler.source>

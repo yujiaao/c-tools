@@ -9,6 +9,24 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <name>elasticsearch runtime</name>
+    <licenses>
+
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <developers>
+        <developer>
+            <id>yujiaao</id>
+            <name>Wanxiang Xing</name> <!-- 必选：开发者姓名 -->
+            <email>yujiaao@msn.com</email>
+            <roles>
+                <role>Developer</role> <!-- 可选：角色描述 -->
+            </roles>
+        </developer>
+    </developers>
     <build>
         <plugins>
             <plugin>

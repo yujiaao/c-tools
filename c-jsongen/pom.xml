@@ -8,8 +8,17 @@
         <version>1.15.11.1</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-
     <artifactId>c-jsongen</artifactId>
+
+    <licenses>
+
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
     <build>
         <plugins>
             <plugin>
