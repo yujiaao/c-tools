@@ -7,13 +7,12 @@
         <artifactId>oss-parent</artifactId>
         <version>3</version>
     </parent>
-
     <groupId>com.github.yujiaao</groupId>
     <artifactId>c-tools-parent</artifactId>
     <packaging>pom</packaging>
     <version>1.15.11.2</version>
+    <name>c-tools-parent</name>
     <licenses>
-
         <license>
             <name>Apache License, Version 2.0</name>
             <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>

@@ -9,7 +9,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>c-jsongen-es-demo</artifactId>
-
+    <name>c-jsongen-es-demo</name>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
         <maven.compiler.source>17</maven.compiler.source>
