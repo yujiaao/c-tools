@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 /**
@@ -41,9 +42,11 @@ public interface Generator {
             }
         }
         if(wantToGenerate(fileName)) {
-            try (OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(fileName))) {
+            try (OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(fileName),
+                    StandardCharsets.UTF_8)) {
                 IOUtils.write(generate(tableName, index), writer);
-                System.out.println(tableName + ": " + fileName);
+            } catch (IOException e) {
+                throw new IOException("fail to write file", e);
             }
         }
     }
