@@ -23,7 +23,7 @@ public class MSDbHelper extends DbHelper {
 	/**
 	 * The DML_FLAG adopted from ShadingJDBC
 	 */
-    private static final ThreadLocal<Boolean> DML_FLAG = ThreadLocal.withInitial(() -> false);
+    static final ThreadLocal<Boolean> DML_FLAG = ThreadLocal.withInitial(() -> false);
     /**
      * reset DML flag.
      */
@@ -34,7 +34,7 @@ public class MSDbHelper extends DbHelper {
 	/**
 	 * master database for change
 	 */
-	private DataSource masterDatasource = null;
+    DataSource masterDatasource = null;
 
     /**
      * {@inheritDoc}
@@ -75,7 +75,7 @@ public class MSDbHelper extends DbHelper {
         return super.getConnection();
     }
 
-    private boolean isMasterRoute(final SQLType sqlType) {
+    boolean isMasterRoute(final SQLType sqlType) {
         return SQLType.DQL != sqlType || DML_FLAG.get() || HintManagerHolder.isMasterRouteOnly();
     }
 
