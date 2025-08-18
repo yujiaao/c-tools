@@ -273,7 +273,29 @@ public class Paging<S> {
     private <T> void range(Map<String, MutablePair<Object, Object>> range, ActiveRecord<T> ar) {
         range.forEach((k, p) -> {
             if (p.getLeft() != null && p.getRight() != null) {
-                ar.between(k, p.left, p.right);
+                if(p.getLeft().equals(p.getRight())) {
+                    if(p.getLeft() instanceof Date) {
+                        //如果没有设置时间
+                        // 例如：2023-10-01 00:00:00 和 2023-10-01 23:59:59
+                        // 这种情况，实际上是一个范围
+                        Date d = (Date) p.getLeft();
+                        if(d.getHours() == 0 && d.getMinutes() == 0 && d.getSeconds() == 0) {
+                            // 如果是00:00:00，表示当天的开始时间
+                            Calendar calendar = Calendar.getInstance();
+                            calendar.setTime(d);
+                            calendar.add(Calendar.DATE, 1);
+                            ar.greaterOrEqualThan(k, p.left)
+                                    .smallerThan(k, calendar.getTime());
+                        } else {
+                            ar.between(k, p.left, p.right);
+                        }
+
+                    } else {
+                        ar.eq(k, p.left);
+                    }
+                } else {
+                    ar.between(k, p.left, p.right);
+                }
             } else if (p.left != null) {
                 ar.greaterOrEqualThan(k, p.left);
             } else if (p.right != null) {
