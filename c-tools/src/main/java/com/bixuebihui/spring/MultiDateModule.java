@@ -2,9 +2,11 @@ package com.bixuebihui.spring;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.deser.std.StdScalarDeserializer;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -27,6 +29,8 @@ public class MultiDateModule extends SimpleModule {
     public MultiDateModule() {
         // 为 Date 类型注册多格式反序列化器
         addDeserializer(Date.class, new DateDeserializer());
+        // 为 Timestamp 类型注册多格式反序列化器
+        addDeserializer(Timestamp.class, new MultiDateTimestampDeserializer());
     }
 
     private static class DateDeserializer extends StdScalarDeserializer<Date> {
@@ -55,6 +59,16 @@ public class MultiDateModule extends SimpleModule {
                 }
             }
             throw new IOException("无法解析日期格式: " + dateStr);
+        }
+    }
+
+    private static class MultiDateTimestampDeserializer extends JsonDeserializer<Timestamp> {
+        private final DateDeserializer dateDeserializer = new DateDeserializer();
+
+        @Override
+        public Timestamp deserialize(JsonParser p, DeserializationContext ctxt) throws java.io.IOException {
+            Date date = dateDeserializer.deserialize(p, ctxt);
+            return date == null ? null : new Timestamp(date.getTime());
         }
     }
 }
