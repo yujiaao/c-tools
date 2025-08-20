@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.github.yujiaao</groupId>
         <artifactId>c-tools-parent</artifactId>
-        <version>1.15.11.8</version>
+        <version>1.15.11.9</version>
     </parent>
 
     <artifactId>c-dbtools</artifactId>
@@ -181,7 +181,6 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-text</artifactId>
-            <version>1.10.0</version>
         </dependency>
 
         <!-- supported and tested connection pool, can works with any or none -->
@@ -362,7 +361,7 @@
         <dependency>
             <groupId>com.github.yujiaao</groupId>
             <artifactId>common-utils</artifactId>
-            <version>1.15.11.8</version>
+            <version>1.15.11.9</version>
             <scope>compile</scope>
         </dependency>
 

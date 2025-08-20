@@ -172,7 +172,7 @@ public class EsRequestTest {
                 "    \"page\" : 1\n" +
                 "  },\n" +
                 "  \"total\" : 2\n" +
-                "}", result);
+                "}", result.toString().replaceAll("\r\n", "\n"));
 
     }
 

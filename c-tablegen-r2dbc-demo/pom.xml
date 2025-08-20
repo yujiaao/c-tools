@@ -5,7 +5,7 @@
     <parent>
         <artifactId>c-tools-parent</artifactId>
         <groupId>com.github.yujiaao</groupId>
-        <version>1.15.11.8</version>
+        <version>1.15.11.9</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>c-tablegen-r2dbc-demo</artifactId>
@@ -62,8 +62,6 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-text</artifactId>
-            <version>1.10.0</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>

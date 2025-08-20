@@ -5,7 +5,7 @@
     <parent>
         <artifactId>c-tools-parent</artifactId>
         <groupId>com.github.yujiaao</groupId>
-        <version>1.15.11.8</version>
+        <version>1.15.11.9</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>c-tools-bom</artifactId>
@@ -134,6 +134,11 @@
                 <version>${jakartaValidation.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-text</artifactId>
+                <version>${commons-text.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
     <dependencies>

@@ -9,7 +9,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static java.util.Collections.emptyMap;
 import static java.util.stream.Collectors.toList;
@@ -74,6 +73,7 @@ public class ProjectConfig {
     Map<String, String> viewList;
     Map<String, String> excludeTablesList;
     Map<String, List<String>> encryptedFields;
+    Map<String, List<String>> ignoreFields;
     private String serviceDir;
     private String controllerDir;
     private String dtoDir;
@@ -181,6 +181,7 @@ public class ProjectConfig {
         c.extraSetting = props.getProperty("extra_setting");
 
         c.encryptedFields = toMap(props.getProperty("encrypted_fields"));
+        c.ignoreFields = toMap(props.getProperty("ignore_fields"));
 
         return c;
     }
@@ -236,6 +237,12 @@ public class ProjectConfig {
 
     public void setEncryptedFields(Map<String, List<String>> encryptedFields) {
         this.encryptedFields = encryptedFields;
+    }
+    public Map<String, List<String>> getIgnoreFields() {
+        return ignoreFields;
+    }
+    public void setIgnoreFields(Map<String, List<String>> ignoreFields) {
+        this.ignoreFields = ignoreFields;
     }
 
     public String getSwaggerVersion() {

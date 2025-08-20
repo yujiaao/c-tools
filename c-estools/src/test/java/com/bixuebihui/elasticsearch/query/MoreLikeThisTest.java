@@ -43,7 +43,7 @@ class MoreLikeThisTest {
         assertNotNull(json);
         assertEquals(true, json.contains("\"more_like_this\""));
         assertEquals(true, json.contains("\"fields\":[\"title\",\"content\"]"));
-        assertEquals(true, json.contains("\"doc\":{\"title\":\"示例标题\"}"));
+        assertEquals(true, json.contains("\"like\":[\"示例标题\"]"));
         assertEquals(true, json.contains("\"min_term_freq\":1"));
         assertEquals(true, json.contains("\"min_doc_freq\":1"));
         assertEquals(true, json.contains("\"minimum_should_match\":\"30%\""));
@@ -84,7 +84,7 @@ class MoreLikeThisTest {
         assertNotNull(json);
         assertEquals(true, json.contains("\"more_like_this\""));
         assertEquals(true, json.contains("\"fields\":[\"title\",\"content\",\"tags\"]"));
-        assertEquals(true, json.contains("\"doc\":{\"title\":\"示例标题\",\"content\":\"这是一个示例内容，用于测试MoreLikeThis查询\",\"tags\":\"测试,示例,Elasticsearch\"}"));
+        assertEquals(true, json.contains("\"like\":[\"示例标题\",\"这是一个示例内容，用于测试MoreLikeThis查询\",\"测试,示例,Elasticsearch\"]"));
         assertEquals(true, json.contains("\"min_term_freq\":2"));
         assertEquals(true, json.contains("\"min_doc_freq\":2"));
         assertEquals(true, json.contains("\"max_doc_freq\":100"));

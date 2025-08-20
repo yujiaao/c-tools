@@ -3,7 +3,6 @@ package com.bixuebihui.tablegen.generator;
 
 import com.bixuebihui.db.Dialect;
 import com.bixuebihui.dbcon.DatabaseConfig;
-import com.bixuebihui.jdbc.BaseDao;
 import com.bixuebihui.jdbc.IDbHelper;
 import com.bixuebihui.tablegen.*;
 import com.bixuebihui.tablegen.entry.ColumnData;
@@ -11,7 +10,6 @@ import com.bixuebihui.tablegen.entry.TableInfo;
 import com.bixuebihui.tablegen.entry.TableSetInfo;
 import com.github.jknack.handlebars.Context;
 import com.github.jknack.handlebars.Handlebars;
-import com.github.jknack.handlebars.Options;
 import com.github.jknack.handlebars.Template;
 import com.github.jknack.handlebars.context.FieldValueResolver;
 import com.github.jknack.handlebars.context.JavaBeanValueResolver;
@@ -274,7 +272,8 @@ public abstract class BaseGenerator implements Generator {
             LinkedHashMap<String, TableInfo> tableInfos = setInfo.getTableInfos();
             if (tableInfos!=null && tableInfos.get(tableName) != null) {
                 v.put("tableInfo", tableInfos.get(tableName));
-                v.put("fields", setInfo.getTableCols(tableName));
+
+                v.put("fields", getFieldsList(tableName));;
                 v.put("keys", setInfo.getTableKeys(tableName));
                 v.put("importKeys", setInfo.getTableImportedKeys(tableName));
                 v.put("exportKeys", setInfo.getTableExportedKeys(tableName));
@@ -290,16 +289,31 @@ public abstract class BaseGenerator implements Generator {
         v.put("setInfo", setInfo);
         v.put("config", config);
 
+
+
         if(isView()) {
             setViewContext(v, tableName);
         }
         return v;
     }
 
+    private List<ColumnData> getFieldsList(String tableName) {
+        return subList(setInfo.getTableCols(tableName), config.getIgnoreFields().get(tableName));
+    }
+
+    private List<ColumnData> subList(List<ColumnData> tableCols, List<String> strings) {
+        //过滤掉不需要的字段
+        if(!CollectionUtils.isEmpty(strings)){
+            Set<String> set = new HashSet<>(strings);
+            return tableCols.stream().filter(col->!set.contains(col.getName())).collect(Collectors.toList());
+        }
+        return tableCols;
+    }
+
 
     protected void setViewContext(Map<String, Object> map, String tableName) {
         map.put("tableInfo", setInfo.getViewInfos().get(tableName));
-        map.put("fields", setInfo.getViewInfos().get(tableName).getFields());
+        map.put("fields", subList(setInfo.getViewInfos().get(tableName).getFields(), config.getIgnoreFields().get(tableName)));
         map.put("viewModifier","."+ VIEW_DIR);
     }
 
