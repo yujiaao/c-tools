@@ -365,7 +365,7 @@ class ElasticSearchFilterTest {
         // 验证JSON结构
         assertTrue(json.contains("\"more_like_this\""));
         assertTrue(json.contains("\"fields\":[\"content\"]"));
-        assertTrue(json.contains("\"doc\":{\"content\":\"示例文本内容\"}"));
+        assertTrue(json.contains("\"like\":[\"示例文本内容\"]"));
         assertTrue(json.contains("\"min_term_freq\":1"));
         assertTrue(json.contains("\"min_doc_freq\":1"));
         assertTrue(json.contains("\"minimum_should_match\":\"90%\""));
@@ -392,7 +392,7 @@ class ElasticSearchFilterTest {
         // 验证JSON结构
         assertTrue(json.contains("\"more_like_this\""));
         assertTrue(json.contains("\"fields\":[\"title\",\"content\"]"));
-        assertTrue(json.contains("\"doc\":{\"title\":\"标题示例\",\"content\":\"内容示例\"}"));
+        assertTrue(json.contains("\"like\":[\"标题示例\",\"内容示例\"]"));
         assertTrue(json.contains("\"min_term_freq\":1"));
         assertTrue(json.contains("\"min_doc_freq\":1"));
         assertTrue(json.contains("\"minimum_should_match\":\"90%\""));

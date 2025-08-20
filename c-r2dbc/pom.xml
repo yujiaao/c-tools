@@ -63,8 +63,6 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-text</artifactId>
-            <version>1.12.0</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -94,15 +92,15 @@
         <dependency>
             <groupId>io.r2dbc</groupId>
             <artifactId>r2dbc-h2</artifactId>
-            <version>0.9.1.RELEASE</version>
+            <version>1.0.0.RELEASE</version>
             <scope>test</scope>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/dev.miku/r2dbc-mysql -->
         <dependency>
-            <groupId>dev.miku</groupId>
+            <groupId>io.asyncer</groupId>
             <artifactId>r2dbc-mysql</artifactId>
-            <version>0.8.2.RELEASE</version>
+            <version>1.4.1</version>
         </dependency>
 
 
@@ -232,7 +230,7 @@
             <dependency>
                 <groupId>io.r2dbc</groupId>
                 <artifactId>r2dbc-bom</artifactId>
-                <version>Arabba-SR10</version>
+                <version>Borca-RELEASE</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
