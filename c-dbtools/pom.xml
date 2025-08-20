@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.github.yujiaao</groupId>
         <artifactId>c-tools-parent</artifactId>
-        <version>1.15.11.7</version>
+        <version>1.15.11.8</version>
     </parent>
 
     <artifactId>c-dbtools</artifactId>
@@ -362,7 +362,7 @@
         <dependency>
             <groupId>com.github.yujiaao</groupId>
             <artifactId>common-utils</artifactId>
-            <version>1.15.11.7</version>
+            <version>1.15.11.8</version>
             <scope>compile</scope>
         </dependency>
 
@@ -439,6 +439,11 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-jdbc</artifactId>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>

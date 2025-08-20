@@ -5,6 +5,7 @@ import com.bixuebihui.jdbc.*;
 import com.bixuebihui.jdbc.entity.CountObject;
 import com.bixuebihui.jdbc.entity.CountValue;
 import com.bixuebihui.query.Paging;
+
 import jakarta.validation.constraints.NotNull;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
@@ -607,6 +608,63 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
             operator.getDbHelper().executeQuery(sql, params, new LongReader(res));
 
             return res;
+        } finally {
+            clear();
+        }
+    }
+
+
+
+    @Override
+    public  <Key, Value> Map<Key, Value> getMap(String keyField, String valueField,
+                                        Class<Key> keyClass,
+                                        Class<Value> valueClass) throws DbException     {
+    List<Pair<Key, Value>> list = new ArrayList<>();
+        try {
+            String sql = getVectorSql(keyField + "," + valueField);
+            Object[] params = getParams().toArray();
+            operator.getDbHelper().executeQuery(sql, params, new LongKeyMapReader<>(list, keyClass, valueClass));
+
+            Map<Key, Value> map = new LinkedHashMap<>();
+            for (Pair<Key, Value> pair : list) {
+                Key key = pair.getLeft();
+                Value value = pair.getRight();
+                if (key != null) {
+                    map.put(key, value);
+                } else {
+                    LOG.warn("getLongKeyMap: key is null for keyField={}, valueField={}", keyField, valueField);
+                }
+            }
+            return map;
+        } catch (Exception e) {
+            throw new DbException(e);
+        } finally {
+            clear();
+        }
+    }
+
+    // 私有通用方法
+    private <K> Map<K, Object> getMap(String keyField, String valueField, RowCallbackHandler reader,
+                                      List<Pair<K, Object>> list) throws DbException {
+        try {
+            String sql = getVectorSql(keyField + "," + valueField);
+            Object[] params = getParams().toArray();
+
+            Map<K, Object> map = new LinkedHashMap<>();
+            operator.getDbHelper().executeQuery(sql, params, reader);
+
+            for (Pair<K, Object> pair : list) {
+                K key = pair.getLeft();
+                Object value = pair.getRight();
+                if (key != null && value != null) {
+                    map.put(key, value);
+                } else {
+                    LOG.warn("getMap: key or value is null for keyField={}, valueField={}", keyField, valueField);
+                }
+            }
+            return map;
+        } catch (Exception e) {
+            throw new DbException(e);
         } finally {
             clear();
         }

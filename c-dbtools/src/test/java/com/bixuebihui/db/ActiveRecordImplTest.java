@@ -1,10 +1,9 @@
 package com.bixuebihui.db;
 
+import com.bixuebihui.DbException;
 import com.bixuebihui.datasource.DataSourceTest;
 import com.bixuebihui.datasource.DbcpDataSource;
-import com.bixuebihui.jdbc.AbstractBaseDao;
-import com.bixuebihui.jdbc.DbHelper;
-import com.bixuebihui.jdbc.IDbHelper;
+import com.bixuebihui.jdbc.*;
 import com.bixuebihui.jdbc.aop.DbHelperAroundAdvice;
 import com.bixuebihui.jdbc.entity.CountObject;
 import com.bixuebihui.jdbc.entity.CountValue;
@@ -17,14 +16,14 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import static com.bixuebihui.jdbc.BaseDao.sql;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
+
 
 public class ActiveRecordImplTest {
 
@@ -35,22 +34,23 @@ public class ActiveRecordImplTest {
     @BeforeEach
     protected void setUp() {
         DbcpDataSource ds = new DbcpDataSource();
-       // ds.setDatabaseConfig(DataSourceTest.getConfigDerby());
+        // ds.setDatabaseConfig(DataSourceTest.getConfigDerby());
         ds.setDatabaseConfig(DataSourceTest.getConfig());
         DbHelper db = new DbHelper();
         db.setDataSource(ds);
         cn = db.getConnection();
         try {
-        	db.executeNoQuery("drop table test", cn);
-        	db.executeNoQuery("drop table test1", cn);
-        }catch (Exception e){}
-        try{
-        db.executeNoQuery(
-                "create table test(id int, name varchar(100), value int default 0, createtime timestamp)", cn);
-        db.executeNoQuery(
-                "create table test1(id int, name varchar(100))", cn);
+            db.executeNoQuery("drop table test", cn);
+            db.executeNoQuery("drop table test1", cn);
+        } catch (Exception e) {
+        }
+        try {
+            db.executeNoQuery(
+                    "create table test(id int, name varchar(100), value int default 0, createtime timestamp)", cn);
+            db.executeNoQuery(
+                    "create table test1(id int, name varchar(100))", cn);
 
-        }catch (Exception e){
+        } catch (Exception e) {
         }
         bd = new BD(db);
         bd.getDbHelper().executeNoQuery(
@@ -323,23 +323,24 @@ public class ActiveRecordImplTest {
 
 //	@Test
 //	void testGroupBy() throws SQLException{
-////		SELECT
-////				[GroupName],
-////					[Content],
-////					[SendType],
-////					[Remark],
-////		COUNT (0) AS GroupCount,
-////					[SendTime]
-////		FROM
-////				[PhoneMessage] T WITH (NOLOCK)
-////				WHERE
-////		Recycled = 0 { 0 }
-////		GROUP BY
-////					[GroupName],
-////					[Content],
-////					[SendType],
-////					[Remark],
-////					[SendTime]
+
+    /// /		SELECT
+    /// /				[GroupName],
+    /// /					[Content],
+    /// /					[SendType],
+    /// /					[Remark],
+    /// /		COUNT (0) AS GroupCount,
+    /// /					[SendTime]
+    /// /		FROM
+    /// /				[PhoneMessage] T WITH (NOLOCK)
+    /// /				WHERE
+    /// /		Recycled = 0 { 0 }
+    /// /		GROUP BY
+    /// /					[GroupName],
+    /// /					[Content],
+    /// /					[SendType],
+    /// /					[Remark],
+    /// /					[SendTime]
 //		ActiveRecord<Object> ar = bd.ar().tableName("\t\t(SELECT\n" +
 //						"\t\t\t\t[GroupName],\n" +
 //						"\t\t\t\t\t[Content],\n" +
@@ -361,7 +362,6 @@ public class ActiveRecordImplTest {
 //		System.out.println(ar.getSql().getCondition().toString());
 //		System.out.println(ar.findAll());
 //	}
-
     @Test
     void notIn() {
         SqlPocket sql = bd.ar().notIn("id", sql("select 1 ")).getSql();
@@ -377,7 +377,7 @@ public class ActiveRecordImplTest {
     }
 
     @Test
-    void interceptorDemo(){
+    void interceptorDemo() {
         //case 1
         SqlPocket basic = bd.ar().filterInterceptor(sqlHelper -> sqlHelper.eq("id", 123))
                 .paramsInterceptor(list -> list).getSql();
@@ -386,19 +386,21 @@ public class ActiveRecordImplTest {
         assertEquals(1, basic.getParams().size());
 
         //case 2
-        SqlPocket  useFul= bd.ar().filterInterceptor(sql    -> new SqlHelper(sql){
-                        @Override
-                        public SqlPocket toCondition() {
-                            return new SqlPocket(){
-                                @Override
-                                public StringBuffer getCondition() {
-                                    return new StringBuffer(" where id = ?");
-                                }
-                                @Override public List<Object> getParams() {
-                                    return List.of(123);
-                                }
-                            };
-                        }
+        SqlPocket useFul = bd.ar().filterInterceptor(sql -> new SqlHelper(sql) {
+                    @Override
+                    public SqlPocket toCondition() {
+                        return new SqlPocket() {
+                            @Override
+                            public StringBuffer getCondition() {
+                                return new StringBuffer(" where id = ?");
+                            }
+
+                            @Override
+                            public List<Object> getParams() {
+                                return List.of(123);
+                            }
+                        };
+                    }
                 })
                 .getSql();
 
@@ -414,7 +416,7 @@ public class ActiveRecordImplTest {
         //生成100条数据
         for (int i = 0; i < 100; i++) {
             bd.getDbHelper().executeNoQuery(
-                    "insert into test(id,name)values(" + i + ",'bacddd"+i+"')");
+                    "insert into test(id,name)values(" + i + ",'bacddd" + i + "')");
         }
         Pair<Long, List<Object>> id = bd.ar()
                 .gt("id", 0)
@@ -428,6 +430,31 @@ public class ActiveRecordImplTest {
     void percentile() {
         Object res = bd.ar().percentile("id", 0.5f);
         assertEquals(234, res);
+    }
+
+    @Test
+    public void testSql() {
+        assertEquals(3, bd.ar().findAll().size());
+
+        ActiveRecord<Object> a = bd.ar().eq("id", 456).sql("JSON_CONTAINS(name, '\"李四\"')");
+        System.out.printf(a.getSql().getCondition().toString());
+        System.out.printf(a.getSql().getParams().toString());
+        List<Object> res = a.findAll();
+        assertEquals(1, res.size());
+        // the below code is not supported by mariadb 11.3.2
+//        res = bd.ar().sql("JSON_CONTAINS_ANY(name, '[\"李四\",\"赵六\"]')" ).findAll();
+//        assertEquals(1, res.size());
+
+    }
+
+    @Test
+    void testFindMap() throws DbException {
+
+        Map<Long, String> map = bd.ar().getMap("id", "name", Long.class, String.class);
+
+        assertEquals(3, map.size());
+        assertEquals("bac", map.get(123L));
+        assertEquals("bac", map.get(234L));
     }
 
     public static class T {
@@ -471,7 +498,7 @@ public class ActiveRecordImplTest {
             T t = new T();
             t.id = rs.getLong("id");
             t.name = rs.getString("name");
-            if (set!=null && set.contains("createtime"))
+            if (set != null && set.contains("createtime"))
                 t.createtime = rs.getTimestamp("createtime");
             return t;
         }
@@ -480,21 +507,6 @@ public class ActiveRecordImplTest {
         public String getTableName() {
             return "test";
         }
-    }
-
-    @Test
-    public void testSql() {
-    assertEquals(3, bd.ar().findAll().size());
-
-        ActiveRecord<Object> a = bd.ar().eq("id", 456).sql("JSON_CONTAINS(name, '\"李四\"')");
-        System.out.printf(a.getSql().getCondition().toString());
-        System.out.printf(a.getSql().getParams().toString());
-        List<Object> res = a.findAll();
-        assertEquals(1, res.size());
-        // the below code is not supported by mariadb 11.3.2
-//        res = bd.ar().sql("JSON_CONTAINS_ANY(name, '[\"李四\",\"赵六\"]')" ).findAll();
-//        assertEquals(1, res.size());
-
     }
 
 }

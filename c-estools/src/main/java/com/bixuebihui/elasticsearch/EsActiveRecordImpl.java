@@ -287,6 +287,56 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
         return this;
     }
 
+    @Override
+    public <Key, Value> Map<Key, Value> getMap(String keyField, String valueField, Class<Key> keyClass, Class<Value> valueClass) throws DbException {
+//        try {
+//            // 只查询 keyField 和 valueField
+//            this.fields(keyField, valueField);
+//            List<Map<String, Object>> results = (List<Map<String, Object>>) operator.selectWithJoin(
+//                    Set.of(keyField, valueField),
+//                    emptySet(),
+//                    filterStack.toQuery(),
+//                    toEsSort(),
+//                    limit.getBegin(),
+//                    limit.getEnd(),
+//                    searchAfter
+//            );
+//
+//            Map<Key, Value> map = new LinkedHashMap<>();
+//            for (Map<String, Object> row : results) {
+//                Object keyObj = row.get(keyField);
+//                Object valueObj = row.get(valueField);
+//                if (keyObj != null) {
+//                    Key key = keyClass.cast(keyObj instanceof Number && keyClass != String.class
+//                            ? convertNumber((Number) keyObj, keyClass)
+//                            : keyClass.cast(keyObj.toString()));
+//                    Value value = valueObj == null ? null : valueClass.cast(
+//                            valueObj instanceof Number && valueClass != String.class
+//                                    ? convertNumber((Number) valueObj, valueClass)
+//                                    : valueClass.cast(valueObj.toString())
+//                    );
+//                    map.put(key, value);
+//                }
+//            }
+//            return map;
+//        } finally {
+//            clear();
+//        }
+        throw new NotImplementedException();
+    }
+
+    // 工具方法：数字类型转换
+    @SuppressWarnings("unchecked")
+    private <T> T convertNumber(Number number, Class<T> clazz) {
+        if (clazz == Integer.class) return (T) Integer.valueOf(number.intValue());
+        if (clazz == Long.class) return (T) Long.valueOf(number.longValue());
+        if (clazz == Double.class) return (T) Double.valueOf(number.doubleValue());
+        if (clazz == Float.class) return (T) Float.valueOf(number.floatValue());
+        if (clazz == Short.class) return (T) Short.valueOf(number.shortValue());
+        if (clazz == Byte.class) return (T) Byte.valueOf(number.byteValue());
+        throw new IllegalArgumentException("不支持的数字类型: " + clazz);
+    }
+
     /**
      * {@inheritDoc}
      */

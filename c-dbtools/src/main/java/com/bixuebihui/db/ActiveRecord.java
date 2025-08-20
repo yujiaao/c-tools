@@ -311,6 +311,11 @@ public interface ActiveRecord<T>
     ActiveRecord<T> limit(int begin, int num);
 
 
+
+    <Key, Value> Map<Key, Value> getMap(String keyField, String valueField,
+                                    Class<Key> keyClass,
+                                    Class<Value> valueClass) throws DbException;
+
     /**
      * <p>last.</p>
      *
