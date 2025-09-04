@@ -1578,11 +1578,16 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
 
     public void processAllByStep(String where, String orderBy, int stepMax, ProcessHandler<T> handler,
                                  Object[] params, boolean alwaysFromBeginning, Function<List<T>, Boolean> finished) {
+        processAllByStep(where, orderBy, stepMax, handler, beginNum -> params, alwaysFromBeginning, finished);
+    }
+
+    public void processAllByStep(String where, String orderBy, int stepMax, ProcessHandler<T> handler,
+                                 Function<Integer, Object[]> params, boolean alwaysFromBeginning, Function<List<T>, Boolean> finished) {
         List<T> list;
         int beginNum = 0;
-        for (list = select(where, params, orderBy, beginNum, beginNum + stepMax);
+        for (list = select(where, params.apply(beginNum), orderBy, beginNum, beginNum + stepMax);
              !finished.apply(list);
-             list = select(where, params, orderBy, beginNum, beginNum + stepMax)) {
+             list = select(where, params.apply(beginNum), orderBy, beginNum, beginNum + stepMax)) {
             if (!alwaysFromBeginning) {
                 beginNum = beginNum + stepMax;
             }
