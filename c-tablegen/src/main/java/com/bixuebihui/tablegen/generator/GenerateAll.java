@@ -163,7 +163,6 @@ public class GenerateAll implements DiffHandler {
         for(Generator g: perViewGenerator){
             int i=0;
             for(TableInfo info: viewInfos.values()) {
-                info(info.getName());
                 g.generateToFile(info.getName(), i++);
             }
         }

@@ -87,7 +87,7 @@ public abstract class BaseGenerator implements Generator {
             }
         }
         if (UNKNOWN_TYPE.equals(type)) {
-            LOG.error("unknown type of key:" + key);
+            LOG.error("unknown type of key:{}", key);
         }
         return type;
     }
@@ -99,6 +99,13 @@ public abstract class BaseGenerator implements Generator {
                     : BaseGenerator.getColType(keyData2.get(0), columnData))
                 : "Object";
     }
+
+    public static String getPrimaryKeyFirstColumnType(List<String> keyData2, List<ColumnData> columnData) throws GenException {
+        return isNotEmpty(keyData2)?
+              BaseGenerator.getColType(keyData2.get(0), columnData)
+                : "Object";
+    }
+
 
     /**
      * to reuse previews created config objects
@@ -370,6 +377,17 @@ public abstract class BaseGenerator implements Generator {
         return "";
     }
 
+    String getPrimaryKeyFirstColumnType(String tableName) {
+        try {
+            List<String> keyData = getKeyData(tableName);
+            List<ColumnData> columnData = getColumnData(tableName);
+            return BaseGenerator.getPrimaryKeyFirstColumnType(keyData, columnData);
+        } catch (GenException e) {
+            LOG.error(e.getMessage(),e);
+        }
+        return "";
+    }
+
     private List<ColumnData> getColumnData(String tableName) {
         return isView() ? setInfo.getViewInfos().get(tableName).getFields() :
                 setInfo.getTableInfos().get(tableName).getFields();
@@ -398,6 +416,13 @@ public abstract class BaseGenerator implements Generator {
     public static String getPrimaryKeyName(List<String> keyData) {
         if (isNotEmpty(keyData)) {
             return String.join(",", keyData);
+        }
+        return null;
+    }
+
+    public static String getPrimaryKeyFirstColumnName(List<String> keyData) {
+        if (isNotEmpty(keyData)) {
+            return keyData.get(0);
         }
         return null;
     }

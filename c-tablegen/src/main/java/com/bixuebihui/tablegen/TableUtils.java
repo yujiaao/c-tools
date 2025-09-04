@@ -72,7 +72,7 @@ public class TableUtils {
             throws SQLException {
         start("getTableKeys");
 
-        Map<String, String> keyData = new LinkedHashMap();
+        Map<Integer, String> keyData = new TreeMap<>();
         ResultSet r = null;
         try {
             String key;
@@ -82,22 +82,15 @@ public class TableUtils {
             }
             r = metaData.getPrimaryKeys(catalog, schema, tableName);
 
-            TreeMap<Integer, String> keyMap = new TreeMap<>();
-
             while (r.next()) {
                 // COLUMN_NAME
                 key = r.getString(4);
+                // KEY_SEQ
                 seq = r.getInt(5);
 
-                boolean existsCol = keyData.containsKey(key);
-
-                if (existsCol) {
-                    continue;
-                }
-                keyMap.put(seq, key);
-                keyData.put(key, key);
+                // 直接按顺序存储，不需要检查重复
+                keyData.put(seq, key);
             }
-            //keyData.addAll(keyMap);
             if(keyData.isEmpty()){
                 LOG.warn("No primary key found for table {} using driver metadata", tableName);
                 return new ArrayList<>(descTable(metaData, tableName));
@@ -111,7 +104,7 @@ public class TableUtils {
             DbUtils.close(r);
         }
 
-        return new ArrayList<>(keyData.keySet());
+        return new ArrayList<>(keyData.values());
     }
 
     private static Collection<String> descTable(DatabaseMetaData metaData, String tableName) throws SQLException {

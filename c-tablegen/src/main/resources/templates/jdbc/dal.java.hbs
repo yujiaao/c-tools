@@ -189,13 +189,20 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
 
     @Override
     public void setIdLong({{pojoClassName}} info, long id) {
-{{#if hasKey}}
+{{~#if hasKey}}
     {{#if (lt keys.size 2)}}
         info.set{{firstUp firstKeyName}}({{{unboxType firstKeyType}}}id);
     {{~else~}}
+        {{~#log warn~}}
+        // TODO 需要手工实现这个方法，因为表 {{tableName}} 有多个主键,{{firstKeyFirstColumnType}} {{firstKeyFirstColumnName}}
+        {{/log~}}
+        {{~#eq firstKeyFirstColumnType "Long"~}}
+        info.set{{firstUp firstKeyFirstColumnName}}(id);
+        {{~else~}}
         throw new UnsupportedOperationException("This method is not supported, because table {{tableName}} has more than one key!");
-    {{/if}}
-{{else}}
+        {{/eq~}}
+    {{/if~}}
+{{else~}}
     //no key to set, don't use this method!
 {{/if}}
     }

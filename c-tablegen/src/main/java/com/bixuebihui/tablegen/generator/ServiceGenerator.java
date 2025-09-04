@@ -83,7 +83,7 @@ public class ServiceGenerator extends BaseGenerator {
     String getFirstKeyName(String tableName) {
         List<String> keyData = getKeyData(tableName);
         if(!isNotEmpty(keyData)) {
-            LOG.warn("Table '"+tableName+"' have not a  primary key, this may be a error");
+            LOG.warn("Table '{}' have not a  primary key, this may be a error", tableName);
         }
         return getPrimaryKeyName(keyData);
     }

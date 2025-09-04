@@ -35,7 +35,7 @@ public class DelCmdGenerator extends BaseGenerator {
         List<String> keys = getKeysInfo(cols, tableName);
 
         v.put("firstKeyType", this.getPrimaryKeyType(tableName));
-        v.put("firstKeyName", this.getPrimaryKeyName(keys));
+        v.put("firstKeyName", getPrimaryKeyName(keys));
 
         return v;
     }
