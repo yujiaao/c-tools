@@ -297,7 +297,7 @@ public abstract class BaseGenerator implements Generator {
         return v;
     }
 
-    private List<ColumnData> getFieldsList(String tableName) {
+    protected List<ColumnData> getFieldsList(String tableName) {
         return subList(setInfo.getTableCols(tableName), config.getIgnoreFields().get(tableName));
     }
 

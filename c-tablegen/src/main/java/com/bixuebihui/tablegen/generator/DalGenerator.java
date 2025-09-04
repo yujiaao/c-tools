@@ -283,7 +283,7 @@ public class DalGenerator extends BaseGenerator {
     @Override
     protected Map<String, Object> getContextMap(String tableName) {
         Map<String, Object> v = super.getContextMap(tableName);
-        List<ColumnData> cols = getColsInfo(tableName);
+        List<ColumnData> cols = getFieldsList(tableName);
         List<String> keys = getKeysInfo(cols, tableName);
 
         v.put("hasVersionCol", containsColName(cols
@@ -328,7 +328,7 @@ public class DalGenerator extends BaseGenerator {
             tableGen.setCurrentOutput(writer);
             tableGen.setConfig(this.config);
             tableGen.setSetInfo(this.setInfo);
-            tableGen.writeForIndex(tableName, this.getColsInfo(tableName));
+            tableGen.writeForIndex(tableName, getFieldsList(tableName));
 
             return writer.toString();
         } catch (GenException | IOException e) {
