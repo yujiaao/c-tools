@@ -254,22 +254,13 @@
                     </plugin>
 
                     <plugin>
-                        <groupId>org.sonatype.plugins</groupId>
-                        <artifactId>nexus-staging-maven-plugin</artifactId>
-                        <version>1.6.8</version>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>0.8.0</version>
                         <extensions>true</extensions>
                         <configuration>
-                            <serverId>ossrh</serverId>
-                            <nexusUrl>https://ossrh-staging-api.central.sonatype.com/</nexusUrl>
-                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                            <publishingServerId>ossrh</publishingServerId>
                         </configuration>
-                        <dependencies>
-                            <dependency>
-                                <groupId>com.thoughtworks.xstream</groupId>
-                                <artifactId>xstream</artifactId>
-                                <version>1.4.15</version> <!-- apparently this needs to be exactly this version -->
-                            </dependency>
-                        </dependencies>
                     </plugin>
                 </plugins>
             </build>
