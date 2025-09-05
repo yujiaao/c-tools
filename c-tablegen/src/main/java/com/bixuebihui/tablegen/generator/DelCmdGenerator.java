@@ -36,6 +36,8 @@ public class DelCmdGenerator extends BaseGenerator {
 
         v.put("firstKeyType", this.getPrimaryKeyType(tableName));
         v.put("firstKeyName", getPrimaryKeyName(keys));
+        v.put("firstKeyFirstColumnName", this.getFirstKeyFirstColumnName(tableName));
+        v.put("firstKeyFirstColumnType", this.getPrimaryKeyFirstColumnType(tableName));
 
         return v;
     }

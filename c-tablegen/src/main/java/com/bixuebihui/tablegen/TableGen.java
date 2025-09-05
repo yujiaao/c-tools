@@ -1049,17 +1049,36 @@ public class TableGen implements DiffHandler {
                 List<String> cols = indexData.get(indexName);
                 String name = firstUp(indexName);
                 writeSelect(tableName, cols, "selectBy" + name, colData);
-                writeSelectAll(tableName, cols, false, "selectAllLike" + name, true, colData);
+                writeCount(cols, false, "countBy" + name, colData);
+
+                // write like query if any of cols is String type
+                if (containsStringCol(colData, cols)) {
+                    writeSelectAll(tableName, cols, false, "selectAllLike" + name, true, colData);
+                    writeCount(cols, true, "countLike" + name, colData);
+                }
+
+
 
                 writeUpdate(tableName, cols, "updateBy" + name, false, false, colData);
                 writeUpdate(tableName, cols, "updateBy" + name, true, false, colData);
-
+                
                 writeDelete(tableName, cols, "deleteBy" + name, false, colData);
                 writeDelete(tableName, cols, "deleteBy" + name, true, colData);
-                writeCount(cols, false, "countBy" + name, colData);
-                writeCount(cols, true, "countLike" + name, colData);
+
+
             }
         }
+    }
+
+    private boolean containsStringCol(List<ColumnData> colData, List<String> cols) {
+        for (String col : cols) {
+            for (ColumnData cd : colData) {
+                if (cd.getName().equalsIgnoreCase(col) && "String".equals(cd.getJavaType())) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     String getPojoClassName(String tableName) {
@@ -1521,13 +1540,24 @@ public class TableGen implements DiffHandler {
             }
         }
 
+        // Generate WHERE clause for index fields
+        StringBuilder whereClause = new StringBuilder();
+        for (int i = 0; i < params.size(); i++) {
+            if (i > 0) {
+                whereClause.append(" and ");
+            }
+            whereClause.append(params.get(i)).append("=?");
+        }
+
         out("/**");
-        out("  * Deletes from the database for table \"" + tableName + "\"");
-        out("  */");
+        out(" * From IndexWriter: Deletes from the database for table \"" + tableName + "\"");
+        out(" */");
         out(tmp.toString());
         out("{");
         out("");
-        out("    return 1 <= dbHelper.executeNoQuery(getDeleteSql()," + objs + (isWithConn ? ", cn" : "") + ");");
+        out("    String deleteSql = \"delete from \" + getTableName() + \" where " + whereClause + "\";");
+        out("    return 1 <= dbHelper.executeNoQuery(deleteSql,"
+                + objs + (isWithConn ? ", cn" : "") + ");");
         out("}");
         out("");
     }
@@ -1600,28 +1630,56 @@ public class TableGen implements DiffHandler {
         String paramObjs = createKeyObjects(params)
                 + (isWithVersion ? ",info.get" + firstUp(config.versionColName) + "() " : "");
 
+        // Generate WHERE clause for index fields
+        StringBuilder whereClause = new StringBuilder();
+        for (int i = 0; i < params.size(); i++) {
+            if (i > 0) {
+                whereClause.append(" and ");
+            }
+            whereClause.append(params.get(i)).append("=?");
+        }
+        if (isWithVersion) {
+            whereClause.append(" and ").append(config.versionColName).append("=?");
+        }
+
         out("/**");
         out("  * Updates the current object values into the database with version condition as an optimistic database lock.");
         out("  */");
         out("public boolean " + methodName + "(" + this.getPojoClassName(tableName) + " info"
                 + (isWithConn ? ", Connection cn" : "") + ") ");
         out("{");
-        out("    String updateSql = getUpdateSql()" + (isWithVersion ? "" : "+\" and version=?\"") + ";");
+        out("    String updateSql = \"update \" + getTableName() + \" set \"+");
 
         StringBuilder objs = new StringBuilder();
+        boolean first = true;
         for (ColumnData cd : columnData) {
-            boolean added = true;
             if (isWithVersion && cd.getName().equalsIgnoreCase(config.versionColName)) {
-                added = false;
-            } else {
-                objs.append(" info.get").append(firstUp(cd.getName())).append("()");
+                continue;
             }
-            if (added) {
+            if (!first) {
                 objs.append(",");
             }
+            objs.append(" info.get").append(firstUp(cd.getName())).append("()");
+            first = false;
         }
 
-        out("    return 1 == dbHelper.executeNoQuery(updateSql, new Object[]{" + objs + "\n\t " + paramObjs + "}"
+        // Generate SET clause
+        StringBuilder setClause = new StringBuilder();
+        first = true;
+        for (ColumnData cd : columnData) {
+            if (isWithVersion && cd.getName().equalsIgnoreCase(config.versionColName)) {
+                continue;
+            }
+            if (!first) {
+                setClause.append(", ");
+            }
+            setClause.append(cd.getName()).append("=?");
+            first = false;
+        }
+
+        out("    \"" + setClause + " where " + whereClause + "\";");
+
+        out("    return 1 == dbHelper.executeNoQuery(updateSql, new Object[]{" + objs + ",\n\t " + paramObjs + "}"
                 + (isWithConn ? ", cn" : "") + ");");
 
         out("}");
@@ -1753,7 +1811,7 @@ public class TableGen implements DiffHandler {
                 }
 
                 if (e.hasNext()) {
-                    objs.append(" , ");
+                    objs.append(", ");
                 }
             }
 
@@ -1780,7 +1838,7 @@ public class TableGen implements DiffHandler {
                 key = e.next();
                 keyType = getColType(key, columnData);
                 if (UNKNOWN_TYPE.equals(keyType)) {
-                    LOG.error("unsupported future when generate method " + methodName + " return type " + returnType);
+                    LOG.error("unsupported feature when generate method {} return type {}", methodName, returnType);
                 }
                 paramString.append(keyType).append(" ").append(key.toLowerCase());
 

@@ -22,9 +22,23 @@ public class {{className}} {
             this.{{firstLow firstKeyName}}s =  {{firstLow firstKeyName}}s;
        }
        {{~else~}}
-       public {{className}}(){
-            throw new RuntimeException("{{className}} must have one key");
-       }
+       {{~#eq firstKeyFirstColumnType "Long"~}}
+           List<{{{firstKeyFirstColumnType}}}> {{firstLow firstKeyFirstColumnName}}s ;
+
+           public List<{{{firstKeyFirstColumnType}}}> get{{firstUp firstKeyFirstColumnName}}s(){
+           return this.{{firstLow firstKeyFirstColumnName}}s;
+           }
+
+           public void set{{firstUp firstKeyFirstColumnName}}s(List<{{{firstKeyFirstColumnType}}}> {{firstLow firstKeyFirstColumnName}}s){
+           this.{{firstLow firstKeyFirstColumnName}}s =  {{firstLow firstKeyFirstColumnName}}s;
+           }
+
+           {{~else~}}
+           public {{className}}(){
+           throw new RuntimeException("{{className}} must have one key");
+           }
+       {{/eq~}}
+
     {{/eq}}
 {{/if}}
 }

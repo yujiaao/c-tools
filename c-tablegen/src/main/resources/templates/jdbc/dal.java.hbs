@@ -193,9 +193,6 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
     {{#if (lt keys.size 2)}}
         info.set{{firstUp firstKeyName}}({{{unboxType firstKeyType}}}id);
     {{~else~}}
-        {{~#log warn~}}
-        // TODO 需要手工实现这个方法，因为表 {{tableName}} 有多个主键,{{firstKeyFirstColumnType}} {{firstKeyFirstColumnName}}
-        {{/log~}}
         {{~#eq firstKeyFirstColumnType "Long"~}}
         info.set{{firstUp firstKeyFirstColumnName}}(id);
         {{~else~}}
@@ -209,42 +206,40 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
 {{/unless}}
 {{! writeGetNextKey(keyData, colData); }}
 {{#if hasKey}}{{#unless tableInfo.isView}}
-      {{#gt keys.size 1}}
+  {{#gt keys.size 1}}
+      public {{{firstKeyType}}} getNextKey(){
+        throw new IllegalStateException("no autokey for union keys");
+      }
+  {{/gt}}
+  {{#eq keys.size 1}}
+      {{#eq firstKeyType "Timestamp"}}
           public {{{firstKeyType}}} getNextKey(){
-            throw new IllegalStateException("no autokey for union keys");
+          return new Timestamp(System.currentTimeMillis());
           }
-      {{/gt}}
-      {{#eq keys.size 1}}
-          {{#eq firstKeyType "Timestamp"}}
-              public {{{firstKeyType}}} getNextKey(){
-              return new Timestamp(System.currentTimeMillis());
-              }
-          {{/eq}}
-          {{#eq firstKeyType "String"}}
-              public {{{firstKeyType}}} getNextKey(){
-              return java.util.UUID.randomUUID().toString();
-              }
-          {{/eq}}
       {{/eq}}
-
-    {{#if hasLogicDelCol}}
-        public boolean logicDeleteByIds(List<{{{firstKeyType}}}>  keys)
-        {
-        {{~#gt keys.size 1}}
-            return keys.stream().map(item ->
-                this.ar()
-                    {{#each keys}}.eq(F.{{constantName this}}, item.get({{@index}}))
-                    {{/each~}}
-                .update(F.IS_DEL, 1)
-                ).reduce((a, b) -> a + b).orElse(0) == keys.size();
-        {{~else~}}
-           return this.ar()
-                .in(F.{{constantName firstKeyName}}, keys)
-                .update(F.{{constantName config.delColName}}, 1) == keys.size();
-        {{/gt}}
-        }
-
-    {{/if}}
+      {{#eq firstKeyType "String"}}
+          public {{{firstKeyType}}} getNextKey(){
+          return java.util.UUID.randomUUID().toString();
+          }
+      {{/eq}}
+  {{/eq}}
+  {{#if hasLogicDelCol}}
+    public boolean logicDeleteByIds(List<{{{firstKeyType}}}>  keys)
+    {
+    {{~#gt keys.size 1}}
+        return keys.stream().map(item ->
+            this.ar()
+                {{#each keys}}.eq(F.{{constantName this}}, item.get({{@index}}))
+                {{/each~}}
+            .update(F.IS_DEL, 1)
+            ).reduce((a, b) -> a + b).orElse(0) == keys.size();
+    {{~else~}}
+       return this.ar()
+            .in(F.{{constantName firstKeyName}}, keys)
+            .update(F.{{constantName config.delColName}}, 1) == keys.size();
+    {{/gt}}
+    }
+  {{/if}}
 
     {{#if hasVersionCol}}
     {{! writeUpdate(tableName, keyData, "updateByKeyAndVersion", false, withVersion, colData); }}
@@ -281,7 +276,7 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
 
     {{! writeDelete(tableName, keyData, "deleteByKey", false, colData);}}
     /**
-     * Deletes from the database for table {{tableName}} with connection
+     *21 Deletes from the database for table {{tableName}} with connection
      */
     {{#lt keys.size 2}}@Override{{/lt}}
     public boolean deleteByKey( {{#each keys}} {{colType tableName this}} {{this}}, {{/each}}  Connection cn )
@@ -290,7 +285,7 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
     }
 
     /**
-    * Deletes from the database for table {{tableName}}
+    *22 Deletes from the database for table {{tableName}} {{#log info~}} {{#each keys}} {{colType tableName this}} {{this}} {{#unless @last}}, {{/unless}}{{/each}} {{/log~}}
     */
     {{#lt keys.size 2}}@Override{{/lt}}
     public boolean deleteByKey( {{#each keys}} {{colType tableName this}} {{this}} {{#unless @last}}, {{/unless}}{{/each}})

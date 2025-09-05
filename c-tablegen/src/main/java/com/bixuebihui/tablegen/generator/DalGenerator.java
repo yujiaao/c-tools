@@ -396,22 +396,6 @@ public class DalGenerator extends BaseGenerator {
 
     }
 
-    String getFirstKeyName(String tableName) {
-        List<String> keyData = getKeyNames(tableName);
-        return getPrimaryKeyName(keyData);
-    }
 
-    private List<String> getKeyNames(String tableName) {
-        List<String> keyData = getKeyData(tableName);
-        if (!isNotEmpty(keyData)) {
-            LOG.warn("Table '{}' have not a  primary key, this may be a error", tableName);
-        }
-        return keyData;
-    }
-
-    String getFirstKeyFirstColumnName(String tableName) {
-        List<String> keyData = getKeyNames(tableName);
-        return getPrimaryKeyFirstColumnName(keyData);
-    }
 
 }
