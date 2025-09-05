@@ -208,6 +208,11 @@ public class Paging<S> {
                 if (v instanceof Number || v instanceof Boolean || v instanceof Enum) {
                     ar.eq(originalKey, v);
                 } else if (v instanceof Object[] || v instanceof Collection) {
+                    //检查不为空
+                    if((v instanceof Object[] && ((Object[]) v).length == 0) ||
+                            (v instanceof Collection && ((Collection<?>) v).isEmpty())) {
+                        return;
+                    }
                     ar.in(originalKey, v);
                 } else if (v instanceof String) {
                     String s = (String) v;
