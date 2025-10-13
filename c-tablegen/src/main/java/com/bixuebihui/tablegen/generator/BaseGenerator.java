@@ -74,7 +74,7 @@ public abstract class BaseGenerator implements Generator {
     }
 
     /**
-     * Selects the type of a particular column name. Cannot use Hashtables to
+     * Selects the type of particular column name. Cannot use Hashtables to
      * store columns as it screws up the ordering, so we have to do a crap
      * search. (and yes I know it could be better - it's good enough).
      */
@@ -82,13 +82,10 @@ public abstract class BaseGenerator implements Generator {
         String type = UNKNOWN_TYPE;
         for (ColumnData tmp : columnData) {
             if (tmp.getName().equalsIgnoreCase(key)) {
-                type = tmp.getJavaType();
-                break;
+                return tmp.getJavaType();
             }
         }
-        if (UNKNOWN_TYPE.equals(type)) {
-            LOG.error("unknown type of key:{}", key);
-        }
+        LOG.error("unknown type of key:{},\n {}", key, columnData);
         return type;
     }
 
@@ -305,6 +302,10 @@ public abstract class BaseGenerator implements Generator {
     }
 
     protected List<ColumnData> getFieldsList(String tableName) {
+        if(this instanceof  IView) {
+            return subList(setInfo.getViewCols(tableName), config.getIgnoreFields().get(tableName));
+        }
+
         return subList(setInfo.getTableCols(tableName), config.getIgnoreFields().get(tableName));
     }
 

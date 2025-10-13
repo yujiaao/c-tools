@@ -218,7 +218,7 @@ public class TableSetInfo implements KeyInfo {
             return Collections.emptyList();
         }
         if(this.getTableInfos().get(tableName)==null){
-            LOG.error("tableInfos.get("+tableName+") is null");
+            LOG.error("tableInfos.get({}) is null", tableName);
             return Collections.emptyList();
         }
         return this.getTableInfos().get(tableName).getFields();

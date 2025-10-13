@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.github.yujiaao</groupId>
         <artifactId>c-tools-parent</artifactId>
-        <version>1.15.12.4</version>
+        <version>1.15.12.7</version>
     </parent>
 
     <artifactId>c-dbtools</artifactId>
@@ -172,6 +172,12 @@
         </plugins>
     </reporting>
     <dependencies>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
@@ -361,7 +367,7 @@
         <dependency>
             <groupId>com.github.yujiaao</groupId>
             <artifactId>common-utils</artifactId>
-            <version>1.15.12.4</version>
+            <version>1.15.12.7</version>
             <scope>compile</scope>
         </dependency>
 

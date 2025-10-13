@@ -390,7 +390,8 @@ public class DalGenerator extends BaseGenerator {
         handlebars.registerHelper("where", (tableName, options) ->
         {
             boolean like = options.param(0);
-            return TableGen.createPreparedWhereClause(this.setInfo.getTableKeys((String) tableName), like, this.setInfo.getTableCols((String) tableName));
+            return TableGen.createPreparedWhereClause(this.setInfo.getTableKeys((String) tableName), like,
+                    this.setInfo.getTableCols((String) tableName));
         });
 
 

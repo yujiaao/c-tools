@@ -47,7 +47,7 @@ public class TableGenTest {
 
 
 	@Test
-	public void testRun() throws SQLException {
+	public void testRun() {
 		TableGen tg = new TableGen(System.out);
 		System.out.println(this.getClass().getResource("/tablegen.properties")
 				.getFile());
@@ -57,7 +57,7 @@ public class TableGenTest {
 	}
 
     @Test
-	public void testRunDiff() throws SQLException {
+	public void testRunDiff() {
         TableGen tg = new TableGen(System.out);
 
         String propPath = System.getProperty("user.dir")+ "/tablegen.properties";

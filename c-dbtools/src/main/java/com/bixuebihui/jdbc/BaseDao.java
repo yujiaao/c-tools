@@ -1292,7 +1292,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @return 数据对象pojo
      */
     public T selectByKey(@NotNull ID id) {
-        String query = SELECT_FROM + getTableName() + WHERE + getKeyName() + "=?";
+        String query = SELECT_FROM + getTableName() + WHERE + getKeyFields().get(0) + "=?";
         List<T> info = getDbHelper().executeQuery(query, new Object[]{id}, new RowMapperResultReader<>(this));
         if (!info.isEmpty()) {
             return info.get(0);
@@ -1312,7 +1312,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
             return emptyList();
         }
 
-        String query = getSelectAllWhere() + getKeyName() + " in ( "
+        String query = getSelectAllWhere() + getKeyFields().get(0)  + " in ( "
                 + StringUtils.repeat("?", ",", ids.length) + ")";
         return getDbHelper().executeQuery(query, ids, new RowMapperResultReader<>(this));
     }
@@ -1334,7 +1334,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
             return emptyList();
         }
 
-        String query = getSelectAllWhere() + getKeyName() + " in ( "
+        String query = getSelectAllWhere() + getKeyFields().get(0) + " in ( "
                 + StringUtils.repeat("?", ",", ids.size()) + ") " + orderbyClause;
         return getDbHelper().executeQuery(query, ids.toArray(), new RowMapperResultReader<>(this));
     }
@@ -1348,7 +1348,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * Deletes from the database for table
      */
     public boolean deleteByKey(ID id, Connection cn) {
-        String query = getDeleteWhere() + getKeyName() + "=?";
+        String query = getDeleteWhere() + getKeyFields().get(0)  + "=?";
         boolean res = 1 <= getDbHelper().executeNoQuery(query, new Object[]{id}, cn);
 
         afterDelete(id, res);
@@ -2180,7 +2180,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      */
     public T getLast() {
         @SuppressWarnings("unchecked")
-        ID id = (ID) this.ar().get("max(" + this.getKeyName() + ")");
+        ID id = (ID) this.ar().get("max(" + this.getKeyFields().get(0) + ")");
         if (id == null) {
             return null;
         }

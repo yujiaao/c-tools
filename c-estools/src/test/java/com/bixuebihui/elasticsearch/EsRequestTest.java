@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class EsRequestTest {
     public static String host= "http://localhost:9200";
     public static String username = "elastic";
-    public static String password = "changeme";
+    public static String password = "es1234";
 
     EsRequest esRequest= new EsRequest(host, username, password);
 

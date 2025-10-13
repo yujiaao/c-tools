@@ -5,7 +5,7 @@
     <parent>
         <artifactId>c-tools-parent</artifactId>
         <groupId>com.github.yujiaao</groupId>
-        <version>1.15.12.4</version>
+        <version>1.15.12.7</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>c-r2dbc</artifactId>
@@ -183,6 +183,29 @@
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>2.19.0</version>
+        </dependency>
+
+        <!-- 添加 javax.servlet 依赖以支持 Spring Boot 2.x 的测试 -->
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>4.0.1</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- 添加 Log4j2 核心依赖以解决 ServiceLoaderUtil 缺失问题 -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.17.2</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
+            <version>2.17.2</version>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>
