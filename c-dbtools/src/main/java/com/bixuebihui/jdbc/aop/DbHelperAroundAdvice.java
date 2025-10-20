@@ -176,7 +176,7 @@ public class DbHelperAroundAdvice implements MethodInterceptor {
                         remaining = sql.substring(j);
                     }
                     // 格式：第一个问号 + 右括号 + 逗号 + 省略标记 + 最后一个问号 + 剩余内容
-                    sb.append("),...omit ").append(omittedCount).append(",?").append(remaining);
+                    sb.append(",...omit ").append(omittedCount).append(",?").append(remaining);
                     i = sql.length(); // 已处理完整个SQL
                 } else {
                     // 不是连续的问号序列或数量不超过50，从下一个位置继续查找

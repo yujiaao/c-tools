@@ -16,3 +16,6 @@ mvn build-helper:parse-version versions:set -DnewVersion='${parsedVersion.majorV
 mvn build-helper:parse-version versions:set -DnewVersion='1.15.12.7' versions:commit
 mvn -DskipTests=true clean deploy -Pauto -D'maven.test.skip=true'
 mvn -DskipTests=true clean install -Pauto -D'maven.test.skip=true'
+
+REM 需手动发布到中央仓库 => https://central.sonatype.com/publishing/deployments
+REM need manual steps to release to central repo => https://central.sonatype.com/publishing/deployments
