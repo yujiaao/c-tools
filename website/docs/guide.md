@@ -1,7 +1,7 @@
 ---
 marp: true
 theme: gaia
-footer: 'TableGear'
+footer: "c-tools"
 paginate: true
 style: |
   section a {
@@ -14,236 +14,208 @@ _paginate: false
 _backgroundColor: black
 -->
 
-## 生成代码利器 
-![invert opacity:.9 w:400](assets/logo.png)
+## c-tools / c-tablegen 代码生成指引
+![invert opacity:.9 w:400](docs/assets/logo.png)
 #### xwx@live.cn
-2023-01-13
+2025-11-26
 
 ---
-# 主题
+# 目录
 
-* 简介
-* 先决条件
+* 项目概览
+* 核心能力与架构
 * 快速起步
-* 配置文件参数 
+* 配置全解
+* 模板与扩展
+* 常见问题
 
 ---
-# TableGear 简介
-## 是什么
+# 项目概览
+## 什么是 c-tablegen？
 
-TableGear 是一款基于 JDBC 标准的高性能ORM引擎。TableGear 底层基于 JDBC 进行生成代码，通过链式条件拼接调用完成数据库访问的模式。底层基于 JDBC 标准实现，主要特点是方便快速增量开发。
-
----
-
-# 快速起步
-
-* 复制 c-tablegen-jdbc-demo 项目
-* 修改配置文件中的数据库相关参数： tablegen.properties
-* 运行 `mvn tablegen:gen`
+* c-tools 家族的核心代码生成器，负责 JDBC/R2DBC/ES 多种目标代码产出
+* 通过数据库元信息生成 pojo、dal、service、controller 等分层代码
+* 结合缓存与差异比对支持增量生成，避免覆盖手写逻辑
+* 与 family 中的 c-cache、c-dbtools、c-estools 等模块协作，生成后的代码可直接调用这些运行时库
 
 ---
+# 核心能力
 
-## 先决条件
-
-* 最新版本支持 jdk 17 以上
-* 使用 jakarta 替代 javax 命名空间
-* Spring Boot 2.7.13
-* 生成的项目可选
-  * 依赖 swagger v3
-  * lombok
-  * hibernate-validator
- 
+* **多协议**：同一套属性配置即可生成 JDBC、Project Reactor (R2DBC) 以及 ElasticSearch 访问层
+* **分层模板**：`Generator[]` 以数组形式串联 pojo/dal/business/dto/service/controller 输出，单次配置即可全栈产出
+* **增量 & 缓存**：`generate_all=no` 时自动读取 `target/gen_table_data.cache`，仅对比发生变化的表
+* **虚拟视图**：`view_list` 支持 SQL 片段，适合未在数据库落表的场景
+* **读写分离与加解密**：通过 `read_write_separate` 和 `encrypted_fields` 实现拓展
+* **ElasticSearch Schema**：当检测到 ES 配置时，会转向索引级模板批量生成 JSON 映射
 
 ---
+# 架构速览
 
-## 为什么
-
-* 支持 JDBC 标准的数据库 ORM 代码生成
-* 支持 ElasticSearch 代码生成 
-* 支持 pojo, dal, dto, cmd, service, controller 等分层概念 
-* 添加字段后，可增量生成
-* 生成代码与手写代码可以多种方式结合
-* 可以生成支持 Project Reactor 的代码
+1. **配置解析**：`ProjectConfig.readFrom` 解析 `tablegen.properties`，注册路径、命名、接口扩展等参数
+2. **元数据收集**：`TableGen` 连接数据库（HikariCP/BitmechanicDataSource），抓取表、列、索引、外键
+3. **生成调度**：`GenerateAll` 将 `Generator` 分为按表、按视图、按索引及一次性生成四类流水线
+4. **增量比对**：若未全量生成，则通过 `DbDiff` 对比缓存与当前 schema，只对差异表触发生成器
+5. **产物落地**：模板存放于 `src/main/resources/templates/{jdbc,r2dbc,es}`，按需输出 Java/JSON 文件
 
 ---
+# 先决条件
 
-## 代码生成原理比较
-
-TableGear vs JPG vs Gorm：
-
-![bg contain](assets%2F%E4%BB%A3%E7%A0%81%E7%94%9F%E6%88%90%E6%B5%81%E7%A8%8B%E5%8E%9F%E7%90%86%E6%AF%94%E8%BE%83.png)
-
----   
-
-## 快速体验 TableGear
-
-使用以下命令安装 TableGear CLI：
-
-```shell
-$ mvn  com.github.yujiaao:tablegen-maven-plugin:1.13.2:gen
-```
-
-
+* JDK 17+，Maven 3.8+
+* 数据库驱动（MySQL/H2/Derby/Postgres/SQLServer/Oracle partial）及可访问的实例
+* 可选：ElasticSearch 8.x+，Node/npm 用于 VS Code 插件 (lsp-tablegear) 体验
+* 推荐 IDE：IntelliJ IDEA / VS Code，启用 Lombok 与 Jakarta EE 依赖
 
 ---
-## maven 插件配置
+# 快速起步（JDBC）
 
-propPath用来配置配置文件所在位置
-如需访问多个数据库，可以配多个配置文件，文件名间用逗号分隔
-
-```xml
-            <plugin>
-                <groupId>com.github.yujiaao</groupId>
-                <artifactId>tablegen-maven-plugin</artifactId>
-                <version>1.13.2.4</version>
-                <configuration>
-                    <propPath>${project.basedir}/tablegen1.properties,${project.basedir}/tablegen2.properties</propPath>
-                </configuration>
-            </plugin>
-```
+1. 复制 `c-tablegen-jdbc-demo`
+2. 配置 `tablegen.properties`
+3. 运行 `mvn com.github.yujiaao:tablegen-maven-plugin:1.15.12.7:gen -DpropPath=tablegen.properties`
+4. 查看 `src/main/java` 下生成的 pojo、dal、service、controller 目录
+5. 若需要 REST 骨架，可结合 `c-tablegen-mojo` 自定义方法或在 `templates/jdbc` 中拓展
 
 ---
-## maven 运行时依赖配置
+# 快速起步（R2DBC / Reactor）
 
-c-jmesa 将引入全部功能，可以按需替换为 
-* c-tools,  支持关系型数据库
-* 或 c-r2dbc, 支持 Project Reactor
-* 或 c-estools， 支持 ElasticSearch
-
-```xml
-<dependency>
-	<groupId>com.github.yujiaao</groupId>
-	<artifactId>c-jmesa</artifactId>
-	<version>1.13.2.4</version>
-</dependency>
-```
-
+1. 复制 `c-tablegen-r2dbc-demo`
+2. 在配置中加入 `r2dbc=yes`
+3. 执行同样的 Maven 命令，生成的 `baselist`, `dal`, `business` 将引用 Reactor API
+4. 运行 demo 中的 Spring Boot 应用验证非阻塞数据访问
 
 ---
-## 配置文件 - 数据库连接
+# 快速起步（ElasticSearch）
+
+1. 使用 `es.properties`
+2. `type=elasticsearch_mapping` / `elasticsearch_sample` / `json` 控制输出 JSON 映射或示例数据
+3. `index_list` 支持多索引配置，`primary_key_fields` 对应 `_id`
+4. 运行 `GenerateAll` 时检测到 ES 配置会直接切换到索引生成流程
+
+---
+# 配置 - 数据源
 
 ```properties
-alias=testdb
+alias=test
 className=com.mysql.cj.jdbc.Driver
-dburl=jdbc:mysql://127.0.0.1:3306/testdb
+dburl=jdbc:mysql://127.0.0.1:3306/test
 username=test
 password=test123
-schema=testdb
-table_owner=testdb
-catalog=testdb
+schema=test
+table_owner=test
+catalog=test
+read_write_separate=yes
 ```
-alias 用于生成数据源（DataSource）的别名
-
-  >MySQL: schema和table_owner 为库名, catalog可不设
-  SQL Server: catalog为库名，schema、table_owner一般为dbo
-
+* `alias` 会成为 Spring `@Qualifier` 数据源别名
+* `read_write_separate` 会在生成的 Manager 中按别名注入读/写数据源
 
 ---
-
-
-## 配置文件 - 生成目标配置
-
+# 配置 - 目录与包名
 
 ```properties
 package_name=com.bixuebihui.test
-src_dir=src/main/java
-test_dir=src/test/java
-resource_dir=src/main/resources
-service_dir=src/main/java
-controller_dir=src/main/java
-indexes=yes
+src_dir=/src/main/java
+test_dir=/src/test/java
+resource_dir=/src/main/resources
+service_dir=/src/main/java
+controller_dir=/src/main/java
+dto_dir=/src/main/java
+cmd_dir=/src/main/java
 ```
-indexes=yes 会根据主外键关系生成相应的数据操作方法，因为这种查询走索引 ，效率会更高
-
+* 配置项会在 `ProjectConfig.readFrom` 中拼接成绝对路径
+* 目录缺省时回退到 `src_dir`
 
 ---
-
-## 配置文件 - 选择生成表
-
+# 配置 - 生成范围
 
 ```properties
-#table_list=test(\\w+)
-table_list=table1,table2
-exclude_table_list=not_table3
+#table_list=test(\w+)
+table_list=test_gen,t_edu
+exclude_table_list=PLAN_TABLE,T_SESSION
+over_write_all=yes
+indexes=no
+foreign_keys=yes
+view_list=my_view: select ...;
 ```
-table_list 和 exclude_table_list 支持Java正则表达式，同样需要用`\`来转义
-多个表用逗号分隔
-同时出现时， exclude_table_list优先级更高
+* 支持正则，`exclude_table_list` 优先级更高
+* `indexes=yes` 会为每个索引生成 `retrieveByIndex` / `updateByIndex`
+* `view_list` 允许通过 SQL 字符串定义“虚拟视图”
 
 ---
-## 配置文件 - 虚拟视图生成
-
-视图是一个好的数据工具，但不是哪里都允许用，如果你的公司不允许，那就用虚拟视图
+# 配置 - 行为开关
 
 ```properties
-view_list=view1:select * form a left join b on a.id=b.aid;\
-view2:select * form c left join d on c.id=d.cid;
-```
-子格式为`视图名1:查询语名1;视图名2:查询语名2`, 太长时，可以用`\`续行符来解决
-
----
-## 配置文件 - 其他杂项
-
-```properties
-# 是否使用扩展表，如果不懂，就是no啦 
-kuozhanbiao=no
-#是否加注解，用于validator和swagger
 use_annotation=yes
-#是否覆盖全部已有文件，包括dal,pojo
-over_write_all = yes
-#是否生成全部，为no时启用表结构对比的增量方式，如果速度很重要，试试 generate_all=no
-generate_all=yes
-#是否覆盖生成BaseList
-generate_baselist=no
-#是否用表机制模拟sequence的方式，生成自增长主键
+use_swagger=yes
+swagger_version=3
 use_autoincrement=yes
-#是否用读写分离的双数据源
-read_write_separate=yes
+generate_all=yes
+generate_baselist=no
+kuozhanbiao=no
 ```
----
-## 配置文件 - Pojo类需要继承自你的基类？
-
-打开下面的注释试试
-```propreties
-#haschildren code name \u4E09\u4E2A\u5B57\u6BB5
-#pojo_node_interface=com.bixuebihui.module.catalog.node.NodeInterface
-#pojo_node_interface_list=table_name1,table_name2,view_name3
-##version
-#pojo_version_interface=com.bixuebihui.module.catalog.node.VersionInterface
-##state
-#pojo_state_interface=com.bixuebihui.module.catalog.node.StateInterface
-##uuid
-#pojo_uuid_interface=com.bixuebihui.module.catalog.node.UUIDInterface
-##modifydate
-#pojo_modifydate_interface=com.bixuebihui.module.catalog.node.ModifydateInterface
-```
+* `generate_all=no` 将进入增量模式，依赖本地缓存文件
+* `use_annotation` 打开 Jakarta Validation / Swagger 注解
 
 ---
-## 配置文件 - ElasticSearch
+# 配置 - 安全与扩展
 
 ```properties
-## bean name of ElasticSearch connection configuration
+encrypted_fields=t_encrypt_test:personal_id
+ignore_fields=test_gen:age,birth
+pojo_node_interface=com.example.Node
+pojo_node_interface_list=Business_Category,Forum
+```
+* `encrypted_fields` & `ignore_fields` 通过 `table:field1,field2` 声明
+* `pojo_*_interface_list` 允许按表/视图精细控制接口继承
+
+---
+# 配置 - ElasticSearch
+
+```properties
 alias=my_content
-## type one of: elasticsearch_mapping, elasticsearch_sample, json
 type=elasticsearch_mapping
 url=http://localhost:9200
-username=elastic
-password=changeme
-src_dir=src/main/java
-package_name=com.ownsame.client.es
-#comma separated index:alias pairs, alias can be ommit if you not have one
-index_list=index1:alias1,index2
-# this id field will used for ElasticSearch inner `_id`
-primary_key_fields=biz_id_for_index1,biz_id_for_index2
-# not generate for ignore_fields
+index_list=my-index-000001,all-content-info
+primary_key_fields=biz_id,global_id
 ignore_fields=keyword
-# I will gess for field for collection type, but not always collect, if not, point out here
-collection_fields=id_list_field
+collection_fields=play_url
 ```
+* `type=json` 可直接导出实体示例
+* `collection_fields` 用于提示框架将字段视为集合类型
 
 ---
+# 模板目录
 
+* `templates/jdbc`: 面向经典阻塞式 DAO（pojo/dal/business/dto/service/controller）
+* `templates/r2dbc`: Reactor 友好模板，生成 `Mono`/`Flux`
+* `templates/es`: 生成 ES Mappings、Sample JSON
+* 可复制模板文件并以同名覆盖，以便在项目中自定义注释或代码结构
+
+---
+# 增量生成与缓存
+
+* `target/gen_table_data.cache` 持久化表结构快照
+* 当 `generate_all=no` 时，`GenerateAll` 使用 `DbDiff` 比对数据库与缓存，仅对变更表调用各 `Generator`
+* 删除缓存即可触发全量回写（适合大版本升级）
+
+---
+# 扩展方式
+
+* 自定义 Maven 插件：`c-tablegen-mojo` 中的 `AddSourceMethodMojo` 利用 JavaParser 自动向指定类添加方法
+* 模板扩展：在资源目录新增 `.hbs` 文件即可覆盖默认模板
+* 管理元表：`InstallMetaTable` 可在数据库内安装 `t_metatable` / `t_metacolumn` 字典，实现字段描述统一维护
+
+---
+# 常见问题
+
+**Q:** 如何重新生成但保留手写逻辑？
+**A:** 关闭 `over_write_all` 并在自定义子类中扩展，生成器会只更新 `Base` 层代码。
+
+**Q:** 如何支持多数据库？
+**A:** 在 `propPath` 中使用逗号分隔多个属性文件，插件会顺序执行。
+
+**Q:** 生成失败如何定位？
+**A:** 查看 `target/gen_table_data.cache` 与 `logs`，必要时开启 `-X` Maven log 并检查数据库权限。
+
+---
 # Q & A
 
-![bg contain](assets/c-tools.svg)
-
+![bg contain](docs/assets/logo.png)
