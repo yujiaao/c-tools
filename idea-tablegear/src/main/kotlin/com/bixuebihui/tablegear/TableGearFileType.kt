@@ -18,7 +18,7 @@ class TableGearFileType : LanguageFileType(TableGearLanguage) {
         @JvmStatic
         val INSTANCE = TableGearFileType()
         
-        private val FILE_PATTERN = Regex("^(tablegen|es).*\\.(properties|prop)$", RegexOption.IGNORE_CASE)
+        private val FILE_PATTERN = Regex("^(tablege|es).*\\.(properties|prop)$", RegexOption.IGNORE_CASE)
         
         @JvmStatic
         fun isTableGearFile(fileName: String): Boolean {

@@ -26,7 +26,25 @@ class TableGearLexer : LexerBase() {
         
         val char = buffer[currentStart]
         return when {
-            char == '#' -> TableGearTypes.COMMENT
+            char == '#' -> {
+                val lineStart = findLineStart(currentStart)
+                var isComment = true
+                for (i in lineStart until currentStart) {
+                    if (!buffer[i].isWhitespace()) {
+                        isComment = false
+                        break
+                    }
+                }
+                if (isComment) TableGearTypes.COMMENT else {
+                    // Same logic as 'else' block for content
+                    val equalsIndex = buffer.indexOf('=', lineStart)
+                    if (equalsIndex > 0 && currentStart < equalsIndex) {
+                        TableGearTypes.KEY
+                    } else {
+                        TableGearTypes.VALUE
+                    }
+                }
+            }
             char == '=' -> TableGearTypes.EQUALS
             char == '\n' || char == '\r' -> TableGearTypes.NEWLINE
             char.isWhitespace() -> com.intellij.psi.TokenType.WHITE_SPACE
@@ -60,8 +78,31 @@ class TableGearLexer : LexerBase() {
         val char = buffer[currentStart]
         when {
             char == '#' -> {
-                // 注释到行尾
-                currentEnd = findLineEnd(currentStart)
+                // 只有当 # 是行首第一个非空白字符时才视为注释
+                val lineStart = findLineStart(currentStart)
+                var isComment = true
+                for (i in lineStart until currentStart) {
+                    if (!buffer[i].isWhitespace()) {
+                        isComment = false
+                        break
+                    }
+                }
+                
+                if (isComment) {
+                    // 注释到行尾
+                    currentEnd = findLineEnd(currentStart)
+                } else {
+                    // 视为普通字符，继续读取直到下一个分隔符
+                    currentEnd++
+                    while (currentEnd < bufferEnd) {
+                        val c = buffer[currentEnd]
+                        if (c == '=' || c == '\n' || c == '\r') {
+                            break
+                        }
+                        // 如果遇到 #，继续读取，因为我们已经确定这不是注释行
+                        currentEnd++
+                    }
+                }
             }
             char == '=' -> {
                 currentEnd = currentStart + 1

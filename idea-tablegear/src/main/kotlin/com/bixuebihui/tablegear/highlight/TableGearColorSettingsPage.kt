@@ -1,11 +1,14 @@
 package com.bixuebihui.tablegear.highlight
 
 import com.intellij.openapi.editor.colors.TextAttributesKey
+import com.intellij.openapi.editor.markup.TextAttributes
 import com.intellij.openapi.fileTypes.SyntaxHighlighter
 import com.intellij.openapi.options.colors.AttributesDescriptor
 import com.intellij.openapi.options.colors.ColorDescriptor
 import com.intellij.openapi.options.colors.ColorSettingsPage
 import com.bixuebihui.tablegear.TableGearIcons
+import java.awt.Color
+import java.awt.Font
 import javax.swing.Icon
 
 class TableGearColorSettingsPage : ColorSettingsPage {
@@ -53,5 +56,35 @@ class TableGearColorSettingsPage : ColorSettingsPage {
     override fun getDisplayName(): String = "TableGear"
     
     override fun getIcon(): Icon? = TableGearIcons.FILE
+    
+    /**
+     * 提供默认颜色设置
+     * 当用户未自定义颜色时，使用这些默认值
+     */
+    fun getDefaultColors(): Map<TextAttributesKey, TextAttributes> {
+        return mapOf(
+            TableGearColors.KEY to textAttr("#F8F8F2"),
+            TableGearColors.DATABASE_KEY to textAttr("#FFD866"),
+            TableGearColors.PATH_KEY to textAttr("#A9DC76"),
+            TableGearColors.BOOLEAN_KEY to textAttr("#FF6188", bold = true),
+            TableGearColors.LIST_KEY to textAttr("#78DCE8"),
+            TableGearColors.PACKAGE_NAME_KEY to textAttr("#7BD88F"),
+            TableGearColors.VIEW_LIST_KEY to textAttr("#55CFE3", bold = true),
+            TableGearColors.VIEW_SEPARATOR to textAttr("#AB9DF2", bold = true),
+            TableGearColors.ASSIGNMENT to textAttr("#AB9DF2", bold = true),
+            TableGearColors.VIEW_NAME to textAttr("#00FFFF", bold = true),
+            TableGearColors.SQL to textAttr("#A6E22E"),
+            TableGearColors.SENSITIVE_KEY to textAttr("#FF9B5E"),
+            TableGearColors.SENSITIVE_FIELD to textAttr("#FFB347"),
+            TableGearColors.VALUE to textAttr("#A6E22E"),
+            TableGearColors.COMMENT to textAttr("#035813")
+        )
+    }
+    
+    private fun textAttr(hex: String, bold: Boolean = false): TextAttributes {
+        val color = Color.decode(hex)
+        val fontStyle = if (bold) Font.BOLD else Font.PLAIN
+        return TextAttributes(color, null, null, null, fontStyle)
+    }
 }
 

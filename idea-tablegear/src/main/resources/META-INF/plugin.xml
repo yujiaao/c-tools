@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>com.bixuebihui.idea-tablegear</id>
     <name>TableGear Language Support</name>
-    <version>1.0.0</version>
+    <version>1.0.2</version>
     <vendor email="yujiaao@mcn.com" url="https://github.com/yujiaao/c-tools">XingWanxiang</vendor>
 
     <description><![CDATA[
@@ -61,6 +61,11 @@
         
         <!-- 代码检查 -->
         <localInspection language="Properties" shortName="TableGearValidation" 
+                        displayName="TableGear Configuration Validation"
+                        groupName="TableGear"
+                        implementationClass="com.bixuebihui.tablegear.inspection.TableGearValidationInspection"
+                        enabledByDefault="true"/>
+        <localInspection language="TableGear" shortName="TableGearValidationTG" 
                         displayName="TableGear Configuration Validation"
                         groupName="TableGear"
                         implementationClass="com.bixuebihui.tablegear.inspection.TableGearValidationInspection"

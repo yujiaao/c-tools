@@ -24,8 +24,8 @@ import {
 
 let client: LanguageClient;
 let clientReady: Promise<void> | undefined;
-const TABLEGEN_FILE_REGEX = /(tablegen|es).*\.(properties|prop)$/i;
-const TABLEGEN_FILE_GLOB = '**/{tablegen,es}*.{properties,prop}';
+const TABLEGEN_FILE_REGEX = /(tablege|es).*\.(properties|prop)$/i;
+const TABLEGEN_FILE_GLOB = '**/{tablege,es}*.{properties,prop}';
 
 export function activate(context: ExtensionContext) {
 	// The server is implemented in node
