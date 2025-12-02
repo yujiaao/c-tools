@@ -218,27 +218,24 @@ public class TestGenList  extends BaseList<TestGen, Integer>
 
     @Override
     public void setIdLong(TestGen info, long id) {
-
     
         info.setId((int)id);
-
     }
 
 
 
+  
+  
       
       
-          
-          
-      
-
-    
+  
+  
 
     
 
     
     /**
-     * Deletes from the database for table test_gen with connection
+     *21 Deletes from the database for table test_gen with connection
      */
     @Override
     public boolean deleteByKey(  Integer id,   Connection cn )
@@ -247,8 +244,7 @@ public class TestGenList  extends BaseList<TestGen, Integer>
     }
 
     /**
-    * Deletes from the database for table test_gen
-    */
+    *22 Deletes from the database for table test_gen */
     @Override
     public boolean deleteByKey(  Integer id )
     {
@@ -262,10 +258,10 @@ public class TestGenList  extends BaseList<TestGen, Integer>
     /**
   * Select from the database for table "test_gen"
  */
-public TestGen selectByIndTestGen(Integer edu_id,String name) throws SQLException
+public TestGen selectByIndTestGen(Integer edu_id,String name) 
 {
     String query = "select * from " + getTableName() + " where edu_id=? and name=?";
-    List<TestGen> info = dbHelper.executeQuery(query,  new Object[]{ edu_id , name}, new RowMapperResultReader<TestGen>(this));
+    List<TestGen> info = dbHelper.executeQuery(query,  new Object[]{ edu_id, name}, new RowMapperResultReader<TestGen>(this));
     if(info!=null && info.size()>0) {
          return  info.get(0);
     }
@@ -273,20 +269,41 @@ public TestGen selectByIndTestGen(Integer edu_id,String name) throws SQLExceptio
 }
 
 /**
+  * Counts the number of entries for this table in the database.
+  */
+public int countByIndTestGen(Integer edu_id,String name) 
+{
+    String query="select count(*) from " + getTableName() + "   where edu_id=? and name=?";
+    Object o = dbHelper.executeScalar(query, new Object[]{ edu_id, name});
+  return o==null?0:Integer.parseInt(o.toString());
+}
+
+/**
   * Select from the database for table "TestGen"
   */
-public List<TestGen> selectAllLikeIndTestGen(Integer edu_id,String name) throws SQLException
+public List<TestGen> selectAllLikeIndTestGen(Integer edu_id,String name) 
 {
     String query = "select * from " + getTableName() + " where edu_id=? and name like ?";
-    return dbHelper.executeQuery(query,  new Object[]{ edu_id , "%"+name+"%"}, new RowMapperResultReader<TestGen>(this));
+    return dbHelper.executeQuery(query,  new Object[]{ edu_id, "%"+name+"%"}, new RowMapperResultReader<TestGen>(this));
+}
+
+/**
+  * Counts the number of entries for this table in the database.
+  */
+public int countLikeIndTestGen(Integer edu_id,String name) 
+{
+    String query="select count(*) from " + getTableName() + "   where edu_id=? and name like ?";
+    Object o = dbHelper.executeScalar(query, new Object[]{ edu_id, "%"+name+"%"});
+  return o==null?0:Integer.parseInt(o.toString());
 }
 
 /**
   * Updates the current object values into the database with version condition as an optimistic database lock.
   */
-public boolean updateByIndTestGen(TestGen info) throws SQLException
+public boolean updateByIndTestGen(TestGen info) 
 {
-    String updateSql = getUpdateSql()+" and version=?";
+    String updateSql = "update " + getTableName() + " set "+
+    "id=?, name=?, age=?, birth=?, edu_id=?, gender=?, sex=?, child=? where edu_id=? and name=?";
     return 1 == dbHelper.executeNoQuery(updateSql, new Object[]{ info.getId(), info.getName(), info.getAge(), info.getBirth(), info.getEduId(), info.getGender(), info.getSex(), info.getChild(),
 	 info.getEduId() , info.getName()});
 }
@@ -294,55 +311,38 @@ public boolean updateByIndTestGen(TestGen info) throws SQLException
 /**
   * Updates the current object values into the database with version condition as an optimistic database lock.
   */
-public boolean updateByIndTestGen(TestGen info, Connection cn) throws SQLException
+public boolean updateByIndTestGen(TestGen info, Connection cn) 
 {
-    String updateSql = getUpdateSql()+" and version=?";
+    String updateSql = "update " + getTableName() + " set "+
+    "id=?, name=?, age=?, birth=?, edu_id=?, gender=?, sex=?, child=? where edu_id=? and name=?";
     return 1 == dbHelper.executeNoQuery(updateSql, new Object[]{ info.getId(), info.getName(), info.getAge(), info.getBirth(), info.getEduId(), info.getGender(), info.getSex(), info.getChild(),
 	 info.getEduId() , info.getName()}, cn);
 }
 
 /**
-  * Deletes from the database for table "test_gen"
-  */
-public boolean deleteByIndTestGen(Integer edu_id,String name) throws SQLException
+ * From IndexWriter: Deletes from the database for table "test_gen"
+ */
+public boolean deleteByIndTestGen(Integer edu_id,String name) 
 {
 
-    return 1 <= dbHelper.executeNoQuery(getDeleteSql(), new Object[]{ edu_id , name});
+    String deleteSql = "delete from " + getTableName() + " where edu_id=? and name=?";
+    return 1 <= dbHelper.executeNoQuery(deleteSql, new Object[]{ edu_id, name});
 }
 
 /**
-  * Deletes from the database for table "test_gen"
-  */
-public boolean deleteByIndTestGen(Integer edu_id,String name, Connection cn) throws SQLException
+ * From IndexWriter: Deletes from the database for table "test_gen"
+ */
+public boolean deleteByIndTestGen(Integer edu_id,String name, Connection cn) 
 {
 
-    return 1 <= dbHelper.executeNoQuery(getDeleteSql(), new Object[]{ edu_id , name}, cn);
-}
-
-/**
-  * Counts the number of entries for this table in the database.
-  */
-public int countByIndTestGen(Integer edu_id,String name) throws SQLException
-{
-    String query="select count(*) from " + getTableName() + "   where edu_id=? and name=?";
-    Object o = dbHelper.executeScalar(query, new Object[]{ edu_id , name});
-  return o==null?0:Integer.parseInt(o.toString());
-}
-
-/**
-  * Counts the number of entries for this table in the database.
-  */
-public int countLikeIndTestGen(Integer edu_id,String name) throws SQLException
-{
-    String query="select count(*) from " + getTableName() + "   where edu_id=? and name like ?";
-    Object o = dbHelper.executeScalar(query, new Object[]{ edu_id , "%"+name+"%"});
-  return o==null?0:Integer.parseInt(o.toString());
+    String deleteSql = "delete from " + getTableName() + " where edu_id=? and name=?";
+    return 1 <= dbHelper.executeNoQuery(deleteSql, new Object[]{ edu_id, name}, cn);
 }
 
 /**
   * Select from the database for table "test_gen"
  */
-public TestGen selectByTEduId(Integer edu_id) throws SQLException
+public TestGen selectByTEduId(Integer edu_id) 
 {
     String query = "select * from " + getTableName() + " where edu_id=?";
     List<TestGen> info = dbHelper.executeQuery(query,  new Object[]{ edu_id}, new RowMapperResultReader<TestGen>(this));
@@ -353,20 +353,22 @@ public TestGen selectByTEduId(Integer edu_id) throws SQLException
 }
 
 /**
-  * Select from the database for table "TestGen"
+  * Counts the number of entries for this table in the database.
   */
-public List<TestGen> selectAllLikeTEduId(Integer edu_id) throws SQLException
+public int countByTEduId(Integer edu_id) 
 {
-    String query = "select * from " + getTableName() + " where edu_id=?";
-    return dbHelper.executeQuery(query,  new Object[]{ edu_id}, new RowMapperResultReader<TestGen>(this));
+    String query="select count(*) from " + getTableName() + "   where edu_id=?";
+    Object o = dbHelper.executeScalar(query, new Object[]{ edu_id});
+  return o==null?0:Integer.parseInt(o.toString());
 }
 
 /**
   * Updates the current object values into the database with version condition as an optimistic database lock.
   */
-public boolean updateByTEduId(TestGen info) throws SQLException
+public boolean updateByTEduId(TestGen info) 
 {
-    String updateSql = getUpdateSql()+" and version=?";
+    String updateSql = "update " + getTableName() + " set "+
+    "id=?, name=?, age=?, birth=?, edu_id=?, gender=?, sex=?, child=? where edu_id=?";
     return 1 == dbHelper.executeNoQuery(updateSql, new Object[]{ info.getId(), info.getName(), info.getAge(), info.getBirth(), info.getEduId(), info.getGender(), info.getSex(), info.getChild(),
 	 info.getEduId()});
 }
@@ -374,49 +376,32 @@ public boolean updateByTEduId(TestGen info) throws SQLException
 /**
   * Updates the current object values into the database with version condition as an optimistic database lock.
   */
-public boolean updateByTEduId(TestGen info, Connection cn) throws SQLException
+public boolean updateByTEduId(TestGen info, Connection cn) 
 {
-    String updateSql = getUpdateSql()+" and version=?";
+    String updateSql = "update " + getTableName() + " set "+
+    "id=?, name=?, age=?, birth=?, edu_id=?, gender=?, sex=?, child=? where edu_id=?";
     return 1 == dbHelper.executeNoQuery(updateSql, new Object[]{ info.getId(), info.getName(), info.getAge(), info.getBirth(), info.getEduId(), info.getGender(), info.getSex(), info.getChild(),
 	 info.getEduId()}, cn);
 }
 
 /**
-  * Deletes from the database for table "test_gen"
-  */
-public boolean deleteByTEduId(Integer edu_id) throws SQLException
+ * From IndexWriter: Deletes from the database for table "test_gen"
+ */
+public boolean deleteByTEduId(Integer edu_id) 
 {
 
-    return 1 <= dbHelper.executeNoQuery(getDeleteSql(), new Object[]{ edu_id});
+    String deleteSql = "delete from " + getTableName() + " where edu_id=?";
+    return 1 <= dbHelper.executeNoQuery(deleteSql, new Object[]{ edu_id});
 }
 
 /**
-  * Deletes from the database for table "test_gen"
-  */
-public boolean deleteByTEduId(Integer edu_id, Connection cn) throws SQLException
+ * From IndexWriter: Deletes from the database for table "test_gen"
+ */
+public boolean deleteByTEduId(Integer edu_id, Connection cn) 
 {
 
-    return 1 <= dbHelper.executeNoQuery(getDeleteSql(), new Object[]{ edu_id}, cn);
-}
-
-/**
-  * Counts the number of entries for this table in the database.
-  */
-public int countByTEduId(Integer edu_id) throws SQLException
-{
-    String query="select count(*) from " + getTableName() + "   where edu_id=?";
-    Object o = dbHelper.executeScalar(query, new Object[]{ edu_id});
-  return o==null?0:Integer.parseInt(o.toString());
-}
-
-/**
-  * Counts the number of entries for this table in the database.
-  */
-public int countLikeTEduId(Integer edu_id) throws SQLException
-{
-    String query="select count(*) from " + getTableName() + "   where edu_id=?";
-    Object o = dbHelper.executeScalar(query, new Object[]{ edu_id});
-  return o==null?0:Integer.parseInt(o.toString());
+    String deleteSql = "delete from " + getTableName() + " where edu_id=?";
+    return 1 <= dbHelper.executeNoQuery(deleteSql, new Object[]{ edu_id}, cn);
 }
 
 

@@ -213,15 +213,16 @@ public class TableSetInfo implements KeyInfo {
     }
 
     public List<ColumnData> getTableCols(String tableName) {
-        if(this.getTableInfos()==null){
+        if (this.getTableInfos() == null) {
             LOG.error("tableInfos is null");
             return Collections.emptyList();
         }
-        if(this.getTableInfos().get(tableName)==null){
+        TableInfo tab = this.getTableInfos().get(tableName);
+        if (tab == null) {
             LOG.error("tableInfos.get({}) is null", tableName);
             return Collections.emptyList();
         }
-        return this.getTableInfos().get(tableName).getFields();
+        return tab.getFields();
     }
 
     public List<ColumnData> getViewCols(String tableName) {
@@ -232,7 +233,7 @@ public class TableSetInfo implements KeyInfo {
         if (tableDataExt != null && tableDataExt.get(tableName) != null) {
             String alias = tableDataExt.get(tableName).getClassname();
 
-            LOG.debug("Pojo class alias is: " + alias);
+            LOG.debug("Pojo class alias is: {}", alias);
 
             if (StringUtils.isNotEmpty(alias)) {
                 return alias.trim();
@@ -369,7 +370,7 @@ public class TableSetInfo implements KeyInfo {
                                                              Map<String, T_metatable> settingFromDb) throws IOException {
         File file = new File(extraSettingFileName);
         if (file.exists()) {
-            LOG.info("Find extra setting file: " + extraSettingFileName);
+            LOG.info("Find extra setting file: {}", extraSettingFileName);
             if (settingFromDb == null) {
                 settingFromDb = new HashMap<>();
             }
@@ -379,7 +380,7 @@ public class TableSetInfo implements KeyInfo {
 
             return PojoPropertiesParser.mergeTableSetting(settingFromDb, res);
         } else {
-            LOG.info("WARNING: File for value extra_setting not exists:" + extraSettingFileName);
+            LOG.warn("File for value extra_setting not exists:{}", extraSettingFileName);
             return settingFromDb;
         }
     }
@@ -483,20 +484,20 @@ public class TableSetInfo implements KeyInfo {
     private void initExportKeys(ProjectConfig config, IDbHelper dbHelper, DatabaseMetaData metaData, String tableName) throws SQLException {
 
 
-            if (isMysql(metaData)) {
-                //针对mysql的优化, 一次加载全部外键
-                if (getForeignKeyExCache().isEmpty()) {
-                    getForeignKeyExCache().putAll(TableUtils.getAllMySQLExportKeys(dbHelper, config.getTableOwner()));
-                }
-                if (getForeignKeyExCache().containsKey(tableName)) {
-                    LOG.info(tableName + " has  ExportKey in cache:" + getForeignKeyExCache().get(tableName));
-                } else {
-                    LOG.debug(tableName + " does not have a ExportKey in cache");
-                }
-                return;
+        if (isMysql(metaData)) {
+            //针对mysql的优化, 一次加载全部外键
+            if (getForeignKeyExCache().isEmpty()) {
+                getForeignKeyExCache().putAll(TableUtils.getAllMySQLExportKeys(dbHelper, config.getTableOwner()));
             }
-            List<ForeignKeyDefinition> foreignKeyData = TableUtils.getTableExportedKeys(metaData, config.getCatalog(), config.getTableOwner(), tableName);
-            getForeignKeyExCache().put(tableName, foreignKeyData);
+            if (getForeignKeyExCache().containsKey(tableName)) {
+                LOG.info("{} has  ExportKey in cache:{}", tableName, getForeignKeyExCache().get(tableName));
+            } else {
+                LOG.debug("{} does not have a ExportKey in cache", tableName);
+            }
+            return;
+        }
+        List<ForeignKeyDefinition> foreignKeyData = TableUtils.getTableExportedKeys(metaData, config.getCatalog(), config.getTableOwner(), tableName);
+        getForeignKeyExCache().put(tableName, foreignKeyData);
 
     }
 
@@ -508,8 +509,8 @@ public class TableSetInfo implements KeyInfo {
         LinkedHashMap<String, TableInfo> col = getTableInfos();
 
 
-            if (CollectionUtils.isEmpty(col)) {
-    String catalog = config.getCatalog();
+        if (CollectionUtils.isEmpty(col)) {
+            String catalog = config.getCatalog();
             String schema = config.getSchema();
             boolean isR2dbc = config.getR2dc();
             //表名
@@ -517,10 +518,10 @@ public class TableSetInfo implements KeyInfo {
                     TableUtils.getTableData(metaData, catalog, schema,
                             config.getTableOwner(), config.getTablesList(), config.getExcludeTablesList());
 
-            LOG.info("find tables:{}" , tableNames);
-                LinkedHashMap<String, TableInfo> tables = new LinkedHashMap<>();
-                for (String name : tableNames) {
-                    TableInfo table = getTableInfoWithComment(dbHelper, metaData, name, catalog, schema, isR2dbc);
+            LOG.info("find tables:{}", tableNames);
+            LinkedHashMap<String, TableInfo> tables = new LinkedHashMap<>();
+            for (String name : tableNames) {
+                TableInfo table = getTableInfoWithComment(dbHelper, metaData, name, catalog, schema, isR2dbc);
 
                 tables.put(name, table);
 
@@ -529,12 +530,12 @@ public class TableSetInfo implements KeyInfo {
                 getKeyCache().put(name, keyData);
 
                 if (config.isForeignKeys()) {
-                        // foreign keys import info
-                        initImportKeys(config, dbHelper, metaData, name);
+                    // foreign keys import info
+                    initImportKeys(config, dbHelper, metaData, name);
 
-                        // foreign keys export info
-                        initExportKeys(config, dbHelper, metaData,name);
-                    }
+                    // foreign keys export info
+                    initExportKeys(config, dbHelper, metaData, name);
+                }
 
                 // index info
                 initIndex(config, metaData, name);
@@ -649,15 +650,15 @@ public class TableSetInfo implements KeyInfo {
                 getForeignKeyImCache().putAll(TableUtils.getAllMySQLImportKeys(dbHelper, config.getTableOwner()));
             }
             if (getForeignKeyImCache().containsKey(tableName)) {
-                LOG.info( "{} has  ImportKey in cache:{}" , tableName, getForeignKeyImCache().get(tableName));
+                LOG.info("{} has  ImportKey in cache:{}", tableName, getForeignKeyImCache().get(tableName));
             } else {
-                LOG.debug( "{} have not a ImportKey in cache", tableName);
-                }
-                return;
-
+                LOG.debug("{} have not a ImportKey in cache", tableName);
             }
-            List<ForeignKeyDefinition> foreignKeyData = TableUtils.getTableImportedKeys(metaData, config.getCatalog(), config.getTableOwner(), tableName);
-            getForeignKeyImCache().put(tableName, foreignKeyData);
+            return;
+
+        }
+        List<ForeignKeyDefinition> foreignKeyData = TableUtils.getTableImportedKeys(metaData, config.getCatalog(), config.getTableOwner(), tableName);
+        getForeignKeyImCache().put(tableName, foreignKeyData);
     }
 
     /**

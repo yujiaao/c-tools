@@ -353,7 +353,6 @@ public class Util {
         for (int i = 0; i < vs.length; i++) {
             ns[i] = (String) ht.get(vs[i]);
         }
-        vs = null;
         return mergeStrArray(ns);
     }
 

@@ -39,7 +39,6 @@ public class TEduSearchCmd {
     
         /**
         * degree 这里是名称！ 
-    * NotNull, default value: NULL
         *  change type of String to List<String> will generate 'in' sql condition.
         */
         @ApiModelProperty("这里是名称！")
