@@ -79,10 +79,12 @@ public class TEdu  implements Serializable {
     public String toXml()
     {
         StringBuilder s= new StringBuilder();
-        String ln = System.getProperty("line.separator");
+        String ln = System.lineSeparator();
         s.append("<t_edu ");
 
+        
         s.append(" id=\"").append(this.getId()).append("\"");
+        
         
         s.append(" degree=\"").append(StringEscapeUtils.escapeXml11(this.getDegree())).append("\"");s.append(" />");
         s.append(ln);

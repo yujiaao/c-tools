@@ -3,8 +3,11 @@ package com.bixuebihui.tablegen.generator;
 import com.bixuebihui.tablegen.TableGen;
 import com.bixuebihui.tablegen.entry.ColumnData;
 import com.github.jknack.handlebars.Handlebars;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -13,6 +16,7 @@ import java.util.Map;
  */
 public class MapperGenerator extends BaseGenerator {
     protected final static String CLASS_SUFFIX = "Converter";
+    private static final Logger LOG = LoggerFactory.getLogger(MapperGenerator.class);
 
 
     @Override
@@ -29,7 +33,36 @@ public class MapperGenerator extends BaseGenerator {
 
     @Override
     public boolean wantToGenerate(String fileName) {
-        return super.wantToGenerate(fileName) && ! new File(fileName).exists();
+        // 如果 enableMerge 为 false，只生成不存在的文件，不修改已存在的文件
+        if (!config.isEnableMerge()) {
+            return !new File(fileName).exists();
+        }
+        // enableMerge 为 true 时，正常生成并智能合并
+        return super.wantToGenerate(fileName);
+    }
+
+    @Override
+    public String generate(String tableName, int index) throws IOException {
+        // Generate the new source code using the template
+        String generatedSource = super.generate(tableName, index);
+
+        // Check if merge is enabled via ProjectConfig
+        if (!config.isEnableMerge()) {
+            // Merge disabled, return generated source as-is
+            return generatedSource;
+        }
+
+        // Get the target file path
+        String targetFileName = getTargetFileName(tableName);
+        File targetFile = new File(targetFileName);
+
+        // If file exists, merge with existing content
+        if (targetFile.exists()) {
+            LOG.info("Merging generated Mapper with existing file: {}", targetFileName);
+            return JavaSourceMerger.mergeSource(targetFile, generatedSource);
+        }
+
+        return generatedSource;
     }
 
 

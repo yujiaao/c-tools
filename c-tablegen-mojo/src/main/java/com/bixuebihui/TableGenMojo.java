@@ -26,7 +26,6 @@ public class TableGenMojo extends AbstractMojo {
     @Override
     public void execute() {
         TableGen gen = new TableGen();
-        getLog().info("Starting gen tables...");
 
         if(StringUtils.isBlank(propPath)) {
             propPath = System.getProperty("user.dir") + File.separator + "tablegen.properties";

@@ -31,9 +31,9 @@ public class MyTestView  implements Serializable {
 
     
     /**
-    * edu_id edu_id 
+    * edu_id 教育程度 
     */
-    
+    @ApiModelProperty("教育程度")
     protected Integer  eduId;
 
 
@@ -60,9 +60,10 @@ public class MyTestView  implements Serializable {
     public String toXml()
     {
         StringBuilder s= new StringBuilder();
-        String ln = System.getProperty("line.separator");
+        String ln = System.lineSeparator();
         s.append("<my_test_view ");
 
+        
         s.append(" eduId=\"").append(this.getEduId()).append("\"");
         s.append(" />");
         s.append(ln);

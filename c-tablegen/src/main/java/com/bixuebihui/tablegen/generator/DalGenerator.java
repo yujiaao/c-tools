@@ -183,13 +183,13 @@ public class DalGenerator extends BaseGenerator {
                         + ucol + "))));";
             } else {
                 get = "(r.getObject(" + ucol + "));";
-                LOG.error("Warning! Unknown type : " + colType + " in write mapRow");
+                LOG.error("Warning! Unknown type : {} in write mapRow", colType);
             }
 
             get = firstUp(cd.getName()) + get;
 
             sb.append(INDENT).append(INDENT).append("if (containsIgnoreCase(" + ucol + ", fields)){\n");
-            sb.append(INDENT).append(INDENT).append(INDENT).append("res.set" + get).append("\n");
+            sb.append(INDENT).append(INDENT).append(INDENT).append("res.set").append(get).append("\n");
             sb.append(INDENT).append(INDENT).append("}\n");
 
         }
@@ -250,7 +250,7 @@ public class DalGenerator extends BaseGenerator {
             } else {
 
                 get = "(r.getObject(" + ucol + "));";
-                LOG.error("Warning! Unknown type : " + colType + " in write mapRow");
+                LOG.error("Warning! Unknown type : {} in write mapRow", colType);
             }
 
             get = firstUp(cd.getName()) + get;
@@ -267,7 +267,7 @@ public class DalGenerator extends BaseGenerator {
                 .append(INDENT).append(INDENT).append(pojoClassName + " res = new " + pojoClassName + "();\n");
 
         for (String e : gets) {
-            sb.append(INDENT).append(INDENT).append("res.set" + e).append("\n");
+            sb.append(INDENT).append(INDENT).append("res.set").append(e).append("\n");
         }
 
         sb.append(INDENT).append(INDENT).append("return res;\n");

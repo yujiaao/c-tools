@@ -37,6 +37,7 @@ object TableGearProperties {
         PropertyDefinition("extra_setting", "额外配置文件路径（如 pojos.xml）", ValueType.PATH, mode = listOf(ConfigMode.COMMON)),
         PropertyDefinition("generate_all", "是否全量生成，no 时进入增量模式", ValueType.BOOLEAN, mode = listOf(ConfigMode.COMMON)),
         PropertyDefinition("over_write_all", "是否覆盖现有文件", ValueType.BOOLEAN, mode = listOf(ConfigMode.COMMON)),
+        PropertyDefinition("enable_merge", "是否启用智能合并，启用后会保留用户在 Dto、SearchCmd、Converter 文件中的修改", ValueType.BOOLEAN, mode = listOf(ConfigMode.COMMON)),
         PropertyDefinition("use_annotation", "是否启用 Jakarta Validation/Swagger 注解", ValueType.BOOLEAN, mode = listOf(ConfigMode.COMMON)),
         PropertyDefinition("use_swagger", "Controller 是否生成 Swagger 注解", ValueType.BOOLEAN, mode = listOf(ConfigMode.COMMON)),
         PropertyDefinition("swagger_version", "Swagger/OpenAPI 版本", ValueType.ENUM, enumValues = listOf("2", "3"), mode = listOf(ConfigMode.COMMON)),

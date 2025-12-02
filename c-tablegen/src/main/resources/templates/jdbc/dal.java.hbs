@@ -285,7 +285,7 @@ public class {{className}}  extends {{#if tableInfo.isView}}AbstractViewBaseDao{
     }
 
     /**
-    *22 Deletes from the database for table {{tableName}} {{#log info~}} {{#each keys}} {{colType tableName this}} {{this}} {{#unless @last}}, {{/unless}}{{/each}} {{/log~}}
+    *22 Deletes from the database for table {{tableName}} 
     */
     {{#lt keys.size 2}}@Override{{/lt}}
     public boolean deleteByKey( {{#each keys}} {{colType tableName this}} {{this}} {{#unless @last}}, {{/unless}}{{/each}})

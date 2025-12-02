@@ -16,7 +16,7 @@ import java.io.Serializable;
 import org.apache.commons.text.StringEscapeUtils;
 
 import javax.annotation.processing.Generated;
-
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 
 
@@ -30,11 +30,11 @@ import com.sdadas.spring2ts.annotations.SharedModel;
 public class MyTestViewDto  implements Serializable {
 
 
-    
+
     /**
-     * edu_id edu_id 
+     * edu_id 教育程度 
      */
-    
+    @ApiModelProperty("教育程度")
     protected Integer  eduId;
 
 
@@ -43,14 +43,14 @@ public class MyTestViewDto  implements Serializable {
     
 
     /**
-     * edu_id edu_id 
+     * edu_id 教育程度 
      */
     public void setEduId(Integer eduId)
     {
       this.eduId = eduId;
     }
     /**
-     * edu_id edu_id 
+     * edu_id 教育程度 
      */
     public Integer getEduId()
     {
