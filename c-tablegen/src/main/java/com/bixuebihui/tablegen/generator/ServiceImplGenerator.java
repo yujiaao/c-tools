@@ -17,6 +17,9 @@ public class ServiceImplGenerator extends BaseGenerator {
 
     @Override
     String getTemplateFileName(String tableName) {
+        if(config.getEncryptedFields().containsKey(tableName)){
+            return "service-impl-encrypted.java";
+        }
         return "service-impl.java";
     }
 

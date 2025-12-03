@@ -8,6 +8,7 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.FieldDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
+import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.Name;
 import com.github.javaparser.ast.nodeTypes.NodeWithSimpleName;
 import com.github.javaparser.ast.type.Type;
@@ -460,6 +461,8 @@ public class JavaSourceMerger {
         cu.findAll(FieldDeclaration.class).forEach(field -> {
             Type type = field.getCommonType();
             collectTypeNames(type, usedTypeNames);
+            // Collect annotations on fields
+            field.getAnnotations().forEach(ann -> collectAnnotationNames(ann, usedTypeNames));
         });
         
         cu.findAll(MethodDeclaration.class).forEach(method -> {
@@ -468,7 +471,21 @@ public class JavaSourceMerger {
             // Collect parameter types
             method.getParameters().forEach(param -> {
                 collectTypeNames(param.getType(), usedTypeNames);
+                // Collect annotations on parameters
+                param.getAnnotations().forEach(ann -> collectAnnotationNames(ann, usedTypeNames));
             });
+            // Collect annotations on methods
+            method.getAnnotations().forEach(ann -> collectAnnotationNames(ann, usedTypeNames));
+        });
+        
+        // Collect annotations on classes/interfaces
+        cu.findAll(ClassOrInterfaceDeclaration.class).forEach(clazz -> {
+            clazz.getAnnotations().forEach(ann -> collectAnnotationNames(ann, usedTypeNames));
+        });
+        
+        // Collect all other annotations (comprehensive collection)
+        cu.findAll(AnnotationExpr.class).forEach(annotation -> {
+            collectAnnotationNames(annotation, usedTypeNames);
         });
         
         // Get the package name (if any)
@@ -476,11 +493,61 @@ public class JavaSourceMerger {
                 .map(p -> p.getNameAsString())
                 .orElse("");
         
+        // Collect all simple type names used in the code (without package)
+        Set<String> usedSimpleNames = new HashSet<>();
+        for (String typeName : usedTypeNames) {
+            // Extract simple name (e.g., "List" from "java.util.List" or just "List")
+            String simpleName = getSimpleName(typeName);
+            // Always add simple name for matching (needed for annotation imports)
+            usedSimpleNames.add(simpleName);
+            // Also add the full qualified name if it contains dots
+            if (typeName.contains(".")) {
+                usedSimpleNames.add(typeName);
+            }
+        }
+        
+        // Build a map of simple names to their explicit imports
+        Map<String, String> simpleNameToImport = new HashMap<>();
+        for (ImportDeclaration imp : cu.getImports()) {
+            if (!imp.isAsterisk() && !imp.isStatic()) {
+                String importName = imp.getNameAsString();
+                String simpleName = getSimpleName(importName);
+                // Only map if it's not from java.lang (java.lang types don't need imports)
+                if (!importName.startsWith("java.lang.")) {
+                    simpleNameToImport.put(simpleName, importName);
+                }
+            }
+        }
+        
         // Remove unused imports
         List<ImportDeclaration> importsToRemove = new ArrayList<>();
         for (ImportDeclaration imp : cu.getImports()) {
             if (imp.isAsterisk()) {
-                // For wildcard imports, we keep them (too complex to verify)
+                // For wildcard imports, check if any used simple names might come from this package
+                String wildcardPackage = imp.getNameAsString();
+                if (wildcardPackage.endsWith(".*")) {
+                    wildcardPackage = wildcardPackage.substring(0, wildcardPackage.length() - 2);
+                }
+                
+                // Check if any used simple name might come from this package
+                boolean mightBeUsed = false;
+                for (String simpleName : usedSimpleNames) {
+                    // If this simple name is used and not explicitly imported from another package,
+                    // it might come from this wildcard import
+                    String explicitImport = simpleNameToImport.get(simpleName);
+                    if (explicitImport == null || explicitImport.startsWith(wildcardPackage + ".")) {
+                        // Check if this is a known class from this package (common packages)
+                        if (isLikelyFromPackage(simpleName, wildcardPackage)) {
+                            mightBeUsed = true;
+                            break;
+                        }
+                    }
+                }
+                
+                if (!mightBeUsed) {
+                    importsToRemove.add(imp);
+                    LOG.debug("Removed unused wildcard import: {}", imp.getNameAsString());
+                }
                 continue;
             }
             
@@ -490,18 +557,28 @@ public class JavaSourceMerger {
             // Check if this import is used
             boolean isUsed = false;
             
-            // Check exact match
-            if (usedTypeNames.contains(importName)) {
+            // Check exact match (fully qualified name)
+            if (usedTypeNames.contains(importName) || usedSimpleNames.contains(importName)) {
                 isUsed = true;
             }
             
             // Check simple name match (but avoid false positives from java.lang)
-            if (!isUsed && usedTypeNames.contains(simpleName)) {
+            if (!isUsed && (usedTypeNames.contains(simpleName) || usedSimpleNames.contains(simpleName))) {
                 // Only consider it used if it's not from java.lang
                 // (java.lang types don't need imports)
                 if (!importName.startsWith("java.lang.") || 
                     !simpleName.equals(importName.substring("java.lang.".length()))) {
                     isUsed = true;
+                }
+            }
+            
+            // Special handling for annotation imports: if the simple name matches an annotation,
+            // and it's likely an annotation type (common annotation packages), keep it
+            if (!isUsed && !importName.startsWith("java.lang.")) {
+                // Check if this might be an annotation import by checking common annotation packages
+                if (isAnnotationPackage(importName) && usedSimpleNames.contains(simpleName)) {
+                    isUsed = true;
+                    LOG.debug("Keeping annotation import: {} (simple name '{}' is used)", importName, simpleName);
                 }
             }
             
@@ -519,6 +596,39 @@ public class JavaSourceMerger {
         for (ImportDeclaration imp : importsToRemove) {
             cu.remove(imp);
             LOG.debug("Removed unused import: {}", imp.getNameAsString());
+        }
+    }
+    
+    /**
+     * Collect annotation names from an AnnotationExpr.
+     * This ensures annotation imports are preserved.
+     */
+    private static void collectAnnotationNames(AnnotationExpr annotation, Set<String> typeNames) {
+        String annotationName = annotation.getNameAsString();
+        // Add simple name (e.g., "NotNull", "Override")
+        typeNames.add(annotationName);
+        
+        // If annotation has a qualifier (e.g., "jakarta.validation.NotNull")
+        if (annotation.getName().getQualifier().isPresent()) {
+            String qualifier = annotation.getName().getQualifier().get().asString();
+            String qualifiedName = qualifier + "." + annotationName;
+            typeNames.add(qualifiedName);
+            // Also add just the qualifier package for wildcard matching
+            if (qualifier.contains(".")) {
+                String packageName = qualifier.substring(0, qualifier.lastIndexOf('.'));
+                typeNames.add(packageName + ".*");
+            }
+        }
+        
+        // Also check if the annotation name itself contains dots (fully qualified)
+        if (annotationName.contains(".")) {
+            typeNames.add(annotationName);
+            // Extract package for wildcard matching
+            int lastDot = annotationName.lastIndexOf('.');
+            if (lastDot > 0) {
+                String packageName = annotationName.substring(0, lastDot);
+                typeNames.add(packageName + ".*");
+            }
         }
     }
     
@@ -553,6 +663,103 @@ public class JavaSourceMerger {
     private static String getSimpleName(String fullyQualifiedName) {
         int lastDot = fullyQualifiedName.lastIndexOf('.');
         return lastDot >= 0 ? fullyQualifiedName.substring(lastDot + 1) : fullyQualifiedName;
+    }
+    
+    /**
+     * Check if a package is likely an annotation package.
+     * This helps preserve annotation imports even if we can't fully resolve them.
+     */
+    private static boolean isAnnotationPackage(String fullyQualifiedName) {
+        String packageName = fullyQualifiedName.contains(".") 
+            ? fullyQualifiedName.substring(0, fullyQualifiedName.lastIndexOf('.'))
+            : "";
+        
+        // Common annotation packages
+        return packageName.equals("jakarta.validation.constraints") ||
+               packageName.equals("javax.validation.constraints") ||
+               packageName.equals("jakarta.validation") ||
+               packageName.equals("javax.validation") ||
+               packageName.equals("org.springframework.stereotype") ||
+               packageName.equals("org.springframework.web.bind.annotation") ||
+               packageName.equals("org.springframework.boot.autoconfigure") ||
+               packageName.equals("com.fasterxml.jackson.annotation") ||
+               packageName.equals("lombok") ||
+               packageName.startsWith("lombok.") ||
+               packageName.equals("java.lang.annotation") ||
+               packageName.equals("org.junit") ||
+               packageName.startsWith("org.junit.");
+    }
+    
+    /**
+     * Check if a simple type name is likely from a given package.
+     * This is a heuristic based on common Java standard library classes.
+     * 
+     * @param simpleName The simple type name (e.g., "List", "Set")
+     * @param packageName The package name (e.g., "java.util")
+     * @return true if the type is likely from this package
+     */
+    private static boolean isLikelyFromPackage(String simpleName, String packageName) {
+        // Common classes in java.util
+        if ("java.util".equals(packageName)) {
+            return java.util.Arrays.asList(
+                "List", "Set", "Map", "Collection", "ArrayList", "LinkedList", "Vector",
+                "HashSet", "TreeSet", "LinkedHashSet", "HashMap", "TreeMap", "LinkedHashMap",
+                "Hashtable", "Iterator", "ListIterator", "Enumeration", "Comparator", "Comparable",
+                "Optional", "Stream", "Date", "Calendar", "TimeZone", "Locale", "Properties",
+                "UUID", "Random", "Arrays", "Collections", "Objects", "StringTokenizer"
+            ).contains(simpleName);
+        }
+        
+        // Common classes in java.io
+        if ("java.io".equals(packageName)) {
+            return java.util.Arrays.asList(
+                "File", "InputStream", "OutputStream", "Reader", "Writer", "BufferedReader",
+                "BufferedWriter", "FileReader", "FileWriter", "FileInputStream", "FileOutputStream",
+                "PrintStream", "PrintWriter", "Serializable", "IOException", "FileNotFoundException"
+            ).contains(simpleName);
+        }
+        
+        // Common classes in java.time
+        if ("java.time".equals(packageName)) {
+            return java.util.Arrays.asList(
+                "LocalDate", "LocalTime", "LocalDateTime", "ZonedDateTime", "Instant",
+                "Duration", "Period", "ZoneId", "ZoneOffset", "DateTimeFormatter"
+            ).contains(simpleName);
+        }
+        
+        // Common classes in java.nio
+        if ("java.nio".equals(packageName)) {
+            return java.util.Arrays.asList(
+                "Path", "Paths", "Files", "FileSystem", "ByteBuffer", "CharBuffer"
+            ).contains(simpleName);
+        }
+        
+        // Common classes in java.net
+        if ("java.net".equals(packageName)) {
+            return java.util.Arrays.asList(
+                "URL", "URI", "URLConnection", "HttpURLConnection", "Socket", "ServerSocket",
+                "InetAddress", "InetSocketAddress"
+            ).contains(simpleName);
+        }
+        
+        // Common classes in java.text
+        if ("java.text".equals(packageName)) {
+            return java.util.Arrays.asList(
+                "SimpleDateFormat", "DateFormat", "NumberFormat", "DecimalFormat", "MessageFormat"
+            ).contains(simpleName);
+        }
+        
+        // Common classes in java.math
+        if ("java.math".equals(packageName)) {
+            return java.util.Arrays.asList(
+                "BigDecimal", "BigInteger", "MathContext", "RoundingMode"
+            ).contains(simpleName);
+        }
+        
+        // For other packages, we use a conservative approach:
+        // If the simple name is used and not explicitly imported, assume it might come from wildcard
+        // This is safer than removing it, as it might cause compilation errors
+        return true; // Conservative: keep wildcard imports for unknown packages
     }
 
     /**

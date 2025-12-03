@@ -223,7 +223,7 @@ public class ProjectConfig {
                     if (res.get(tableFieldPair[0]) == null) {
                         res.put(tableFieldPair[0], new ArrayList<>(Arrays.stream(tableFieldPair[1].split(",")).collect(toList())));
                     } else {
-                        res.get(tableFieldPair[0]).addAll(Arrays.stream(tableFieldPair[1].split(",")).collect(toList()));                 }
+                        res.get(tableFieldPair[0]).addAll(Arrays.stream(tableFieldPair[1].split(",")).toList());                 }
                 }else{
                     LOG.error(formatError);
                 }

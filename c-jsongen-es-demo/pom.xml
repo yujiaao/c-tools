@@ -5,11 +5,18 @@
     <parent>
         <artifactId>c-tools-parent</artifactId>
         <groupId>com.github.yujiaao</groupId>
-        <version>1.16.0</version>
+        <version>1.16.1</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>c-jsongen-es-demo</artifactId>
     <name>c-jsongen-es-demo</name>
+    <description>Demo project for JSON generation with ElasticSearch</description>
+    <url>https://github.com/yujiaao/c-tools</url>
+    <scm>
+        <connection>scm:git:https://github.com/yujiaao/c-tools.git</connection>
+        <developerConnection>scm:git:https://github.com/yujiaao/c-tools.git</developerConnection>
+        <url>https://github.com/yujiaao/c-tools</url>
+    </scm>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
         <maven.compiler.source>17</maven.compiler.source>
@@ -140,6 +147,19 @@
                     <source>17</source>
                     <target>17</target>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>3.3.0</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
 
         </plugins>
