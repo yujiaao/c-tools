@@ -251,8 +251,23 @@ public class JavaSourceMerger {
                 
                 boolean keepExisting = false;
                 
+                // Special handling for setter methods: check parameter types
+                if (isSetterMethod(methodName)) {
+                    // For setters, check if existing method has collection parameter type
+                    if (!existingMethod.getParameters().isEmpty() && !generatedMethod.getParameters().isEmpty()) {
+                        String existingParamType = existingMethod.getParameter(0).getType().asString();
+                        String generatedParamType = generatedMethod.getParameter(0).getType().asString();
+                        // If existing setter parameter is collection type and generated is simple type, keep existing
+                        if (isCollectionType(existingParamType) && !isCollectionType(generatedParamType)) {
+                            LOG.debug("Keeping existing setter with collection parameter type '{}': {} (generated was: {})", 
+                                    signature, existingParamType, generatedParamType);
+                            keepExisting = true;
+                        }
+                    }
+                }
+                
                 // If existing method return type is collection and generated is simple type, keep existing
-                if (isCollectionType(existingReturnType) && !isCollectionType(generatedReturnType)) {
+                if (!keepExisting && isCollectionType(existingReturnType) && !isCollectionType(generatedReturnType)) {
                     LOG.debug("Keeping existing method with collection return type '{}': {} (generated was: {})", 
                             signature, existingReturnType, generatedReturnType);
                     keepExisting = true;
@@ -309,9 +324,29 @@ public class JavaSourceMerger {
                     if (existingMethodWithSameName.getNameAsString().equals(methodName)) {
                         String existingReturnType = existingMethodWithSameName.getType().asString();
                         String generatedReturnType = generatedMethod.getType().asString();
-                        // If existing method has collection type and generated has simple type, skip generated
-                        if (isCollectionType(existingReturnType) && !isCollectionType(generatedReturnType)) {
-                            LOG.debug("Skipping generated method '{}' - existing has collection type: {} (generated: {})", 
+                        
+                        // Special handling for setter methods: check parameter types
+                        if (isSetterMethod(methodName)) {
+                            // For setters, check parameter types
+                            if (!existingMethodWithSameName.getParameters().isEmpty() && 
+                                !generatedMethod.getParameters().isEmpty()) {
+                                String existingParamType = existingMethodWithSameName.getParameter(0).getType().asString();
+                                String generatedParamType = generatedMethod.getParameter(0).getType().asString();
+                                // If existing setter parameter is collection type and generated is simple type, skip generated
+                                if (isCollectionType(existingParamType) && !isCollectionType(generatedParamType)) {
+                                    LOG.debug("Skipping generated setter '{}' - existing has collection parameter type: {} (generated: {})", 
+                                            signature, existingParamType, generatedParamType);
+                                    skipGenerated = true;
+                                    replacedMethodNames.add(methodName);
+                                    existingMethodWithCollectionType = existingMethodWithSameName;
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        // If existing method has collection return type and generated has simple type, skip generated
+                        if (!skipGenerated && isCollectionType(existingReturnType) && !isCollectionType(generatedReturnType)) {
+                            LOG.debug("Skipping generated method '{}' - existing has collection return type: {} (generated: {})", 
                                     signature, existingReturnType, generatedReturnType);
                             skipGenerated = true;
                             replacedMethodNames.add(methodName);
@@ -784,6 +819,20 @@ public class JavaSourceMerger {
         }
     }
 
+    /**
+     * Check if a method name is a setter method.
+     * Setter methods start with "set" followed by a capital letter.
+     * 
+     * @param methodName The method name to check (e.g., "setName", "setBegin_date")
+     * @return true if the method is a setter, false otherwise
+     */
+    private static boolean isSetterMethod(String methodName) {
+        return methodName != null && 
+               methodName.length() > 3 && 
+               methodName.startsWith("set") && 
+               Character.isUpperCase(methodName.charAt(3));
+    }
+    
     /**
      * Check if a type string represents a collection type.
      * Collection types include: List, Set, Map, Collection and their implementations.

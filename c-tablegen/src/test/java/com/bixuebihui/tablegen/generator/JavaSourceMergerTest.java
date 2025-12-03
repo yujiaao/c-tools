@@ -469,6 +469,132 @@ class JavaSourceMergerTest {
                 "Should not contain simple return type version when existing has collection type");
     }
 
+    @Test
+    void testMergeSearchCmd_KeepSetterWithCollectionParameterType() throws IOException {
+        // Existing SearchCmd with collection type parameter in setter
+        String existingSearchCmdSource = """
+                package com.example.cmd;
+                
+                import java.util.List;
+                import jakarta.validation.constraints.NotNull;
+                
+                public class UserSearchCmd {
+                    // User changed field type to List<String> for 'in' query support
+                    @NotNull
+                    protected List<String> name;
+                    
+                    public void setName(List<String> name) {
+                        this.name = name;
+                    }
+                    
+                    public List<String> getName() {
+                        return this.name;
+                    }
+                }
+                """;
+
+        // Generated SearchCmd with simple type parameter in setter
+        String generatedSearchCmdSource = """
+                package com.example.cmd;
+                
+                import jakarta.validation.constraints.NotNull;
+                
+                public class UserSearchCmd {
+                    // Generated with simple type
+                    @NotNull
+                    protected String name;
+                    
+                    public void setName(String name) {
+                        this.name = name;
+                    }
+                    
+                    public String getName() {
+                        return this.name;
+                    }
+                }
+                """;
+
+        // Create existing file
+        File existingFile = tempDir.resolve("UserSearchCmd.java").toFile();
+        Files.writeString(existingFile.toPath(), existingSearchCmdSource);
+
+        // Merge
+        String mergedSource = JavaSourceMerger.mergeSource(existingFile, generatedSearchCmdSource);
+
+        // Verify: should keep existing setter with collection parameter type
+        assertContains(mergedSource, "public void setName(List<String> name)");
+        assertContains(mergedSource, "protected List<String> name");
+        assertContains(mergedSource, "public List<String> getName()");
+        assertContains(mergedSource, "import java.util.List");
+        // Should NOT contain the simple type version
+        assertFalse(mergedSource.contains("public void setName(String name)"),
+                "Should not contain simple parameter type version when existing has collection type");
+        assertFalse(mergedSource.contains("protected String name"),
+                "Should not contain simple field type when existing has collection type");
+    }
+
+    @Test
+    void testMergeSearchCmd_KeepSetterWithCollectionParameterType_DifferentSignature() throws IOException {
+        // Existing SearchCmd with collection type parameter in setter (different signature)
+        String existingSearchCmdSource = """
+                package com.example.cmd;
+                
+                import java.util.List;
+                import jakarta.validation.constraints.NotNull;
+                
+                public class UserSearchCmd {
+                    // User changed field type to List<Long> for 'in' query support
+                    @NotNull
+                    protected List<Long> id;
+                    
+                    public void setId(List<Long> id) {
+                        this.id = id;
+                    }
+                    
+                    public List<Long> getId() {
+                        return this.id;
+                    }
+                }
+                """;
+
+        // Generated SearchCmd with simple type parameter in setter
+        String generatedSearchCmdSource = """
+                package com.example.cmd;
+                
+                import jakarta.validation.constraints.NotNull;
+                
+                public class UserSearchCmd {
+                    // Generated with simple type
+                    @NotNull
+                    protected Long id;
+                    
+                    public void setId(Long id) {
+                        this.id = id;
+                    }
+                    
+                    public Long getId() {
+                        return this.id;
+                    }
+                }
+                """;
+
+        // Create existing file
+        File existingFile = tempDir.resolve("UserSearchCmd.java").toFile();
+        Files.writeString(existingFile.toPath(), existingSearchCmdSource);
+
+        // Merge
+        String mergedSource = JavaSourceMerger.mergeSource(existingFile, generatedSearchCmdSource);
+
+        // Verify: should keep existing setter with collection parameter type
+        assertContains(mergedSource, "public void setId(List<Long> id)");
+        assertContains(mergedSource, "protected List<Long> id");
+        assertContains(mergedSource, "public List<Long> getId()");
+        assertContains(mergedSource, "import java.util.List");
+        // Should NOT contain the simple type version
+        assertFalse(mergedSource.contains("public void setId(Long id)"),
+                "Should not contain simple parameter type version when existing has collection type");
+    }
+
     private void assertContains(String source, String expected) {
         assertTrue(source.contains(expected),
                 "Expected source to contain: " + expected + "\nBut source was:\n" + source);
