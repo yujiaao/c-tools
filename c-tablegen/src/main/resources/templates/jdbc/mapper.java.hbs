@@ -4,6 +4,7 @@ import {{config.packageName}}{{viewModifier}}.pojo.*;
 import {{config.packageName}}{{viewModifier}}.dto.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
+import com.bixuebihui.Base64Converter;
 
 import java.util.List;
 
@@ -11,17 +12,13 @@ import java.util.List;
 * @author xwx
 */
 @Mapper
-public interface {{className}} {
+public interface {{className}} extends Base64Converter<{{pojoClassName}}, {{pojoClassName}}Dto> {
     {{className}} MAPPER = Mappers.getMapper({{className}}.class);
 
-    //@Mapping(source = "status", target = "orderStatus")
+    //@Mapping(source = "optName", target = "optName", qualifiedByName = "decodeBase64")
     {{pojoClassName}}Dto toDto({{pojoClassName}} info);
 
     {{pojoClassName}} toDao({{pojoClassName}}Dto info);
-
-    List<{{pojoClassName}}Dto> toDtoList(List<{{pojoClassName}}> info);
-
-    List<{{pojoClassName}}> toDaoList(List<{{pojoClassName}}Dto> info);
 
 
     /*

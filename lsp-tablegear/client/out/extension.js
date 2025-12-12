@@ -33,8 +33,8 @@ const vscode_1 = require("vscode");
 const node_1 = require("vscode-languageclient/node");
 let client;
 let clientReady;
-const TABLEGEN_FILE_REGEX = /(tablegen|es).*\.(properties|prop)$/i;
-const TABLEGEN_FILE_GLOB = '**/{tablegen,es}*.{properties,prop}';
+const TABLEGEN_FILE_REGEX = /(tablege|es).*\.(properties|prop)$/i;
+const TABLEGEN_FILE_GLOB = '**/{tablege,es}*.{properties,prop}';
 function activate(context) {
     // The server is implemented in node
     let serverModule = context.asAbsolutePath(path.join('server', 'out', 'server.js'));

@@ -19,6 +19,7 @@ const TABLEGEN_PROPERTIES = [
     { key: 'extra_setting', description: '额外配置文件路径（如 pojos.xml）', valueType: 'path', mode: 'common' },
     { key: 'generate_all', description: '是否全量生成，no 时进入增量模式', valueType: 'boolean', mode: 'common' },
     { key: 'over_write_all', description: '是否覆盖现有文件', valueType: 'boolean', mode: 'common' },
+    { key: 'enable_merge', description: '是否启用智能合并，启用后会保留用户在 Dto、SearchCmd、Converter 文件中的修改', valueType: 'boolean', mode: 'common' },
     { key: 'use_annotation', description: '是否启用 Jakarta Validation/Swagger 注解', valueType: 'boolean', mode: 'common' },
     { key: 'use_swagger', description: 'Controller 是否生成 Swagger 注解', valueType: 'boolean', mode: 'common' },
     { key: 'swagger_version', description: 'Swagger/OpenAPI 版本', valueType: 'enum', enumValues: ['2', '3'], mode: 'common' },
