@@ -13,7 +13,7 @@ package com.bixuebihui.test.dto;
 
 import java.sql.*;
 import java.io.Serializable;
-import jakarta.validation.constraints.*;
+import javax.validation.constraints.*;
 import org.apache.commons.text.StringEscapeUtils;
 
 import javax.annotation.processing.Generated;

@@ -9,6 +9,7 @@ import com.bixuebihui.codec.EncryptDecryptService;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
 * @author xwx
@@ -50,7 +51,7 @@ public interface TestGenConverter {
     default List<TestGen> toDaoListEnc(List<TestGenDto> info, EncryptDecryptService encryptDecryptService) {
         List<TestGen> res = toDaoList(info);
         List<String> listStr = res.stream().map(TestGenConverter::strCollector)
-                .flatMap(List::stream).toList();
+                .flatMap(List::stream).collect(Collectors.toList());
 
         List<String> encStr = encryptDecryptService.encrypt(listStr);
         int index=0;
@@ -66,7 +67,7 @@ public interface TestGenConverter {
     default List<TestGenDto> toDtoListDec(List<TestGen> info, EncryptDecryptService encryptDecryptService) {
         List<TestGenDto> res = toDtoList(info);
         List<String> listStr = res.stream().map(TestGenConverter::strCollectorDto)
-            .flatMap(List::stream).toList();
+            .flatMap(List::stream).collect(Collectors.toList());
         List<String> encStr = encryptDecryptService.decrypt(listStr);
         int index=0;
         if(!encStr.isEmpty() && encStr.size()==listStr.size()) {

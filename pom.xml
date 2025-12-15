@@ -11,7 +11,7 @@
     <groupId>com.github.yujiaao</groupId>
     <artifactId>c-tools-parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.16.2</version>
+    <version>1.12.3</version>
     <name>c-tools-parent</name>
     <licenses>
         <license>
@@ -57,20 +57,20 @@
         <justauth-spring.version>1.1.0</justauth-spring.version>
         <junitVersion>5.9.2</junitVersion>
         <springboot.version>2.7.13</springboot.version>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <mysql.version>8.4.0</mysql.version>
         <slf4j.version>2.0.6</slf4j.version>
-        <!--        <slf4j.version>1.7.36</slf4j.version>-->
-        <validator.version>8.0.0.Final</validator.version>
-        <jakartaValidation.version>3.0.2</jakartaValidation.version>
+<!--        <validator.version>8.0.0.Final</validator.version>-->
+        <validator.version>6.2.5.Final</validator.version>
+        <javaxValidation.version>2.0.1.Final</javaxValidation.version>
         <hamcrest.version>2.2</hamcrest.version>
         <expressly.version>5.0.0</expressly.version>
-        <commons-text.version>1.12.0</commons-text.version>
-        <commons-lang3.version>3.14.0</commons-lang3.version>
+        <commons-text.version>1.15.0</commons-text.version>
+        <commons-lang3.version>3.20.0</commons-lang3.version>
 
-        <servlet.version>5.0.0</servlet.version>
+        <servlet.version>3.1.0</servlet.version>
 
         <spring2ts.version>1.1.12</spring2ts.version>
     </properties>
@@ -123,8 +123,8 @@
                     <sourceFileExcludes>
                         <sourceFileExclude>**/module-info.java</sourceFileExclude>
                     </sourceFileExcludes>
-                    <source>17</source>
-                    <release>17</release>
+                    <source>11</source>
+                    <release>11</release>
                     <encoding>UTF-8</encoding>
                     <charset>UTF-8</charset>
                     <docencoding>UTF-8</docencoding>
@@ -258,13 +258,22 @@
                     </plugin>
 
                     <plugin>
-                        <groupId>org.sonatype.central</groupId>
-                        <artifactId>central-publishing-maven-plugin</artifactId>
-                        <version>0.9.0</version>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <version>1.6.8</version>
                         <extensions>true</extensions>
                         <configuration>
-                            <publishingServerId>ossrh</publishingServerId>
+                            <serverId>ossrh</serverId>
+                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
                         </configuration>
+                        <dependencies>
+                            <dependency>
+                                <groupId>com.thoughtworks.xstream</groupId>
+                                <artifactId>xstream</artifactId>
+                                <version>1.4.15</version> <!-- apparently this needs to be exactly this version -->
+                            </dependency>
+                        </dependencies>
                     </plugin>
                 </plugins>
             </build>

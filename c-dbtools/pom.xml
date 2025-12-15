@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.github.yujiaao</groupId>
         <artifactId>c-tools-parent</artifactId>
-        <version>1.16.2</version>
+        <version>1.12.3</version>
     </parent>
 
     <artifactId>c-dbtools</artifactId>
@@ -181,7 +181,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.12.0</version>
+            <version>3.18.0</version>
         </dependency>
 
         <dependency>
@@ -215,7 +215,7 @@
         <dependency>
             <groupId>com.microsoft.sqlserver</groupId>
             <artifactId>mssql-jdbc</artifactId>
-            <version>11.2.2.jre11</version>
+            <version>13.2.1.jre11</version>
             <scope>provided</scope>
 
         </dependency>
@@ -225,18 +225,6 @@
             <artifactId>hibernate-validator</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>jakarta.validation</groupId>
-            <artifactId>jakarta.validation-api</artifactId>
-            <version>${jakartaValidation.version}</version>
-        </dependency>
-
-
-        <dependency>
-            <groupId>jakarta.el</groupId>
-            <artifactId>jakarta.el-api</artifactId>
-            <version>5.0.1</version>
-        </dependency>
 
 
         <!-- https://mvnrepository.com/artifact/org.apache.derby/derby -->
@@ -283,12 +271,8 @@
             <version>32.0.1-jre</version>
         </dependency>
 
-        <!-- this can be removed, for web test only -->
-        <dependency>
-            <groupId>jakarta.servlet</groupId>
-            <artifactId>jakarta.servlet-api</artifactId>
-            <scope>test</scope>
-        </dependency>
+
+
 
         <dependency>
             <groupId>org.easymock</groupId>
@@ -304,14 +288,39 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+            <version>${javaxValidation.version}</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>javax.el</groupId>
+            <artifactId>javax.el-api</artifactId>
+            <version>3.0.0</version>
+        </dependency>
 
         <!-- API, java.xml.bind module for java 9 & up-->
         <dependency>
-            <groupId>jakarta.xml.bind</groupId>
-            <artifactId>jakarta.xml.bind-api</artifactId>
-            <version>4.0.0</version>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>2.3.1</version>
             <scope>provided</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.glassfish</groupId>
+            <artifactId>javax.el</artifactId>
+            <version>3.0.0</version>
+        </dependency>
+
 
         <!-- Runtime, com.sun.xml.bind module -->
         <dependency>
@@ -367,7 +376,7 @@
         <dependency>
             <groupId>com.github.yujiaao</groupId>
             <artifactId>common-utils</artifactId>
-            <version>1.16.2</version>
+            <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
 
@@ -419,11 +428,6 @@
             <scope>test</scope>
         </dependency>
 
-        <dependency>
-            <groupId>org.glassfish</groupId>
-            <artifactId>jakarta.el</artifactId>
-            <version>5.0.0-M1</version>
-        </dependency>
 
         <dependency>
             <groupId>org.glassfish.expressly</groupId>

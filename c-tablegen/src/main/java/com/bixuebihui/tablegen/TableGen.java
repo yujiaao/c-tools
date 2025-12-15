@@ -1288,7 +1288,7 @@ public class TableGen implements DiffHandler {
         }
 
         if ("pojo".equals(subPackage) && config.useAnnotation) {
-            out("import jakarta.validation.constraints.*;");
+            out("import javax.validation.constraints.*;");
             out("import org.apache.commons.text.StringEscapeUtils;");
             if (config.useSwagger) {
                 out("import io.swagger.annotations.ApiModel;");

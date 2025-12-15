@@ -5,7 +5,7 @@
     <parent>
         <artifactId>c-tools-parent</artifactId>
         <groupId>com.github.yujiaao</groupId>
-        <version>1.16.2</version>
+        <version>1.12.3</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>c-tablegen-r2dbc-demo</artifactId>
@@ -31,8 +31,8 @@
     </developers>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
     </properties>
 
     <dependencies>

@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.github.yujiaao</groupId>
         <artifactId>c-tools-parent</artifactId>
-        <version>1.16.2</version>
+        <version>1.12.3</version>
     </parent>
 
     <artifactId>c-tools</artifactId>
@@ -195,9 +195,9 @@
 
         <!-- this can be removed, for web test only -->
         <dependency>
-            <groupId>jakarta.servlet</groupId>
-            <artifactId>jakarta.servlet-api</artifactId>
-            <version>6.0.0</version>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>${servlet.version}</version>
 <!--            <scope>test</scope>-->
             <scope>provided</scope>
         </dependency>
@@ -205,7 +205,7 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
-            <version>6.0.9</version>
+            <version>5.3.31</version>
             <scope>test</scope>
         </dependency>
 
@@ -216,9 +216,9 @@
         </dependency>
 
         <dependency>
-            <groupId>jakarta.mail</groupId>
-            <artifactId>jakarta.mail-api</artifactId>
-            <version>2.0.0</version>
+            <groupId>javax.mail</groupId>
+            <artifactId>javax.mail-api</artifactId>
+            <version>1.6.2</version>
         </dependency>
 
         <dependency>

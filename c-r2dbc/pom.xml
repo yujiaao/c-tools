@@ -5,7 +5,7 @@
     <parent>
         <artifactId>c-tools-parent</artifactId>
         <groupId>com.github.yujiaao</groupId>
-        <version>1.16.2</version>
+        <version>1.12.3</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>c-r2dbc</artifactId>
@@ -28,8 +28,8 @@
         </developer>
     </developers>
     <properties>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
     </properties>
 
     <dependencies>
@@ -168,11 +168,7 @@
             <groupId>org.hibernate.validator</groupId>
             <artifactId>hibernate-validator</artifactId>
         </dependency>
-        <dependency>
-            <groupId>jakarta.validation</groupId>
-            <artifactId>jakarta.validation-api</artifactId>
-            <version>${jakartaValidation.version}</version>
-        </dependency>
+
 
         <dependency>
             <groupId>org.glassfish.expressly</groupId>

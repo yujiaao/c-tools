@@ -73,7 +73,13 @@ dependencies {
     // 依赖 tablegen 模块以使用数据库连接功能
     // 注意：需要先构建 c-tablegen 模块 (mvn install) 才能使用
     // 如果 c-tablegen 已发布到本地 Maven 仓库，使用以下方式：
-    implementation("com.github.yujiaao:tablegen:1.16.2")
+    implementation("com.github.yujiaao:tablegen:1.16.2") {
+        // 排除日志冲突的依赖
+        exclude(group = "org.slf4j", module = "slf4j-log4j12")
+        exclude(group = "org.apache.logging.log4j", module = "log4j-slf4j-impl")
+        exclude(group = "org.apache.logging.log4j", module = "log4j-core")
+        exclude(group = "org.apache.logging.log4j", module = "log4j-api")
+    }
     
     testImplementation(kotlin("test"))
     // kotlin.test uses JUnit 5 assertions which require opentest4j

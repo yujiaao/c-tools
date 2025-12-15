@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -52,7 +53,7 @@ public class MyTestController {
             @RequestParam(value = "abc", required = true) int abc) {
 
          repository.eq("abc", abc)
-                .update(new String[]{"is_recommend", "author_name"}, new Object[]{1, "邢'万\"祥"});
+                 .update(Map.of("is_recommend", 1, "author_name", "邢'万\"祥"));
 
          return "OK";
 

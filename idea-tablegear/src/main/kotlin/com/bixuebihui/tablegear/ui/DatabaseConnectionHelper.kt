@@ -20,16 +20,79 @@ class DatabaseConnectionHelper(private val model: TableGenConfigModel) {
      * 测试数据库连接
      */
     fun testConnection(): Boolean {
-        return try {
+        try {
+            // 检查 Java 版本
+            val javaVersion = System.getProperty("java.version")
+            val majorVersion = javaVersion.split(".").getOrNull(0)?.toIntOrNull() ?: 
+                              javaVersion.split(".").getOrNull(1)?.toIntOrNull() ?: 0
+            
+            if (majorVersion < 11) {
+                throw RuntimeException(
+                    "Java 版本不兼容！当前版本: Java $javaVersion，需要 Java 11 或更高版本。\n" +
+                    "请检查 IDEA 的 JDK 配置。"
+                )
+            }
+            
             val props = createDatabaseProperties()
             val dbConfig = DatabaseConfig.newInstance(props)
             val helper = TableGen.getDbHelper(dbConfig)
             connection = helper.getConnection()
             metaData = connection?.metaData
-            true
+            return true
+        } catch (e: UnsupportedClassVersionError) {
+            // Java 版本不兼容错误
+            val requiredVersion = when (e.message) {
+                null -> "未知"
+                else -> {
+                    val match = Regex("class file version (\\d+)").find(e.message)
+                    match?.groupValues?.get(1)?.let { version ->
+                        when (version.toInt()) {
+                            61 -> "Java 17"
+                            55 -> "Java 11"
+                            else -> "版本 $version"
+                        }
+                    } ?: "未知"
+                }
+            }
+            throw RuntimeException(
+                "Java 版本不兼容！\n\n" +
+                "错误: ${e.message}\n\n" +
+                "c-tablegen 模块需要 $requiredVersion，但当前运行环境是 Java ${System.getProperty("java.version")}。\n\n" +
+                "解决方案:\n" +
+                "1. 确保 c-tablegen 模块使用 Java 11 编译: cd c-tablegen && mvn clean install -Dmaven.compiler.release=11\n" +
+                "2. 或者升级 IDEA 到支持 Java 17 的版本\n" +
+                "3. 检查 IDEA 的 JDK 配置",
+                e
+            )
         } catch (e: Exception) {
-            e.printStackTrace()
-            false
+            // 重新抛出异常以便上层可以获取详细错误信息
+            val errorMsg = buildString {
+                append("数据库连接失败\n\n")
+                append("错误类型: ${e.javaClass.simpleName}\n")
+                append("错误信息: ${e.message}\n\n")
+                
+                if (e.cause != null) {
+                    append("原因: ${e.cause?.message}\n\n")
+                }
+                
+                append("请检查:\n")
+                append("1. 数据库连接信息是否正确（驱动类名、URL、用户名、密码）\n")
+                append("2. 数据库服务是否运行\n")
+                append("3. 网络连接是否正常\n")
+                append("4. JDBC 驱动是否正确加载\n")
+                append("5. 防火墙设置是否允许连接\n\n")
+                
+                // 如果是 ClassNotFoundException，提供额外提示
+                if (e is ClassNotFoundException) {
+                    append("提示: 找不到 JDBC 驱动类，请确保:\n")
+                    append("- JDBC 驱动 jar 包已添加到项目依赖中\n")
+                    append("- 驱动类名拼写正确\n\n")
+                }
+                
+                append("详细错误:\n")
+                append(e.stackTraceToString())
+            }
+            throw RuntimeException(errorMsg, e)
         }
     }
     

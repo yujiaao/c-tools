@@ -5,6 +5,7 @@ import com.intellij.openapi.ui.Messages
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTextArea
 import com.intellij.util.ui.FormBuilder
+import java.awt.Dimension
 import java.awt.Font
 import javax.swing.*
 
@@ -97,31 +98,37 @@ class TableConfigPanel(
             
             // 创建新的连接
             dbHelper = DatabaseConnectionHelper(model)
-            val success = dbHelper!!.testConnection()
+            dbHelper!!.testConnection() // 如果成功会继续，失败会抛出异常
             
-            if (success) {
-                statusLabel.text = "已连接"
-                selectTablesButton.isEnabled = true
-                Messages.showInfoMessage(
-                    project,
-                    "数据库连接成功！",
-                    "连接成功"
-                )
-            } else {
-                statusLabel.text = "连接失败"
-                Messages.showErrorDialog(
-                    project,
-                    "数据库连接失败，请检查配置信息",
-                    "连接失败"
-                )
-            }
-        } catch (e: Exception) {
-            statusLabel.text = "连接失败: ${e.message}"
-            Messages.showErrorDialog(
+            statusLabel.text = "已连接"
+            selectTablesButton.isEnabled = true
+            Messages.showInfoMessage(
                 project,
-                "数据库连接失败: ${e.message}",
-                "连接失败"
+                "数据库连接成功！",
+                "连接成功"
             )
+        } catch (e: Exception) {
+            val errorMessage = e.message ?: "未知错误"
+            statusLabel.text = "连接失败: ${errorMessage.take(50)}"
+            
+            // 使用滚动文本区域显示详细错误信息
+            val textArea = JTextArea(errorMessage)
+            textArea.isEditable = false
+            textArea.font = Font(Font.MONOSPACED, Font.PLAIN, 11)
+            textArea.wrapStyleWord = true
+            textArea.lineWrap = true
+            
+            val scrollPane = JScrollPane(textArea)
+            scrollPane.preferredSize = Dimension(600, 400)
+            
+            Messages.showMessageDialog(
+                project,
+                scrollPane,
+                "连接失败",
+                Messages.getErrorIcon()
+            )
+            
+            e.printStackTrace()
         } finally {
             connectDbButton.isEnabled = true
             connectDbButton.text = "连接数据库"
