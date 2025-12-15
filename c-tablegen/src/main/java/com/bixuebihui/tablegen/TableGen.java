@@ -26,6 +26,7 @@ package com.bixuebihui.tablegen;
 import com.bixuebihui.cache.DictionaryCache;
 import com.bixuebihui.cache.DictionaryItem;
 import com.bixuebihui.datasource.BitmechanicDataSource;
+import com.bixuebihui.datasource.HikariCPDataSource;
 import com.bixuebihui.dbcon.DatabaseConfig;
 import com.bixuebihui.generated.tablegen.pojo.T_metacolumn;
 import com.bixuebihui.jdbc.DbHelper;
@@ -65,7 +66,7 @@ import static com.bixuebihui.tablegen.TableGenConfig.PROPERTIES_FILENAME;
 import static com.bixuebihui.tablegen.generator.DalGenerator.*;
 
 /**
- * 思路决定出路，创新才有发展，整合才能壮大
+ * 思路决定出路，创新才有发展，整合才能壮大，聚焦才能成功
  *
  * @author xingwx
  */
@@ -76,7 +77,7 @@ public class TableGen implements DiffHandler {
     private static final Logger LOG = LoggerFactory.getLogger(TableGen.class);
     static String[] genericFiles = {"BaseList"};
     TableSetInfo setInfo = new TableSetInfo();
-    BufferedWriter currentOutput;
+    Writer currentOutput;
     /**
      * Writes out the variables initial value if not null able.
      */
@@ -100,9 +101,9 @@ public class TableGen implements DiffHandler {
     /**
      * Application start.
      *
-     * @throws SQLException db error
+     * @ db error
      */
-    public static void main(String[] argv) throws SQLException {
+    public static void main(String[] argv)  {
         TableGen us = new TableGen();
 
         if (argv.length >= 1) {
@@ -158,7 +159,8 @@ public class TableGen implements DiffHandler {
 
     public static IDbHelper getDbHelper(DatabaseConfig dbconfig) {
         DbHelper db = new DbHelper();
-        BitmechanicDataSource ds = new BitmechanicDataSource();
+        //BitmechanicDataSource ds = new BitmechanicDataSource();
+        HikariCPDataSource ds = new HikariCPDataSource();
         ds.setDatabaseConfig(dbconfig);
         db.setDataSource(ds);
         return db;
@@ -241,7 +243,7 @@ public class TableGen implements DiffHandler {
         }
     }
 
-    public void run(String filename) throws SQLException {
+    public void run(String filename)  {
         run(filename, System.out);
     }
 
@@ -351,8 +353,7 @@ public class TableGen implements DiffHandler {
         new GenerateAll().run(filename, out);
     }
 
-    private void generateStoreProcedures(DatabaseMetaData metaData) throws SQLException {
-
+    private void generateStoreProcedures(DatabaseMetaData metaData)  {
         try {
             info("Generating Store Procedures : ");
 
@@ -371,12 +372,12 @@ public class TableGen implements DiffHandler {
                 out(str);
             }
 
-            out("public Object mapRow(ResultSet arg0, int arg1) throws SQLException {\n"
+            out("public Object mapRow(ResultSet arg0, int arg1)  {\n"
                     + "	// TODO Auto-generated method stub\n" + "	return null;\n" + "}\n"
                     + "public Object getId(Object arg0) {\n" + "	// TODO Auto-generated method stub\n"
                     + "	return null;\n" + "}\n" + "public Object getNextKey() {\n"
                     + "	// TODO Auto-generated method stub\n" + "	return null;\n" + "}\n"
-                    + "public boolean insertDummy() throws SQLException {\n"
+                    + "public boolean insertDummy()  {\n"
                     + "	// TODO Auto-generated method stub\n" + "	return false;\n" + "}\n"
                     + "public void setId(Object arg0, Object arg1) {\n" + "	// TODO Auto-generated method stub\n"
                     + "	\n" + "}\n" + "@Override\n" + "public String getKeyName() {\n"
@@ -386,7 +387,7 @@ public class TableGen implements DiffHandler {
             out("}");
             currentOutput.close();
 
-        } catch (IOException e) {
+        } catch (IOException | SQLException e) {
             e.printStackTrace(console);
             LOG.warn("", e);
         }
@@ -407,7 +408,7 @@ public class TableGen implements DiffHandler {
         return TableUtils.getColumnDescription(config, cols, tableName, col);
     }
 
-    private void generateJsp() throws SQLException {
+    private void generateJsp()  {
 
         try {
 
@@ -484,7 +485,7 @@ public class TableGen implements DiffHandler {
     }
 
     private void writeInsertDummyTest(String tableName, String methodName) throws IOException {
-        out("public void test" + firstUp(methodName) + "() throws SQLException");
+        out("public void test" + firstUp(methodName) + "() ");
         out("{");
         String className = this.getPojoClassName(tableName) + "Manager";
         out("  " + className + " man = new " + className + "();");
@@ -593,7 +594,7 @@ public class TableGen implements DiffHandler {
     }
 
 
-    public void generateBaseList() throws SQLException {
+    public void generateBaseList()  {
         try {
             info("Generating BaseList : ");
             String baseDir = config.getBaseSrcDir();
@@ -637,7 +638,7 @@ public class TableGen implements DiffHandler {
     /**
      * Generates the plane java model for each table.
      */
-    public void generatePojos() throws SQLException, IOException {
+    public void generatePojos() throws IOException {
 
         for (TableInfo table : setInfo.getTableInfos().values()) {
             info("Generating pojos : " + table.getName());
@@ -646,7 +647,7 @@ public class TableGen implements DiffHandler {
 
     }
 
-    private void generateTest() throws SQLException {
+    private void generateTest()  {
         try {
             for (TableInfo table : setInfo.getTableInfos().values()) {
                 String tableName = table.getName();
@@ -850,11 +851,11 @@ public class TableGen implements DiffHandler {
             init(filename);
         }
         IDbHelper dbHelper = getDbHelper(dbConfig);
-        try {
+        try (Connection cn = dbHelper.getConnection()){
             makeDir();
-            DatabaseMetaData meta = connect(dbHelper.getConnection());
+            DatabaseMetaData meta = connect(cn);
             setInfo.getTableData(config, dbHelper, meta);
-            setInfo.getOnFlyViewData(config, dbHelper);
+            setInfo.getOnFlyViewData(config, dbHelper, meta);
 
             /*
              * 如果generator_all == yes，则生成所有表 否则，进行本地快照和数据库的比对
@@ -931,7 +932,7 @@ public class TableGen implements DiffHandler {
 
     private void writeDummyUpdate(String tableName, String methodName) throws IOException {
         out("");
-        out("public boolean " + methodName + "(" + this.getPojoClassName(tableName) + " info) throws SQLException {");
+        out("public boolean " + methodName + "(" + this.getPojoClassName(tableName) + " info)  {");
         out("    throw new SQLException(\"This operation is not supported, because table " + tableName
                 + " not have a unique key!\");");
         out("}");
@@ -1026,24 +1027,7 @@ public class TableGen implements DiffHandler {
             sw.split();
             trace("foreignKeys :" + sw.getSplitTime());
 
-            if (config.indexes) {
-                Map<String, List<String>> indexData = setInfo.getTableIndexes(tableName);
-                // variable
-                for (String indexName : indexData.keySet()) {
-                    List<String> cols = indexData.get(indexName);
-                    String name = firstUp(indexName);
-                    writeSelect(tableName, cols, "selectBy" + name, colData);
-                    writeSelectAll(tableName, cols, false, "selectAllLike" + name, true, colData);
-
-                    writeUpdate(tableName, cols, "updateBy" + name, false, false, colData);
-                    writeUpdate(tableName, cols, "updateBy" + name, true, false, colData);
-
-                    writeDelete(tableName, cols, "deleteBy" + name, false, colData);
-                    writeDelete(tableName, cols, "deleteBy" + name, true, colData);
-                    writeCount(cols, false, "countBy" + name, colData);
-                    writeCount(cols, true, "countLike" + name, colData);
-                }
-            }
+            writeForIndex(tableName, colData);
 
             writeInsertDummy(tableName, keyData, colData);
             out("}");
@@ -1055,6 +1039,46 @@ public class TableGen implements DiffHandler {
         }
         sw.split();
         trace("after close:" + sw.getSplitTime());
+    }
+
+    public void writeForIndex(String tableName, List<ColumnData> colData) throws IOException, GenException {
+        if (config.indexes) {
+            Map<String, List<String>> indexData = setInfo.getTableIndexes(tableName);
+            // variable
+            for (String indexName : indexData.keySet()) {
+                List<String> cols = indexData.get(indexName);
+                String name = firstUp(indexName);
+                writeSelect(tableName, cols, "selectBy" + name, colData);
+                writeCount(cols, false, "countBy" + name, colData);
+
+                // write like query if any of cols is String type
+                if (containsStringCol(colData, cols)) {
+                    writeSelectAll(tableName, cols, false, "selectAllLike" + name, true, colData);
+                    writeCount(cols, true, "countLike" + name, colData);
+                }
+
+
+
+                writeUpdate(tableName, cols, "updateBy" + name, false, false, colData);
+                writeUpdate(tableName, cols, "updateBy" + name, true, false, colData);
+                
+                writeDelete(tableName, cols, "deleteBy" + name, false, colData);
+                writeDelete(tableName, cols, "deleteBy" + name, true, colData);
+
+
+            }
+        }
+    }
+
+    private boolean containsStringCol(List<ColumnData> colData, List<String> cols) {
+        for (String col : cols) {
+            for (ColumnData cd : colData) {
+                if (cd.getName().equalsIgnoreCase(col) && "String".equals(cd.getJavaType())) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     String getPojoClassName(String tableName) {
@@ -1081,7 +1105,7 @@ public class TableGen implements DiffHandler {
 
     private void writeDummyDelete(String tableName, List<String> keyData2, String methodName, List<ColumnData> columnData) throws IOException, GenException {
         out("");
-        out("public boolean " + methodName + "(" + getPrimaryKeyType(keyData2, columnData) + " key) throws SQLException {");
+        out("public boolean " + methodName + "(" + getPrimaryKeyType(keyData2, columnData) + " key)  {");
         out("    throw new SQLException(\"This operation is not supported, because table " + tableName
                 + " not have a unique key!\");");
         out("}");
@@ -1147,7 +1171,7 @@ public class TableGen implements DiffHandler {
     /**
      * Generates the plane java model for each table.
      */
-    public void generateWebUI() throws SQLException {
+    public void generateWebUI()  {
         try {
             for (TableInfo table : setInfo.getTableInfos().values()) {
                 String tableName = table.getName();
@@ -1220,10 +1244,8 @@ public class TableGen implements DiffHandler {
                 currentOutput.close();
             }
 
-        } catch (IOException e) {
+        } catch (IOException |GenException |SQLException e) {
             e.printStackTrace(console);
-        } catch (GenException e) {
-            e.printStackTrace();
         }
     }
 
@@ -1266,7 +1288,7 @@ public class TableGen implements DiffHandler {
         }
 
         if ("pojo".equals(subPackage) && config.useAnnotation) {
-            out("import javax.validation.constraints.*;");
+            out("import jakarta.validation.constraints.*;");
             out("import org.apache.commons.text.StringEscapeUtils;");
             if (config.useSwagger) {
                 out("import io.swagger.annotations.ApiModel;");
@@ -1304,7 +1326,7 @@ public class TableGen implements DiffHandler {
                 out("import " + config.packageName + ".business." + this.getPojoClassName(table.getName()) + "Manager;");
 
                 out("import org.jmesa.worksheet.WorksheetColumn;");
-                out("importjavax.servlet.http.HttpServletRequest;");
+                out("importjakarta.servlet.http.HttpServletRequest;");
 
                 out("import org.apache.commons.beanutils.ConvertUtilsBean;");
             }
@@ -1421,7 +1443,7 @@ public class TableGen implements DiffHandler {
      */
     void writeSelectAll(String tableName, List<String> params, boolean customWhere, String methodName, boolean bLike, List<ColumnData> columnData)
             throws IOException {
-        String query = "select * from \" + getTableName() + \" \"";
+        String query = "select * from \" + getTableName() + ";
         String where = createPreparedWhereClause(params, bLike, columnData);
         String objs = createPreparedObjects(params, bLike, columnData);
 
@@ -1431,7 +1453,7 @@ public class TableGen implements DiffHandler {
 
         if (customWhere) {
             out("public List<" + getPojoClassName(tableName) + "> " + methodName
-                    + "(String where) throws SQLException");
+                    + "(String where) ");
         } else {
             out(createMethodLine(methodName, params, "List<" + getPojoClassName(tableName) + ">", columnData));
         }
@@ -1447,8 +1469,8 @@ public class TableGen implements DiffHandler {
     /**
      * Writes out the Select function.
      */
-    void writeSelect(String tableName, List<String> params, String methodName, List<ColumnData> columnData) throws IOException, GenException {
-        String query = "select * from \" + getTableName() + \" \"";
+    void writeSelect(String tableName, List<String> params, String methodName, List<ColumnData> columnData) throws IOException {
+        String query = "select * from \" + getTableName() + ";
         String where = createPreparedWhereClause(params, false, columnData);
         String objs = createPreparedObjects(params, false, columnData);
 
@@ -1474,7 +1496,7 @@ public class TableGen implements DiffHandler {
         out("/**");
         out("  * Select from the database for table \"" + tableName + "\"");
         out(" */");
-        out("public void test" + firstUp(methodName) + "() throws SQLException");
+        out("public void test" + firstUp(methodName) + "() ");
         out("{");
         String className = this.getPojoClassName(tableName) + "Manager";
         out("  " + className + " man = new " + className + "();");
@@ -1514,17 +1536,28 @@ public class TableGen implements DiffHandler {
             if (iterator.hasNext()) {
                 tmp.append(",");
             } else {
-                tmp.append((isWithConn ? ", Connection cn" : "") + ") throws SQLException");
+                tmp.append((isWithConn ? ", Connection cn" : "") + ") ");
             }
         }
 
+        // Generate WHERE clause for index fields
+        StringBuilder whereClause = new StringBuilder();
+        for (int i = 0; i < params.size(); i++) {
+            if (i > 0) {
+                whereClause.append(" and ");
+            }
+            whereClause.append(params.get(i)).append("=?");
+        }
+
         out("/**");
-        out("  * Deletes from the database for table \"" + tableName + "\"");
-        out("  */");
+        out(" * From IndexWriter: Deletes from the database for table \"" + tableName + "\"");
+        out(" */");
         out(tmp.toString());
         out("{");
         out("");
-        out("    return 1 <= dbHelper.executeNoQuery(getDeleteSql()," + objs + (isWithConn ? ", cn" : "") + ");");
+        out("    String deleteSql = \"delete from \" + getTableName() + \" where " + whereClause + "\";");
+        out("    return 1 <= dbHelper.executeNoQuery(deleteSql,"
+                + objs + (isWithConn ? ", cn" : "") + ");");
         out("}");
         out("");
     }
@@ -1542,7 +1575,7 @@ public class TableGen implements DiffHandler {
                 + " object values into the database.");
         out("  */");
         out("@Override");
-        out("public boolean insertDummy() throws SQLException");
+        out("public boolean insertDummy() ");
         out("{");
         out("     " + this.getPojoClassName(tableName) + "  info = new " + this.getPojoClassName(tableName) + "();");
 
@@ -1597,28 +1630,56 @@ public class TableGen implements DiffHandler {
         String paramObjs = createKeyObjects(params)
                 + (isWithVersion ? ",info.get" + firstUp(config.versionColName) + "() " : "");
 
+        // Generate WHERE clause for index fields
+        StringBuilder whereClause = new StringBuilder();
+        for (int i = 0; i < params.size(); i++) {
+            if (i > 0) {
+                whereClause.append(" and ");
+            }
+            whereClause.append(params.get(i)).append("=?");
+        }
+        if (isWithVersion) {
+            whereClause.append(" and ").append(config.versionColName).append("=?");
+        }
+
         out("/**");
         out("  * Updates the current object values into the database with version condition as an optimistic database lock.");
         out("  */");
         out("public boolean " + methodName + "(" + this.getPojoClassName(tableName) + " info"
-                + (isWithConn ? ", Connection cn" : "") + ") throws SQLException");
+                + (isWithConn ? ", Connection cn" : "") + ") ");
         out("{");
-        out("    String updateSql = getUpdateSql()" + (isWithVersion ? "" : "+\" and version=?\"") + ";");
+        out("    String updateSql = \"update \" + getTableName() + \" set \"+");
 
         StringBuilder objs = new StringBuilder();
+        boolean first = true;
         for (ColumnData cd : columnData) {
-            boolean added = true;
             if (isWithVersion && cd.getName().equalsIgnoreCase(config.versionColName)) {
-                added = false;
-            } else {
-                objs.append(" info.get").append(firstUp(cd.getName())).append("()");
+                continue;
             }
-            if (added) {
+            if (!first) {
                 objs.append(",");
             }
+            objs.append(" info.get").append(firstUp(cd.getName())).append("()");
+            first = false;
         }
 
-        out("    return 1 == dbHelper.executeNoQuery(updateSql, new Object[]{" + objs + "\n\t " + paramObjs + "}"
+        // Generate SET clause
+        StringBuilder setClause = new StringBuilder();
+        first = true;
+        for (ColumnData cd : columnData) {
+            if (isWithVersion && cd.getName().equalsIgnoreCase(config.versionColName)) {
+                continue;
+            }
+            if (!first) {
+                setClause.append(", ");
+            }
+            setClause.append(cd.getName()).append("=?");
+            first = false;
+        }
+
+        out("    \"" + setClause + " where " + whereClause + "\";");
+
+        out("    return 1 == dbHelper.executeNoQuery(updateSql, new Object[]{" + objs + ",\n\t " + paramObjs + "}"
                 + (isWithConn ? ", cn" : "") + ");");
 
         out("}");
@@ -1685,7 +1746,7 @@ public class TableGen implements DiffHandler {
 
     void writeCountWhereTest(String tableName) throws IOException {
 
-        out("public void test" + firstUp("count") + "() throws SQLException");
+        out("public void test" + firstUp("count") + "() ");
         out("{");
         String className = this.getPojoClassName(tableName) + "Manager";
         out("  " + className + " man = new " + className + "();");
@@ -1750,7 +1811,7 @@ public class TableGen implements DiffHandler {
                 }
 
                 if (e.hasNext()) {
-                    objs.append(" , ");
+                    objs.append(", ");
                 }
             }
 
@@ -1777,18 +1838,18 @@ public class TableGen implements DiffHandler {
                 key = e.next();
                 keyType = getColType(key, columnData);
                 if (UNKNOWN_TYPE.equals(keyType)) {
-                    LOG.error("unsupported future when generate method " + methodName + " return type " + returnType);
+                    LOG.error("unsupported feature when generate method {} return type {}", methodName, returnType);
                 }
                 paramString.append(keyType).append(" ").append(key.toLowerCase());
 
                 if (e.hasNext()) {
                     paramString.append(",");
                 } else {
-                    paramString.append(") throws SQLException");
+                    paramString.append(") ");
                 }
             }
         } else {
-            paramString.append(") throws SQLException");
+            paramString.append(") ");
         }
 
         return paramString.toString();
@@ -1862,4 +1923,15 @@ public class TableGen implements DiffHandler {
         }
     }
 
+    public void setConfig(ProjectConfig config) {
+        this.config = config;
+    }
+
+    public void setSetInfo(TableSetInfo setInfo) {
+        this.setInfo = setInfo;
+    }
+
+    public void setCurrentOutput(Writer writer) {
+        this.currentOutput = writer;
+    }
 }

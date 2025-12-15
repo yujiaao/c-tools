@@ -1,24 +1,22 @@
 package com.bixuebihui.tablegen.generator;
 
 
+import com.bixuebihui.db.Dialect;
 import com.bixuebihui.dbcon.DatabaseConfig;
-import com.bixuebihui.jdbc.BaseDao;
 import com.bixuebihui.jdbc.IDbHelper;
-import com.bixuebihui.tablegen.GenException;
-import com.bixuebihui.tablegen.NameUtils;
-import com.bixuebihui.tablegen.ProjectConfig;
-import com.bixuebihui.tablegen.TableGen;
+import com.bixuebihui.tablegen.*;
 import com.bixuebihui.tablegen.entry.ColumnData;
+import com.bixuebihui.tablegen.entry.TableInfo;
 import com.bixuebihui.tablegen.entry.TableSetInfo;
 import com.github.jknack.handlebars.Context;
 import com.github.jknack.handlebars.Handlebars;
-import com.github.jknack.handlebars.Options;
 import com.github.jknack.handlebars.Template;
 import com.github.jknack.handlebars.context.FieldValueResolver;
 import com.github.jknack.handlebars.context.JavaBeanValueResolver;
 import com.github.jknack.handlebars.context.MapValueResolver;
 import com.github.jknack.handlebars.context.MethodValueResolver;
 import com.github.jknack.handlebars.helper.ConditionalHelpers;
+import com.github.jknack.handlebars.helper.StringHelpers;
 import com.github.jknack.handlebars.io.ClassPathTemplateLoader;
 import com.github.jknack.handlebars.io.TemplateLoader;
 import org.apache.commons.lang.StringUtils;
@@ -29,6 +27,7 @@ import org.springframework.util.CollectionUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.*;
@@ -75,7 +74,7 @@ public abstract class BaseGenerator implements Generator {
     }
 
     /**
-     * Selects the type of a particular column name. Cannot use Hashtables to
+     * Selects the type of particular column name. Cannot use Hashtables to
      * store columns as it screws up the ordering, so we have to do a crap
      * search. (and yes I know it could be better - it's good enough).
      */
@@ -83,13 +82,10 @@ public abstract class BaseGenerator implements Generator {
         String type = UNKNOWN_TYPE;
         for (ColumnData tmp : columnData) {
             if (tmp.getName().equalsIgnoreCase(key)) {
-                type = tmp.getJavaType();
-                break;
+                return tmp.getJavaType();
             }
         }
-        if (UNKNOWN_TYPE.equals(type)) {
-            LOG.error("unknown type of key:" + key);
-        }
+        LOG.error("unknown type of key:{},\n {}", key, columnData);
         return type;
     }
 
@@ -100,6 +96,13 @@ public abstract class BaseGenerator implements Generator {
                     : BaseGenerator.getColType(keyData2.get(0), columnData))
                 : "Object";
     }
+
+    public static String getPrimaryKeyFirstColumnType(List<String> keyData2, List<ColumnData> columnData) throws GenException {
+        return isNotEmpty(keyData2)?
+              BaseGenerator.getColType(keyData2.get(0), columnData)
+                : "Object";
+    }
+
 
     /**
      * to reuse previews created config objects
@@ -113,7 +116,7 @@ public abstract class BaseGenerator implements Generator {
         this.dbConfig = dbConfig;
         this.setInfo = setInfo;
         this.esConfig = prop;
-        this.dbType = BaseDao.detectDbType(dbConfig.getDburl());
+        this.dbType = Dialect.detectDbType(dbConfig.getDburl());
     }
 
     protected List<ColumnData> getColsInfo(String tableName) {
@@ -156,9 +159,11 @@ public abstract class BaseGenerator implements Generator {
 
     public synchronized void readDbMetaData(DatabaseConfig dbConfig) throws SQLException, InstantiationException, IOException, IllegalAccessException {
         IDbHelper helper = TableGen.getDbHelper(dbConfig);
-        DatabaseMetaData metaData = helper.getConnection().getMetaData();
-        setInfo.getTableData(config, helper, metaData);
-        setInfo.getOnFlyViewData(config, helper);
+        try(Connection cn = helper.getConnection()) {
+            DatabaseMetaData metaData = cn.getMetaData();
+            setInfo.getTableData(config, helper, metaData);
+            setInfo.getOnFlyViewData(config, helper, metaData);
+        }
     }
 
     /**
@@ -173,20 +178,25 @@ public abstract class BaseGenerator implements Generator {
      * template file name
      * @return template file name
      */
-    abstract String getTemplateFileName();
+    abstract String getTemplateFileName(String tableName);
 
 
-
-    public String getPojoClassName(String tableName) {
+    public static String getPojoClassName(String tableName, ProjectConfig config, TableSetInfo setInfo) {
         String classname = setInfo.tableName2ClassName(tableName);
+        String prefix = config.getAddPrefix() == null ? "" : config.getAddPrefix();
         if (tableName.equals(classname)) {
-            return config.getAddPrefix() + firstUp(removePrefix(tableName, config.getRemovePrefix()));
+            return prefix + firstUp(removePrefix(tableName, config.getRemovePrefix()));
         } else {
-            return config.getAddPrefix() + classname;
+            return prefix + classname;
         }
     }
 
-    protected  String removePrefix(String tableName, String removePrefix){
+
+    public String getPojoClassName(String tableName) {
+        return getPojoClassName(tableName, config, setInfo);
+    }
+
+    protected static String removePrefix(String tableName, String removePrefix){
        return StringUtils.removeStart(tableName, removePrefix);
     }
 
@@ -240,7 +250,7 @@ public abstract class BaseGenerator implements Generator {
     public String generate(String tableName, int index) throws IOException {
         Handlebars handlebars = getHandlebars();
 
-        Template template = handlebars.compile(getTemplateFileName());
+        Template template = handlebars.compile(getTemplateFileName(tableName));
 
         Map<String, Object> v = getContextMap(tableName);
         return template.apply(Context.newBuilder(v).resolver(
@@ -263,9 +273,11 @@ public abstract class BaseGenerator implements Generator {
             }
 
         }else{
-            if (setInfo.getTableInfos().get(tableName) != null) {
-                v.put("tableInfo", setInfo.getTableInfos().get(tableName));
-                v.put("fields", setInfo.getTableCols(tableName));
+            LinkedHashMap<String, TableInfo> tableInfos = setInfo.getTableInfos();
+            if (tableInfos!=null && tableInfos.get(tableName) != null) {
+                v.put("tableInfo", tableInfos.get(tableName));
+
+                v.put("fields", getFieldsList(tableName));;
                 v.put("keys", setInfo.getTableKeys(tableName));
                 v.put("importKeys", setInfo.getTableImportedKeys(tableName));
                 v.put("exportKeys", setInfo.getTableExportedKeys(tableName));
@@ -281,16 +293,35 @@ public abstract class BaseGenerator implements Generator {
         v.put("setInfo", setInfo);
         v.put("config", config);
 
+
+
         if(isView()) {
             setViewContext(v, tableName);
         }
         return v;
     }
 
+    protected List<ColumnData> getFieldsList(String tableName) {
+        if(this instanceof  IView) {
+            return subList(setInfo.getViewCols(tableName), config.getIgnoreFields().get(tableName));
+        }
+
+        return subList(setInfo.getTableCols(tableName), config.getIgnoreFields().get(tableName));
+    }
+
+    private List<ColumnData> subList(List<ColumnData> tableCols, List<String> strings) {
+        //过滤掉不需要的字段
+        if(!CollectionUtils.isEmpty(strings)){
+            Set<String> set = new HashSet<>(strings);
+            return tableCols.stream().filter(col->!set.contains(col.getName())).collect(Collectors.toList());
+        }
+        return tableCols;
+    }
+
 
     protected void setViewContext(Map<String, Object> map, String tableName) {
         map.put("tableInfo", setInfo.getViewInfos().get(tableName));
-        map.put("fields", setInfo.getViewInfos().get(tableName).getFields());
+        map.put("fields", subList(setInfo.getViewInfos().get(tableName).getFields(), config.getIgnoreFields().get(tableName)));
         map.put("viewModifier","."+ VIEW_DIR);
     }
 
@@ -321,26 +352,10 @@ public abstract class BaseGenerator implements Generator {
         loader.setSuffix(".hbs");
 
         Handlebars handlebars = new Handlebars(loader);
-        handlebars.registerHelper("firstUp", (name, options) -> NameUtils.firstUp((String) name));
-        handlebars.registerHelper("getPojoClassName", (tableName, options) -> this.getPojoClassName((String) tableName));
-        handlebars.registerHelper("constantName", (name, options) -> NameUtils.columnNameToConstantName((String) name));
-        handlebars.registerHelper("firstLow", (name, options) -> NameUtils.firstLow((String) name));
-
-        handlebars.registerHelper("join", (items, options) -> StringUtils.join((Object[]) items, options.param(0)));
-        handlebars.registerHelper("typeDefaultValue", (typeName, options) -> TableGen.defaultTypeValue().get(typeName));
-        handlebars.registerHelper("unboxType", (type, options) -> TableGen.unboxType((String) type));
-
-//        handlebars.registerHelper("isInsertAndUpdatableField", (col, options) ->
-//                isInsertAndUpdatableField((ColumnData) col, config.isUseAutoincrement()));
 
         handlebars.registerHelpers(ConditionalHelpers.class);
-
-        //copied from AssignHelper
-        handlebars.registerHelper("let", (String variableName, Options options) -> {
-            CharSequence finalValue = options.apply(options.fn);
-            options.context.data(variableName, finalValue.toString().trim());
-            return null;
-        });
+        handlebars.registerHelpers(StringHelpers.class);
+        handlebars.registerHelpers(new HelperSource(config, setInfo));
 
         additionalSetting(handlebars);
         return handlebars;
@@ -357,6 +372,17 @@ public abstract class BaseGenerator implements Generator {
             List<String> keyData = getKeyData(tableName);
             List<ColumnData> columnData = getColumnData(tableName);
             return BaseGenerator.getPrimaryKeyType(keyData, columnData);
+        } catch (GenException e) {
+            LOG.error(e.getMessage(),e);
+        }
+        return "";
+    }
+
+    String getPrimaryKeyFirstColumnType(String tableName) {
+        try {
+            List<String> keyData = getKeyData(tableName);
+            List<ColumnData> columnData = getColumnData(tableName);
+            return BaseGenerator.getPrimaryKeyFirstColumnType(keyData, columnData);
         } catch (GenException e) {
             LOG.error(e.getMessage(),e);
         }
@@ -395,14 +421,35 @@ public abstract class BaseGenerator implements Generator {
         return null;
     }
 
+    public static String getPrimaryKeyFirstColumnName(List<String> keyData) {
+        if (isNotEmpty(keyData)) {
+            return keyData.get(0);
+        }
+        return null;
+    }
+
 
     public static boolean containsColName(List<ColumnData> cols, String colName) {
-        for (ColumnData col : cols) {
-            if (col.getName().equalsIgnoreCase(colName)) {
-                return true;
-            }
+        return TableUtils.isExistsCol(cols, colName);
+    }
+
+    protected List<String> getKeyNames(String tableName) {
+        List<String> keyData = getKeyData(tableName);
+        if (!isNotEmpty(keyData)) {
+            LOG.warn("Table '{}' have not a  primary key, this may be a error", tableName);
         }
-        return false;
+        return keyData;
+    }
+
+    protected String getFirstKeyFirstColumnName(String tableName) {
+        List<String> keyData = getKeyNames(tableName);
+        return getPrimaryKeyFirstColumnName(keyData);
+    }
+
+
+    protected String getFirstKeyName(String tableName) {
+        List<String> keyData = getKeyNames(tableName);
+        return getPrimaryKeyName(keyData);
     }
 
 

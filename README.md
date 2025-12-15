@@ -51,22 +51,26 @@ use dependencies:
 ## version 1.13.x.x
  
  - org.hibernate.validator:hibernate-validator:8.0.0.Final
- - javax -> javax
+ - javax -> jakarta
 
 
 ## TODO
      
-     - [ ] support composite primary key for MySQL partition table   
+     - [√] support composite primary key for MySQL partition table   
      - [ ] support ES fields expression condition
      - [ ] support ES aggregation
      - [ ] support ES scroll
      - [ ] support ES reindex
      - [ ] support multi slave data source
-     - [ ] support shadow table, shadow db for stress testing, debug
-   
 
+     - [√] update, updateBatch with exclude fields 
+
+     - [ ] for make column chart, do data sampling with every column
+   
+     - [ ] remove schema and catalog from config, use database meta data to detect automatically
  
- 
+     - [ ] if nothing to generate, show  schema, catalog info  by 
+          metadata.getSchemas for debug
  
  
  

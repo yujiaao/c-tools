@@ -24,7 +24,7 @@ public class DatabaseConfig
 	private long maxWaitTime;
 	/** 每个连接最大的使用次数，超出后自动回收 //bitmechanicDatasource */
 	private int maxCheckOutCount;
-	/** DbcpDataSource & bitmechanicDatasource */
+	/** DbcpDataSource &amp; bitmechanicDatasource */
 	private int maxOpenPreparedStatements;
 	private int sleepIntervalInSeconds;
 	/** for DruidDataSource */
@@ -49,7 +49,7 @@ public class DatabaseConfig
         /** 每个连接最大的使用次数，超出后自动回收 bitmechanicDatasource */
         setMaxCheckOutCount(5000);
 
-        /** DbcpDataSource & bitmechanicDatasource */
+        /** DbcpDataSource &amp; bitmechanicDatasource */
         maxOpenPreparedStatements=200;
         sleepIntervalInSeconds = 30;
         setRemoveAbandoned(false);

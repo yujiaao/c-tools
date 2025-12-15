@@ -86,20 +86,24 @@ public class EsJsonschema2Pojo {
                 );
 
 
-                String[] fields = findFields((JDefinedClass) res);
-                if (primaryKeyFields != null) {
-                    for (int i = 0; i < fields.length; i++) {
-                        String p = CaseUtils.toCamelCase(fields[i], false, '_', '-');
-                        String type = findTypes((JDefinedClass) res, p);
+                if(res instanceof JDefinedClass) {
+                    String[] fields = findFields((JDefinedClass) res);
+                    if (primaryKeyFields != null) {
+                        for (int i = 0; i < fields.length; i++) {
+                            String p = CaseUtils.toCamelCase(fields[i], false, '_', '-');
+                            String type = findTypes((JDefinedClass) res, p);
 
-                        if (type != null && primaryKeyFields.contains(fields[i])) {
-                            map.put(fields[i], type);
+                            if (type != null && primaryKeyFields.contains(fields[i])) {
+                                map.put(fields[i], type);
+                            }
                         }
                     }
-                }
 
-                if (indexFieldsConsumer != null) {
-                    indexFieldsConsumer.accept(ImmutablePair.of(res.name(), fields));
+                    if (indexFieldsConsumer != null) {
+                        indexFieldsConsumer.accept(ImmutablePair.of(res.name(), fields));
+                    }
+                }else {
+                    System.out.println("res is not JDefinedClass");
                 }
 
             }

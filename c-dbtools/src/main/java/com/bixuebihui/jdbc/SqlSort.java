@@ -57,7 +57,7 @@ public class SqlSort {
      */
     @Override
     public String toString() {
-        if (sorts.size() <= 0) {
+        if (sorts.isEmpty()) {
             return "";
         }
 
@@ -117,10 +117,16 @@ public class SqlSort {
 
         public Sort(String property, String order) {
 
-            assert order==null || "".equals(order) || ASC.equals(order) || DESC.equals(order);
+            assert order==null || order.isEmpty() || ASC.equals(order) || DESC.equals(order) || "ascend".equals(order) || "descend".equals(order);
             
             this.property = property;
-            this.order = order;
+            if("ascend".equalsIgnoreCase(order)){
+                this.order = ASC;
+            }else if("descend".equalsIgnoreCase(order)){
+                this.order = DESC;
+            }else {
+                this.order = order;
+            }
         }
 
         public String getProperty() {
@@ -129,6 +135,14 @@ public class SqlSort {
 
         public String getOrder() {
             return order;
+        }
+
+        @Override
+        public String toString() {
+            return "{" +
+                    "property='" + property + '\'' +
+                    ", order='" + order + '\'' +
+                    '}';
         }
     }
 

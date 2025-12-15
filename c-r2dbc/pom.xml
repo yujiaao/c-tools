@@ -5,15 +5,31 @@
     <parent>
         <artifactId>c-tools-parent</artifactId>
         <groupId>com.github.yujiaao</groupId>
-        <version>1.12.2.3</version>
+        <version>1.16.2</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-
     <artifactId>c-r2dbc</artifactId>
-
+    <name>c-r2dbc</name>
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <developers>
+        <developer>
+            <id>yujiaao</id>
+            <name>Wanxiang Xing</name> <!-- 必选：开发者姓名 -->
+            <email>yujiaao@msn.com</email>
+            <roles>
+                <role>Developer</role> <!-- 可选：角色描述 -->
+            </roles>
+        </developer>
+    </developers>
     <properties>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
     </properties>
 
     <dependencies>
@@ -47,8 +63,6 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-text</artifactId>
-            <version>1.10.0</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -78,22 +92,22 @@
         <dependency>
             <groupId>io.r2dbc</groupId>
             <artifactId>r2dbc-h2</artifactId>
-            <version>0.9.1.RELEASE</version>
+            <version>1.0.0.RELEASE</version>
             <scope>test</scope>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/dev.miku/r2dbc-mysql -->
         <dependency>
-            <groupId>dev.miku</groupId>
+            <groupId>io.asyncer</groupId>
             <artifactId>r2dbc-mysql</artifactId>
-            <version>0.8.2.RELEASE</version>
+            <version>1.4.1</version>
         </dependency>
 
 
         <dependency>
             <groupId>io.projectreactor</groupId>
             <artifactId>reactor-test</artifactId>
-            <version>3.4.23</version>
+            <version>3.4.30</version>
             <scope>test</scope>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.assertj/assertj-core -->
@@ -113,7 +127,7 @@
         <dependency>
             <groupId>io.projectreactor</groupId>
             <artifactId>reactor-core</artifactId>
-            <version>3.4.23</version>
+            <version>3.4.34</version>
         </dependency>
 
         <dependency>
@@ -155,9 +169,9 @@
             <artifactId>hibernate-validator</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.validation</groupId>
-            <artifactId>validation-api</artifactId>
-            <version>${javaxValidation.version}</version>
+            <groupId>jakarta.validation</groupId>
+            <artifactId>jakarta.validation-api</artifactId>
+            <version>${jakartaValidation.version}</version>
         </dependency>
 
         <dependency>
@@ -168,7 +182,30 @@
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.11.0</version>
+            <version>2.19.0</version>
+        </dependency>
+
+        <!-- 添加 javax.servlet 依赖以支持 Spring Boot 2.x 的测试 -->
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+            <version>4.0.1</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- 添加 Log4j2 核心依赖以解决 ServiceLoaderUtil 缺失问题 -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.17.2</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
+            <version>2.17.2</version>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>
@@ -193,10 +230,9 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.11.0</version>
+                <version>3.13.0</version>
                 <configuration>
-                    <source>11</source>
-                    <target>11</target>
+                    <release>17</release>
                 </configuration>
             </plugin>
 
@@ -218,7 +254,7 @@
             <dependency>
                 <groupId>io.r2dbc</groupId>
                 <artifactId>r2dbc-bom</artifactId>
-                <version>Arabba-SR10</version>
+                <version>Borca-RELEASE</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -227,11 +263,13 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter-test</artifactId>
                 <scope>test</scope>
+                <version>${springboot.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.projectreactor</groupId>
                 <artifactId>reactor-test</artifactId>
                 <scope>test</scope>
+                <version>3.4.30</version>
             </dependency>
 
         </dependencies>

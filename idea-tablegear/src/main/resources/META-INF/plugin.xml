@@ -1,0 +1,91 @@
+<idea-plugin>
+    <id>com.bixuebihui.idea-tablegear</id>
+    <name>TableGear Language Support</name>
+    <version>1.0.3</version>
+    <vendor email="yujiaao@mcn.com" url="https://github.com/yujiaao/c-tools">XingWanxiang</vendor>
+
+    <description><![CDATA[
+    <h2>TableGear Language Support for IntelliJ IDEA</h2>
+    <p>Provides intelligent code completion, syntax highlighting, and validation for tablegen*.properties and es*.properties configuration files.</p>
+    
+    <h3>Features:</h3>
+    <ul>
+        <li>Smart code completion for all configuration keys</li>
+        <li>Syntax highlighting with Rainbow CSV-inspired colors</li>
+        <li>Real-time validation (duplicate keys, invalid values, etc.)</li>
+        <li>Dynamic configuration filtering based on type field</li>
+        <li>Support for database, Elasticsearch, and JSON generation modes</li>
+        <li>JDBC driver class name suggestions</li>
+        <li>Database URL templates</li>
+    </ul>
+    
+    <h3>Supported File Patterns:</h3>
+    <ul>
+        <li>tablegen*.properties / tablegen*.prop</li>
+        <li>es*.properties / es*.prop</li>
+    </ul>
+    ]]></description>
+
+    <change-notes><![CDATA[
+    <h3>1.0.0</h3>
+    <ul>
+        <li>Initial release</li>
+        <li>Code completion for all configuration keys</li>
+        <li>Syntax highlighting</li>
+        <li>Validation and diagnostics</li>
+        <li>Support for database, Elasticsearch, and JSON modes</li>
+    </ul>
+    ]]></change-notes>
+
+    <!-- 依赖 -->
+    <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.java</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- 文件类型注册 -->
+        <fileType name="TableGear Properties" implementationClass="com.bixuebihui.tablegear.TableGearFileType" 
+                  fieldName="INSTANCE" language="TableGear" extensions="properties" description="TableGear configuration files"/>
+        
+        <!-- 语言定义 -->
+        <lang.parserDefinition language="TableGear" implementationClass="com.bixuebihui.tablegear.parser.TableGearParserDefinition"/>
+        
+        <!-- 语法高亮 -->
+        <colorSettingsPage implementation="com.bixuebihui.tablegear.highlight.TableGearColorSettingsPage"/>
+        <annotator language="TableGear" implementationClass="com.bixuebihui.tablegear.highlight.TableGearAnnotator"/>
+        <annotator language="Properties" implementationClass="com.bixuebihui.tablegear.highlight.TableGearAnnotator"/>
+        <lang.commenter language="TableGear" implementationClass="com.bixuebihui.tablegear.TableGearCommenter"/>
+        
+        <!-- 代码补全 -->
+        <completion.contributor language="TableGear" implementationClass="com.bixuebihui.tablegear.completion.TableGearCompletionContributor"/>
+        <completion.contributor language="Properties" implementationClass="com.bixuebihui.tablegear.completion.TableGearCompletionContributor"/>
+        
+        <!-- 代码检查 -->
+        <localInspection language="Properties" shortName="TableGearValidation" 
+                        displayName="TableGear Configuration Validation"
+                        groupName="TableGear"
+                        implementationClass="com.bixuebihui.tablegear.inspection.TableGearValidationInspection"
+                        enabledByDefault="true"/>
+        <localInspection language="TableGear" shortName="TableGearValidationTG" 
+                        displayName="TableGear Configuration Validation"
+                        groupName="TableGear"
+                        implementationClass="com.bixuebihui.tablegear.inspection.TableGearValidationInspection"
+                        enabledByDefault="true"/>
+        
+        <!-- 文档提供 -->
+        <lang.documentationProvider language="TableGear" implementationClass="com.bixuebihui.tablegear.documentation.TableGearDocumentationProvider"/>
+        <lang.documentationProvider language="Properties" implementationClass="com.bixuebihui.tablegear.documentation.TableGearDocumentationProvider"/>
+    </extensions>
+
+    <actions>
+        <!-- TableGen配置编辑器 -->
+        <action id="TableGear.OpenConfigEditor" 
+                class="com.bixuebihui.tablegear.ui.OpenTableGenConfigAction"
+                text="打开 TableGen 配置编辑器"
+                description="打开 TableGen 配置文件编辑器">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt T"/>
+        </action>
+    </actions>
+    
+    
+</idea-plugin>

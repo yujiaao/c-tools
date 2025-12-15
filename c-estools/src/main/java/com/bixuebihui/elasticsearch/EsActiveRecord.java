@@ -17,6 +17,14 @@ import java.util.function.Function;
  */
 public interface EsActiveRecord<T> extends ActiveRecord<T> {
 
+    /**
+     *
+     * @param fieldValueMap 字段:值对
+     * @param otherParams   其他参数，如 min_doc_freq, max_query_terms, min_term_freq, max_doc_freq, minimum_should_match, boost等
+     * @return 反回的结果
+     */
+    EsActiveRecord<T> moreLikeThis(Map<String, Object> fieldValueMap, Map<String, Object> otherParams);
+
     List<CountValueObj> aggregationList(List<String> groupByFields,
                                         Map<String, GroupFunction> termFieldAggFunctionMap, Set<String> textFieldsNeededConvertToDouble);
 
@@ -43,5 +51,6 @@ public interface EsActiveRecord<T> extends ActiveRecord<T> {
     EsActiveRecord<T> searchAfter(List<Object> lastOrderFieldsValue);
 
     List<CountObj> dateHistCountList(String dateField, String interval, String[] groupByFields, GroupFunction fun);
+
 
 }

@@ -1,6 +1,6 @@
 package com.bixuebihui.jdbc;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -48,7 +48,7 @@ public class RowMapperResultReader<T> {
      */
     public @NotNull List<T> processResultSet(ResultSet rs, Set<String> fields) throws SQLException {
         if(res==null){
-            res = new ArrayList<T>();
+            res = new ArrayList<>();
         }else{
             res.clear();
         }

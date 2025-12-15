@@ -118,14 +118,12 @@ public class GenerateAll implements DiffHandler {
 
                 IDbHelper helper = TableGen.getDbHelper(generator.dbConfig);
 
-                Connection conn =  helper.getConnection();
-                try {
+
+                try (Connection conn =  helper.getConnection()){
                     DbDiff dd = new DbDiff(helper, helper, getTableDataFromLocalCache(), conn, generator.config.getCatalog(),
                             generator.config.getSchema());
                     dd.addDiffHandler(this);
                     dd.compareTables(generator.config.getR2dc());
-                } finally {
-                    DbUtils.close(conn);
                 }
             }
 
@@ -145,7 +143,7 @@ public class GenerateAll implements DiffHandler {
         for(Generator g: perTableGenerator){
             int i=0;
             for(TableInfo info: tableInfos.values()) {
-                info(info.getName());
+                info(info.getName()+" - " +g.getTargetFileName(info.getName()));
                 g.generateToFile(info.getName(), i++);
             }
         }
@@ -155,7 +153,7 @@ public class GenerateAll implements DiffHandler {
         for(Generator g: perIndexGenerator){
             int i=0;
             for(String indexName: indices) {
-                info(indexName);
+                info("index: "+indexName+" by "+ g.getClass().getSimpleName());
                 g.generateToFile(indexName, i++);
             }
         }
@@ -165,7 +163,6 @@ public class GenerateAll implements DiffHandler {
         for(Generator g: perViewGenerator){
             int i=0;
             for(TableInfo info: viewInfos.values()) {
-                info(info.getName());
                 g.generateToFile(info.getName(), i++);
             }
         }

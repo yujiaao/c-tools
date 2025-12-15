@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 /**
@@ -27,8 +28,12 @@ public interface Generator {
 
     /**
      * Generates 生成文件
-     * @param tableName
-     * @throws IOException
+     * 对于需要保留用户修改的文件（如 Dto、SearchCmd、Converter），
+     * 会在 generate() 方法中进行智能合并，保留用户的修改。
+     * 
+     * @param tableName 表名
+     * @param index 索引
+     * @throws IOException 如果写入文件失败
      */
     default void generateToFile(String tableName, int index) throws IOException {
 
@@ -41,11 +46,17 @@ public interface Generator {
             }
         }
         if(wantToGenerate(fileName)) {
-            try (OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(fileName))) {
-                IOUtils.write(generate(tableName, index), writer);
-                System.out.println(tableName + ": " + fileName);
+            // generate() 方法会检查文件是否存在，如果存在会进行智能合并
+            // 对于 DtoGenerator、SearchCmdGenerator、MapperGenerator 等，
+            // 它们会在 generate() 方法中调用 JavaSourceMerger.mergeSource() 进行合并
+            String sourceCode = generate(tableName, index);
+            
+            try (OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(fileName),
+                    StandardCharsets.UTF_8)) {
+                IOUtils.write(sourceCode, writer);
+            } catch (IOException e) {
+                throw new IOException("fail to write file: " + fileName, e);
             }
         }
-
     }
 }

@@ -16,7 +16,10 @@ public class ServiceImplGenerator extends BaseGenerator {
 
 
     @Override
-    String getTemplateFileName() {
+    String getTemplateFileName(String tableName) {
+        if(config.getEncryptedFields().containsKey(tableName)){
+            return "service-impl-encrypted.java";
+        }
         return "service-impl.java";
     }
 
@@ -69,7 +72,6 @@ public class ServiceImplGenerator extends BaseGenerator {
         super.additionalSetting(handlebars);
         // usage: {{type tableName colName}}
         handlebars.registerHelper("colType", (tableName, options) -> getColType(options.param(0), this.setInfo.getTableCols((String) tableName)));
-        handlebars.registerHelper("isKey", (tableName, options) -> this.setInfo.getTableKeys((String) tableName).contains(options.param(0)));
 
         // usage: {{where tableName}}
         handlebars.registerHelper("where", (tableName, options) ->
@@ -78,14 +80,6 @@ public class ServiceImplGenerator extends BaseGenerator {
             return TableGen.createPreparedWhereClause(this.setInfo.getTableKeys((String) tableName), like, this.setInfo.getTableCols((String) tableName));
         });
 
-    }
-
-    String getFirstKeyName(String tableName) {
-        List<String> keyData = getKeyData(tableName);
-        if(!isNotEmpty(keyData)) {
-            LOG.warn("Table '"+tableName+"' have not a  primary key, this may be a error");
-        }
-        return getPrimaryKeyName(keyData);
     }
 
 }

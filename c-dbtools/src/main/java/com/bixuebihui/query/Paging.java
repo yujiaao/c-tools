@@ -5,6 +5,8 @@ import com.bixuebihui.jdbc.SqlSort;
 import org.apache.commons.beanutils.BeanMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.MutablePair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -119,6 +121,7 @@ import static com.bixuebihui.jdbc.SqlSort.Sort.ASC;
  * 成功为pojo赋值，包括级联属性address。
  */
 public class Paging<S> {
+    Logger logger = LoggerFactory.getLogger(Paging.class);
     public static final String ORDER_SPLITER = ":";
     Long start = 0L;
     Long count = 10L;
@@ -185,8 +188,8 @@ public class Paging<S> {
 
             String key = unifyField(((String) k));
 
-            if (v instanceof Date ||
-                    (v instanceof Number) && (hasKey(fields.keySet(), key, rangeBeginPrefix) ||
+            if (((v instanceof Date)  ||  (v instanceof Number) || (v instanceof String) )
+                            && (hasKey(fields.keySet(), key, rangeBeginPrefix) ||
                             hasKey(fields.keySet(), key, rangeEndPrefix))) {
 
                 if (hasKey(fields.keySet(), key, rangeBeginPrefix)) {
@@ -205,6 +208,11 @@ public class Paging<S> {
                 if (v instanceof Number || v instanceof Boolean || v instanceof Enum) {
                     ar.eq(originalKey, v);
                 } else if (v instanceof Object[] || v instanceof Collection) {
+                    //检查不为空
+                    if((v instanceof Object[] && ((Object[]) v).length == 0) ||
+                            (v instanceof Collection && ((Collection<?>) v).isEmpty())) {
+                        return;
+                    }
                     ar.in(originalKey, v);
                 } else if (v instanceof String) {
                     String s = (String) v;
@@ -228,10 +236,14 @@ public class Paging<S> {
 
         if (sort != null) {
             this.sort.forEach(sort1 -> {
-                        if (sort1.getOrder().equals(ASC)) {
-                            ar.asc(sort1.getProperty());
+                String fieldName = propertyNameToFieldName(unifyField(sort1.getProperty()), fields);
+                if (fieldName == null) {
+                    logger.error("Invalid sort field: {}", sort1.getProperty());
+                   // throw new IllegalArgumentException("Invalid sort field: " + sort1.getProperty());
+                }else  if (sort1.getOrder().equals(ASC)) {
+                            ar.asc(fieldName);
                         } else {
-                            ar.desc(sort1.getProperty());
+                            ar.desc(fieldName);
                         }
                     }
             );
@@ -239,6 +251,11 @@ public class Paging<S> {
 
         return ar;
     }
+
+    String propertyNameToFieldName(String propertyName, Map<String, String> validFields){
+        return validFields.get(propertyName);
+    }
+
 
     String unifyField(String s) {
         if (s.startsWith(rangeBeginPrefix)) {
@@ -261,7 +278,29 @@ public class Paging<S> {
     private <T> void range(Map<String, MutablePair<Object, Object>> range, ActiveRecord<T> ar) {
         range.forEach((k, p) -> {
             if (p.getLeft() != null && p.getRight() != null) {
-                ar.between(k, p.left, p.right);
+                if(p.getLeft().equals(p.getRight())) {
+                    if(p.getLeft() instanceof Date) {
+                        //如果没有设置时间
+                        // 例如：2023-10-01 00:00:00 和 2023-10-01 23:59:59
+                        // 这种情况，实际上是一个范围
+                        Date d = (Date) p.getLeft();
+                        if(d.getHours() == 0 && d.getMinutes() == 0 && d.getSeconds() == 0) {
+                            // 如果是00:00:00，表示当天的开始时间
+                            Calendar calendar = Calendar.getInstance();
+                            calendar.setTime(d);
+                            calendar.add(Calendar.DATE, 1);
+                            ar.greaterOrEqualThan(k, p.left)
+                                    .smallerThan(k, calendar.getTime());
+                        } else {
+                            ar.between(k, p.left, p.right);
+                        }
+
+                    } else {
+                        ar.eq(k, p.left);
+                    }
+                } else {
+                    ar.between(k, p.left, p.right);
+                }
             } else if (p.left != null) {
                 ar.greaterOrEqualThan(k, p.left);
             } else if (p.right != null) {
@@ -281,6 +320,8 @@ public class Paging<S> {
         pair.setRight(v);
         range.putIfAbsent(key, pair);
     }
+
+
 
     /**
      * 排序 sortBy=abc:asc,def:desc

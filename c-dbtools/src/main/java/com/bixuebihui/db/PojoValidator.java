@@ -1,6 +1,6 @@
 package com.bixuebihui.db;
 
-import javax.validation.*;
+import jakarta.validation.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.hibernate.validator.messageinterpolation.ParameterMessageInterpolator;
@@ -21,20 +21,26 @@ public class PojoValidator<T> {
     static final Logger logger = LoggerFactory.getLogger(PojoValidator.class);
 
     Validator validator;
-
-    static ValidatorFactory factory = Validation.byDefaultProvider()
-            .configure()
-            .messageInterpolator(new ParameterMessageInterpolator())
-            .buildValidatorFactory();
+    static ValidatorFactory factory;
+    static {
+        try {
+            factory = Validation.byDefaultProvider()
+                    .configure()
+                    .messageInterpolator(new ParameterMessageInterpolator())
+                    .buildValidatorFactory();
+        } catch (Exception e) {
+            logger.warn("Validator init error, annotation constrains will not work", e);
+        }
+    }
 
     public PojoValidator() {
         try {
-            validator = factory.getValidator();
+            if(factory!=null) {
+                validator = factory.getValidator();
+            }
         }catch (Exception e){
             logger.warn("Validator init error, annotation constrains will not work", e);
-            e.printStackTrace();
         }
-
     }
 
     /**
@@ -69,7 +75,7 @@ public class PojoValidator<T> {
     private String formMessage(Set<ConstraintViolation<T>> res) {
         //ConstraintViolationImpl{interpolatedMessage='最小不能小于10000',
         //propertyPath=id, rootBeanClass=class com.demo.superma.freemarker.Site,
-        //messageTemplate='{javax.validation.constraints.Min.message}'}
+        //messageTemplate='{jakarta.validation.constraints.Min.message}'}
         StringBuilder sb = new StringBuilder();
         for(ConstraintViolation<T> cv: res){
             sb.append(transBean(cv.getRootBeanClass().getName(), cv.getPropertyPath().toString()))

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.github.yujiaao</groupId>
+        <artifactId>c-tools-parent</artifactId>
+        <version>1.15.2.9</version>
+    </parent>
+
+    <groupId>org.example</groupId>
+    <artifactId>c-dbtools-spring</artifactId>
+
+    <properties>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+    <licenses>
+
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <developers>
+        <developer>
+            <id>yujiaao</id>
+            <name>Wanxiang Xing</name> <!-- 必选：开发者姓名 -->
+            <email>yujiaao@msn.com</email>
+            <roles>
+                <role>Developer</role> <!-- 可选：角色描述 -->
+            </roles>
+        </developer>
+    </developers>
+    <dependencies>
+        <dependency>
+            <groupId>com.github.yujiaao</groupId>
+            <artifactId>c-dbtools</artifactId>
+            <version>1.15.2.9</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
+
+</project>

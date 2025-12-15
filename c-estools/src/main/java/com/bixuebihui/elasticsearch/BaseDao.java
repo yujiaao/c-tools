@@ -4,7 +4,7 @@ import com.bixuebihui.db.PojoValidator;
 import com.bixuebihui.jdbc.IModifiedTime;
 import com.bixuebihui.jdbc.event.AfterChangeEventHandler;
 import com.bixuebihui.jdbc.event.ChangeType;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.BeanUtilsBean;
 import org.apache.commons.beanutils.Converter;
@@ -336,6 +336,20 @@ public abstract class BaseDao<T, ID> {
         }, refresh);
 
         return res;
+    }
+
+    public boolean updateBatch(List<T> infos, boolean refresh) {
+        return ar().updateBatch(getIndexName(), infos, (t) ->{
+            ID v  = getId(t);
+            return v != null ? v.toString() : null;
+        }, refresh);
+    }
+
+    public boolean updateBatch(List<T> infos, boolean refresh, Class<?> mixInClass) {
+        return ar().updateBatch(getIndexName(), infos, (t) ->{
+            ID v  = getId(t);
+            return v != null ? v.toString() : null;
+        }, refresh, mixInClass, true);
     }
 
     /**

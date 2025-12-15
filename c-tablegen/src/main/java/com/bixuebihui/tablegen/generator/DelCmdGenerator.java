@@ -20,7 +20,7 @@ public class DelCmdGenerator extends BaseGenerator {
     }
 
     @Override
-    String getTemplateFileName() {
+    String getTemplateFileName(String tableName) {
         return "del-cmd.java";
     }
 
@@ -35,7 +35,9 @@ public class DelCmdGenerator extends BaseGenerator {
         List<String> keys = getKeysInfo(cols, tableName);
 
         v.put("firstKeyType", this.getPrimaryKeyType(tableName));
-        v.put("firstKeyName", this.getPrimaryKeyName(keys));
+        v.put("firstKeyName", getPrimaryKeyName(keys));
+        v.put("firstKeyFirstColumnName", this.getFirstKeyFirstColumnName(tableName));
+        v.put("firstKeyFirstColumnType", this.getPrimaryKeyFirstColumnType(tableName));
 
         return v;
     }
@@ -58,9 +60,6 @@ public class DelCmdGenerator extends BaseGenerator {
     @Override
     protected void additionalSetting(Handlebars handlebars) {
         super.additionalSetting(handlebars);
-
-        handlebars.registerHelper("isRangeType", (typeName, options) ->
-                List.of("Timestamp", "Date", "DateTime", "Time").contains((String)typeName));
 
 
         handlebars.registerHelper("columnAnnotation", (col, options) ->

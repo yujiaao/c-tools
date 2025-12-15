@@ -21,6 +21,7 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -132,7 +133,7 @@ public class EasyTable extends BasicWebUI {
     }
 
     public String[] getColLabelsFromDb(String sql) throws SQLException {
-        try(Connection cn = service.getDbHelper().getConnection()) {
+        try(Connection cn = service.getDbHelper().getConnection(true)) {
             return MiniSqlParser.getByDb(cn, sql).colNames;
         }
     }
@@ -405,6 +406,7 @@ public class EasyTable extends BasicWebUI {
                 sp.colNames = new String[rsmd.getColumnCount()];
                 sp.colLabels = new String[rsmd.getColumnCount()];
                 sp.colTypes = new String[rsmd.getColumnCount()];
+
                 sp.tableName = rsmd.getTableName(1);
 
                 for (int i = 1; i <= rsmd.getColumnCount(); i++) {

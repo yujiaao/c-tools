@@ -6,6 +6,7 @@ import com.bixuebihui.jdbc.entity.CountValue;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * <p>Record interface.</p>
@@ -172,9 +173,17 @@ public interface Record<T> {
 	 * @param values 字段值， 如果values是SqlString 类型，将不参与形成预编译语句的占位符，而是原样输出
 	 * @return 影响的行数
 	 * @throws DbException  数据库异常
+	 * @deprecated use #update(Map&lt;String,Object&gt; keyValuePairs)
 	 */
 	int update(String[] fields, Object[] values) throws DbException;
 
+	/**
+	 * @param keyValuePairs for better alignment k-v than array
+	 *  instead of: update(new String[]{F.ID, F.STATUS}, new Object[]{1, 2})
+	 *        do: update(Map.of(F.ID, 1
+	 *                      F.STATUS, 2));
+	 */
+	int update(Map<String,Object> keyValuePairs) throws DbException;
 	/**
 	 * <p>update.</p>
 	 *
