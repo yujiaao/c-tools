@@ -77,9 +77,15 @@
     </extensions>
 
     <actions>
-        <!-- 可以添加自定义操作 -->
+        <!-- TableGen配置编辑器 -->
+        <action id="TableGear.OpenConfigEditor" 
+                class="com.bixuebihui.tablegear.ui.OpenTableGenConfigAction"
+                text="打开 TableGen 配置编辑器"
+                description="打开 TableGen 配置文件编辑器">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt T"/>
+        </action>
     </actions>
     
     
 </idea-plugin>
-

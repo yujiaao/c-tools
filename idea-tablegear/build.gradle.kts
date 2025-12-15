@@ -11,6 +11,8 @@ repositories {
     mavenCentral()
     // 可选：添加国内镜像加速（如果需要）
     maven { url = uri("https://maven.aliyun.com/repository/public") }
+    // 添加本地 Maven 仓库以使用 c-tablegen 模块
+    mavenLocal()
 }
 
 intellij {
@@ -68,6 +70,11 @@ tasks {
 }
 
 dependencies {
+    // 依赖 tablegen 模块以使用数据库连接功能
+    // 注意：需要先构建 c-tablegen 模块 (mvn install) 才能使用
+    // 如果 c-tablegen 已发布到本地 Maven 仓库，使用以下方式：
+    implementation("com.github.yujiaao:tablegen:1.16.2")
+    
     testImplementation(kotlin("test"))
     // kotlin.test uses JUnit 5 assertions which require opentest4j
     testImplementation("org.opentest4j:opentest4j:1.3.0")
