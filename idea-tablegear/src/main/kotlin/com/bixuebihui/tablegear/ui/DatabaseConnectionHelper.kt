@@ -34,30 +34,77 @@ class DatabaseConnectionHelper(private val model: TableGenConfigModel) {
             }
             
             val props = createDatabaseProperties()
+            
+            // 验证必要的配置
+            val className = props.getProperty("className")
+            val dburl = props.getProperty("dburl")
+            
+            if (className.isNullOrBlank()) {
+                throw IllegalArgumentException("JDBC驱动类名(className)不能为空")
+            }
+            if (dburl.isNullOrBlank()) {
+                throw IllegalArgumentException("数据库URL(dburl)不能为空")
+            }
+            
+            // 尝试加载 JDBC 驱动
+            try {
+                Class.forName(className)
+            } catch (e: ClassNotFoundException) {
+                throw RuntimeException(
+                    "无法加载JDBC驱动: $className\n\n" +
+                    "请确保:\n" +
+                    "1. JDBC驱动jar包已添加到项目依赖中\n" +
+                    "2. 驱动类名拼写正确\n" +
+                    "3. 驱动版本与数据库版本兼容",
+                    e
+                )
+            }
+            
             val dbConfig = DatabaseConfig.newInstance(props)
             val helper = TableGen.getDbHelper(dbConfig)
+            
+            // 创建连接
             connection = helper.getConnection()
-            metaData = connection?.metaData
+            
+            // 验证连接是否有效
+            if (connection == null) {
+                throw RuntimeException("无法创建数据库连接: 连接对象为null")
+            }
+            
+            if (connection!!.isClosed) {
+                throw RuntimeException("数据库连接已关闭")
+            }
+            
+            // 获取元数据（这会验证连接是否真正可用）
+            metaData = connection!!.metaData
+            
+            // 简单验证：尝试获取数据库产品名称
+            try {
+                metaData?.databaseProductName
+            } catch (e: Exception) {
+                throw RuntimeException("数据库连接无效: ${e.message}", e)
+            }
+            
             return true
         } catch (e: UnsupportedClassVersionError) {
             // Java 版本不兼容错误
-            val requiredVersion = when (e.message) {
-                null -> "未知"
-                else -> {
-                    val match = Regex("class file version (\\d+)").find(e.message)
-                    match?.groupValues?.get(1)?.let { version ->
-                        when (version.toInt()) {
-                            61 -> "Java 17"
-                            55 -> "Java 11"
-                            else -> "版本 $version"
-                        }
-                    } ?: "未知"
-                }
+            val errorMessage = e.message ?: ""
+            val requiredVersion = if (errorMessage.isNotEmpty()) {
+                val match = Regex("class file version (\\d+)").find(errorMessage)
+                match?.groupValues?.get(1)?.let { version ->
+                    when (version.toInt()) {
+                        61 -> "Java 17"
+                        55 -> "Java 11"
+                        else -> "版本 $version"
+                    }
+                } ?: "未知"
+            } else {
+                "未知"
             }
             throw RuntimeException(
                 "Java 版本不兼容！\n\n" +
-                "错误: ${e.message}\n\n" +
-                "c-tablegen 模块需要 $requiredVersion，但当前运行环境是 Java ${System.getProperty("java.version")}。\n\n" +
+                "错误: $errorMessage\n\n" +
+                "c-tablegen 模块需要 $requiredVersion, 但当前运行环境是 Java ${System.getProperty("java.version")}.\n\n" +
                 "解决方案:\n" +
                 "1. 确保 c-tablegen 模块使用 Java 11 编译: cd c-tablegen && mvn clean install -Dmaven.compiler.release=11\n" +
                 "2. 或者升级 IDEA 到支持 Java 17 的版本\n" +

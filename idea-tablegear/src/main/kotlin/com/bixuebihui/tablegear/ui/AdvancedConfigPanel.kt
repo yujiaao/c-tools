@@ -1,6 +1,7 @@
 package com.bixuebihui.tablegear.ui
 
 import com.intellij.ui.components.JBLabel
+import com.intellij.ui.components.JBTabbedPane
 import com.intellij.ui.components.JBTextArea
 import com.intellij.ui.components.JBTextField
 import com.intellij.util.ui.FormBuilder
@@ -39,7 +40,7 @@ class AdvancedConfigPanel(private val model: TableGenConfigModel) : JPanel() {
     }
     
     private fun initializePanel() {
-        val tabbedPane = JTabbedPane()
+        val tabbedPane = JBTabbedPane()
         
         // 基本高级配置
         tabbedPane.addTab("基本配置", createBasicConfigPanel())

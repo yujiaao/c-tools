@@ -4,6 +4,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBLabel
+import com.intellij.ui.components.JBTabbedPane
 import com.intellij.util.ui.JBUI
 import java.awt.BorderLayout
 import java.awt.Dimension
@@ -52,7 +53,7 @@ class TableSelectionDialog(
         mainPanel.add(searchPanel, BorderLayout.NORTH)
         
         // 标签页：包含表和排除表
-        tabbedPane = JTabbedPane()
+        tabbedPane = JBTabbedPane()
         
         // 包含表标签页
         tableListPanel = createTableListPanel(tables, selectedTables, tableCheckBoxes)

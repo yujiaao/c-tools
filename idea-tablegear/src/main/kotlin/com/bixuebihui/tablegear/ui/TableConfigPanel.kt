@@ -1,5 +1,8 @@
 package com.bixuebihui.tablegear.ui
 
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import com.intellij.ui.components.JBLabel
@@ -76,8 +79,6 @@ class TableConfigPanel(
         // 检查数据库配置是否完整
         val className = model.getProperty("className")
         val dburl = model.getProperty("dburl")
-        val username = model.getProperty("username")
-        val password = model.getProperty("password")
         
         if (className.isNullOrBlank() || dburl.isNullOrBlank()) {
             Messages.showErrorDialog(
@@ -88,51 +89,63 @@ class TableConfigPanel(
             return
         }
         
-        try {
-            connectDbButton.isEnabled = false
-            connectDbButton.text = "连接中..."
-            statusLabel.text = "正在连接..."
-            
-            // 关闭之前的连接
-            dbHelper?.close()
-            
-            // 创建新的连接
-            dbHelper = DatabaseConnectionHelper(model)
-            dbHelper!!.testConnection() // 如果成功会继续，失败会抛出异常
-            
-            statusLabel.text = "已连接"
-            selectTablesButton.isEnabled = true
-            Messages.showInfoMessage(
-                project,
-                "数据库连接成功！",
-                "连接成功"
-            )
-        } catch (e: Exception) {
-            val errorMessage = e.message ?: "未知错误"
-            statusLabel.text = "连接失败: ${errorMessage.take(50)}"
-            
-            // 使用滚动文本区域显示详细错误信息
-            val textArea = JTextArea(errorMessage)
-            textArea.isEditable = false
-            textArea.font = Font(Font.MONOSPACED, Font.PLAIN, 11)
-            textArea.wrapStyleWord = true
-            textArea.lineWrap = true
-            
-            val scrollPane = JScrollPane(textArea)
-            scrollPane.preferredSize = Dimension(600, 400)
-            
-            Messages.showMessageDialog(
-                project,
-                scrollPane,
-                "连接失败",
-                Messages.getErrorIcon()
-            )
-            
-            e.printStackTrace()
-        } finally {
-            connectDbButton.isEnabled = true
-            connectDbButton.text = "连接数据库"
-        }
+        // 更新UI状态
+        connectDbButton.isEnabled = false
+        connectDbButton.text = "连接中..."
+        statusLabel.text = "正在连接..."
+        
+        // 关闭之前的连接
+        dbHelper?.close()
+        
+        // 在后台线程中执行数据库连接
+        ProgressManager.getInstance().run(object : Task.Backgroundable(project, "连接数据库", false) {
+            override fun run(indicator: ProgressIndicator) {
+                indicator.isIndeterminate = true
+                indicator.text = "正在连接数据库..."
+                
+                try {
+                    // 创建新的连接
+                    indicator.text = "创建数据库连接..."
+                    dbHelper = DatabaseConnectionHelper(model)
+                    
+                    indicator.text = "测试数据库连接..."
+                    dbHelper!!.testConnection() // 如果成功会继续，失败会抛出异常
+                    
+                    indicator.text = "连接成功！"
+                    
+                    // 连接成功，在 UI 线程中更新界面
+                    SwingUtilities.invokeLater {
+                        statusLabel.text = "已连接"
+                        selectTablesButton.isEnabled = true
+                        connectDbButton.isEnabled = true
+                        connectDbButton.text = "连接数据库"
+                        Messages.showInfoMessage(
+                            project,
+                            "数据库连接成功！",
+                            "连接成功"
+                        )
+                    }
+                } catch (e: Exception) {
+                    val errorMessage = e.message ?: "未知错误"
+                    
+                    // 在 UI 线程中显示错误
+                    SwingUtilities.invokeLater {
+                        statusLabel.text = "连接失败: ${errorMessage.take(50)}"
+                        connectDbButton.isEnabled = true
+                        connectDbButton.text = "连接数据库"
+                        
+                        // 显示详细错误信息
+                        Messages.showErrorDialog(
+                            project,
+                            errorMessage,
+                            "连接失败"
+                        )
+                    }
+                    
+                    e.printStackTrace()
+                }
+            }
+        })
     }
     
     private fun selectTables() {
