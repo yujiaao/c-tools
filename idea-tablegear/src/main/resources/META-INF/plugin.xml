@@ -42,6 +42,9 @@
     <depends>com.intellij.modules.java</depends>
 
     <extensions defaultExtensionNs="com.intellij">
+        <!-- 通知组 -->
+        <notificationGroup id="TableGear.Notification" displayType="BALLOON" />
+        
         <!-- 文件类型注册 -->
         <fileType name="TableGear Properties" implementationClass="com.bixuebihui.tablegear.TableGearFileType" 
                   fieldName="INSTANCE" language="TableGear" extensions="properties" description="TableGear configuration files"/>

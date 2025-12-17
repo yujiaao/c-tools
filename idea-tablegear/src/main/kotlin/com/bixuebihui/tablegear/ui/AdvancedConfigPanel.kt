@@ -1,18 +1,25 @@
 package com.bixuebihui.tablegear.ui
 
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.Messages
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTabbedPane
 import com.intellij.ui.components.JBTextArea
 import com.intellij.ui.components.JBTextField
 import com.intellij.util.ui.FormBuilder
 import java.awt.Font
+import java.awt.FlowLayout
 import javax.swing.*
 import javax.swing.text.JTextComponent
 
 /**
  * 高级配置面板
  */
-class AdvancedConfigPanel(private val model: TableGenConfigModel) : JPanel() {
+class AdvancedConfigPanel(
+    private val model: TableGenConfigModel,
+    private val project: Project? = null,
+    private val tablePanel: TableConfigPanel? = null
+) : JPanel() {
     
     private lateinit var addPrefixField: JTextComponent
     private lateinit var removePrefixField: JTextComponent
@@ -64,8 +71,8 @@ class AdvancedConfigPanel(private val model: TableGenConfigModel) : JPanel() {
         extraSettingField = JBTextField()
         
         val form = FormBuilder.createFormBuilder()
-            .addLabeledComponent(JBLabel("添加前缀 (add_prefix):"), addPrefixField)
-            .addLabeledComponent(JBLabel("移除前缀 (remove_prefix):"), removePrefixField)
+            .addLabeledComponent(JBLabel("添加生成类名前缀 (add_prefix):"), addPrefixField)
+            .addLabeledComponent(JBLabel("移除表名前缀 (remove_prefix):"), removePrefixField)
             .addLabeledComponent(JBLabel("版本列名 (version_col_name):"), versionColNameField)
             .addLabeledComponent(JBLabel("删除列名 (del_col_name):"), delColNameField)
             .addLabeledComponent(JBLabel("共享模型组 (shared_model_group):"), sharedModelGroupField)
@@ -83,15 +90,116 @@ class AdvancedConfigPanel(private val model: TableGenConfigModel) : JPanel() {
         ignoreFieldsArea = JBTextArea(8, 50)
         ignoreFieldsArea.font = Font(Font.MONOSPACED, Font.PLAIN, 12)
         
+        // 加密字段选择按钮
+        val encryptedFieldsButtonPanel = JPanel(FlowLayout(FlowLayout.LEFT))
+        val selectEncryptedFieldsBtn = JButton("选择加密字段...")
+        selectEncryptedFieldsBtn.addActionListener { selectFields(FieldSelectionDialog.FieldType.ENCRYPTED, encryptedFieldsArea) }
+        encryptedFieldsButtonPanel.add(selectEncryptedFieldsBtn as java.awt.Component)
+        
+        // 忽略字段选择按钮
+        val ignoreFieldsButtonPanel = JPanel(FlowLayout(FlowLayout.LEFT))
+        val selectIgnoreFieldsBtn = JButton("选择忽略字段...")
+        selectIgnoreFieldsBtn.addActionListener { selectFields(FieldSelectionDialog.FieldType.IGNORE, ignoreFieldsArea) }
+        ignoreFieldsButtonPanel.add(selectIgnoreFieldsBtn as java.awt.Component)
+        
         val form = FormBuilder.createFormBuilder()
-            .addLabeledComponent(JBLabel("加密字段 (encrypted_fields):"), JScrollPane(encryptedFieldsArea))
+            .addLabeledComponent(JBLabel("加密字段 (encrypted_fields):"), encryptedFieldsButtonPanel)
+            .addLabeledComponent(JBLabel(""), JScrollPane(encryptedFieldsArea))
             .addTooltip("格式为 table1:field1,field2;table2:field3")
-            .addLabeledComponent(JBLabel("忽略字段 (ignore_fields):"), JScrollPane(ignoreFieldsArea))
+            .addLabeledComponent(JBLabel("忽略字段 (ignore_fields):"), ignoreFieldsButtonPanel)
+            .addLabeledComponent(JBLabel(""), JScrollPane(ignoreFieldsArea))
             .addTooltip("格式为 table1:field1,field2;table2:field3")
             .addComponentFillVertically(JPanel(), 0)
             .panel
         
         return form
+    }
+    
+    private fun selectFields(fieldType: FieldSelectionDialog.FieldType, textArea: JTextArea) {
+        // 检查数据库是否已连接
+        val currentTablePanel = tablePanel ?: getTablePanel()
+        val dbHelper = currentTablePanel?.getDbHelper()
+        
+        if (dbHelper == null) {
+            Messages.showErrorDialog(
+                project,
+                "请先连接数据库！\n\n请在【表配置】标签页中点击\"连接数据库\"按钮。",
+                "数据库未连接"
+            )
+            return
+        }
+        
+        try {
+            val dialog = FieldSelectionDialog(
+                project,
+                dbHelper,
+                fieldType,
+                textArea.text
+            )
+            
+            if (dialog.showAndGet()) {
+                val config = dialog.getSelectedFieldsConfig()
+                textArea.text = config
+                
+                // 显示 toast 通知
+                val notificationGroup = com.intellij.notification.NotificationGroupManager.getInstance()
+                    .getNotificationGroup("TableGear.Notification")
+                notificationGroup?.createNotification(
+                    when (fieldType) {
+                        FieldSelectionDialog.FieldType.ENCRYPTED -> "已选择加密字段"
+                        FieldSelectionDialog.FieldType.IGNORE -> "已选择忽略字段"
+                    },
+                    com.intellij.notification.NotificationType.INFORMATION
+                )?.notify(project)
+            }
+        } catch (e: Exception) {
+            Messages.showErrorDialog(
+                project,
+                "选择字段失败: ${e.message}",
+                "错误"
+            )
+            e.printStackTrace()
+        }
+    }
+    
+    private fun getTablePanel(): TableConfigPanel? {
+        // 如果已经通过构造函数传入了 tablePanel，直接返回
+        if (tablePanel != null) {
+            return tablePanel
+        }
+        
+        // 否则尝试通过父组件查找
+        // 由于 TableGenConfigDialog 继承自 DialogWrapper，我们需要通过其他方式查找
+        // 最简单的方法是遍历组件树，查找包含 tablePanel 的对话框
+        var current: java.awt.Container? = this
+        while (current != null) {
+            // 查找当前组件的所有子组件
+            for (component in current.components) {
+                if (component is TableConfigPanel) {
+                    return component
+                }
+                if (component is java.awt.Container) {
+                    // 递归查找
+                    val found = findTablePanel(component)
+                    if (found != null) return found
+                }
+            }
+            current = current.parent
+        }
+        return null
+    }
+    
+    private fun findTablePanel(container: java.awt.Container): TableConfigPanel? {
+        for (component in container.components) {
+            if (component is TableConfigPanel) {
+                return component
+            }
+            if (component is java.awt.Container) {
+                val found = findTablePanel(component)
+                if (found != null) return found
+            }
+        }
+        return null
     }
     
     private fun createInterfaceConfigPanel(): JComponent {

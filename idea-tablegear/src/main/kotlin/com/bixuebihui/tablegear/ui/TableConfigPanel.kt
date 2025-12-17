@@ -5,6 +5,9 @@ import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
+import com.intellij.notification.NotificationGroupManager
+import com.intellij.notification.NotificationType
+import com.intellij.notification.Notification
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTextArea
 import com.intellij.util.ui.FormBuilder
@@ -75,6 +78,23 @@ class TableConfigPanel(
         add(form, java.awt.BorderLayout.CENTER)
     }
     
+    /**
+     * 自动连接数据库（如果配置完整）
+     * @return true 如果配置完整并开始连接，false 如果配置不完整
+     */
+    fun autoConnectIfConfigured(): Boolean {
+        val className = model.getProperty("className")
+        val dburl = model.getProperty("dburl")
+        
+        if (className.isNullOrBlank() || dburl.isNullOrBlank()) {
+            return false
+        }
+        
+        // 配置完整，自动连接
+        connectToDatabase()
+        return true
+    }
+    
     private fun connectToDatabase() {
         // 检查数据库配置是否完整
         val className = model.getProperty("className")
@@ -119,11 +139,14 @@ class TableConfigPanel(
                         selectTablesButton.isEnabled = true
                         connectDbButton.isEnabled = true
                         connectDbButton.text = "连接数据库"
-                        Messages.showInfoMessage(
-                            project,
+                        
+                        // 显示 toast 通知而不是弹窗
+                        val notificationGroup = NotificationGroupManager.getInstance()
+                            .getNotificationGroup("TableGear.Notification")
+                        notificationGroup?.createNotification(
                             "数据库连接成功！",
-                            "连接成功"
-                        )
+                            NotificationType.INFORMATION
+                        )?.notify(project)
                     }
                 } catch (e: Exception) {
                     val errorMessage = e.message ?: "未知错误"
@@ -164,11 +187,13 @@ class TableConfigPanel(
             val tables = helper.getAllTables()
             
             if (tables.isEmpty()) {
-                Messages.showInfoMessage(
-                    project,
+                // 显示 toast 通知而不是弹窗
+                val notificationGroup = NotificationGroupManager.getInstance()
+                    .getNotificationGroup("TableGear.Notification")
+                notificationGroup?.createNotification(
                     "数据库中没有找到表或视图",
-                    "无数据"
-                )
+                    NotificationType.WARNING
+                )?.notify(project)
                 return
             }
             
@@ -200,11 +225,13 @@ class TableConfigPanel(
                 val selectedExcludeTables = dialog.getSelectedExcludeTables()
                 excludeTableListArea.text = selectedExcludeTables.joinToString(",")
                 
-                Messages.showInfoMessage(
-                    project,
+                // 显示 toast 通知而不是弹窗
+                val notificationGroup = NotificationGroupManager.getInstance()
+                    .getNotificationGroup("TableGear.Notification")
+                notificationGroup?.createNotification(
                     "已选择 ${selectedTables.size} 个表，${selectedExcludeTables.size} 个排除表",
-                    "选择完成"
-                )
+                    NotificationType.INFORMATION
+                )?.notify(project)
             }
         } catch (e: Exception) {
             Messages.showErrorDialog(
@@ -227,6 +254,11 @@ class TableConfigPanel(
         model.setProperty("exclude_table_list", excludeTableListArea.text)
         model.setProperty("view_list", viewListArea.text)
     }
+    
+    /**
+     * 获取数据库连接助手
+     */
+    fun getDbHelper(): DatabaseConnectionHelper? = dbHelper
     
     /**
      * 清理资源

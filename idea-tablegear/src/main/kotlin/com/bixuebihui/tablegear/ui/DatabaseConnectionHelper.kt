@@ -158,7 +158,7 @@ class DatabaseConnectionHelper(private val model: TableGenConfigModel) {
             // 获取所有表（包括视图）
             val tableNames = TableUtils.getTableData(
                 meta, catalog, schema, tableOwner, 
-                emptyMap(), emptyMap() // 不应用过滤，获取所有表
+                null, null // 不应用过滤，获取所有表
             )
             
             // 获取表类型信息
@@ -223,5 +223,54 @@ class DatabaseConnectionHelper(private val model: TableGenConfigModel) {
         val name: String,
         val isView: Boolean = false
     )
+    
+    data class ColumnInfo(
+        val name: String,
+        val type: String,
+        val nullable: Boolean,
+        val autoIncrement: Boolean
+    )
+    
+    /**
+     * 获取指定表的字段列表
+     */
+    fun getTableColumns(tableName: String): List<ColumnInfo> {
+        if (connection == null || metaData == null) {
+            throw IllegalStateException("数据库未连接，请先连接数据库")
+        }
+        
+        val columns = mutableListOf<ColumnInfo>()
+        try {
+            val catalog = model.getProperty("catalog")
+            val schema = model.getProperty("schema")
+            
+            val rs = metaData!!.getColumns(
+                catalog?.takeIf { it.isNotBlank() } ?: null,
+                schema?.takeIf { it.isNotBlank() } ?: null,
+                tableName,
+                "%"
+            )
+            
+            while (rs.next()) {
+                val columnName = rs.getString("COLUMN_NAME")
+                val dataType = rs.getInt("DATA_TYPE")
+                val typeName = rs.getString("TYPE_NAME")
+                val nullable = rs.getInt("NULLABLE") == java.sql.DatabaseMetaData.columnNullable
+                val isAutoIncrement = rs.getString("IS_AUTOINCREMENT")?.equals("YES", ignoreCase = true) ?: false
+                
+                columns.add(ColumnInfo(
+                    name = columnName,
+                    type = typeName,
+                    nullable = nullable,
+                    autoIncrement = isAutoIncrement
+                ))
+            }
+            rs.close()
+        } catch (e: Exception) {
+            throw RuntimeException("获取表 $tableName 的字段列表失败: ${e.message}", e)
+        }
+        
+        return columns
+    }
 }
 
