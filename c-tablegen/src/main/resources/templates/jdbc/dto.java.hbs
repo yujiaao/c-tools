@@ -21,7 +21,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description ="{{tableInfo.comment}}")
 {{/eq}}
+{{#if sharedModelGroup}}
 @SharedModel("{{sharedModelGroup}}")
+{{else}}
+@SharedModel
+{{/if}}
 {{/if}}
 {{#if config.useLombok}}
 @Generated("com.github.yujiaao:tablegen")
