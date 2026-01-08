@@ -74,6 +74,9 @@
         <!-- 文档提供 -->
         <lang.documentationProvider language="TableGear" implementationClass="com.bixuebihui.tablegear.documentation.TableGearDocumentationProvider"/>
         <lang.documentationProvider language="Properties" implementationClass="com.bixuebihui.tablegear.documentation.TableGearDocumentationProvider"/>
+        
+        <!-- 编辑器通知：提示用户可以使用插件功能 -->
+        <editorNotificationProvider implementation="com.bixuebihui.tablegear.notification.TableGearPluginNotificationProvider"/>
     </extensions>
 
     <actions>
