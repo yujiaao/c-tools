@@ -857,11 +857,17 @@ public class TableUtils {
             }
 
         }
-        return StringEscapeUtils.escapeJson(res);
+        return escape(res);
+    }
+
+    static String escape(String src){
+        return src.replace("\"", "")
+                .replace("\n", " ")
+                .replace("\r", " ");
     }
 
     public static void main(String[] args) {
-        System.out.println(StringEscapeUtils.escapeJson("大纲修改意见附件,多个json数组\n" +
+        System.out.println(escape("大纲修改意见附件,多个json数组\n" +
                 "[{\"fileName\":\"测试文件\",\"fileUrl\":\"https://xxxx\"}]"));
     }
 
