@@ -812,11 +812,11 @@ public class TableUtils {
 
         if (cols != null && cols.get(columnName) != null) {
             T_metacolumn colMeta = cols.get(columnName);
-            res += colMeta == null ? "" : colMeta.getDescription();
+            res += colMeta == null ? "" : colMeta.getDescription().replace("\"", "").replace("\n", " ").replace("\r", " ");
         }else if(col.getRemarks()!=null){
-            res += " "+ col.getRemarks()+" ";
+            res += " "+ col.getRemarks().replace("\"", "").replace("\n", " ").replace("\r", " ")+" ";
         }else if(col.getComment()!=null){
-            res += " "+ col.getComment()+" ";
+            res += " "+ col.getComment().replace("\"", "").replace("\n", " ").replace("\r", " ")+" ";
         }
 
         if (col.getDefaultValue() != null) {
