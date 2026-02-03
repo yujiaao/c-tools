@@ -10,6 +10,7 @@ import com.bixuebihui.tablegen.entry.ColumnData;
 import com.bixuebihui.tablegen.entry.TableInfo;
 import com.bixuebihui.tablegen.entry.TableSetInfo;
 import com.bixuebihui.util.DbUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -812,11 +813,11 @@ public class TableUtils {
 
         if (cols != null && cols.get(columnName) != null) {
             T_metacolumn colMeta = cols.get(columnName);
-            res += colMeta == null ? "" : colMeta.getDescription().replace("\"", "").replace("\n", " ").replace("\r", " ");
+            res += colMeta == null ? "" : colMeta.getDescription();
         }else if(col.getRemarks()!=null){
-            res += " "+ col.getRemarks().replace("\"", "").replace("\n", " ").replace("\r", " ")+" ";
+            res += " "+ col.getRemarks()+" ";
         }else if(col.getComment()!=null){
-            res += " "+ col.getComment().replace("\"", "").replace("\n", " ").replace("\r", " ")+" ";
+            res += " "+ col.getComment()+" ";
         }
 
         if (col.getDefaultValue() != null) {
@@ -825,7 +826,12 @@ public class TableUtils {
             }
 
         }
-        return res;
+        return StringEscapeUtils.escapeJson(res);
+    }
+
+    public static void main(String[] args) {
+        System.out.println(StringEscapeUtils.escapeJson("大纲修改意见附件,多个json数组\n" +
+                "[{\"fileName\":\"测试文件\",\"fileUrl\":\"https://xxxx\"}]"));
     }
 
     private static int getTableIdByName(ProjectConfig config, String tableName) {
