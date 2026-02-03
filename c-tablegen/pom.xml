@@ -9,7 +9,7 @@
     <parent>
         <groupId>com.github.yujiaao</groupId>
         <artifactId>c-tools-parent</artifactId>
-        <version>1.15.12.7</version>
+        <version>1.16.4.2</version>
     </parent>
     <properties>
         <handlebars-version>4.3.1</handlebars-version>
@@ -58,7 +58,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
+                <version>3.13.0</version>
                 <configuration>
                     <release>17</release>
                     <encoding>UTF-8</encoding>
@@ -269,6 +269,20 @@
             <scope>test</scope>
         </dependency>
 
+
+        <!-- JavaParser（解析/修改Java源码） -->
+        <dependency>
+            <groupId>com.github.javaparser</groupId>
+            <artifactId>javaparser-core</artifactId>
+            <version>3.25.10</version>
+        </dependency>
+
+        <!-- 用于格式化生成的代码 -->
+        <dependency>
+            <groupId>com.github.javaparser</groupId>
+            <artifactId>javaparser-symbol-solver-core</artifactId>
+            <version>3.25.10</version>
+        </dependency>
 
     </dependencies>
 

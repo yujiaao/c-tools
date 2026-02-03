@@ -1,14 +1,15 @@
 {
-	"name": "lsp-tabgear",
+	"name": "lsp-tablegear",
 	"description": "A language server for tablegear",
-	"author": "Microsoft Corporation",
+	"author": "Yujiaao",
 	"license": "MIT",
-	"version": "1.0.0",
+	"version": "1.0.2",
+	"icon": "images/icon.png",
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/yujiaao/vscode-extension-tablegear"
+		"url": "https://github.com/yujiaao/c-tools"
 	},
-	"publisher": "vscode-tablegear",
+	"publisher": "XingWanxiang",
 	"categories": [],
 	"keywords": [
 		"multi-root ready"
@@ -17,18 +18,61 @@
 		"vscode": "^1.43.0"
 	},
 	"main": "./client/out/extension",
+	"activationEvents": [
+		"onLanguage:properties",
+		"onLanguage:tablegear"
+	],
 	"contributes": {
+		"configurationDefaults": {
+			"editor.semanticHighlighting.enabled": true,
+			"editor.semanticTokenColorCustomizations": {
+				"enabled": true,
+				"rules": {
+					"tablegearDatabase": "#ffd866",
+					"tablegearPath": "#a9dc76",
+					"tablegearBoolean": "#ff6188",
+					"tablegearList": "#78dce8",
+					"tablegearViewSeparator": {
+						"foreground": "#ab9df2",
+						"bold": true
+					},
+					"tablegearViewName":{
+						"foreground": "#00ffff",
+						"bold": true
+					},
+					"tablegearSql": "#a6e22e",
+					"tablegearAssignment": {
+						"foreground": "#ab9df2",
+						"bold": true
+					},
+					"tablegearComment": "#035813",
+					"tablegearSensitive": {
+						"foreground": "#ff9b5e"
+						
+					},
+					"tablegearSensitiveKey": {
+						"foreground": "#f0c674",
+						"fontStyle": "bold"
+					},
+					"tablegearSensitiveField": {
+						"foreground": "#ffb347"
+					},
+					"tablegearPackageName": "#7bd88f",
+					"tablegearViewListKey": "#55cfe3"
+				}
+			}
+		},
 		"configuration": {
 			"type": "object",
-			"title": "Example configuration",
+			"title": "Tablegear configuration",
 			"properties": {
-				"languageServerExample.maxNumberOfProblems": {
+				"tablegear.maxNumberOfProblems": {
 					"scope": "resource",
 					"type": "number",
 					"default": 100,
 					"description": "Controls the maximum number of problems produced by the server."
 				},
-				"languageServerExample.trace.server": {
+				"tablegear.trace.server": {
 					"scope": "window",
 					"type": "string",
 					"enum": [
@@ -61,19 +105,24 @@
 		"vscode:prepublish": "npm run compile",
 		"compile": "tsc -b",
 		"watch": "tsc -b -w",
-		"postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
-		"test": "sh ./scripts/e2e.sh"
+		"test": "node ./scripts/e2e.js"
 	},
 	"devDependencies": {
+		"@types/glob": "^8.1.0",
 		"@types/mocha": "^8.2.2",
 		"@types/node": "^12.12.0",
+		"@types/vscode": "^1.43.0",
 		"@typescript-eslint/eslint-plugin": "^4.23.0",
 		"@typescript-eslint/parser": "^4.23.0",
+		"@vscode/test-electron": "^2.3.7",
 		"eslint": "^7.26.0",
+		"glob": "^10.3.10",
 		"mocha": "^8.3.2",
 		"typescript": "^4.2.3"
 	},
 	"dependencies": {
-		"lsp-tabgear": "file:"
+		"vscode-languageclient": "^8.1.0",
+		"vscode-languageserver": "^8.1.0",
+		"vscode-languageserver-textdocument": "^1.0.11"
 	}
 }

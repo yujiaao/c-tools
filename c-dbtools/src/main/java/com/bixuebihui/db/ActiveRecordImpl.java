@@ -428,7 +428,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
         try {
             sqlPocket = this.getSql();
             SqlPocket having = parseHaving();
-            String where = formWhereClause() + parseGroupBy() + having.getCondition();
+            String where = formJoinAndWhereClause() + parseGroupBy() + having.getCondition();
             List<Object> list = Arrays.asList(getParams().toArray());
             list.addAll(having.getParams());
 
@@ -444,7 +444,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
         try {
             sqlPocket = this.getSql();
             SqlPocket having = parseHaving();
-            String where = formWhereClause() + parseGroupBy() + having.getCondition();
+            String where = formJoinAndWhereClause() + parseGroupBy() + having.getCondition();
             List<Object> list = Arrays.asList(getParams().toArray());
             list.addAll(having.getParams());
 
@@ -471,7 +471,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
         try {
             sqlPocket = this.getSql();
             SqlPocket having = parseHaving();
-            String where = formWhereClause() + parseGroupBy() + having.getCondition();
+            String where = formJoinAndWhereClause() + parseGroupBy() + having.getCondition();
             List<Object> list = Arrays.asList(getParams().toArray());
             list.addAll(having.getParams());
 
@@ -485,11 +485,11 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
     }
 
     /**
-     * <p>formWhereClause.</p>
+     * <p>formJoinAndWhereClause.</p>
      *
      * @return a {@link java.lang.String} object.
      */
-    protected String formWhereClause() {
+    protected String formJoinAndWhereClause() {
         String res = sqlPocket.getCondition().toString();
         if (StringUtils.isNotBlank(this.tableAlias)) {
             StringBuilder join = new StringBuilder();
@@ -501,6 +501,21 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
             res = " " + this.tableAlias + " " + join + " " + res;
         }
         return res;
+    }
+
+    protected Pair<String, String> formJoinAndWherePair() {
+        String res = sqlPocket.getCondition().toString();
+        String joinString="";
+        if (StringUtils.isNotBlank(this.tableAlias)) {
+            StringBuilder join = new StringBuilder();
+            if (joins != null && !joins.isEmpty()) {
+                for (String t : joins) {
+                    join.append(t);
+                }
+            }
+            joinString = " " + this.tableAlias + " " + join;
+        }
+        return Pair.of(joinString, res);
     }
 
     public void clear() {
@@ -522,7 +537,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
         try {
             sqlPocket = this.getSql();
             SqlPocket having = parseHaving();
-            String where = formWhereClause() + parseGroupBy() + having.getCondition();
+            String where = formJoinAndWhereClause() + parseGroupBy() + having.getCondition();
             List<Object> list = Arrays.asList(getParams().toArray());
             list.addAll(having.getParams());
             List<T> res = operator.selectWithJoin(resultFields, where, list.toArray(), parseOrder(),
@@ -545,7 +560,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
         try {
             sqlPocket = this.getSql();
             SqlPocket having = parseHaving();
-            String whereClause = formWhereClause() + parseGroupBy() + having.getCondition();
+            String whereClause = formJoinAndWhereClause() + parseGroupBy() + having.getCondition();
             List<Object> list = Arrays.asList(getParams().toArray());
             list.addAll(having.getParams());
 
@@ -687,7 +702,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
     String getVectorSql(String field) throws DbException {
         field = SqlFilter.transactSQLInjection(field);
         sqlPocket = this.getSql();
-        String where = formWhereClause();
+        String where = formJoinAndWhereClause();
         where += " " + parseGroupBy();
         where += " " + parseOrder();
         where += " " + parseLimitSql();
@@ -736,7 +751,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 
             sqlPocket = this.getSql();
             SqlPocket having = parseHaving();
-            String where = formWhereClause() + parseGroupBy() + having.getCondition();
+            String where = formJoinAndWhereClause() + parseGroupBy() + having.getCondition();
             List<Object> list = Arrays.asList(getParams().toArray());
             list.addAll(having.getParams());
 
@@ -761,7 +776,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 
             sqlPocket = this.getSql();
             SqlPocket having = parseHaving();
-            String where = formWhereClause() + parseGroupBy() + having.getCondition();
+            String where = formJoinAndWhereClause() + parseGroupBy() + having.getCondition();
             where += " " + parseLimitSql();
             List<Object> list = Arrays.asList(getParams().toArray());
             list.addAll(having.getParams());
@@ -890,7 +905,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
         try {
             sqlPocket = this.getSql();
 
-            String where = formWhereClause();
+            String where = formJoinAndWhereClause();
 
             SqlPocket sqlPocket = parseHaving();
 
@@ -914,7 +929,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
     public int inc(@NotNull String field) throws DbException {
         try {
             sqlPocket = this.getSql();
-            String whereClause = formWhereClause();
+            String whereClause = formJoinAndWhereClause();
             Object[] params = getParams().toArray();
             String sql = "update " + operator.getTableName()
                     + " set " + field + "=" + field + "+1 " + whereClause;
@@ -946,9 +961,8 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
             }
 
             sqlPocket = this.getSql();
-            String whereClause = formWhereClause();
-
-            ensureNotEmptyWhere(whereClause);
+            Pair<String, String>   whereClause = formJoinAndWherePair();
+            ensureNotEmptyWhere(whereClause.getRight());
 
             return operator.update(fields, values, whereClause, getParams().toArray(), cn);
         } finally {
@@ -964,9 +978,9 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
         try {
 
             sqlPocket = this.getSql();
-            String whereClause = formWhereClause();
+            Pair<String, String>   whereClause = formJoinAndWherePair();
 
-            ensureNotEmptyWhere(whereClause);
+            ensureNotEmptyWhere(whereClause.getRight());
             String[] fields = keyValuePairs.keySet().toArray(new String[0]);
             Object[] values = new Object[fields.length];
             for (int i = 0; i < fields.length; i++) {
@@ -995,7 +1009,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
         try {
             sqlPocket = this.getSql();
             SqlPocket having = parseHaving();
-            String where = formWhereClause();
+            String where = formJoinAndWhereClause();
             List<Object> list = Arrays.asList(getParams().toArray());
             list.addAll(having.getParams());
             List<CountObject<K>> res = operator.countGroupObject(field, fun.toString(), where,
@@ -1015,7 +1029,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
     public <K> List<CountObject<K>> countList(String returnField, String[] groupByFields, String having, GroupFunction fun, Class<K> objectType) {
         try {
             sqlPocket = this.getSql();
-            String where = formWhereClause();
+            String where = formJoinAndWhereClause();
             List<Object> list = Arrays.asList(getParams().toArray());
             return operator.countGroupObject(returnField, fun.toString(), where,
                     having, groupByFields, objectType, list.toArray());

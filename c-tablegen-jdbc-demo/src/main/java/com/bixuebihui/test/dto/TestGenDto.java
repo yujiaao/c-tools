@@ -16,7 +16,7 @@ import java.io.Serializable;
 import org.apache.commons.text.StringEscapeUtils;
 
 import javax.annotation.processing.Generated;
-
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 
 
@@ -30,56 +30,56 @@ import com.sdadas.spring2ts.annotations.SharedModel;
 public class TestGenDto  implements Serializable {
 
 
-    
+
     /**
      * id 这里是id! 
      */
     @ApiModelProperty("这里是id!")
     protected Integer  id;
 
-    
+
     /**
      * name 这里是名称！ 
      */
     @ApiModelProperty("这里是名称！")
     protected String  name;
 
-    
+
     /**
      * age 这里是年龄 
      */
     @ApiModelProperty("这里是年龄")
     protected Short  age;
 
-    
+
     /**
      * birth 这里是日期！ 
      */
     @ApiModelProperty("这里是日期！")
     protected Timestamp  birth;
 
-    
+
     /**
      * edu_id 教育程度 
      */
     @ApiModelProperty("教育程度")
     protected Integer  eduId;
 
-    
+
     /**
      * gender 性别 
      */
     @ApiModelProperty("性别")
     protected String  gender;
 
-    
+
     /**
      * sex 性别 
      */
     @ApiModelProperty("性别")
     protected Boolean  sex;
 
-    
+
     /**
      * child 是否有孩子 
      */

@@ -143,7 +143,7 @@ public class GenerateAll implements DiffHandler {
         for(Generator g: perTableGenerator){
             int i=0;
             for(TableInfo info: tableInfos.values()) {
-                info(info.getName());
+                info(info.getName()+" - " +g.getTargetFileName(info.getName()));
                 g.generateToFile(info.getName(), i++);
             }
         }
@@ -153,7 +153,7 @@ public class GenerateAll implements DiffHandler {
         for(Generator g: perIndexGenerator){
             int i=0;
             for(String indexName: indices) {
-                info(indexName);
+                info("index: "+indexName+" by "+ g.getClass().getSimpleName());
                 g.generateToFile(indexName, i++);
             }
         }

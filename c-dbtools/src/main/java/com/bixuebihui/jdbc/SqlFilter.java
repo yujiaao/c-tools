@@ -676,7 +676,7 @@ public class SqlFilter {
         MATCH_PHRASE,
 
         /**
-         * es more_like_this query, use tf-idf to calculate the score & sort by score
+         * es more_like_this query, use tf-idf to calculate the score &amp; sort by score
          */
         MORE_LIKE_THIS,
     }

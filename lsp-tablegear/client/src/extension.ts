@@ -4,7 +4,16 @@
  * ------------------------------------------------------------------------------------------ */
 
 import * as path from 'path';
-import { workspace, ExtensionContext } from 'vscode';
+import {
+	workspace,
+	ExtensionContext,
+	window,
+	FileDecorationProvider,
+	FileDecoration,
+	ThemeColor,
+	EventEmitter,
+	Uri
+} from 'vscode';
 
 import {
 	LanguageClient,
@@ -14,6 +23,9 @@ import {
 } from 'vscode-languageclient/node';
 
 let client: LanguageClient;
+let clientReady: Promise<void> | undefined;
+const TABLEGEN_FILE_REGEX = /(tablege|es).*\.(properties|prop)$/i;
+const TABLEGEN_FILE_GLOB = '**/{tablege,es}*.{properties,prop}';
 
 export function activate(context: ExtensionContext) {
 	// The server is implemented in node
@@ -37,24 +49,38 @@ export function activate(context: ExtensionContext) {
 
 	// Options to control the language client
 	let clientOptions: LanguageClientOptions = {
-		// Register the server for plain text documents
-		documentSelector: [{ scheme: 'file', language: 'plaintext' }],
+		// Monitor properties 文件，由服务端按文件名再次过滤
+		documentSelector: [
+			{ scheme: 'file', language: 'tablegear' },
+			{ scheme: 'file', language: 'properties' },
+			{ scheme: 'untitled', language: 'properties' }
+		],
 		synchronize: {
-			// Notify the server about file changes to '.clientrc files contained in the workspace
-			fileEvents: workspace.createFileSystemWatcher('**/.clientrc')
+			fileEvents: workspace.createFileSystemWatcher(TABLEGEN_FILE_GLOB)
 		}
 	};
 
 	// Create the language client and start the client.
 	client = new LanguageClient(
-		'languageServerExample',
-		'Language Server Example',
+		'tablegearLanguageServer',
+		'TableGear Language Server',
 		serverOptions,
 		clientOptions
 	);
 
 	// Start the client. This will also launch the server
-	client.start();
+	clientReady = client.start();
+
+	const decorationProvider = new TablegearDecorationProvider();
+	context.subscriptions.push(window.registerFileDecorationProvider(decorationProvider));
+
+	const decorationWatcher = workspace.createFileSystemWatcher(TABLEGEN_FILE_GLOB);
+	context.subscriptions.push(decorationWatcher);
+	decorationWatcher.onDidCreate((uri) => decorationProvider.refresh(uri));
+	decorationWatcher.onDidChange((uri) => decorationProvider.refresh(uri));
+	decorationWatcher.onDidDelete((uri) => decorationProvider.refresh(uri));
+
+	return clientReady;
 }
 
 export function deactivate(): Thenable<void> | undefined {
@@ -62,4 +88,29 @@ export function deactivate(): Thenable<void> | undefined {
 		return undefined;
 	}
 	return client.stop();
+}
+
+class TablegearDecorationProvider implements FileDecorationProvider {
+	private readonly _emitter = new EventEmitter<Uri | Uri[] | undefined>();
+	readonly onDidChangeFileDecorations = this._emitter.event;
+
+	provideFileDecoration(uri: Uri): FileDecoration | undefined {
+		if (uri.scheme !== 'file') {
+			return;
+		}
+		const fileName = path.basename(uri.fsPath);
+		if (!TABLEGEN_FILE_REGEX.test(fileName)) {
+			return;
+		}
+
+		return {
+			badge: 'TG',
+			tooltip: 'TableGear 配置文件',
+			color: new ThemeColor('charts.yellow')
+		};
+	}
+
+	refresh(uri?: Uri): void {
+		this._emitter.fire(uri);
+	}
 }

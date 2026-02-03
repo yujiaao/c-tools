@@ -742,13 +742,27 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @return 更新记录数
      */
     public int update(String[] fieldNames, Object[] values, String whereClause, Object[] whereParams, Connection cn) {
+      return update(fieldNames, values, Pair.of("",whereClause),whereParams , cn);
+    }
+
+    /**
+     * 通用更新函数
+     *
+     * @param fieldNames  字段名
+     * @param values      参数对象数组，因无参数类型判断，不建议用空值
+     * @param joinAndWhereClause 条件语句，可以加“?”形参数
+     * @param whereParams 条件语句中包含的参数
+     * @param cn          用于事务处理的数据库连接
+     * @return 更新记录数
+     */
+    public int update(String[] fieldNames, Object[] values, Pair<String,String> joinAndWhereClause, Object[] whereParams, Connection cn) {
         // 如何获取更新数据？
         // 可能需要二次查询，通过 where 查主键id?
         List<Object> allParams = new ArrayList<>();
 
-        ensureWhereNotEmpty(whereClause);
+        ensureWhereNotEmpty(joinAndWhereClause.getRight());
 
-        String query = getUpdateSql(fieldNames, values, whereClause, whereParams, allParams);
+        String query = getUpdateSql(fieldNames, values, joinAndWhereClause.getRight(), whereParams, allParams, joinAndWhereClause.getLeft());
         int res;
         Object[] params = allParams.toArray();
 
@@ -760,6 +774,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         afterUpdate(params, query, res);
         return res;
     }
+
 
     private void ensureWhereNotEmpty(String whereClause) {
         if (StringUtils.isBlank(whereClause)) {
@@ -851,7 +866,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
     }
 
 
-    protected String getUpdateSql(String[] fields, Object[] values, String whereClause, Object[] whereParams, List<Object> allParams) {
+    protected String getUpdateSql(String[] fields, Object[] values, String whereClause, Object[] whereParams, List<Object> allParams, String join) {
         if (fields == null || fields.length == 0) {
             throw new DbException("参数fieldNames不能为空");
         }
@@ -880,7 +895,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
         allParams.addAll(params);
         Collections.addAll(allParams, whereParams);
 
-        return "update " + this.getTableName() + " set " + sb + whereClause;
+        return "update " + this.getTableName()+" "+ join + " set " + sb + whereClause;
     }
 
     /**
@@ -2111,7 +2126,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @param groupBy       分组语句
      * @param params        参数
      * @return 返回统计的键值对列表
-     * @deprecated use more generic  {@code <K> List<CountObject<K>> countGroupObject }
+     * @deprecated use more generic  {@code &lt;K&gt; List&lt;CountObject&lt;K&gt;&gt; countGroupObject }
      */
     @Deprecated
     public @NotNull

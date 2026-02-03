@@ -1673,7 +1673,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
      * @param groupBy       分组语句
      * @param params        参数
      * @return 返回统计的键值对列表
-     * @deprecated use more generic  {@code <K> List<CountObject<K>> countGroupObject }
+     * @deprecated use more generic  {@code &lt;K&gt; List&lt;CountObject&lt;K&gt;&gt; countGroupObject }
      */
     @Deprecated
     public @NotNull

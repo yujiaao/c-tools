@@ -188,20 +188,28 @@ public class TestGen  implements Serializable {
     public String toXml()
     {
         StringBuilder s= new StringBuilder();
-        String ln = System.getProperty("line.separator");
+        String ln = System.lineSeparator();
         s.append("<test_gen ");
 
+        
         s.append(" id=\"").append(this.getId()).append("\"");
         
+        
         s.append(" name=\"").append(StringEscapeUtils.escapeXml11(this.getName())).append("\"");
+        
         s.append(" age=\"").append(this.getAge()).append("\"");
+        
         
         s.append(" birth=\"").append(this.getBirth()).append("\"");
         
+        
         s.append(" eduId=\"").append(this.getEduId()).append("\"");
         
+        
         s.append(" gender=\"").append(StringEscapeUtils.escapeXml11(this.getGender())).append("\"");
+        
         s.append(" sex=\"").append(this.getSex()).append("\"");
+        
         
         s.append(" child=\"").append(this.getChild()).append("\"");
         s.append(" />");

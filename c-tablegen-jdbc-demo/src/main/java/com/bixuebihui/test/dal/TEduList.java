@@ -176,27 +176,24 @@ public class TEduList  extends BaseList<TEdu, Integer>
 
     @Override
     public void setIdLong(TEdu info, long id) {
-
     
         info.setId((int)id);
-
     }
 
 
 
+  
+  
       
       
-          
-          
-      
-
-    
+  
+  
 
     
 
     
     /**
-     * Deletes from the database for table t_edu with connection
+     *21 Deletes from the database for table t_edu with connection
      */
     @Override
     public boolean deleteByKey(  Integer id,   Connection cn )
@@ -205,8 +202,7 @@ public class TEduList  extends BaseList<TEdu, Integer>
     }
 
     /**
-    * Deletes from the database for table t_edu
-    */
+    *22 Deletes from the database for table t_edu */
     @Override
     public boolean deleteByKey(  Integer id )
     {

@@ -506,6 +506,37 @@ public class TableUtils {
      *   8.0.22版返回所有用户可见的表，
      *   5.1.47版只返回 schema 指定的库里的表
      *  !!!
+     *
+     *  在数据库的 metadata.getTables 方法中，schema 和 catalog 参数的作用是用于定位数据库中的表，但其具体含义和取值会因数据库类型的不同而有差异，这与数据库自身的层级结构设计有关。以下是常见数据库中这两个参数的传参说明：
+     * 1. 概念基础
+     * catalog：通常指数据库的 “目录”，是比 schema 更高层级的命名空间（部分数据库中可能与数据库名对应）。
+     * schema：通常指 “模式”，是数据库中表、视图等对象的容器，层级低于 catalog（部分数据库中与用户、数据库名对应）。
+     * 2. 常见数据库的参数取值
+     * （1）MySQL
+     * catalog：对应 数据库名（因为 MySQL 中没有单独的 catalog 层级，用数据库名替代）。
+     * schema：在 MySQL 中，schema 与数据库名概念几乎等价，因此该参数通常 传 null 或空字符串（实际查询时会忽略，主要用 catalog 指定数据库）。
+     * 示例：查询 testdb 数据库中的表，catalog="testdb"，schema=null。
+     * （2）Oracle
+     * catalog：Oracle 中 不支持 catalog，因此通常传 null 或空字符串。
+     * schema：对应 数据库用户名称（Oracle 中用用户作为 schema 的标识，表默认属于创建它的用户的 schema）。
+     * 示例：查询用户 SCOTT 下的表，catalog=null，schema="SCOTT"。
+     * （3）SQL Server
+     * catalog：对应 数据库名（SQL Server 中 catalog 直接等同于数据库）。
+     * schema：对应 模式名（默认模式为 dbo，其他常见模式如用户自定义模式）。
+     * 示例：查询 AdventureWorks 数据库中 dbo 模式下的表，catalog="AdventureWorks"，schema="dbo"。
+     * （4）PostgreSQL
+     * catalog：对应 数据库名（PostgreSQL 中 catalog 即数据库实例中的具体数据库）。
+     * schema：对应 模式名（默认模式为 public，也可指定其他自定义模式）。
+     * 示例：查询 mydb 数据库中 public 模式下的表，catalog="mydb"，schema="public"。
+     * （5）DB2
+     * catalog：对应 数据库名 或 目录名（DB2 支持多级目录，通常用数据库名）。
+     * schema：对应 模式名（通常与创建者用户名相同，或自定义模式）。
+     * 示例：查询 sample 数据库中 db2admin 模式下的表，catalog="sample"，schema="db2admin"。
+     * （6）SQLite
+     * SQLite 是文件型数据库，没有 catalog 和 schema 层级，因此两个参数均传 null 或空字符串即可。
+     * 3. 通用规则
+     * 若不确定具体值，可先传 null（表示不限制该层级，返回所有符合条件的表），再根据返回结果筛选。
+     * 部分数据库驱动可能对参数大小写敏感（如 Oracle 对 schema 名大小写不敏感，PostgreSQL 默认敏感），需注意与数据库对象名一致。
      */
     public static List<String> getTableData(DatabaseMetaData metaData,
                                             String catalog, String schema, String tableOwner,

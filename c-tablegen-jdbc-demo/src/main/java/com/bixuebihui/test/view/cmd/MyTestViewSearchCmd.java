@@ -30,10 +30,10 @@ public class MyTestViewSearchCmd {
 
     
         /**
-        * edu_id edu_id 
+        * edu_id 教育程度 
         *  change type of Integer to List<Integer> will generate 'in' sql condition.
         */
-        
+        @ApiModelProperty("教育程度")
         protected Integer  eduId;
     
 

@@ -20,6 +20,12 @@ public class ProjectConfig {
     private static final Logger LOG = LoggerFactory.getLogger(ProjectConfig.class);
 
     /**
+     * Property key for enabling smart merge of generated code with existing files.
+     * When enabled, user modifications in Dto, SearchCmd, and Converter files will be preserved.
+     */
+    public static final String ENABLE_MERGE_PROPERTY = "enable_merge";
+
+    /**
      * used for DataSource alias for spring autowired @Qualifer('alias') annotation
      */
     String alias;
@@ -49,6 +55,12 @@ public class ProjectConfig {
     boolean r2dbc = false;
     boolean readWriteSeparate = false;
     boolean foreignKeys = false;
+    /**
+     * Whether to enable smart merge when generating code.
+     * When enabled, existing user modifications in Dto, SearchCmd, and Converter files will be preserved.
+     * Default is false to maintain backward compatibility.
+     */
+    boolean enableMerge = false;
     /**
      * additional settings, used for comments, data checking, interfaces, etc.
      */
@@ -89,28 +101,28 @@ public class ProjectConfig {
         c.alias = props.getProperty("alias");
         c.baseDir = baseDir;
         c.schema = props.getProperty("schema");
-        LOG.debug("schema:" + c.schema);
+        LOG.debug("schema:{}", c.schema);
         c.catalog = props.getProperty("catalog");
-        LOG.debug("catalog:" + c.catalog);
+        LOG.debug("catalog:{}", c.catalog);
 
         String baseSrc = props.getProperty("src_dir");
 
         c.srcDir = baseDir + baseSrc;
-        LOG.debug("src_dir:" + c.srcDir);
+        LOG.debug("src_dir:{}", c.srcDir);
         c.resourceDir = baseDir + props.getProperty("resource_dir", baseSrc);
-        LOG.debug("resource_dir:" + c.resourceDir);
+        LOG.debug("resource_dir:{}", c.resourceDir);
 
         c.serviceDir = baseDir + props.getProperty("service_dir", baseSrc);
-        LOG.debug("service_dir:" + c.serviceDir);
+        LOG.debug("service_dir:{}", c.serviceDir);
 
         c.controllerDir = baseDir + props.getProperty("controller_dir", baseSrc);
-        LOG.debug("controller_dir:" + c.controllerDir);
+        LOG.debug("controller_dir:{}", c.controllerDir);
 
         c.dtoDir = baseDir + props.getProperty("dto_dir", baseSrc);
-        LOG.debug("dto_dir:" + c.dtoDir);
+        LOG.debug("dto_dir:{}", c.dtoDir);
 
         c.cmdDir = baseDir + props.getProperty("cmd_dir", baseSrc);
-        LOG.debug("cmd_dir:" + c.cmdDir);
+        LOG.debug("cmd_dir:{}", c.cmdDir);
 
 
         c.delColName = props.getProperty("del_col_name", c.delColName);
@@ -119,18 +131,18 @@ public class ProjectConfig {
 
 
         c.testDir = baseDir + props.getProperty("test_dir");
-        LOG.debug("test_dir:" + c.testDir);
+        LOG.debug("test_dir:{}", c.testDir);
         c.jspDir = baseDir + props.getProperty("jsp_dir");
-        LOG.debug("jsp_dir:" + c.jspDir);
+        LOG.debug("jsp_dir:{}", c.jspDir);
 
         c.packageName = props.getProperty("package_name");
-        LOG.debug("package_name:" + c.packageName);
+        LOG.debug("package_name:{}", c.packageName);
 
         c.tableOwner = props.getProperty("table_owner");
-        LOG.debug("table_owner:" + c.tableOwner);
+        LOG.debug("table_owner:{}", c.tableOwner);
 
         c.sharedModelGroup = props.getProperty("shared_model_group");
-        LOG.debug("shared_model_group:" + c.sharedModelGroup);
+        LOG.debug("shared_model_group:{}", c.sharedModelGroup);
 
         c.indexes = getBooleanCfg(props, "indexes");
         c.foreignKeys = getBooleanCfg(props, "foreign_keys");
@@ -183,6 +195,17 @@ public class ProjectConfig {
         c.encryptedFields = toMap(props.getProperty("encrypted_fields"));
         c.ignoreFields = toMap(props.getProperty("ignore_fields"));
 
+        // Check properties file first, then system property as fallback
+        String enableMergeProp = props.getProperty(ENABLE_MERGE_PROPERTY);
+        if (enableMergeProp != null) {
+            c.enableMerge = getBooleanCfg(props, ENABLE_MERGE_PROPERTY);
+        } else {
+            // Fallback to system property if not set in properties file
+            String sysProp = System.getProperty("tablegen.enableMerge");
+            c.enableMerge = "true".equalsIgnoreCase(sysProp);
+        }
+        LOG.debug("enable_merge:{}", c.enableMerge);
+
         return c;
     }
 
@@ -200,7 +223,7 @@ public class ProjectConfig {
                     if (res.get(tableFieldPair[0]) == null) {
                         res.put(tableFieldPair[0], new ArrayList<>(Arrays.stream(tableFieldPair[1].split(",")).collect(toList())));
                     } else {
-                        res.get(tableFieldPair[0]).addAll(Arrays.stream(tableFieldPair[1].split(",")).collect(toList()));                 }
+                        res.get(tableFieldPair[0]).addAll(Arrays.stream(tableFieldPair[1].split(",")).toList());                 }
                 }else{
                     LOG.error(formatError);
                 }
@@ -667,5 +690,13 @@ public class ProjectConfig {
 
     public void setSharedModelGroup(String sharedModelGroup) {
         this.sharedModelGroup = sharedModelGroup;
+    }
+
+    public boolean isEnableMerge() {
+        return enableMerge;
+    }
+
+    public void setEnableMerge(boolean enableMerge) {
+        this.enableMerge = enableMerge;
     }
 }

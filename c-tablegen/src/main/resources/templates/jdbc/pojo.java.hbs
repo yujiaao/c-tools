@@ -24,7 +24,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 public class {{className}} {{interface}} {
 {{! field declaration }}
 {{#each fields as | field index | }}
-    {{log field level="info" }}
+    {{! log field level="info" }}
     /**
     * {{columnDescription this tableName}}
     */

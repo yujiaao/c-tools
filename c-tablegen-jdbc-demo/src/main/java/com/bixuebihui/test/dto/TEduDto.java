@@ -13,16 +13,14 @@ package com.bixuebihui.test.dto;
 
 import java.sql.*;
 import java.io.Serializable;
-import jakarta.validation.constraints.*;
 import org.apache.commons.text.StringEscapeUtils;
 
 import javax.annotation.processing.Generated;
-
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 
 
 import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiParam;
 import io.swagger.annotations.ApiModelProperty;
 import com.sdadas.spring2ts.annotations.SharedModel;
 
@@ -32,17 +30,16 @@ import com.sdadas.spring2ts.annotations.SharedModel;
 public class TEduDto  implements Serializable {
 
 
-    
+
     /**
      * id 这里是id! 
      */
     @ApiModelProperty("这里是id!")
     protected Integer  id;
 
-    
+
     /**
      * degree 这里是名称！ 
-    * NotNull, default value: NULL
      */
     @ApiModelProperty("这里是名称！")
     protected String  degree;
@@ -72,7 +69,6 @@ public class TEduDto  implements Serializable {
 
     /**
      * degree 这里是名称！ 
-    * NotNull, default value: NULL
      */
     public void setDegree(String degree)
     {
@@ -80,7 +76,6 @@ public class TEduDto  implements Serializable {
     }
     /**
      * degree 这里是名称！ 
-    * NotNull, default value: NULL
      */
     public String getDegree()
     {
