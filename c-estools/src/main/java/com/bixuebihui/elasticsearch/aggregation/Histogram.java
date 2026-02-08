@@ -73,8 +73,8 @@ class Histogram extends AbstractSimpleAggregation
     /**
      * Set the bucket sort order.
      *
-     * @param string $order     "_count", "_term", or the name of a sub-aggregation or sub-aggregation response field
-     * @param string $direction "asc" or "desc"
+     * @param order      "_count", "_term", or the name of a sub-aggregation or sub-aggregation response field
+     * @param direction "asc" or "desc"
      *
      * @return $this
      */

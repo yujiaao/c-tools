@@ -18,11 +18,9 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.function.Supplier;
 
 import static com.bixuebihui.elasticsearch.EsRequest.getHits;
 import static java.util.Collections.*;
-import static java.util.Collections.emptySet;
 
 /**
  * @author xwx
@@ -34,8 +32,8 @@ public abstract class BaseEsOperator<T, V> implements Record<T> {
         this.request = request;
     }
 
-    public static JsonWapper builder() {
-        return new JsonWapper();
+    public static JsonWrapper builder() {
+        return new JsonWrapper();
     }
 
     public EsRequest getRequest() {
@@ -44,7 +42,16 @@ public abstract class BaseEsOperator<T, V> implements Record<T> {
 
     @Override
     public T find() throws DbException {
-        throw new NotImplementedException();
+        int from = 0;
+        int size = 1;
+        LinkedHashMap<String, String> sort = new LinkedHashMap<>();
+        String res = request.search(EsQueryBuilder.build(Query.match_all(), from, size,
+                Collections.emptySet(), Collections.emptySet(), sort, null,
+                emptyMap(), null, emptyList()));
+
+        Wrapper<T> w = toObjectWrapper(res, size);
+
+        return w.items.get(0);
     }
 
     @Override
@@ -66,11 +73,11 @@ public abstract class BaseEsOperator<T, V> implements Record<T> {
         return emptyList();
     }
 
-    public Wrapper<T> toObjectWrapper(String jsonString) {
+    public Wrapper<T> toObjectWrapper(String jsonString, int maxRow) {
         try {
 
-            String json = request.esJsonToTableJson(jsonString, 0, 0, 0, 0, 0);
-            JsonWapper wapper = builder();
+            String json = request.esJsonToTableJson(jsonString, maxRow, 0, maxRow, 0, maxRow);
+            JsonWrapper wapper = builder();
             JavaType type = wapper.getObjectMapper().getTypeFactory().constructParametricType(Wrapper.class, getType());
             Wrapper<T> res = wapper.getObjectMapper().readValue(json, type);
             return res;
@@ -80,10 +87,14 @@ public abstract class BaseEsOperator<T, V> implements Record<T> {
         }
     }
 
+    public Wrapper<T> toObjectWrapper(String jsonString) {
+       return toObjectWrapper(jsonString, 1);
+    }
+
     public List<EsSearchHitResult<T>> toEsResultWrapper(String jsonString) {
         try {
 
-            JsonWapper wrapper = builder();
+            JsonWrapper wrapper = builder();
             JavaType inner = wrapper.getObjectMapper().getTypeFactory().constructParametricType(EsSearchHitResult.class, getType());
             JavaType type = wrapper.getObjectMapper().getTypeFactory().constructParametricType(List.class, inner);
 
@@ -123,9 +134,9 @@ public abstract class BaseEsOperator<T, V> implements Record<T> {
                 Collections.emptySet(), Collections.emptySet(), sort, null,
                 emptyMap(), null, emptyList()));
 
-        Wrapper<T> w = toObjectWrapper(res);
+        Wrapper<T> w = toObjectWrapper(res, size);
 
-        return w.data;
+        return w.items;
     }
 
     @Override
@@ -213,6 +224,11 @@ public abstract class BaseEsOperator<T, V> implements Record<T> {
         throw new NotImplementedException();
     }
 
+    @Override
+    public int update(Map<String,Object> keyValuePairs) throws DbException {
+        throw new NotImplementedException();
+    }
+
     public int update(String _id, String[] fields, Object[] values) throws DbException {
         return update(_id, fields, values, true);
     }
@@ -224,6 +240,15 @@ public abstract class BaseEsOperator<T, V> implements Record<T> {
         }
         try {
             return request.update(_id, map, refresh);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            throw new DbException(e.getMessage());
+        }
+    }
+
+    public int update(String _id, Map<String, Object> kv, boolean refresh) throws DbException {
+        try {
+            return request.update(_id, kv, refresh);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
             throw new DbException(e.getMessage());
@@ -284,7 +309,7 @@ public abstract class BaseEsOperator<T, V> implements Record<T> {
         String res = request.search(EsQueryBuilder.build(query, begin, size, resultFields, exludeFields, sort,
                 null, emptyMap(), null, searchAfter));
 
-        return toObjectWrapper(res);
+        return toObjectWrapper(res, end-begin);
     }
 
     public List<EsSearchHitResult<T>> select(Set<String> resultFields, Set<String> exludeFields,
@@ -358,7 +383,7 @@ public abstract class BaseEsOperator<T, V> implements Record<T> {
         return Pair.of(getHits(res), toEsResultWrapper(res));
     }
 
-    static class JsonWapper {
+    static class JsonWrapper {
         private ObjectMapper objectMapper;
 
         public ObjectMapper getObjectMapper() {
@@ -424,18 +449,18 @@ public abstract class BaseEsOperator<T, V> implements Record<T> {
     }
 
     public static class Wrapper<T> {
-        List<T> data;
+        List<T> items;
         Paging paging;
         String caption;
         List<String> titles;
         List<String> _id;
 
-        public List<T> getData() {
-            return data;
+        public List<T> getItems() {
+            return items;
         }
 
-        public void setData(List<T> data) {
-            this.data = data;
+        public void setItems(List<T> items) {
+            this.items = items;
         }
 
         public Paging getPaging() {

@@ -16,10 +16,7 @@ import io.burt.jmespath.jackson.JacksonRuntime;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.http.client.methods.*;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -187,9 +184,12 @@ public class EsRequest {
         return 0;
     }
 
-    private static long getHits(JsonNode input) {
+    private static Long getHits(JsonNode input) {
         if (input == null || (input.at("/hits/total") instanceof MissingNode)) {
-            return 0;
+            return null;
+        }
+        if(input.at("/hits/total/value").isNumber()) {
+            return input.at("/hits/total/value").asLong();
         }
         return input.at("/hits/total").asLong();
     }
@@ -311,7 +311,11 @@ public class EsRequest {
             ((ObjectNode) paging).put("rowEnd", rowEnd);
             ((ObjectNode) paging).put("rowStart", rowStart);
             ((ObjectNode) paging).put("page", page);
-            ((ObjectNode) paging).put("total", getHits(input));
+            Long total = getHits(input);
+            if(total!=null) {
+                ((ObjectNode) paging).put("totalRows", total);
+            }
+
         }
         return resultTotal;
     }
@@ -384,6 +388,64 @@ public class EsRequest {
         return httpJson(post, sb.toString());
     }
 
+    /**
+     * 批量更新文档，支持通过mixIn来忽略特定字段
+     * @param indexName 索引名称
+     * @param docs 要更新的文档列表
+     * @param getId 获取文档ID的函数
+     * @param refresh 是否立即刷新
+     * @param mixIn 用于JSON序列化的mixIn类，可以包含@JsonIgnoreProperties注解
+     * @return 更新结果
+     * @throws JsonProcessingException 如果JSON处理出错
+     *
+     * 使用示例：
+     * <pre>
+     * // 创建一个mixIn类来忽略特定字段
+     * @JsonIgnoreProperties({"field1", "field2"})
+     * abstract class MyMixIn {}
+     *
+     * // 使用updateBatch方法
+     * String result = esRequest.updateBatch(
+     *     "my_index",
+     *     documents,
+     *     doc -> doc.getId(),
+     *     true,
+     *     MyMixIn.class
+     * );
+     * </pre>
+     */
+    public <T> String updateBatch(String indexName, List<T> docs, Function<T, String> getId, boolean refresh, Class<?> mixIn, boolean docAsUpsert) throws JsonProcessingException {
+        HttpEntityEnclosingRequestBase post = new HttpPost(host + "/" + EsQueryBuilder.ACTION_BULK + (refresh ? "?" + REFRESH : ""));
+        StringBuilder sb = new StringBuilder();
+
+        ObjectMapper tempMapper = mapper.copy();
+        if (mixIn != null) {
+            tempMapper.addMixIn(docs.get(0).getClass(), mixIn);
+        }
+
+        for (T doc : docs) {
+            Map<String, Object> convert = Maps.newHashMap();
+            Map<String, Object> message = Maps.newHashMap();
+            message.put("_index", indexName);
+
+            String id = getId.apply(doc);
+            if (id == null) {
+                throw new IllegalArgumentException("Document ID cannot be null for update operation");
+            }
+            message.put("_id", id);
+            message.put("_type", "_doc");
+            convert.put("update", message);
+            sb.append(tempMapper.writeValueAsString(convert)).append("\n");
+
+            Map<String, Object> docMap = Maps.newHashMap();
+            docMap.put("doc", doc);
+            docMap.put("doc_as_upsert", true);
+
+            sb.append(tempMapper.writeValueAsString(docMap)).append("\n");
+        }
+
+        return httpJson(post, sb.toString());
+    }
 
     public String createIndex(String indexName) {
 
@@ -394,17 +456,19 @@ public class EsRequest {
 
     public String getFromUrl(String url, String body, String method) {
 
-
-        try {
-            HttpWithJsonEntity getRequest =
-                    HttpWithJsonEntity.builder()
-                            .withUrl(url)
-                            .withBodyEntry(body)
-                            .withMethod(method)
-                            .build();
-            return httpJson(getRequest, body);
+        try
+        {
+            if (body != null) {
+                HttpWithJsonEntity request = HttpWithJsonEntity.builder()
+                        .withUrl(url)
+                        .withMethod(method).withBodyEntry(body).build();
+                return httpJson(request, body);
+            }else {
+                HttpGet request = new HttpGet(url);
+                return httpJson(request, null);
+            }
         } catch (URISyntaxException | UnsupportedEncodingException e) {
-            logger.error("get from url: " + url, e);
+            logger.error("get from url: {}", url, e);
         }
         return null;
 
@@ -416,13 +480,15 @@ public class EsRequest {
      * @param requestBase http request
      * @return response
      */
-    private String httpJson(HttpEntityEnclosingRequestBase requestBase, String body) {
+    private String httpJson(HttpRequestBase requestBase, String body) {
         logger.debug("====>>>>");
         logger.debug(requestBase.toString() + "\n" + StringUtils.abbreviate(body, MAX_REQUEST_DEBUG_INFO_WIDTH)
                 +"\n"+(body!=null && body.length()> MAX_REQUEST_DEBUG_INFO_WIDTH ?"...":""));
 
-        if (StringUtils.isNotBlank(body) && requestBase.getEntity() == null) {
-            requestBase.setEntity(new StringEntity(body, ContentType.APPLICATION_JSON));
+        if (StringUtils.isNotBlank(body) &&
+                requestBase instanceof HttpEntityEnclosingRequestBase &&
+                ((HttpEntityEnclosingRequestBase)requestBase).getEntity() == null) {
+            ((HttpEntityEnclosingRequestBase)requestBase).setEntity(new StringEntity(body, ContentType.APPLICATION_JSON));
         }
 
 

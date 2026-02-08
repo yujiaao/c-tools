@@ -13,6 +13,25 @@ public class User {
     Integer begin_age;
     Integer end_age;
 
+    public String getBegin_name() {
+        return begin_name;
+    }
+
+    public void setBegin_name(String begin_name) {
+        this.begin_name = begin_name;
+    }
+
+    public String getEnd_name() {
+        return end_name;
+    }
+
+    public void setEnd_name(String end_name) {
+        this.end_name = end_name;
+    }
+
+    String begin_name;
+    String end_name;
+
     public Timestamp getBegin_ModifiedTime() {
         return begin_ModifiedTime;
     }

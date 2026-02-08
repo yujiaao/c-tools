@@ -10,11 +10,20 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
+import static java.util.Collections.emptyMap;
+import static java.util.stream.Collectors.toList;
+
 /**
  * @author xwx
  */
 public class ProjectConfig {
     private static final Logger LOG = LoggerFactory.getLogger(ProjectConfig.class);
+
+    /**
+     * Property key for enabling smart merge of generated code with existing files.
+     * When enabled, user modifications in Dto, SearchCmd, and Converter files will be preserved.
+     */
+    public static final String ENABLE_MERGE_PROPERTY = "enable_merge";
 
     /**
      * used for DataSource alias for spring autowired @Qualifer('alias') annotation
@@ -34,6 +43,7 @@ public class ProjectConfig {
     String removePrefix;
     String versionColName = "version";
     String delColName = "is_del";
+    String sharedModelGroup;
     boolean indexes;
     boolean overWriteAll = false;
     boolean useCustomMetaTable = false;
@@ -41,9 +51,16 @@ public class ProjectConfig {
     boolean useSwagger = true;
     boolean useAutoincrement = false;
     boolean generateProcedures = true;
-    boolean generateAll=false;
-    boolean r2dbc=false;
-    boolean readWriteSeparate=false;
+    boolean generateAll = false;
+    boolean r2dbc = false;
+    boolean readWriteSeparate = false;
+    boolean foreignKeys = false;
+    /**
+     * Whether to enable smart merge when generating code.
+     * When enabled, existing user modifications in Dto, SearchCmd, and Converter files will be preserved.
+     * Default is false to maintain backward compatibility.
+     */
+    boolean enableMerge = false;
     /**
      * additional settings, used for comments, data checking, interfaces, etc.
      */
@@ -67,6 +84,8 @@ public class ProjectConfig {
     Map<String, String> tablesList;
     Map<String, String> viewList;
     Map<String, String> excludeTablesList;
+    Map<String, List<String>> encryptedFields;
+    Map<String, List<String>> ignoreFields;
     private String serviceDir;
     private String controllerDir;
     private String dtoDir;
@@ -82,28 +101,28 @@ public class ProjectConfig {
         c.alias = props.getProperty("alias");
         c.baseDir = baseDir;
         c.schema = props.getProperty("schema");
-        LOG.debug("schema:" +  c.schema);
+        LOG.debug("schema:{}", c.schema);
         c.catalog = props.getProperty("catalog");
-        LOG.debug("catalog:" +  c.catalog);
+        LOG.debug("catalog:{}", c.catalog);
 
         String baseSrc = props.getProperty("src_dir");
 
         c.srcDir = baseDir + baseSrc;
-        LOG.debug("src_dir:" +  c.srcDir);
+        LOG.debug("src_dir:{}", c.srcDir);
         c.resourceDir = baseDir + props.getProperty("resource_dir", baseSrc);
-        LOG.debug("resource_dir:" +  c.resourceDir);
+        LOG.debug("resource_dir:{}", c.resourceDir);
 
-        c.serviceDir = baseDir + props.getProperty("service_dir",baseSrc );
-        LOG.debug("service_dir:" +  c.serviceDir);
+        c.serviceDir = baseDir + props.getProperty("service_dir", baseSrc);
+        LOG.debug("service_dir:{}", c.serviceDir);
 
         c.controllerDir = baseDir + props.getProperty("controller_dir", baseSrc);
-        LOG.debug("controller_dir:" +  c.controllerDir);
+        LOG.debug("controller_dir:{}", c.controllerDir);
 
         c.dtoDir = baseDir + props.getProperty("dto_dir", baseSrc);
-        LOG.debug("dto_dir:" +  c.dtoDir);
+        LOG.debug("dto_dir:{}", c.dtoDir);
 
         c.cmdDir = baseDir + props.getProperty("cmd_dir", baseSrc);
-        LOG.debug("cmd_dir:" +  c.cmdDir);
+        LOG.debug("cmd_dir:{}", c.cmdDir);
 
 
         c.delColName = props.getProperty("del_col_name", c.delColName);
@@ -112,17 +131,22 @@ public class ProjectConfig {
 
 
         c.testDir = baseDir + props.getProperty("test_dir");
-        LOG.debug("test_dir:" +  c.testDir);
+        LOG.debug("test_dir:{}", c.testDir);
         c.jspDir = baseDir + props.getProperty("jsp_dir");
-        LOG.debug("jsp_dir:" +  c.jspDir);
+        LOG.debug("jsp_dir:{}", c.jspDir);
 
         c.packageName = props.getProperty("package_name");
-        LOG.debug("package_name:" +  c.packageName);
+        LOG.debug("package_name:{}", c.packageName);
 
         c.tableOwner = props.getProperty("table_owner");
-        LOG.debug("table_owner:" +  c.tableOwner);
+        LOG.debug("table_owner:{}", c.tableOwner);
+
+        c.sharedModelGroup = props.getProperty("shared_model_group");
+        LOG.debug("shared_model_group:{}", c.sharedModelGroup);
 
         c.indexes = getBooleanCfg(props, "indexes");
+        c.foreignKeys = getBooleanCfg(props, "foreign_keys");
+
         c.r2dbc = getBooleanCfg(props, "r2dbc");
 
         c.readWriteSeparate = getBooleanCfg(props, "read_write_separate");
@@ -132,11 +156,11 @@ public class ProjectConfig {
         c.generateProcedures = getBooleanCfg(props, "generate_procedures");
 
         c.addPrefix = props.getProperty("add_prefix");
-        if ( c.addPrefix == null) {
+        if (c.addPrefix == null) {
             c.addPrefix = "";
         }
         c.removePrefix = props.getProperty("remove_prefix");
-        if ( c.removePrefix == null) {
+        if (c.removePrefix == null) {
             c.removePrefix = "";
         }
 
@@ -151,7 +175,7 @@ public class ProjectConfig {
         c.pojoUuidInterface = props.getProperty("pojo_uuid_interface");
         c.pojoModifyDateInterface = props.getProperty("pojo_modifydate_interface");
 
-        c.pojoNodeInterfaceList =  makeList(props.getProperty("pojo_node_interface_list"));
+        c.pojoNodeInterfaceList = makeList(props.getProperty("pojo_node_interface_list"));
         c.pojoVersionInterfaceList = makeList(props.getProperty("pojo_version_interface_list"));
         c.pojoStateInterfaceList = makeList(props.getProperty("pojo_state_interface_list"));
         c.pojoUuidInterfaceList = makeList(props.getProperty("pojo_uuid_interface_list"));
@@ -168,7 +192,46 @@ public class ProjectConfig {
 
         c.extraSetting = props.getProperty("extra_setting");
 
+        c.encryptedFields = toMap(props.getProperty("encrypted_fields"));
+        c.ignoreFields = toMap(props.getProperty("ignore_fields"));
+
+        // Check properties file first, then system property as fallback
+        String enableMergeProp = props.getProperty(ENABLE_MERGE_PROPERTY);
+        if (enableMergeProp != null) {
+            c.enableMerge = getBooleanCfg(props, ENABLE_MERGE_PROPERTY);
+        } else {
+            // Fallback to system property if not set in properties file
+            String sysProp = System.getProperty("tablegen.enableMerge");
+            c.enableMerge = "true".equalsIgnoreCase(sysProp);
+        }
+        LOG.debug("enable_merge:{}", c.enableMerge);
+
         return c;
+    }
+
+    private static Map<String, List<String>> toMap(String encryptedFields) {
+        Map<String, List<String>> res = new HashMap<>();
+        if(StringUtils.isBlank(encryptedFields)) {
+            return emptyMap();
+        }
+
+        String formatError= "encrypt field setting format error: must be `encrypted_fields=table1:field1,field2;table2:field3`";
+        Arrays.stream(encryptedFields.split(";")).forEach(it -> {
+            if (StringUtils.isNotBlank(it) && it.contains(":")) {
+                String[] tableFieldPair = it.split(":");
+                if (tableFieldPair.length == 2) {
+                    if (res.get(tableFieldPair[0]) == null) {
+                        res.put(tableFieldPair[0], new ArrayList<>(Arrays.stream(tableFieldPair[1].split(",")).collect(toList())));
+                    } else {
+                        res.get(tableFieldPair[0]).addAll(Arrays.stream(tableFieldPair[1].split(",")).toList());                 }
+                }else{
+                    LOG.error(formatError);
+                }
+            }else{
+                LOG.error(formatError);
+            }
+        });
+        return res;
     }
 
     private static boolean getBooleanCfg(Properties props, String key) {
@@ -181,6 +244,28 @@ public class ProjectConfig {
             res.addAll(Arrays.asList(property.trim().split(",")));
         }
         return res;
+    }
+
+    public boolean isForeignKeys() {
+        return foreignKeys;
+    }
+
+    public void setForeignKeys(boolean foreignKeys) {
+        this.foreignKeys = foreignKeys;
+    }
+
+    public Map<String, List<String>> getEncryptedFields() {
+        return encryptedFields;
+    }
+
+    public void setEncryptedFields(Map<String, List<String>> encryptedFields) {
+        this.encryptedFields = encryptedFields;
+    }
+    public Map<String, List<String>> getIgnoreFields() {
+        return ignoreFields;
+    }
+    public void setIgnoreFields(Map<String, List<String>> ignoreFields) {
+        this.ignoreFields = ignoreFields;
     }
 
     public String getSwaggerVersion() {
@@ -484,14 +569,14 @@ public class ProjectConfig {
             while (st.hasMoreElements()) {
                 name = st.nextToken().trim();
                 tablesList.put(name, name);
-                LOG.info(name);
+//                LOG.info(name);
             }
         }
     }
 
     /**
-     *  view list is separated by semicolon(;) and before first colon(:) is the view name.
-     *  The view is virtual view, i.e. it is a select SQL.
+     * view list is separated by semicolon(;) and before first colon(:) is the view name.
+     * The view is virtual view, i.e. it is a select SQL.
      */
     void parseViewNames(String names) {
         if (names != null) {
@@ -502,8 +587,8 @@ public class ProjectConfig {
 
             while (st.hasMoreElements()) {
                 String name = st.nextToken().trim();
-                viewList.put(name.substring(0,name.indexOf(":")), parseViewBody(name.substring(name.indexOf(":")+1)));
-                LOG.info(name);
+                viewList.put(name.substring(0, name.indexOf(":")), parseViewBody(name.substring(name.indexOf(":") + 1)));
+//                LOG.info(name);
             }
         }
     }
@@ -511,6 +596,7 @@ public class ProjectConfig {
     /**
      * if sqlOrFileName starts with @ symbol, then treat it as a file name in a relative path of tablegen.properties,
      * otherwise as sql string.
+     *
      * @param sqlOrFileName file name or sql string
      * @return sql string
      */
@@ -520,7 +606,7 @@ public class ProjectConfig {
             try {
                 return FileUtils.readFileToString(new File(fileName), StandardCharsets.UTF_8);
             } catch (IOException e) {
-                LOG.error("parseViewBody read file error:"+fileName+"\n because the `"+sqlOrFileName+"` begin with @, treat as a file name", e);
+                LOG.error("parseViewBody read file error:" + fileName + "\n because the `" + sqlOrFileName + "` begin with @, treat as a file name", e);
                 return sqlOrFileName;
             }
         } else {
@@ -562,6 +648,10 @@ public class ProjectConfig {
         return removePrefix;
     }
 
+    public void setRemovePrefix(String removePrefix) {
+        this.removePrefix = removePrefix;
+    }
+
     public boolean getR2dc() {
         return this.r2dbc;
     }
@@ -569,9 +659,11 @@ public class ProjectConfig {
     public String getBaseControllerDir() {
         return controllerDir + File.separator + packageName2Dir(packageName);
     }
+
     public String getBaseCmdDir() {
         return cmdDir + File.separator + packageName2Dir(packageName);
     }
+
     public String getBaseDtoDir() {
         return dtoDir + File.separator + packageName2Dir(packageName);
     }
@@ -579,6 +671,7 @@ public class ProjectConfig {
     public String getBaseServiceDir() {
         return serviceDir + File.separator + packageName2Dir(packageName);
     }
+
     public String getBaseServiceImplDir() {
         return serviceDir + File.separator + packageName2Dir(packageName);
     }
@@ -589,5 +682,21 @@ public class ProjectConfig {
 
     public void setDelColName(String delColName) {
         this.delColName = delColName;
+    }
+
+    public String getSharedModelGroup() {
+        return sharedModelGroup;
+    }
+
+    public void setSharedModelGroup(String sharedModelGroup) {
+        this.sharedModelGroup = sharedModelGroup;
+    }
+
+    public boolean isEnableMerge() {
+        return enableMerge;
+    }
+
+    public void setEnableMerge(boolean enableMerge) {
+        this.enableMerge = enableMerge;
     }
 }

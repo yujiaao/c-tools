@@ -20,11 +20,7 @@ public class TableGenHelpMojo extends AbstractMojo {
 
     @Override
     public void execute() {
-        try {
-            TableGen.main(new String[]{"--help"});
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        TableGen.main(new String[]{"--help"});
     }
 }
 

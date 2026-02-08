@@ -1,5 +1,6 @@
 package com.bixuebihui.jdbc.aop;
 
+import com.bixuebihui.jdbc.IDbHelper;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.collections.map.LRUMap;
@@ -122,10 +123,11 @@ public class DbHelperAroundAdvice implements MethodInterceptor {
                 }
                 ss.setCount(ss.getCount() + 1);
                 ss.setTotalTime(ss.getTotalTime() + thisTime);
+                sql = reduce(sql);
                 if (thisTime > SqlStat.VERY_SLOW_QUERY) {
-                    LOG.error("[AOP] Query is VERY SLOW: " + thisTime + " sql=" + sql);
+                    LOG.error("[AOP] Query is VERY SLOW: {} sql={}", thisTime, sql);
                 } else if (thisTime > SqlStat.SLOW_QUERY) {
-                    LOG.warn("[AOP] Query is SLOW: " + thisTime + " sql=" + sql);
+                    LOG.warn("[AOP] Query is SLOW: {} sql={}", thisTime, sql);
                 }
             }
 
@@ -136,6 +138,81 @@ public class DbHelperAroundAdvice implements MethodInterceptor {
         }
     }
 
+    String reduce(String sql) {
+        //对形如 ?,?,? 过多（50个以上）个问号的占位符，替换成 ?,...omit XXX ,?
+        // 检查是否有超过50个连续问号的情况，或者SQL长度超过500
+        if (sql.contains("?") && (sql.length() > 500 || hasMoreThan50ConsecutiveQuestionMarks(sql))) {
+            // 查找连续的逗号间隔的问号模式
+            StringBuilder sb = new StringBuilder();
+            int i = 0;
+            while (i < sql.length()) {
+                // 寻找连续的问号序列开始位置
+                int start = sql.indexOf('?', i);
+                if (start == -1) {
+                    // 没有找到问号，添加剩余部分并退出
+                    sb.append(sql.substring(i));
+                    break;
+                }
+
+                // 添加开始位置之前的内容（包括第一个问号）
+                sb.append(sql, i, start + 1);
+
+                // 检查是否是连续的逗号间隔的问号
+                int j = start + 1;
+                int questionMarkCount = 1;
+
+                // 继续计算连续的 ,? 模式
+                while (j < sql.length() - 1 && sql.charAt(j) == ',' && sql.charAt(j + 1) == '?') {
+                    questionMarkCount++;
+                    j += 2;
+                }
+
+                // 如果连续问号数量超过50个，进行替换
+                if (questionMarkCount > 50) {
+                    int omittedCount = questionMarkCount - 2;
+                    // 寻找最后一个问号之后的内容（通常是右括号）
+                    String remaining = "";
+                    if (j < sql.length()) {
+                        remaining = sql.substring(j);
+                    }
+                    // 格式：第一个问号 + 右括号 + 逗号 + 省略标记 + 最后一个问号 + 剩余内容
+                    sb.append(",...omit ").append(omittedCount).append(",?").append(remaining);
+                    i = sql.length(); // 已处理完整个SQL
+                } else {
+                    // 不是连续的问号序列或数量不超过50，从下一个位置继续查找
+                    i = start + 1;
+                }
+            }
+            return sb.toString();
+        }
+        return sql;
+    }
+
+    private boolean hasMoreThan50ConsecutiveQuestionMarks(String sql) {
+        int i = 0;
+        while (i < sql.length()) {
+            int start = sql.indexOf('?', i);
+            if (start == -1) {
+                break;
+            }
+
+            int j = start + 1;
+            int questionMarkCount = 1;
+
+            // 继续计算连续的 ,? 模式
+            while (j < sql.length() - 1 && sql.charAt(j) == ',' && sql.charAt(j + 1) == '?') {
+                questionMarkCount++;
+                j += 2;
+            }
+
+            if (questionMarkCount > 50) {
+                return true;
+            }
+
+            i = j;
+        }
+        return false;
+    }
 
     /**
      * {@inheritDoc}

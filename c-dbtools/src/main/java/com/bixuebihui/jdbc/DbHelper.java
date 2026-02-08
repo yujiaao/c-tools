@@ -714,8 +714,10 @@ public class DbHelper implements IDbHelper {
             throws SQLException {
         if ("TINYINT".equals(colTypeName) && rsmdQuery.getPrecision(i) == 1) {
             columnMap.put(colName, rset.getBoolean(i));
-        } else if ("TINYINT".equals(colTypeName) || "TINYINT UNSIGNED".equals(colTypeName)) {
+        } else if ("TINYINT".equals(colTypeName) ) {
             columnMap.put(colName, rset.getByte(i));
+        } else if ("TINYINT UNSIGNED".equals(colTypeName)) {
+            columnMap.put(colName, rset.getShort(i));
         } else if (rsmdQuery.getScale(i) <= 0) {
             // BigDecimal or Integer
             if (rset.getObject(i) instanceof BigDecimal) {
@@ -734,7 +736,6 @@ public class DbHelper implements IDbHelper {
             }
         } else {
             columnMap.put(colName, rset.getDouble(i));
-
         }
     }
 
@@ -809,7 +810,7 @@ public class DbHelper implements IDbHelper {
 
         if (ArrayUtils.isNotEmpty(targetSqlTypes) && targetSqlTypes.length != params.length) {
             throw new DbException(
-                    "Intenal error: The params and the targetSqlTypes must have same length!");
+                    "Internal error: The params and the targetSqlTypes must have same length!");
         }
 
 
@@ -1012,22 +1013,23 @@ public class DbHelper implements IDbHelper {
     @Override
     public @NotNull <T> List<T> executeQuery(String sql, Object[] params,
                                              @NotNull RowMapperResultReader<T> handle, Set<String> returnFields) {
-        Connection cn = getConnection(true);
-        try (Statement p = ArrayUtils.isNotEmpty(params) ? cn.prepareStatement(sql) : cn.createStatement()) {
-            if (p instanceof PreparedStatement) {
-                fillParameter((PreparedStatement) p, params, null);
-            }
-            try (ResultSet rs = (p instanceof PreparedStatement) ? ((PreparedStatement) p).executeQuery() : p.executeQuery(sql)) {
-                return handle.processResultSet(rs, returnFields);
-            }
-        } catch (SQLException ex) {
-            //可能超时，输出sql和参数
-            dumpSql(ex, sql, params);
-            throw new DbException(ex);
-        } finally {
-            DbUtils.closeQuietly(cn);
-        }
 
+        try(Connection cn = getConnection(true)) {
+            try (Statement p = ArrayUtils.isNotEmpty(params) ? cn.prepareStatement(sql) : cn.createStatement()) {
+                if (p instanceof PreparedStatement) {
+                    fillParameter((PreparedStatement) p, params, null);
+                }
+                try (ResultSet rs = (p instanceof PreparedStatement) ? ((PreparedStatement) p).executeQuery() : p.executeQuery(sql)) {
+                    return handle.processResultSet(rs, returnFields);
+                }
+            } catch (SQLException ex) {
+                //可能超时，输出sql和参数
+                dumpSql(ex, sql, params);
+                throw new DbException(ex);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -1061,7 +1063,9 @@ public class DbHelper implements IDbHelper {
                     throw new DbException("execute sql failed: " + sql);
                 }
                 if(!rs.next()) {
-                    throw new DbException("execute sql failed: " + sql);
+                   //fix bug: no result set
+                    return Pair.of(0L, Collections.emptyList());
+                    //throw new DbException("execute sql failed: " + sql);
                 }
                 long count = rs.getLong(1);
                 if(p.getMoreResults()){

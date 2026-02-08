@@ -2,6 +2,7 @@ package com.bixuebihui.tablegen;
 
 import com.bixuebihui.cache.DictionaryCache;
 import com.bixuebihui.cache.DictionaryItem;
+import com.bixuebihui.db.Dialect;
 import com.bixuebihui.db.KeywordsUtils;
 import com.bixuebihui.generated.tablegen.pojo.T_metacolumn;
 import com.bixuebihui.jdbc.*;
@@ -9,6 +10,7 @@ import com.bixuebihui.tablegen.entry.ColumnData;
 import com.bixuebihui.tablegen.entry.TableInfo;
 import com.bixuebihui.tablegen.entry.TableSetInfo;
 import com.bixuebihui.util.DbUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,27 +28,25 @@ import static com.bixuebihui.db.Dialect.*;
  */
 public class TableUtils {
     private static final Logger LOG = LoggerFactory.getLogger(TableUtils.class);
-    private static StopWatch stopWatch = new StopWatch();
+    private static final StopWatch stopWatch = new StopWatch();
     private static boolean first = true;
 
     private static void start(String taskName) {
         stopWatch.start(taskName);
     }
 
-    private static void end() {
+    private static void end(int dbType) {
         stopWatch.stop();
         if (stopWatch.getLastTaskTimeMillis() > 500) {
-            String info = stopWatch.getLastTaskName() + " took:" + stopWatch.getLastTaskTimeMillis() +
-                    "\nYour DB metadata is slow, By using the tip given there : http://www.mysqlperformanceblog.com/2011/12/23/solving-information_schema-slowness/\n" +
-                    "If you use MySQL, try set this in my.cnf :\n" +
-                    "innodb_stats_on_metadata=0" +
-                    "\n and  set " +
-                    "useInformationSchema=true" +
-                    "\n in db url \n";
-            if (first) {
+            if (first && dbType == MYSQL) {
                 first = false;
-                LOG.warn(info);
-            } else {
+                String info = stopWatch.getLastTaskName() + " took:" + stopWatch.getLastTaskTimeMillis() +
+                        "\nYour DB metadata is slow, By using the tip given there : http://www.mysqlperformanceblog.com/2011/12/23/solving-information_schema-slowness/\n" +
+                        "If you use MySQL, try set this in my.cnf :\n" +
+                        "innodb_stats_on_metadata=0" +
+                        "\n and  set " +
+                        "useInformationSchema=true" +
+                        "\n in db url \n";
                 LOG.warn(info);
             }
         } else {
@@ -68,13 +68,12 @@ public class TableUtils {
      *
      * @throws SQLException if any
      */
-    public static List<String> getTableKeys(IDbHelper helper,
+    public static List<String> getTableKeys(DatabaseMetaData metaData,
                                             String catalog, String schema, String tableName)
             throws SQLException {
         start("getTableKeys");
-        DatabaseMetaData metaData = helper.getConnection().getMetaData();
 
-        List<String> keyData = new ArrayList<>();
+        Map<Integer, String> keyData = new TreeMap<>();
         ResultSet r = null;
         try {
             String key;
@@ -84,56 +83,48 @@ public class TableUtils {
             }
             r = metaData.getPrimaryKeys(catalog, schema, tableName);
 
-            TreeMap<Integer, String> keyMap = new TreeMap<>();
-
             while (r.next()) {
                 // COLUMN_NAME
                 key = r.getString(4);
+                // KEY_SEQ
                 seq = r.getInt(5);
 
-                boolean existsCol = false;
-                for (String dt : keyData) {
-                    if (dt.equalsIgnoreCase(key)) {
-                        existsCol = true;
-                        break;
-                    }
-                }
-                if (existsCol) {
-                    continue;
-                }
-                keyMap.put(seq, key);
+                // 直接按顺序存储，不需要检查重复
+                keyData.put(seq, key);
             }
-            keyData.addAll(keyMap.values());
             if(keyData.isEmpty()){
-                LOG.warn("No primary key found for table " + tableName+" using driver metadata");
-                keyData.addAll(descTable(metaData, tableName));
+                LOG.warn("No primary key found for table {} using driver metadata", tableName);
+                return new ArrayList<>(descTable(metaData, tableName));
             }
 
         } catch (SQLException e) {
             System.err.println("Error whilst getting keys for " + tableName);
             e.printStackTrace(System.err);
         } finally {
-            end();
+            end(detectDbType(metaData.getDriverName()));
             DbUtils.close(r);
         }
 
-        return keyData;
+        return new ArrayList<>(keyData.values());
     }
 
     private static Collection<String> descTable(DatabaseMetaData metaData, String tableName) throws SQLException {
         //same db can't get primary key by metadata, try `desc table`
-        String sql = "desc " + tableName;
-        List<String> keyData = new ArrayList<>();
-        new DbHelper(metaData.getConnection()).executeQuery(sql, resultset -> {
-            String key = resultset.getString(1);
-            //for mysql
-            if (resultset.getString(4).equalsIgnoreCase("PRI") ||
-                    //for StarRocks
-                    resultset.getString(4).equalsIgnoreCase("true")) {
-                keyData.add(key);
-            }
-        });
-        return keyData;
+        if(isMysql(metaData)) {
+            String sql = "desc " + tableName;
+            List<String> keyData = new ArrayList<>();
+            new DbHelper(metaData.getConnection()).executeQuery(sql, resultset -> {
+                String key = resultset.getString(1);
+                //for mysql
+                if (resultset.getString(4).equalsIgnoreCase("PRI") ||
+                        //for StarRocks
+                        resultset.getString(4).equalsIgnoreCase("true")) {
+                    keyData.add(key);
+                }
+            });
+            return keyData;
+        }
+        return Collections.emptyList();
     }
 
     /**
@@ -207,7 +198,7 @@ public class TableUtils {
                 foreignKeyData.add(f);
             }
         } finally {
-            end();
+            end(detectDbType(metaData.getDriverName()));
             DbUtils.close(r);
         }
         return foreignKeyData;
@@ -259,7 +250,7 @@ public class TableUtils {
                 foreignKeyData.add(f);
             }
         } finally {
-            end();
+            end(detectDbType(metaData.getDriverName()));
             DbUtils.close(r);
         }
         return foreignKeyData;
@@ -322,10 +313,9 @@ public class TableUtils {
      * @param dbHelper datasource helper
      * @param databaseName database name
      * @return result of schema
-     * @throws SQLException if any
      */
-    public static Map<String, List<ForeignKeyDefinition>> getAllMySQLExportKeys(IDbHelper dbHelper, String databaseName) throws SQLException {
-        String sql = "SELECT\n" +
+    public static Map<String, List<ForeignKeyDefinition>> getAllMySQLExportKeys(IDbHelper dbHelper, String databaseName) {
+        String sql = "SELECT " +
                 "    A.REFERENCED_TABLE_NAME AS PKTABLE_NAME,  -- 3*\n" +
                 "    A.REFERENCED_COLUMN_NAME AS PKCOLUMN_NAME, -- 4*\n" +
                 "    A.TABLE_NAME AS FKTABLE_NAME,    -- 7* \n" +
@@ -403,7 +393,7 @@ public class TableUtils {
      * AND A.REFERENCED_TABLE_SCHEMA IS NOT NULL
      * ORDER BY A.REFERENCED_TABLE_SCHEMA , A.REFERENCED_TABLE_NAME , A.ORDINAL_POSITION
      */
-    public static Map<String, List<ForeignKeyDefinition>> getAllMySQLImportKeys(IDbHelper dbHelper, String databaseName) throws SQLException {
+    public static Map<String, List<ForeignKeyDefinition>> getAllMySQLImportKeys(IDbHelper dbHelper, String databaseName) {
         String sql = "SELECT \t\n" +
                 "    A.REFERENCED_TABLE_NAME AS PKTABLE_NAME,   -- 3 *\n" +
                 "    A.REFERENCED_COLUMN_NAME AS PKCOLUMN_NAME, -- 4 *\t\n" +
@@ -516,6 +506,37 @@ public class TableUtils {
      *   8.0.22版返回所有用户可见的表，
      *   5.1.47版只返回 schema 指定的库里的表
      *  !!!
+     *
+     *  在数据库的 metadata.getTables 方法中，schema 和 catalog 参数的作用是用于定位数据库中的表，但其具体含义和取值会因数据库类型的不同而有差异，这与数据库自身的层级结构设计有关。以下是常见数据库中这两个参数的传参说明：
+     * 1. 概念基础
+     * catalog：通常指数据库的 “目录”，是比 schema 更高层级的命名空间（部分数据库中可能与数据库名对应）。
+     * schema：通常指 “模式”，是数据库中表、视图等对象的容器，层级低于 catalog（部分数据库中与用户、数据库名对应）。
+     * 2. 常见数据库的参数取值
+     * （1）MySQL
+     * catalog：对应 数据库名（因为 MySQL 中没有单独的 catalog 层级，用数据库名替代）。
+     * schema：在 MySQL 中，schema 与数据库名概念几乎等价，因此该参数通常 传 null 或空字符串（实际查询时会忽略，主要用 catalog 指定数据库）。
+     * 示例：查询 testdb 数据库中的表，catalog="testdb"，schema=null。
+     * （2）Oracle
+     * catalog：Oracle 中 不支持 catalog，因此通常传 null 或空字符串。
+     * schema：对应 数据库用户名称（Oracle 中用用户作为 schema 的标识，表默认属于创建它的用户的 schema）。
+     * 示例：查询用户 SCOTT 下的表，catalog=null，schema="SCOTT"。
+     * （3）SQL Server
+     * catalog：对应 数据库名（SQL Server 中 catalog 直接等同于数据库）。
+     * schema：对应 模式名（默认模式为 dbo，其他常见模式如用户自定义模式）。
+     * 示例：查询 AdventureWorks 数据库中 dbo 模式下的表，catalog="AdventureWorks"，schema="dbo"。
+     * （4）PostgreSQL
+     * catalog：对应 数据库名（PostgreSQL 中 catalog 即数据库实例中的具体数据库）。
+     * schema：对应 模式名（默认模式为 public，也可指定其他自定义模式）。
+     * 示例：查询 mydb 数据库中 public 模式下的表，catalog="mydb"，schema="public"。
+     * （5）DB2
+     * catalog：对应 数据库名 或 目录名（DB2 支持多级目录，通常用数据库名）。
+     * schema：对应 模式名（通常与创建者用户名相同，或自定义模式）。
+     * 示例：查询 sample 数据库中 db2admin 模式下的表，catalog="sample"，schema="db2admin"。
+     * （6）SQLite
+     * SQLite 是文件型数据库，没有 catalog 和 schema 层级，因此两个参数均传 null 或空字符串即可。
+     * 3. 通用规则
+     * 若不确定具体值，可先传 null（表示不限制该层级，返回所有符合条件的表），再根据返回结果筛选。
+     * 部分数据库驱动可能对参数大小写敏感（如 Oracle 对 schema 名大小写不敏感，PostgreSQL 默认敏感），需注意与数据库对象名一致。
      */
     public static List<String> getTableData(DatabaseMetaData metaData,
                                             String catalog, String schema, String tableOwner,
@@ -560,7 +581,7 @@ public class TableUtils {
                 }
             }
         } finally {
-            end();
+            end(detectDbType(metaData.getDriverName()));
             DbUtils.close(tables);
         }
         return tableNames;
@@ -673,94 +694,92 @@ public class TableUtils {
      *
      *
      */
-    public static TableInfo getColumnData(IDbHelper dbHelper,
+    public static TableInfo getColumnData(IDbHelper dbHelper,DatabaseMetaData metaData,
                                                  String catalog, String schema, String tableName, boolean isR2dbc) throws SQLException {
         start("getColumnData");
         List<ColumnData> colData = new ArrayList<>();
 
-        DatabaseMetaData metaData = dbHelper.getConnection().getMetaData();
-        ResultSet rs = metaData.getColumns(catalog, schema, tableName, "%");
+            try(ResultSet rs = metaData.getColumns(catalog, schema, tableName, "%")) {
 
-        int dbType = BaseDao.detectDbType(metaData.getDriverName());
+                int dbType = Dialect.detectDbType(metaData.getDriverName());
 
-        Map<String, String > columnComment= new HashMap<>();
-        if( dbType == SQLSERVER|| dbType==SQLSERVER_2005_AND_UP || dbType==SQLSERVER_2010_AND_UP){
-            columnComment = getColumnCommentForSQLServer(dbHelper, tableName);
-        }
-
-        ColumnData cd;
-        int colType;
-        int colCols;
-        int decimalDigits = 0;
-        boolean isNullable;
-        boolean isAutoIncrement;
-        String defaultValue;
-        String remarks;
-
-        try {
-            while (rs.next()) {
-
-                String colName = rs.getString(4);
-
-                // Oracle system columns
-                if (colName.contains("#"))
-                {
-                    continue;
-                }
-                if (isExistsCol(colData, colName)) {
-                    break;
+                Map<String, String> columnComment = new HashMap<>();
+                if (dbType == SQLSERVER || dbType == SQLSERVER_2005_AND_UP || dbType == SQLSERVER_2010_AND_UP) {
+                    columnComment = getColumnCommentForSQLServer(dbHelper, tableName);
                 }
 
-                // 17
-                isNullable = KeywordsUtils.isYes(rs.getString("IS_NULLABLE"));
+                ColumnData cd;
+                int colType;
+                int colCols;
+                int decimalDigits = 0;
+                boolean isNullable;
+                boolean isAutoIncrement;
+                String defaultValue;
+                String remarks;
 
-                //Access driver have not a column named IS_AUTOINCREMENT
-                // 23
-                isAutoIncrement = (dbType != ACCESS) && KeywordsUtils.isYes(rs.getString("IS_AUTOINCREMENT"));
+                try {
+                    while (rs.next()) {
 
-                String digits = rs.getString("DECIMAL_DIGITS");
-                if (StringUtils.isNumeric(digits)) {
-                    decimalDigits = Integer.parseInt(digits);
+                        String colName = rs.getString(4);
+
+                        // Oracle system columns
+                        if (colName.contains("#")) {
+                            continue;
+                        }
+                        if (isExistsCol(colData, colName)) {
+                            break;
+                        }
+
+                        // 17
+                        isNullable = KeywordsUtils.isYes(rs.getString("IS_NULLABLE"));
+
+                        //Access driver have not a column named IS_AUTOINCREMENT
+                        // 23
+                        isAutoIncrement = (dbType != ACCESS) && KeywordsUtils.isYes(rs.getString("IS_AUTOINCREMENT"));
+
+                        String digits = rs.getString("DECIMAL_DIGITS");
+                        if (StringUtils.isNumeric(digits)) {
+                            decimalDigits = Integer.parseInt(digits);
+                        }
+
+                        // REMARKS String => 描述列的注释（可为 null）
+                        remarks = rs.getString("REMARKS");
+                        if (remarks == null && (dbType == SQLSERVER_2010_AND_UP || dbType == SQLSERVER_2005_AND_UP || dbType == SQLSERVER)) {
+                            remarks = columnComment.get(colName);
+                        }
+
+                        //COLUMN_DEF String => 该列的默认值，当值在单引号内时应被解释为一个字符串（可为 null）
+                        defaultValue = rs.getString("COLUMN_DEF");
+
+                        // column type (XOPEN values)
+                        colType = rs.getInt(5);
+                        // size e.g. varchar(20)
+                        colCols = rs.getInt(7);
+                        cd = new ColumnData(colName, colType, colCols, isNullable,
+                                isAutoIncrement, decimalDigits, defaultValue, remarks, isR2dbc);
+                        colData.add(cd);
+                    }
+                } catch (SQLException e) {
+                    System.err.println("Driver name:" + metaData.getDriverName());
+
+                    for (int i = 0; i < rs.getMetaData().getColumnCount(); i++) {
+                        System.err.println(i + " : " + rs.getMetaData().getColumnName(i + 1) + " -> " + rs.getMetaData().getColumnLabel(i + 1));
+                    }
+                    throw e;
+                } finally {
+                    end(dbType);
                 }
-
-                // REMARKS String => 描述列的注释（可为 null）
-                remarks = rs.getString("REMARKS");
-                if(remarks==null && (dbType == SQLSERVER_2010_AND_UP || dbType == SQLSERVER_2005_AND_UP || dbType==SQLSERVER)){
-                    remarks = columnComment.get(colName);
-                }
-
-                //COLUMN_DEF String => 该列的默认值，当值在单引号内时应被解释为一个字符串（可为 null）
-                defaultValue = rs.getString("COLUMN_DEF");
-
-                // column type (XOPEN values)
-                colType = rs.getInt(5);
-                // size e.g. varchar(20)
-                colCols = rs.getInt(7);
-                cd = new ColumnData(colName, colType, colCols, isNullable,
-                        isAutoIncrement, decimalDigits, defaultValue, remarks, isR2dbc);
-                colData.add(cd);
             }
-        } catch (SQLException e) {
-            System.err.println("Driver name:" + metaData.getDriverName());
+            TableInfo tableInfo = new TableInfo(tableName);
+            tableInfo.setFields(colData);
 
-            for (int i = 0; i < rs.getMetaData().getColumnCount(); i++) {
-                System.err.println(i + " : " + rs.getMetaData().getColumnName(i + 1) + " -> " + rs.getMetaData().getColumnLabel(i + 1));
-            }
-            throw e;
-        } finally {
-            end();
-            DbUtils.close(rs);
-        }
-        TableInfo tableInfo = new TableInfo(tableName);
-        tableInfo.setFields(colData);
-
-        return tableInfo;
+            return tableInfo;
 
     }
 
     private static Map<String, String> getColumnCommentForSQLServer(IDbHelper dbHelper, String tableName) {
-        String sql ="SELECT\n" +
-                "    B.name AS column_name,\n" +
+        String sql ="SELECT " +
+                "    B.name AS column_name, " +
                 "    C.value AS column_description\n" +
                 "FROM sys.tables A\n" +
                 "         INNER JOIN sys.columns B ON B.object_id = A.object_id\n" +
@@ -798,9 +817,9 @@ public class TableUtils {
     }
 
 
-    private static boolean isExistsCol(List<ColumnData> colData, String colName) {
-        for (ColumnData dt : colData) {
-            if (dt.getName().equalsIgnoreCase(colName)) {
+    public static boolean isExistsCol(List<ColumnData> colData, String colName) {
+        for (ColumnData col : colData) {
+            if (col.getName().equalsIgnoreCase(colName)) {
                 return true;
             }
         }
@@ -838,7 +857,18 @@ public class TableUtils {
             }
 
         }
-        return res;
+        return escape(res);
+    }
+
+    static String escape(String src){
+        return src.replace("\"", "")
+                .replace("\n", " ")
+                .replace("\r", " ");
+    }
+
+    public static void main(String[] args) {
+        System.out.println(escape("大纲修改意见附件,多个json数组\n" +
+                "[{\"fileName\":\"测试文件\",\"fileUrl\":\"https://xxxx\"}]"));
     }
 
     private static int getTableIdByName(ProjectConfig config, String tableName) {
@@ -880,7 +910,7 @@ public class TableUtils {
                 }
                 if (isNeedNotNullAnnotation(config, cd)) {
                     if (sb.indexOf("@NotNull") < 0) {
-                        if (sb.length() > 0) {
+                        if (!sb.isEmpty()) {
                             sb.append("    ");
                         }
                         sb.append("@NotNull\n");
@@ -889,7 +919,7 @@ public class TableUtils {
             }
 
             if(config.useSwagger && StringUtils.isNotBlank(cd.getComment())){
-                if(sb.length()>0){
+                if(!sb.isEmpty()){
                     sb.append("    ");
                 }
                 if(config.getSwaggerVersion().equals("2")) {

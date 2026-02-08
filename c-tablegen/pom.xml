@@ -13,6 +13,24 @@
     <properties>
         <handlebars-version>4.3.0</handlebars-version>
     </properties>
+    <licenses>
+
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <developers>
+        <developer>
+            <id>yujiaao</id>
+            <name>Wanxiang Xing</name> <!-- 必选：开发者姓名 -->
+            <email>yujiaao@msn.com</email>
+            <roles>
+                <role>Developer</role> <!-- 可选：角色描述 -->
+            </roles>
+        </developer>
+    </developers>
     <build>
         <finalName>tablegen</finalName>
         <resources>
@@ -135,13 +153,12 @@
         <dependency>
             <groupId>com.mysql</groupId>
             <artifactId>mysql-connector-j</artifactId>
-            <version>8.0.31</version>
+            <version>8.2.0</version>
         </dependency>
 
         <dependency>
             <groupId>com.microsoft.sqlserver</groupId>
             <artifactId>mssql-jdbc</artifactId>
-            <version>10.2.1.jre11</version>
         </dependency>
 
 
@@ -244,6 +261,36 @@
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>2.11.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+
+        <!-- JavaParser（解析/修改Java源码） -->
+        <dependency>
+            <groupId>com.github.javaparser</groupId>
+            <artifactId>javaparser-core</artifactId>
+            <version>3.25.10</version>
+        </dependency>
+
+        <!-- 用于格式化生成的代码 -->
+        <dependency>
+            <groupId>com.github.javaparser</groupId>
+            <artifactId>javaparser-symbol-solver-core</artifactId>
+            <version>3.25.10</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
         </dependency>
 
 

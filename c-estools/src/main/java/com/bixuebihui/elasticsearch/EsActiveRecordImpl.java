@@ -40,7 +40,6 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     ElasticSearchFilter havingStack;
     BaseEsOperator<T, V> operator;
     Set<String> excludeFieldsSet = emptySet();
-    private boolean useLast=false;
     private String resultFields;
 
     private List<Object> searchAfter;
@@ -118,11 +117,21 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
         return this;
     }
 
+    @Override
+    public ActiveRecord<T> in(String field, SqlString sqlString) {
+        throw new NotImplementedException();
+    }
+
     /** {@inheritDoc} */
     @Override
     public EsActiveRecord<T> notIn(String field, List<?> values) {
         filterStack.notIn(field, values);
         return this;
+    }
+
+    @Override
+    public ActiveRecord<T> notIn(String field, SqlString sqlString) {
+        throw new NotImplementedException();
     }
 
     /** {@inheritDoc} */
@@ -206,6 +215,11 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     }
 
     @Override
+    public ActiveRecord<T> sql(String field, Object... value) {
+        throw new NotImplementedException();
+    }
+
+    @Override
     public ActiveRecord<T> lt(String field, Object value) {
         return smallerThan(field, value);
     }
@@ -271,6 +285,56 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     public EsActiveRecord<T> limit(int begin, int num) {
         limit = new SqlLimit(begin, num);
         return this;
+    }
+
+    @Override
+    public <Key, Value> Map<Key, Value> getMap(String keyField, String valueField, Class<Key> keyClass, Class<Value> valueClass) throws DbException {
+//        try {
+//            // 只查询 keyField 和 valueField
+//            this.fields(keyField, valueField);
+//            List<Map<String, Object>> results = (List<Map<String, Object>>) operator.selectWithJoin(
+//                    Set.of(keyField, valueField),
+//                    emptySet(),
+//                    filterStack.toQuery(),
+//                    toEsSort(),
+//                    limit.getBegin(),
+//                    limit.getEnd(),
+//                    searchAfter
+//            );
+//
+//            Map<Key, Value> map = new LinkedHashMap<>();
+//            for (Map<String, Object> row : results) {
+//                Object keyObj = row.get(keyField);
+//                Object valueObj = row.get(valueField);
+//                if (keyObj != null) {
+//                    Key key = keyClass.cast(keyObj instanceof Number && keyClass != String.class
+//                            ? convertNumber((Number) keyObj, keyClass)
+//                            : keyClass.cast(keyObj.toString()));
+//                    Value value = valueObj == null ? null : valueClass.cast(
+//                            valueObj instanceof Number && valueClass != String.class
+//                                    ? convertNumber((Number) valueObj, valueClass)
+//                                    : valueClass.cast(valueObj.toString())
+//                    );
+//                    map.put(key, value);
+//                }
+//            }
+//            return map;
+//        } finally {
+//            clear();
+//        }
+        throw new NotImplementedException();
+    }
+
+    // 工具方法：数字类型转换
+    @SuppressWarnings("unchecked")
+    private <T> T convertNumber(Number number, Class<T> clazz) {
+        if (clazz == Integer.class) return (T) Integer.valueOf(number.intValue());
+        if (clazz == Long.class) return (T) Long.valueOf(number.longValue());
+        if (clazz == Double.class) return (T) Double.valueOf(number.doubleValue());
+        if (clazz == Float.class) return (T) Float.valueOf(number.floatValue());
+        if (clazz == Short.class) return (T) Short.valueOf(number.shortValue());
+        if (clazz == Byte.class) return (T) Byte.valueOf(number.byteValue());
+        throw new IllegalArgumentException("不支持的数字类型: " + clazz);
     }
 
     /**
@@ -342,7 +406,6 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
         this.limit = SqlLimit.LIMIT_MAX;
         this.fields("");
         this.excludeFieldsSet = emptySet();
-        useLast = false;
     }
 
 
@@ -354,8 +417,8 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
         try {
            BaseEsOperator.Wrapper<T> res = operator.selectWithJoin(getResultFieldsSet(), getExcludeFieldsSet(), filterStack.toQuery() , toEsSort(),
                     SqlLimit.LIMIT_ONE.getBegin(), SqlLimit.LIMIT_ONE.getEnd(), searchAfter);
-            if (res!=null && res.data !=null && !res.data.isEmpty()) {
-                return res.data.get(0);
+            if (res!=null && res.items !=null && !res.items.isEmpty()) {
+                return res.items.get(0);
             }
             return null;
         } finally {
@@ -490,9 +553,12 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
         throw new NotImplementedException();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    public EsActiveRecord<T> fields(String resultFields) {
-        this.resultFields = resultFields;
+    public ActiveRecord<T> fields(String... fields) {
+        this.resultFields = fields.length==1 ? fields[0] : String.join(",", fields);
         return this;
     }
 
@@ -520,6 +586,7 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     public <S> EsActiveRecord<T> query(Paging<S> searchBean) {
         return query(searchBean, Set.of(operator.getAllFields().toArray(new String[0])));
     }
+
 
     @Override
     public int count() throws DbException {
@@ -551,6 +618,12 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     @Override
     public List<CountObj> dateHistCountList(String dateField, String interval, String[] groupByFields, GroupFunction fun)  {
         return  operator.dateHistCountList(filterStack.toQuery(), dateField, interval, groupByFields,fun);
+    }
+
+    @Override
+    public EsActiveRecord<T> moreLikeThis(Map<String, Object> fieldValueMap, Map<String, Object> otherParams) {
+        filterStack.moreLikeThis(fieldValueMap, otherParams);
+        return this;
     }
 
     @Override
@@ -665,6 +738,16 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     }
 
     @Override
+    public int update(Map<String, Object> keyValuePairs) throws DbException {
+        try {
+            return operator.request.updateByQuery(filterStack.toQuery(), keyValuePairs, true, true);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+            throw new DbException(e.getMessage());
+        }
+    }
+
+    @Override
     public int update(String field, Object value) throws DbException {
         HashMap<String, Object> map = Maps.newHashMap();
 
@@ -740,6 +823,7 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     public boolean insertBatch(String indexName, List<T> infos, Function<T, String> getId) {
         return insertBatch( indexName,infos,getId, false);
     }
+
     public boolean insertBatch(String indexName, List<T> infos, Function<T, String> getId, boolean refresh) {
         try {
             String response =  operator.request.insertBatch(indexName, infos,
@@ -759,6 +843,71 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
             LOG.error(e.getMessage(), e);
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * 批量更新文档
+     * @param indexName 索引名称
+     * @param infos 要更新的文档列表
+     * @param getId 获取文档ID的函数
+     * @param refresh 是否立即刷新
+     * @param upsert 是否插入不存在的文档
+     * @param mixIn 用于JSON序列化的mixin类。用于自定义对象的序列化行为，例如：
+     *             1. 忽略某些字段：使用@JsonIgnore注解
+     *             2. 重命名字段：使用@JsonProperty注解
+     *             3. 自定义序列化：使用@JsonSerialize注解
+     *             示例：
+     *             <pre>
+     *             @JsonIgnoreProperties({"password", "secret"})
+     *             abstract class UserMixin {
+     *                 @JsonProperty("user_name")
+     *                 String name;
+     *             }
+     *             // 使用时：
+     *             updateBatch("users", users, User::getId, true, UserMixin.class);
+     *             </pre>
+     * @return 更新是否成功
+     */
+    public boolean updateBatch(String indexName, List<T> infos, Function<T, String> getId, boolean refresh, Class<?> mixIn, boolean upsert) {
+        try {
+            String response = operator.request.updateBatch(indexName, infos,
+                    (t) -> (getId!=null) ? StringUtils.trimToNull(getId.apply(t)):null, refresh, mixIn, upsert);
+
+            ObjectMapper mapper = EsRequest.getMapper();
+            JsonNode jsonNode = mapper.readTree(response);
+
+            LOG.debug(response);
+
+            String errorField = "errors";
+            return jsonNode.has(errorField) && !jsonNode.get(errorField).asBoolean();
+
+        } catch (JsonProcessingException e) {
+            LOG.error(e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * 批量更新文档
+     * @param indexName 索引名称
+     * @param infos 要更新的文档列表
+     * @param getId 获取文档ID的函数
+     * @param refresh 是否立即刷新
+     * @return 更新是否成功
+     */
+    public boolean updateBatch(String indexName, List<T> infos, Function<T, String> getId, boolean refresh) {
+        return updateBatch(indexName, infos, getId, refresh, null, true);
+    }
+
+    /**
+     * 批量更新文档，默认不刷新
+     * @param indexName 索引名称
+     * @param infos 要更新的文档列表
+     * @param getId 获取文档ID的函数
+     * @return 更新是否成功
+     */
+    public boolean updateBatch(String indexName, List<T> infos, Function<T, String> getId) {
+        return updateBatch(indexName, infos, getId, false);
     }
 
     @Override
@@ -784,5 +933,16 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     @Override
     public EsActiveRecord<T> paramsInterceptor(Function<List<Object>, List<Object>> groupInterceptor) {
         return this;
+    }
+
+    @Override
+    public EsActiveRecord<T> coreSqlInterceptor(Function<String, String> coreSqlInterceptor) {
+        return this;
+    }
+
+    @Override
+    public Object percentile(String field, float portion) throws DbException {
+        //return operator.percentile(field, portion);
+        throw new NotImplementedException();
     }
 }

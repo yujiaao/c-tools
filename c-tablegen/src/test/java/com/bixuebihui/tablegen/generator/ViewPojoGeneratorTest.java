@@ -17,7 +17,8 @@ class ViewPojoGeneratorTest {
         ViewPojoGenerator gen = new ViewPojoGenerator();
         gen.init(this.getClass().getResource("/tablegen.properties").getPath());
         String res = gen.getTargetFileName("Test");
-        assertThat(res, StringEndsWith.endsWith("view/Test.java"));
+        res = res.replace("\\", "/");
+        assertThat(res, StringEndsWith.endsWith("view/pojo/Test.java"));
 
 
         String v = gen.config.getViewList().get("my_test_view");

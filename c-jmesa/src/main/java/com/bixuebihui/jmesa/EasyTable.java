@@ -196,7 +196,7 @@ public class EasyTable extends BasicWebUI {
 
     private String getJsonData(SimpleHttpServletRequest request) throws SQLException {
         SimpleHttpServletResponse response = new SimpleHttpServletResponse();
-        response.setCharacterEncoding(Charset.defaultCharset().displayName());
+//        response.setCharacterEncoding(Charset.defaultCharset().displayName());
 
         this.handleRequestInternal(request, response);
 

@@ -69,6 +69,20 @@ public class Query extends Params {
     }
 
     /**
+     * match_phrase query.
+     * <p>
+     * https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-match-phrase-query.html
+     *
+     * @param field  field
+     * @param values values
+     * @return MatchPhrase
+     */
+    public static MatchPhrase match_phrase(String field, String values) {
+        return new MatchPhrase(field, values);
+    }
+
+
+    /**
      * multi match query.
      * <p>
      * https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-multi-match-query.html
@@ -571,9 +585,6 @@ class FunctionScore extends Query {
 
 }
 
-class MoreLikeThis extends Query {
-
-}
 
 /**
  * Returns documents based on their IDs. This query uses document IDs stored in the _id field.
@@ -1148,7 +1159,7 @@ class Boosting extends Query {
  * *
  * * @see https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-exists-query.html
  * <p>
- * An indexed value may not exist for a document’s field due to a variety of reasons:
+ * An indexed value may not exist for a document's field due to a variety of reasons:
  * <p>
  * The field in the source JSON is null or []
  * The field has "index" : false set in the mapping

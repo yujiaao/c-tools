@@ -15,7 +15,6 @@ import java.util.*;
  */
 public class ElasticSearchFilter extends SqlFilter {
 
-
     /**
      * Test cases:
      * <p>
@@ -43,7 +42,7 @@ public class ElasticSearchFilter extends SqlFilter {
      * "must" : { "term" : { "biz_id" : 105982 } },
      * "should" : [
      * { "term" : { "author_name" : "alice" }},
-     * { "term" : { "is_delete" :  0 } },
+     * { "term" : { "is_delete" : 0 } },
      * { "term" : { "is_publish" : 1 } }
      * ],
      * "minimum_should_match" : 1
@@ -99,9 +98,8 @@ public class ElasticSearchFilter extends SqlFilter {
             }
         }
 
-
         if (criteria == null) {
-            //为减少一层bool，只有一个子组时，不再创建bool
+            // 为减少一层bool，只有一个子组时，不再创建bool
             if (subCriteriaList.size() == 1) {
                 criteria = subCriteriaList.get(0);
                 subCriteriaList = Collections.emptyList();
@@ -116,21 +114,19 @@ public class ElasticSearchFilter extends SqlFilter {
     }
 
     public String toEsObject(Query query, int from, int size,
-                             Set<String> includeFields,
-                             Set<String> excludeFields,
-                             LinkedHashMap<String, String> sort, String scriptSource, Map<String, Object> scriptParams,
-                             AbstractAggregation aggs
-    ) {
+            Set<String> includeFields,
+            Set<String> excludeFields,
+            LinkedHashMap<String, String> sort, String scriptSource, Map<String, Object> scriptParams,
+            AbstractAggregation aggs) {
         return EsQueryBuilder.build(query, from, size, includeFields, excludeFields, sort,
                 scriptSource, scriptParams, aggs, Collections.emptyList());
     }
 
     public String toEsObject(Query query, int from, int size,
-                             Set<String> includeFields,
-                             Set<String> excludeFields,
-                             LinkedHashMap<String, String> sort, String scriptSource, Map<String, Object> scriptParams,
-                             AbstractAggregation aggs, List<Object> searchAfter
-    ) {
+            Set<String> includeFields,
+            Set<String> excludeFields,
+            LinkedHashMap<String, String> sort, String scriptSource, Map<String, Object> scriptParams,
+            AbstractAggregation aggs, List<Object> searchAfter) {
         return EsQueryBuilder.build(query, from, size, includeFields, excludeFields,
                 sort, scriptSource, scriptParams, aggs, searchAfter);
     }
@@ -167,7 +163,8 @@ public class ElasticSearchFilter extends SqlFilter {
     private void buildEsObject(Bool criteria, List<Filter> filters, Operator upOperator, List<Bool> addOnFilters) {
 
         List<Query> queryFilters = new ArrayList<>(upOperator != Operator.NOT ? addOnFilters : Collections.emptyList());
-        List<Query> queryNotFilters = new ArrayList<>(upOperator == Operator.NOT ? addOnFilters : Collections.emptyList());
+        List<Query> queryNotFilters = new ArrayList<>(
+                upOperator == Operator.NOT ? addOnFilters : Collections.emptyList());
 
         if (filters != null) {
             filters.forEach(filter -> {
@@ -276,6 +273,60 @@ public class ElasticSearchFilter extends SqlFilter {
         addFilter(criteria, queryFilters, upOperator);
     }
 
+
+
+    private Query getMoreLikeThis(Filter filter) {
+        Query queryFilter;
+        List<String> docContent = new ArrayList<>();
+
+        String[] fields = filter.getProperty().contains(",") ? filter.getProperty().split(",")
+                : new String[] { filter.getProperty() };
+
+
+        if (fields.length != filter.getValue().length) {
+            throw new IllegalArgumentException("fields length is not equal to value length");
+        }
+
+
+        List<String> list = new ArrayList<>();
+        for (Object value : filter.getValue()) {
+            list.add(value.toString());
+        }
+
+        int minTermFreq = 1;
+        int minDocFreq = 1;
+        int maxQueryTerms = 50;
+        double boostTerms = 1.5;
+        String minimumShouldMatch = "90%";
+
+        if (filter.getOtherParams() != null) {
+            if (filter.getOtherParams().containsKey("min_term_freq")) {
+                minTermFreq = Integer.parseInt(filter.getOtherParams().get("min_term_freq").toString());
+            }
+            if (filter.getOtherParams().containsKey("min_doc_freq")) {
+                minDocFreq = Integer.parseInt(filter.getOtherParams().get("min_doc_freq").toString());
+            }
+            if (filter.getOtherParams().containsKey("max_query_terms")) {
+                maxQueryTerms = Integer.parseInt(filter.getOtherParams().get("max_query_terms").toString());
+            }
+            if (filter.getOtherParams().containsKey("boost_terms")) {
+                boostTerms = Double.parseDouble(filter.getOtherParams().get("boost_terms").toString());
+            }
+            if (filter.getOtherParams().containsKey("minimum_should_match")) {
+                minimumShouldMatch = filter.getOtherParams().get("minimum_should_match").toString();
+            }
+        }
+        queryFilter = Query.more_like_this()
+                .setFields(Arrays.asList(fields))
+                .setDoc(list)
+                .setMinTermFreq(minTermFreq)
+                .setMinDocFreq(minDocFreq)
+                .setMaxQueryTerms(maxQueryTerms)
+                .setBoostTerms(boostTerms)
+                .setMinimumShouldMatch(minimumShouldMatch);
+        return queryFilter;
+    }
+
     private void buildEsObject(Bool criteria, Filter filter, Operator upOperator) {
         Query queryFilter;
 
@@ -365,6 +416,12 @@ public class ElasticSearchFilter extends SqlFilter {
                 Arrays.asList(filter.getValue()).forEach(value ->
                         criteria.addShould(Query.wildcard(filter.getProperty(), value + "*", 1)));
                 break;
+            case MORE_LIKE_THIS: {
+                // 处理MORE_LIKE_THIS类型
+                queryFilter = getMoreLikeThis(filter);
+                addFilter(criteria, queryFilter, upOperator);
+                break;
+            }
             default: {
             }
         }

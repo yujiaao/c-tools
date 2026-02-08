@@ -130,19 +130,27 @@ public class EsAggregationBuilder {
         }
         return res;
     }
-    static AbstractAggregation getFun( String aggFunction, String alias, String termField) {
-        switch (aggFunction) {
-            case "count": return new ValueCount(alias, termField);
-            case "sum": return new Sum(alias);
-            case "max": return new Max(alias);
-            case "min": return new Min(alias);
-            default : throw new IllegalStateException("Unexpected value: " + aggFunction);
-        }
-    }
 
     private static void addAggFun(AbstractAggregation res, String termField, String aggFunction, boolean textNeedConvertToDouble) {
+
         String alias = aggFunction + "_" + termField;
-        AbstractAggregation agg = getFun(aggFunction, alias, termField);
+        AbstractAggregation agg;
+        switch (aggFunction) {
+            case "count":
+                agg = new ValueCount(alias, termField);
+                break;
+            case "sum":
+                agg = new Sum(alias);
+                break;
+            case "max":
+                agg = new Max(alias);
+                break;
+            case "min":
+                agg = new Min(alias);
+                break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + aggFunction);
+        }
         if(agg instanceof AbstractSimpleAggregation) {
             setupAgg((AbstractSimpleAggregation)agg, termField, textNeedConvertToDouble);
         }

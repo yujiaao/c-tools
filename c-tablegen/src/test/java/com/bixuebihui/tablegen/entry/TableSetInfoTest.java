@@ -7,10 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -147,15 +144,14 @@ public class TableSetInfoTest {
 
 
     @ParameterizedTest
-    @CsvSource(quoteCharacter = '"', textBlock = """
-            "select top 10 * from abc", "select top 10 * from abc"
-            "select * from abc", "select top 1 * from abc"
-            "select ABC from abc", "select top 1 ABC from abc"
-            "select [ABC],'def' from abc", "select top 1 [ABC],'def' from abc"
-            "sELect [ABC],'def' from abc", "select top 1 [ABC],'def' from abc"
-            "sELect [ABC],'def' from (select * from Table1)", "select top 1 [ABC],'def' from (select * from Table1)"
-            """
-    )
+    @CsvSource(value = {
+            "select top 10 * from abc|select top 10 * from abc",
+            "select * from abc|select top 1 * from abc",
+            "select ABC from abc|select top 1 ABC from abc",
+            "select [ABC],'def' from abc|select top 1 [ABC],'def' from abc",
+            "sELect [ABC],'def' from abc|select top 1 [ABC],'def' from abc",
+            "sELect [ABC],'def' from (select * from Table1)|select top 1 [ABC],'def' from (select * from Table1)"
+    }, delimiter = '|')
     void insertTop1(String sql, String result) {
         assertEquals(result, TableSetInfo.insertTop1(sql));
     }
@@ -180,8 +176,11 @@ public class TableSetInfoTest {
         t.init(TableSetInfoTest.class.getResource("/tablegen.properties").getPath());
 
         String testGen = "test_gen";
-        setInfo.initIndex(t.getConfig(), dbHelper, testGen);
-        System.out.println(setInfo.getTableIndexes(testGen));
+        try(Connection cn = dbHelper.getConnection()) {
+            DatabaseMetaData metaData = cn.getMetaData();
+            setInfo.initIndex(t.getConfig(), metaData, testGen);
+            System.out.println(setInfo.getTableIndexes(testGen));
+        }
     }
 
     @Test

@@ -1,25 +1,28 @@
 package com.bixuebihui.db;
 
+import com.bixuebihui.DbException;
 import com.bixuebihui.datasource.DataSourceTest;
 import com.bixuebihui.datasource.DbcpDataSource;
-import com.bixuebihui.jdbc.AbstractBaseDao;
-import com.bixuebihui.jdbc.DbHelper;
-import com.bixuebihui.jdbc.IDbHelper;
+import com.bixuebihui.jdbc.*;
+import com.bixuebihui.jdbc.aop.DbHelperAroundAdvice;
 import com.bixuebihui.jdbc.entity.CountObject;
 import com.bixuebihui.jdbc.entity.CountValue;
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.aop.framework.ProxyFactory;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
+import static com.bixuebihui.jdbc.BaseDao.sql;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.*;
+
 
 public class ActiveRecordImplTest {
 
@@ -30,18 +33,24 @@ public class ActiveRecordImplTest {
     @BeforeEach
     protected void setUp() {
         DbcpDataSource ds = new DbcpDataSource();
-        ds.setDatabaseConfig(DataSourceTest.getConfigDerby());
+        // ds.setDatabaseConfig(DataSourceTest.getConfigDerby());
+        ds.setDatabaseConfig(DataSourceTest.getConfig());
         DbHelper db = new DbHelper();
         db.setDataSource(ds);
         cn = db.getConnection();
         try {
-        	db.executeNoQuery("drop table test", cn);
-        	db.executeNoQuery("drop table test1", cn);
-        }catch (Exception e){}
-        db.executeNoQuery(
-                "create table test(id int, name varchar(100), value int default 0, createtime timestamp)", cn);
-        db.executeNoQuery(
-                "create table test1(id int, name varchar(100))", cn);
+            db.executeNoQuery("drop table test", cn);
+            db.executeNoQuery("drop table test1", cn);
+        } catch (Exception e) {
+        }
+        try {
+            db.executeNoQuery(
+                    "create table test(id int, name varchar(100), value int default 0, createtime timestamp)", cn);
+            db.executeNoQuery(
+                    "create table test1(id int, name varchar(100))", cn);
+
+        } catch (Exception e) {
+        }
         bd = new BD(db);
         bd.getDbHelper().executeNoQuery(
                 "insert into test(id,name, createtime)values(123,'bac'," +
@@ -52,9 +61,12 @@ public class ActiveRecordImplTest {
                         bd.getTimestampSql("2017-10-10 01:01:01.0")
                         + ")");
         bd.getDbHelper().executeNoQuery(
+                "insert into test(id,name)values(456,'[\"张三\",\"李四\",\"王五\"]')");
+        bd.getDbHelper().executeNoQuery(
                 "insert into test1(id,name)values(123,'bacqqq')");
         bd.getDbHelper().executeNoQuery(
                 "insert into test1(id,name)values(234,'bacddd')");
+
 
         // boolean res = JDBCUtils.tableOrViewExists(null, null, "%", cn);
     }
@@ -145,6 +157,17 @@ public class ActiveRecordImplTest {
     }
 
     @Test
+    public void testUpdateMap() {
+        int res = bd.ar()
+                .in("id", new Object[]{123, 234})
+                .update(Map.of("value", new SqlString("value+1"),
+                        "name", "wow*"));
+        assertEquals(2, res);
+        long inc = Long.parseLong(bd.ar().eq("ID", 123).get("value").toString());
+        assertEquals(1, inc);
+    }
+
+    @Test
     public void testJoin() {
 
         Object obj = bd.ar().alias("t1").fields("t1.*,t2.name anothor_name ").eq("t1.id", 123).join("left join test1 t2 on t1.id=t2.id").find();
@@ -162,8 +185,9 @@ public class ActiveRecordImplTest {
     @Test
     public void testTableNameOverride() {
 
-        String obj = ((ActiveRecordImpl) bd.ar().tableName("t1")).getVectorSql("abc");
-        assertEquals("select abc from t1", obj.trim());
+        String obj = ((ActiveRecordImpl) bd.ar().tableName("t1").limit(10, 20))
+                .getVectorSql("abc");
+        assertEquals("select abc from t1     limit 10,20", obj.trim());
 
     }
 
@@ -172,9 +196,9 @@ public class ActiveRecordImplTest {
 
         CountValue res = bd.ar().countSum("id");
 
-        assertEquals(357.0, res.getValue());
+        assertEquals(813.0, res.getValue());
 
-        assertEquals(2, res.getCount());
+        assertEquals(3, res.getCount());
     }
 
     @Test
@@ -298,23 +322,24 @@ public class ActiveRecordImplTest {
 
 //	@Test
 //	void testGroupBy() throws SQLException{
-////		SELECT
-////				[GroupName],
-////					[Content],
-////					[SendType],
-////					[Remark],
-////		COUNT (0) AS GroupCount,
-////					[SendTime]
-////		FROM
-////				[PhoneMessage] T WITH (NOLOCK)
-////				WHERE
-////		Recycled = 0 { 0 }
-////		GROUP BY
-////					[GroupName],
-////					[Content],
-////					[SendType],
-////					[Remark],
-////					[SendTime]
+
+    /// /		SELECT
+    /// /				[GroupName],
+    /// /					[Content],
+    /// /					[SendType],
+    /// /					[Remark],
+    /// /		COUNT (0) AS GroupCount,
+    /// /					[SendTime]
+    /// /		FROM
+    /// /				[PhoneMessage] T WITH (NOLOCK)
+    /// /				WHERE
+    /// /		Recycled = 0 { 0 }
+    /// /		GROUP BY
+    /// /					[GroupName],
+    /// /					[Content],
+    /// /					[SendType],
+    /// /					[Remark],
+    /// /					[SendTime]
 //		ActiveRecord<Object> ar = bd.ar().tableName("\t\t(SELECT\n" +
 //						"\t\t\t\t[GroupName],\n" +
 //						"\t\t\t\t\t[Content],\n" +
@@ -336,10 +361,52 @@ public class ActiveRecordImplTest {
 //		System.out.println(ar.getSql().getCondition().toString());
 //		System.out.println(ar.findAll());
 //	}
+    @Test
+    void notIn() {
+        SqlPocket sql = bd.ar().notIn("id", sql("select 1 ")).getSql();
+        assertEquals(" where id not in (select 1 )", sql.getCondition().toString());
+        assertEquals(0, sql.getParams().size());
+    }
 
     @Test
-    void not() {
+    void inNull() {
+        SqlPocket sql = bd.ar().in("id", Optional.empty()).getSql();
+        assertEquals("", sql.getCondition().toString());
+        assertEquals(0, sql.getParams().size());
     }
+
+    @Test
+    void interceptorDemo() {
+        //case 1
+        SqlPocket basic = bd.ar().filterInterceptor(sqlHelper -> sqlHelper.eq("id", 123))
+                .paramsInterceptor(list -> list).getSql();
+
+        assertEquals(" where id = ?", basic.getCondition().toString());
+        assertEquals(1, basic.getParams().size());
+
+        //case 2
+        SqlPocket useFul = bd.ar().filterInterceptor(sql -> new SqlHelper(sql) {
+                    @Override
+                    public SqlPocket toCondition() {
+                        return new SqlPocket() {
+                            @Override
+                            public StringBuffer getCondition() {
+                                return new StringBuffer(" where id = ?");
+                            }
+
+                            @Override
+                            public List<Object> getParams() {
+                                return List.of(123);
+                            }
+                        };
+                    }
+                })
+                .getSql();
+
+        assertEquals(" where id = ?", useFul.getCondition().toString());
+        assertEquals(1, useFul.getParams().size());
+    }
+
 
     @Test
     void findAllWithCount() {
@@ -348,13 +415,45 @@ public class ActiveRecordImplTest {
         //生成100条数据
         for (int i = 0; i < 100; i++) {
             bd.getDbHelper().executeNoQuery(
-                    "insert into test1(id,name)values(" + i + ",'bacddd"+i+"')");
+                    "insert into test(id,name)values(" + i + ",'bacddd" + i + "')");
         }
-        Pair<Long, List<Object>> id = bd.ar().gt("id", 0).limit(10, 10).findAllWithCount();
-        assertEquals(100, id.getLeft());
-        assertEquals(10, id.getRight().size());
+        Pair<Long, List<Object>> id = bd.ar()
+                .gt("id", 0)
+                .limit(10, 20)
+                .findAllWithCount();
+        assertEquals(102, id.getLeft());
+        assertEquals(20, id.getRight().size());
+    }
 
+    @Test
+    void percentile() {
+        Object res = bd.ar().percentile("id", 0.5f);
+        assertEquals(234, res);
+    }
 
+    @Test
+    public void testSql() {
+        assertEquals(3, bd.ar().findAll().size());
+
+        ActiveRecord<Object> a = bd.ar().eq("id", 456).sql("JSON_CONTAINS(name, '\"李四\"')");
+        System.out.printf(a.getSql().getCondition().toString());
+        System.out.printf(a.getSql().getParams().toString());
+        List<Object> res = a.findAll();
+        assertEquals(1, res.size());
+        // the below code is not supported by mariadb 11.3.2
+//        res = bd.ar().sql("JSON_CONTAINS_ANY(name, '[\"李四\",\"赵六\"]')" ).findAll();
+//        assertEquals(1, res.size());
+
+    }
+
+    @Test
+    void testFindMap() throws DbException {
+
+        Map<Long, String> map = bd.ar().getMap("id", "name", Long.class, String.class);
+
+        assertEquals(3, map.size());
+        assertEquals("bac", map.get(123L));
+        assertEquals("bac", map.get(234L));
     }
 
     public static class T {
@@ -385,7 +484,12 @@ public class ActiveRecordImplTest {
 
     static class BD extends AbstractBaseDao {
         public BD(IDbHelper db) {
+            //use DbHelperAroundAdvice
             super(db);
+            LOG.atDebug().log("BD created");
+            ProxyFactory obj = new ProxyFactory(db);
+            obj.addAdvice(new DbHelperAroundAdvice());
+            dbHelper = (IDbHelper) obj.getProxy();
         }
 
         @Override
@@ -393,7 +497,7 @@ public class ActiveRecordImplTest {
             T t = new T();
             t.id = rs.getLong("id");
             t.name = rs.getString("name");
-            if (set.contains("createtime"))
+            if (set != null && set.contains("createtime"))
                 t.createtime = rs.getTimestamp("createtime");
             return t;
         }

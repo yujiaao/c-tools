@@ -20,6 +20,7 @@ import java.io.StringWriter;
 import java.lang.reflect.Field;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -35,7 +36,10 @@ import static java.util.Collections.emptySet;
  * @author xingwx
  * @version $Id: $Id
  */
-public interface ActiveRecord<T> extends Record<T>, Customizer<T> {
+public interface ActiveRecord<T>
+        extends Record<T>,
+        Customizer<T>,
+        StatisticRecord<T> {
 
     /**
      * Constant <code>ORDER_ASC=0</code>
@@ -66,6 +70,8 @@ public interface ActiveRecord<T> extends Record<T>, Customizer<T> {
 
     ActiveRecord<T> in(String field, List<?> values);
 
+    ActiveRecord<T> in(String field, SqlString sqlString);
+
 
     /**
      * <p>not in</p>
@@ -78,6 +84,8 @@ public interface ActiveRecord<T> extends Record<T>, Customizer<T> {
     ActiveRecord<T> notIn(String field, Object[] values);
 
     ActiveRecord<T> notIn(String field, List<?> values);
+
+    ActiveRecord<T> notIn(String field, SqlString sqlString);
 
     /**
      * Call this method will reject empty string as where condition value
@@ -108,7 +116,6 @@ public interface ActiveRecord<T> extends Record<T>, Customizer<T> {
      * JDBC ResultSet 的getInt, getLong, getDouble, getFloat等方法，不论数据库中是否存储为null，都返回0，或者0.0。
      * 注意：这个wasNull判断一定要紧跟在你想要判断非空的那个字段取动作之后，否则它判断的就不是你所期望的那个column值了。
      *
-     * @return
      */
     ActiveRecord<T> keepNullForNumberField();
 
@@ -221,6 +228,17 @@ public interface ActiveRecord<T> extends Record<T>, Customizer<T> {
      */
     ActiveRecord<T> smallerThan(String field, Object value);
 
+
+    /**
+     * use for native function use such as sql("json_contains(field, ?)", value)
+     *  or sql("json_contains_any(field, ?)", value),
+     *  which value is a json array such as [1,2,3], or ["x","y","z"] etc.
+     * @param field may be a function expression
+     * @param value value as function parameter
+     * @return this
+     */
+    ActiveRecord<T> sql(String field, Object... value);
+
     /**
      * less than, same as smallerThan
      * @param field
@@ -292,6 +310,11 @@ public interface ActiveRecord<T> extends Record<T>, Customizer<T> {
      */
     ActiveRecord<T> limit(int begin, int num);
 
+
+
+    <Key, Value> Map<Key, Value> getMap(String keyField, String valueField,
+                                    Class<Key> keyClass,
+                                    Class<Value> valueClass) throws DbException;
 
     /**
      * <p>last.</p>
@@ -377,13 +400,13 @@ public interface ActiveRecord<T> extends Record<T>, Customizer<T> {
      */
     ActiveRecord<T> tableName(String partitionTableName);
 
+
     /**
-     * <p>fields.</p>
-     *
-     * @param resultFields a {@link java.lang.String} object.
-     * @return a {@link ActiveRecord} object.
+     * return ResultSet fields
+     * @param fields table or view fields
+     * @return this
      */
-    ActiveRecord<T> fields(String resultFields);
+    ActiveRecord<T> fields(String... fields);
 
     /**
      * <p>join.</p>
@@ -443,6 +466,7 @@ public interface ActiveRecord<T> extends Record<T>, Customizer<T> {
          return findAllToCsv(titles, onlyFields, false, false);
     }
 
+
     default String findAllToCsv(String titles, String onlyFields,  boolean withBom, boolean forceStringForDateTime) throws DbException {
         List<T> list =  findAll();
         return findAllToCsv(list, titles, onlyFields, withBom, forceStringForDateTime, null);
@@ -450,8 +474,10 @@ public interface ActiveRecord<T> extends Record<T>, Customizer<T> {
 
     default String findAllToCsv(String titles, String onlyFields, Map<String, CellProcessorAdaptor> customFormatters) throws DbException {
         List<T> list =  findAll();
-        return findAllToCsv(list, titles, onlyFields, true, false, customFormatters);
+        return findAllToCsv(list, titles, onlyFields, true, true, customFormatters);
     }
+
+    ActiveRecord<T> coreSqlInterceptor(Function<String, String> coreSqlInterceptor);
 
 
     class MyCustomCellProcessor extends CellProcessorAdaptor {

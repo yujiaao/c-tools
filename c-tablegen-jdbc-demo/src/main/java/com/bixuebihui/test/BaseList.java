@@ -6,7 +6,7 @@ package com.bixuebihui.test;
  * Notice! Automatically generated file!
  * Do not edit the pojo and dal packages,use `maven tablegen:gen`!
  * Code Generator originally by J.A.Carter
- * Modified by Xing Wanxiang 2008-2022
+ * Modified by Xing Wanxiang 2008-2023
  * email: xwx@live.cn
  */
 

@@ -7,7 +7,7 @@ public class PKGenerator extends  BaseGenerator{
     }
 
     @Override
-    String getTemplateFileName() {
+    String getTemplateFileName(String tableName) {
         return null;
     }
 

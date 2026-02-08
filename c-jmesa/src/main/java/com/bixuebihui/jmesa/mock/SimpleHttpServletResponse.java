@@ -139,12 +139,12 @@ public class SimpleHttpServletResponse implements HttpServletResponse {
         return this.characterEncoding;
     }
 
-    @Override
-    public void setCharacterEncoding(String characterEncoding) {
-        this.characterEncoding = characterEncoding;
-        this.charset = true;
-        updateContentTypeHeader();
-    }
+//    @Override
+//    public void setCharacterEncoding(String characterEncoding) {
+//        this.characterEncoding = characterEncoding;
+//        this.charset = true;
+//        updateContentTypeHeader();
+//    }
 
     @Override
     public ServletOutputStream getOutputStream() {
@@ -186,17 +186,17 @@ public class SimpleHttpServletResponse implements HttpServletResponse {
         return this.contentLength;
     }
 
-    @Override
-    public void setContentLengthLong(long contentLength) {
-        this.contentLength = contentLength;
-        doAddHeaderValue(HttpHeaders.CONTENT_LENGTH, contentLength, true);
-    }
-
-    @Override
-
-    public String getContentType() {
-        return this.contentType;
-    }
+//    @Override
+//    public void setContentLengthLong(long contentLength) {
+//        this.contentLength = contentLength;
+//        doAddHeaderValue(HttpHeaders.CONTENT_LENGTH, contentLength, true);
+//    }
+//
+//    @Override
+//
+//    public String getContentType() {
+//        return this.contentType;
+//    }
 
     @Override
     public void setContentType(String contentType) {
@@ -314,9 +314,9 @@ public class SimpleHttpServletResponse implements HttpServletResponse {
         if (cookie.getSecure()) {
             buf.append("; Secure");
         }
-        if (cookie.isHttpOnly()) {
-            buf.append("; HttpOnly");
-        }
+//        if (cookie.isHttpOnly()) {
+//            buf.append("; HttpOnly");
+//        }
 
         return buf.toString();
     }
@@ -347,10 +347,10 @@ public class SimpleHttpServletResponse implements HttpServletResponse {
      *
      * @return the {@code Set} of header name {@code Strings}, or an empty {@code Set} if none
      */
-    @Override
-    public Collection<String> getHeaderNames() {
-        return this.headers.keySet();
-    }
+//    @Override
+//    public Collection<String> getHeaderNames() {
+//        return this.headers.keySet();
+//    }
 
     /**
      * Return the primary value for the given header as a String, if any.
@@ -362,12 +362,12 @@ public class SimpleHttpServletResponse implements HttpServletResponse {
      * @param name the name of the header
      * @return the associated header value, or {@code null} if none
      */
-    @Override
-
-    public String getHeader(String name) {
-        SimpleHttpServletRequest.HeaderValueHolder header = SimpleHttpServletRequest.HeaderValueHolder.getByName(this.headers, name);
-        return (header != null ? header.getStringValue() : null);
-    }
+//    @Override
+//
+//    public String getHeader(String name) {
+//        SimpleHttpServletRequest.HeaderValueHolder header = SimpleHttpServletRequest.HeaderValueHolder.getByName(this.headers, name);
+//        return (header != null ? header.getStringValue() : null);
+//    }
 
     /**
      * Return all values for the given header as a List of Strings.
@@ -378,15 +378,15 @@ public class SimpleHttpServletResponse implements HttpServletResponse {
      * @param name the name of the header
      * @return the associated header values, or an empty List if none
      */
-    @Override
-    public List<String> getHeaders(String name) {
-        SimpleHttpServletRequest.HeaderValueHolder header = SimpleHttpServletRequest.HeaderValueHolder.getByName(this.headers, name);
-        if (header != null) {
-            return header.getStringValues();
-        } else {
-            return Collections.emptyList();
-        }
-    }
+//    @Override
+//    public List<String> getHeaders(String name) {
+//        SimpleHttpServletRequest.HeaderValueHolder header = SimpleHttpServletRequest.HeaderValueHolder.getByName(this.headers, name);
+//        if (header != null) {
+//            return header.getStringValues();
+//        } else {
+//            return Collections.emptyList();
+//        }
+//    }
 
     /**
      * Return the primary value for the given header, if any.
@@ -473,9 +473,9 @@ public class SimpleHttpServletResponse implements HttpServletResponse {
     }
 
 
-    public String getRedirectedUrl() {
-        return getHeader(HttpHeaders.LOCATION);
-    }
+//    public String getRedirectedUrl() {
+//        return getHeader(HttpHeaders.LOCATION);
+//    }
 
     @Override
     public void setDateHeader(String name, long value) {
@@ -487,18 +487,18 @@ public class SimpleHttpServletResponse implements HttpServletResponse {
         addHeaderValue(name, formatDate(value));
     }
 
-    public long getDateHeader(String name) {
-        String headerValue = getHeader(name);
-        if (headerValue == null) {
-            return -1;
-        }
-        try {
-            return newDateFormat().parse(getHeader(name)).getTime();
-        } catch (ParseException ex) {
-            throw new IllegalArgumentException(
-                    "Value for header '" + name + "' is not a valid Date: " + headerValue);
-        }
-    }
+//    public long getDateHeader(String name) {
+//        String headerValue = getHeader(name);
+//        if (headerValue == null) {
+//            return -1;
+//        }
+//        try {
+//            return newDateFormat().parse(getHeader(name)).getTime();
+//        } catch (ParseException ex) {
+//            throw new IllegalArgumentException(
+//                    "Value for header '" + name + "' is not a valid Date: " + headerValue);
+//        }
+//    }
 
     private String formatDate(long date) {
         return newDateFormat().format(new Date(date));
@@ -583,10 +583,10 @@ public class SimpleHttpServletResponse implements HttpServletResponse {
         }
     }
 
-    @Override
-    public int getStatus() {
-        return this.status;
-    }
+//    @Override
+//    public int getStatus() {
+//        return this.status;
+//    }
 
     @Override
     public void setStatus(int status) {
@@ -664,15 +664,15 @@ public class SimpleHttpServletResponse implements HttpServletResponse {
             this.targetStream.close();
         }
 
-        @Override
-        public boolean isReady() {
-            return true;
-        }
-
-        @Override
-        public void setWriteListener(WriteListener writeListener) {
-            throw new UnsupportedOperationException();
-        }
+//        @Override
+//        public boolean isReady() {
+//            return true;
+//        }
+//
+//        @Override
+//        public void setWriteListener(WriteListener writeListener) {
+//            throw new UnsupportedOperationException();
+//        }
 
     }
 

@@ -158,7 +158,6 @@ public class EsMapping2JsonschemaUtils {
 
     public static String readFromUrl(String url, String username, String password) {
         EsRequest request = new EsRequest(url, username   , password);
-        String res =   request.getFromUrl(url, null, "GET");
-        return res;
+        return request.getFromUrl(url, null, "GET");
     }
 }

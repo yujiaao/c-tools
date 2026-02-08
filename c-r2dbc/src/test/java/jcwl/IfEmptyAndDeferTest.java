@@ -34,16 +34,16 @@ public class IfEmptyAndDeferTest {
                 .switchIfEmpty(call.call())
                 .subscribe(System.out::println);
 
-        res.flatMap(Mono::just)
-                .switchIfEmpty(Mono.defer(() -> {
-                    try {
-                        return call1.call();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    return Mono.just(-1);
-                }))
-                .subscribe(System.out::println);
+        // res.flatMap(Mono::just)
+        //         .switchIfEmpty(Mono.defer(() -> {
+        //             try {
+        //                 return call1.call();
+        //             } catch (Exception e) {
+        //                 e.printStackTrace();
+        //             }
+        //             return Mono.just(-1);
+        //         }))
+        //         .subscribe(System.out::println);
     }
 
 }

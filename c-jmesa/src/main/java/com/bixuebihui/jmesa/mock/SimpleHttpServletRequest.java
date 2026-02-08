@@ -224,10 +224,10 @@ public class SimpleHttpServletRequest implements HttpServletRequest {
      * Return the ServletContext that this request is associated with. (Not
      * available in the standard HttpServletRequest interface for some reason.)
      */
-    @Override
-    public ServletContext getServletContext() {
-        return this.servletContext;
-    }
+//    @Override
+//    public ServletContext getServletContext() {
+//        return this.servletContext;
+//    }
 
     /**
      * Return whether this request is still active (that is, not completed yet).
@@ -356,10 +356,10 @@ public class SimpleHttpServletRequest implements HttpServletRequest {
         return (this.content != null ? this.content.length : -1);
     }
 
-    @Override
-    public long getContentLengthLong() {
-        return getContentLength();
-    }
+//    @Override
+//    public long getContentLengthLong() {
+//        return getContentLength();
+//    }
 
     @Override
 
@@ -750,96 +750,96 @@ public class SimpleHttpServletRequest implements HttpServletRequest {
         return this.servletContext.getRealPath(path);
     }
 
-    @Override
-    public int getRemotePort() {
-        return this.remotePort;
-    }
+//    @Override
+//    public int getRemotePort() {
+//        return this.remotePort;
+//    }
 
     public void setRemotePort(int remotePort) {
         this.remotePort = remotePort;
     }
 
-    @Override
-    public String getLocalName() {
-        return this.localName;
-    }
+//    @Override
+//    public String getLocalName() {
+//        return this.localName;
+//    }
 
     public void setLocalName(String localName) {
         this.localName = localName;
     }
 
-    @Override
-    public String getLocalAddr() {
-        return this.localAddr;
-    }
+//    @Override
+//    public String getLocalAddr() {
+//        return this.localAddr;
+//    }
 
     public void setLocalAddr(String localAddr) {
         this.localAddr = localAddr;
     }
 
-    @Override
-    public int getLocalPort() {
-        return this.localPort;
-    }
+//    @Override
+//    public int getLocalPort() {
+//        return this.localPort;
+//    }
 
     public void setLocalPort(int localPort) {
         this.localPort = localPort;
     }
 
-    @Override
-    public AsyncContext startAsync() {
-        return startAsync(this, null);
-    }
+//    @Override
+//    public AsyncContext startAsync() {
+//        return startAsync(this, null);
+//    }
+//
+//    @Override
+//    public AsyncContext startAsync(ServletRequest request, ServletResponse response) {
+//        Assert.state(this.asyncSupported, "Async not supported");
+//        this.asyncStarted = true;
+//        this.asyncContext = new MockAsyncContext(request, response);
+//        return this.asyncContext;
+//    }
 
-    @Override
-    public AsyncContext startAsync(ServletRequest request, ServletResponse response) {
-        Assert.state(this.asyncSupported, "Async not supported");
-        this.asyncStarted = true;
-        this.asyncContext = new MockAsyncContext(request, response);
-        return this.asyncContext;
-    }
-
-    @Override
-    public boolean isAsyncStarted() {
-        return this.asyncStarted;
-    }
+//    @Override
+//    public boolean isAsyncStarted() {
+//        return this.asyncStarted;
+//    }
 
     public void setAsyncStarted(boolean asyncStarted) {
         this.asyncStarted = asyncStarted;
     }
 
-    @Override
-    public boolean isAsyncSupported() {
-        return this.asyncSupported;
-    }
+//    @Override
+//    public boolean isAsyncSupported() {
+//        return this.asyncSupported;
+//    }
 
     public void setAsyncSupported(boolean asyncSupported) {
         this.asyncSupported = asyncSupported;
     }
 
-    @Override
+//    @Override
 
-    public AsyncContext getAsyncContext() {
-        return this.asyncContext;
-    }
+//    public AsyncContext getAsyncContext() {
+//        return this.asyncContext;
+//    }
 
     public void setAsyncContext(MockAsyncContext asyncContext) {
         this.asyncContext = asyncContext;
     }
 
-    @Override
-    public DispatcherType getDispatcherType() {
-        return this.dispatcherType;
-    }
+//    @Override
+//    public DispatcherType getDispatcherType() {
+//        return this.dispatcherType;
+//    }
 
 
     // ---------------------------------------------------------------------
     // HttpServletRequest interface
     // ---------------------------------------------------------------------
 
-    public void setDispatcherType(DispatcherType dispatcherType) {
-        this.dispatcherType = dispatcherType;
-    }
+//    public void setDispatcherType(DispatcherType dispatcherType) {
+//        this.dispatcherType = dispatcherType;
+//    }
 
     @Override
 
@@ -852,19 +852,18 @@ public class SimpleHttpServletRequest implements HttpServletRequest {
     }
 
     @Override
-
     public Cookie[] getCookies() {
         return this.cookies;
     }
 
-    public void setCookies(Cookie... cookies) {
-        this.cookies = (ObjectUtils.isEmpty(cookies) ? null : cookies);
-        if (this.cookies == null) {
-            removeHeader(HttpHeaders.COOKIE);
-        } else {
-            doAddHeaderValue(HttpHeaders.COOKIE, encodeCookies(this.cookies), true);
-        }
-    }
+//    public void setCookies(Cookie... cookies) {
+//        this.cookies = (ObjectUtils.isEmpty(cookies) ? null : cookies);
+//        if (this.cookies == null) {
+//            removeHeader(HttpHeaders.COOKIE);
+//        } else {
+//            doAddHeaderValue(HttpHeaders.COOKIE, encodeCookies(this.cookies), true);
+//        }
+//    }
 
     /**
      * Add an HTTP header entry for the given name.
@@ -883,31 +882,32 @@ public class SimpleHttpServletRequest implements HttpServletRequest {
      * @see #getDateHeader
      */
     public void addHeader(String name, Object value) {
-        if (HttpHeaders.CONTENT_TYPE.equalsIgnoreCase(name) &&
-                !this.headers.containsKey(HttpHeaders.CONTENT_TYPE)) {
-            setContentType(value.toString());
-        } else if (HttpHeaders.ACCEPT_LANGUAGE.equalsIgnoreCase(name) &&
-                !this.headers.containsKey(HttpHeaders.ACCEPT_LANGUAGE)) {
-            try {
-                HttpHeaders headers = new HttpHeaders();
-                headers.add(HttpHeaders.ACCEPT_LANGUAGE, value.toString());
-                this.locales.clear();
-                this.locales.addAll(locales);
-                if (this.locales.isEmpty()) {
-                    this.locales.add(Locale.ENGLISH);
-                }
-            } catch (IllegalArgumentException ex) {
-                // Invalid Accept-Language format -> just store plain header
-            }
-            doAddHeaderValue(name, value, true);
-        } else {
+//        if (HttpHeaders.CONTENT_TYPE.equalsIgnoreCase(name) &&
+//                !this.headers.containsKey(HttpHeaders.CONTENT_TYPE)) {
+//            setContentType(value.toString());
+//        } else if (HttpHeaders.ACCEPT_LANGUAGE.equalsIgnoreCase(name) &&
+//                !this.headers.containsKey(HttpHeaders.ACCEPT_LANGUAGE)) {
+//            try {
+//                HttpHeaders headers = new HttpHeaders();
+//                headers.add(HttpHeaders.ACCEPT_LANGUAGE, value.toString());
+//                this.locales.clear();
+//                this.locales.addAll(locales);
+//                if (this.locales.isEmpty()) {
+//                    this.locales.add(Locale.ENGLISH);
+//                }
+//            } catch (IllegalArgumentException ex) {
+//                // Invalid Accept-Language format -> just store plain header
+//            }
+//            doAddHeaderValue(name, value, true);
+//        } else
+        {
             doAddHeaderValue(name, value, false);
         }
     }
 
     private void doAddHeaderValue(String name, Object value, boolean replace) {
         HeaderValueHolder header = HeaderValueHolder.getByName(this.headers, name);
-        Assert.notNull(value, "Header value must not be null");
+//        Assert.notNull(value, "Header value must not be null");
         if (header == null || replace) {
             header = new HeaderValueHolder();
             this.headers.put(name, header);
@@ -927,7 +927,7 @@ public class SimpleHttpServletRequest implements HttpServletRequest {
      * @since 4.3.20
      */
     public void removeHeader(String name) {
-        Assert.notNull(name, "Header name must not be null");
+//        Assert.notNull(name, "Header name must not be null");
         this.headers.remove(name);
     }
 
@@ -1145,10 +1145,10 @@ public class SimpleHttpServletRequest implements HttpServletRequest {
      *
      * @since 4.0.3
      */
-    @Override
-    public String changeSessionId() {
-        return this.session.getId();
-    }
+//    @Override
+//    public String changeSessionId() {
+//        return this.session.getId();
+//    }
 
     @Override
     public boolean isRequestedSessionIdValid() {
@@ -1182,46 +1182,46 @@ public class SimpleHttpServletRequest implements HttpServletRequest {
         return isRequestedSessionIdFromURL();
     }
 
-    @Override
-    public boolean authenticate(HttpServletResponse response) throws IOException, ServletException {
-        throw new UnsupportedOperationException();
-    }
+//    @Override
+//    public boolean authenticate(HttpServletResponse response) throws IOException, ServletException {
+//        throw new UnsupportedOperationException();
+//    }
 
-    @Override
-    public void login(String username, String password) throws ServletException {
-        throw new UnsupportedOperationException();
-    }
+//    @Override
+//    public void login(String username, String password) throws ServletException {
+//        throw new UnsupportedOperationException();
+//    }
 
-    @Override
-    public void logout() throws ServletException {
-        this.userPrincipal = null;
-        this.remoteUser = null;
-        this.authType = null;
-    }
+//    @Override
+//    public void logout() throws ServletException {
+//        this.userPrincipal = null;
+//        this.remoteUser = null;
+//        this.authType = null;
+//    }
 
     public void addPart(Part part) {
         this.parts.add(part.getName(), part);
     }
 
-    @Override
+//    @Override
+//
+//    public Part getPart(String name) throws IOException, ServletException {
+//        return this.parts.getFirst(name);
+//    }
 
-    public Part getPart(String name) throws IOException, ServletException {
-        return this.parts.getFirst(name);
-    }
+//    @Override
+//    public Collection<Part> getParts() throws IOException, ServletException {
+//        List<Part> result = new LinkedList<>();
+//        for (List<Part> list : this.parts.values()) {
+//            result.addAll(list);
+//        }
+//        return result;
+//    }
 
-    @Override
-    public Collection<Part> getParts() throws IOException, ServletException {
-        List<Part> result = new LinkedList<>();
-        for (List<Part> list : this.parts.values()) {
-            result.addAll(list);
-        }
-        return result;
-    }
-
-    @Override
-    public <T extends HttpUpgradeHandler> T upgrade(Class<T> handlerClass) throws IOException, ServletException {
-        throw new UnsupportedOperationException();
-    }
+//    @Override
+//    public <T extends HttpUpgradeHandler> T upgrade(Class<T> handlerClass) throws IOException, ServletException {
+//        throw new UnsupportedOperationException();
+//    }
 
 
     /**
@@ -1345,20 +1345,20 @@ public class SimpleHttpServletRequest implements HttpServletRequest {
             this.sourceStream.close();
         }
 
-        @Override
-        public boolean isFinished() {
-            return this.finished;
-        }
-
-        @Override
-        public boolean isReady() {
-            return true;
-        }
-
-        @Override
-        public void setReadListener(ReadListener readListener) {
-            throw new UnsupportedOperationException();
-        }
+//        @Override
+//        public boolean isFinished() {
+//            return this.finished;
+//        }
+//
+//        @Override
+//        public boolean isReady() {
+//            return true;
+//        }
+//
+//        @Override
+//        public void setReadListener(ReadListener readListener) {
+//            throw new UnsupportedOperationException();
+//        }
 
     }
 

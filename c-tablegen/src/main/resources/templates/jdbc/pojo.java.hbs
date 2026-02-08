@@ -63,12 +63,12 @@ public class {{className}} {{interface}} {
     public String toXml()
     {
         StringBuilder s= new StringBuilder();
-        String ln = System.getProperty("line.separator");
+        String ln = System.lineSeparator();
         s.append("<{{tableName}} ");
 {{#each fields as | field index | }}
-        {{#eq "String" javaType~}}
+        {{#eq "String" javaType}}
         s.append(" {{firstLow name}}=\"").append(StringEscapeUtils.escapeXml11(this.get{{firstUp  name }}())).append("\"");
-        {{~else~}}
+        {{~else}}
         s.append(" {{firstLow name}}=\"").append(this.get{{firstUp name}}()).append("\"");
         {{/eq~}}
 {{/each~}}
