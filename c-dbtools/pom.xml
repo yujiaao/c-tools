@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.github.yujiaao</groupId>
         <artifactId>c-tools-parent</artifactId>
-        <version>1.16.4.3</version>
+        <version>1.16.4.4</version>
     </parent>
 
     <artifactId>c-dbtools</artifactId>
@@ -181,7 +181,7 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.12.0</version>
+            <version>${commons-lang3.version}</version>
         </dependency>
 
         <dependency>
@@ -367,7 +367,7 @@
         <dependency>
             <groupId>com.github.yujiaao</groupId>
             <artifactId>common-utils</artifactId>
-            <version>1.16.4.3</version>
+            <version>1.16.4.4</version>
             <scope>compile</scope>
         </dependency>
 
