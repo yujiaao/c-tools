@@ -47,7 +47,7 @@
         <module>c-estools</module>
 
         <module>c-jsongen-es-demo</module>
-        <!--        <module>c-dbtools-spring</module>-->
+        <module>c-dbtools-spring</module>
 
 
     </modules>
@@ -69,6 +69,8 @@
         <expressly.version>5.0.0</expressly.version>
         <commons-text.version>1.12.0</commons-text.version>
         <commons-lang3.version>3.20.0</commons-lang3.version>
+        <sqlserver.version>11.2.2.jre11</sqlserver.version>
+        <mysql.version>8.2.0</mysql.version>
 
         <servlet.version>5.0.0</servlet.version>
 
