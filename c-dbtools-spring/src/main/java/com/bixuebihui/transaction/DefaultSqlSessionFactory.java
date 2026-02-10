@@ -15,6 +15,10 @@
  */
 package com.bixuebihui.transaction;
 
+import org.apache.ibatis.exceptions.ExceptionFactory;
+import org.apache.ibatis.executor.ErrorContext;
+import org.apache.ibatis.transaction.managed.ManagedTransactionFactory;
+
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -83,8 +87,9 @@ public class DefaultSqlSessionFactory implements SqlSessionFactory {
       final Environment environment = configuration.getEnvironment();
       final TransactionFactory transactionFactory = getTransactionFactoryFromEnvironment(environment);
       tx = transactionFactory.newTransaction(environment.getDataSource(), level, autoCommit);
-      final Executor executor = configuration.newExecutor(tx, execType);
-      return new DefaultSqlSession(configuration, executor, autoCommit);
+//      final Executor executor = configuration.newExecutor(tx, execType);
+//      return new DefaultSqlSession(configuration, executor, autoCommit);
+      return null;
     } catch (Exception e) {
       closeTransaction(tx); // may have fetched a connection so lets call close()
       throw ExceptionFactory.wrapException("Error opening session.  Cause: " + e, e);
@@ -106,8 +111,9 @@ public class DefaultSqlSessionFactory implements SqlSessionFactory {
       final Environment environment = configuration.getEnvironment();
       final TransactionFactory transactionFactory = getTransactionFactoryFromEnvironment(environment);
       final Transaction tx = transactionFactory.newTransaction(connection);
-      final Executor executor = configuration.newExecutor(tx, execType);
-      return new DefaultSqlSession(configuration, executor, autoCommit);
+//      final Executor executor = configuration.newExecutor(tx, execType);
+//      return new DefaultSqlSession(configuration, executor, autoCommit);
+      return null;
     } catch (Exception e) {
       throw ExceptionFactory.wrapException("Error opening session.  Cause: " + e, e);
     } finally {
@@ -117,7 +123,8 @@ public class DefaultSqlSessionFactory implements SqlSessionFactory {
 
   private TransactionFactory getTransactionFactoryFromEnvironment(Environment environment) {
     if (environment == null || environment.getTransactionFactory() == null) {
-      return new ManagedTransactionFactory();
+//      return new ManagedTransactionFactory();
+      return null;
     }
     return environment.getTransactionFactory();
   }

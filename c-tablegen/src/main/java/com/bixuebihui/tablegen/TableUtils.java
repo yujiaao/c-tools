@@ -10,6 +10,7 @@ import com.bixuebihui.tablegen.entry.ColumnData;
 import com.bixuebihui.tablegen.entry.TableInfo;
 import com.bixuebihui.tablegen.entry.TableSetInfo;
 import com.bixuebihui.util.DbUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -856,7 +857,18 @@ public class TableUtils {
             }
 
         }
-        return res;
+        return escape(res);
+    }
+
+    static String escape(String src){
+        return src.replace("\"", "")
+                .replace("\n", " ")
+                .replace("\r", " ");
+    }
+
+    public static void main(String[] args) {
+        System.out.println(escape("大纲修改意见附件,多个json数组\n" +
+                "[{\"fileName\":\"测试文件\",\"fileUrl\":\"https://xxxx\"}]"));
     }
 
     private static int getTableIdByName(ProjectConfig config, String tableName) {

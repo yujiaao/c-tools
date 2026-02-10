@@ -29,6 +29,12 @@ target
 *.iml
 .DS_Store
 .java-version
+.gradle
+build/
+.vscode/
+.settings/
+.github/
+node_modules/
 .settings/
 .vscode/
 node_modules/
