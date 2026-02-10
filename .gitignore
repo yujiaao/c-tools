@@ -29,3 +29,8 @@ target
 *.iml
 .DS_Store
 .java-version
+.github/
+node_modules/
+.vscode/
+build/
+
