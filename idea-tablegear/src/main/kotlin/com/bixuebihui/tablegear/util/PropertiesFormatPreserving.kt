@@ -17,7 +17,7 @@ object PropertiesFormatPreserving {
      */
     sealed class Line {
         data class Comment(val raw: String) : Line()           // 含 # 的整行，原样保留
-        data object Blank : Line()                             // 空行
+        object Blank : Line()                                  // 空行
         data class Property(val key: String, val value: String, val rawKey: String) : Line()  // key=value，rawKey 保留等号前空白等
     }
 

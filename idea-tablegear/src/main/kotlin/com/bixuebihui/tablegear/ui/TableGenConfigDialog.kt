@@ -1,5 +1,6 @@
 package com.bixuebihui.tablegear.ui
 
+import com.bixuebihui.tablegear.util.TableGearPropertiesIo
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.project.Project
@@ -154,11 +155,9 @@ class TableGenConfigDialog(
     
     private fun saveFile(file: VirtualFile) {
         try {
-            val props = model.saveToProperties()
-            val outputStream = file.getOutputStream(this)
-            OutputStreamWriter(outputStream, StandardCharsets.UTF_8).use { writer ->
-                props.store(writer, "TableGen Configuration File")
-            }
+            val keyValueMap = model.getAllProperties()
+            val outputFile = File(file.path)
+            TableGearPropertiesIo.savePreservingFormat(outputFile, keyValueMap, StandardCharsets.UTF_8)
             Messages.showInfoMessage(project, "配置文件保存成功！", "成功")
         } catch (e: Exception) {
             Messages.showErrorDialog(project, "保存配置文件失败: ${e.message}", "错误")

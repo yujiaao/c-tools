@@ -73,7 +73,7 @@ dependencies {
     // 依赖 tablegen 模块以使用数据库连接功能
     // 注意：需要先构建 c-tablegen 模块 (mvn install) 才能使用
     // 如果 c-tablegen 已发布到本地 Maven 仓库，使用以下方式：
-    implementation("com.github.yujiaao:tablegen:1.16.2")
+    implementation("com.github.yujiaao:tablegen:1.12.3.0")
     
     testImplementation(kotlin("test"))
     // kotlin.test uses JUnit 5 assertions which require opentest4j

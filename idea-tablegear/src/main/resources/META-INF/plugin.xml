@@ -88,6 +88,15 @@
             <add-to-group group-id="ToolsMenu" anchor="last"/>
             <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt T"/>
         </action>
+
+        <!-- 文件上下文菜单：用TableGen编辑器打开 -->
+        <action id="TableGear.OpenWithEditor"
+                class="com.bixuebihui.tablegear.ui.OpenWithTableGenEditorAction"
+                text="用 TableGen 编辑器打开"
+                description="使用 TableGen 可视化编辑器打开配置文件">
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="after" relative-to-action="EditSource"/>
+            <add-to-group group-id="EditorPopupMenu" anchor="after" relative-to-action="EditSource"/>
+        </action>
     </actions>
     
     
