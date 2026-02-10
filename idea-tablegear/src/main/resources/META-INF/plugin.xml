@@ -1,11 +1,10 @@
 <idea-plugin>
-    <id>com.bixuebihui.idea-tablegear</id>
-    <name>TableGear Language Support</name>
-    <version>1.0.3</version>
-    <vendor email="yujiaao@mcn.com" url="https://github.com/yujiaao/c-tools">XingWanxiang</vendor>
-
-    <description><![CDATA[
-    <h2>TableGear Language Support for IntelliJ IDEA</h2>
+  <idea-version since-build="221" until-build="255.*" />
+  <id>com.bixuebihui.idea-tablegear</id>
+  <name>TableGear Language Support</name>
+  <version>1.0.4</version>
+  <vendor email="yujiaao@mcn.com" url="https://github.com/yujiaao/c-tools">XingWanxiang</vendor>
+  <description><![CDATA[<h2>TableGear Language Support for IntelliJ IDEA</h2>
     <p>Provides intelligent code completion, syntax highlighting, and validation for tablegen*.properties and es*.properties configuration files.</p>
     
     <h3>Features:</h3>
@@ -23,11 +22,8 @@
     <ul>
         <li>tablegen*.properties / tablegen*.prop</li>
         <li>es*.properties / es*.prop</li>
-    </ul>
-    ]]></description>
-
-    <change-notes><![CDATA[
-    <h3>1.0.0</h3>
+    </ul>]]></description>
+  <change-notes><![CDATA[<h3>1.0.0</h3>
     <ul>
         <li>Initial release</li>
         <li>Code completion for all configuration keys</li>
@@ -42,6 +38,8 @@
     <depends>com.intellij.modules.java</depends>
 
     <extensions defaultExtensionNs="com.intellij">
+        <!-- 通知组 -->
+        <notificationGroup id="TableGear.Notification" displayType="BALLOON" />
         <!-- 文件类型注册 -->
         <fileType name="TableGear Properties" implementationClass="com.bixuebihui.tablegear.TableGearFileType" 
                   fieldName="INSTANCE" language="TableGear" extensions="properties" description="TableGear configuration files"/>
