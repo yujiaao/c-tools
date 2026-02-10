@@ -133,13 +133,23 @@ public class EsAggregationBuilder {
 
     private static void addAggFun(AbstractAggregation res, String termField, String aggFunction, boolean textNeedConvertToDouble) {
         String alias = aggFunction + "_" + termField;
-        AbstractAggregation agg = switch (aggFunction) {
-            case "count" -> new ValueCount(alias, termField);
-            case "sum" -> new Sum(alias);
-            case "max" -> new Max(alias);
-            case "min" -> new Min(alias);
-            default -> throw new IllegalStateException("Unexpected value: " + aggFunction);
-        };
+        AbstractAggregation agg;
+        switch (aggFunction) {
+            case "count":
+                agg = new ValueCount(alias, termField);
+                break;
+            case "sum":
+                agg = new Sum(alias);
+                break;
+            case "max":
+                agg = new Max(alias);
+                break;
+            case "min":
+                agg = new Min(alias);
+                break;
+            default:
+                throw new IllegalStateException("Unexpected value: " + aggFunction);
+        }
         if(agg instanceof AbstractSimpleAggregation) {
             setupAgg((AbstractSimpleAggregation)agg, termField, textNeedConvertToDouble);
         }

@@ -9,6 +9,7 @@ import com.bixuebihui.codec.EncryptDecryptService;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
 * @author xwx
@@ -50,7 +51,7 @@ public interface TEduConverter {
     default List<TEdu> toDaoListEnc(List<TEduDto> info, EncryptDecryptService encryptDecryptService) {
         List<TEdu> res = toDaoList(info);
         List<String> listStr = res.stream().map(TEduConverter::strCollector)
-                .flatMap(List::stream).toList();
+                .flatMap(List::stream).collect(Collectors.toList());
 
         List<String> encStr = encryptDecryptService.encrypt(listStr);
         int index=0;
@@ -66,7 +67,7 @@ public interface TEduConverter {
     default List<TEduDto> toDtoListDec(List<TEdu> info, EncryptDecryptService encryptDecryptService) {
         List<TEduDto> res = toDtoList(info);
         List<String> listStr = res.stream().map(TEduConverter::strCollectorDto)
-            .flatMap(List::stream).toList();
+            .flatMap(List::stream).collect(Collectors.toList());
         List<String> encStr = encryptDecryptService.decrypt(listStr);
         int index=0;
         if(!encStr.isEmpty() && encStr.size()==listStr.size()) {

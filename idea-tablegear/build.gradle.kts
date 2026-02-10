@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.bixuebihui"
-version = "1.0.4"
+version = "1.0.3"
 
 repositories {
     mavenCentral()
@@ -73,7 +73,20 @@ dependencies {
     // 依赖 tablegen 模块以使用数据库连接功能
     // 注意：需要先构建 c-tablegen 模块 (mvn install) 才能使用
     // 如果 c-tablegen 已发布到本地 Maven 仓库，使用以下方式：
-    implementation("com.github.yujiaao:tablegen:1.12.3.0")
+    implementation("com.github.yujiaao:tablegen:1.12.3") {
+        // 排除所有日志相关的依赖，避免与 IDEA Platform 的日志系统冲突
+        // IDEA Platform 使用自己的日志系统，不需要 log4j
+        exclude(group = "org.slf4j", module = "slf4j-log4j12")
+        exclude(group = "org.slf4j", module = "log4j-over-slf4j")
+        exclude(group = "org.apache.logging.log4j", module = "log4j-slf4j-impl")
+        exclude(group = "org.apache.logging.log4j", module = "log4j-core")
+        exclude(group = "org.apache.logging.log4j", module = "log4j-api")
+        exclude(group = "org.apache.logging.log4j", module = "log4j-jul")
+        exclude(group = "org.springframework.boot", module = "spring-boot-starter-log4j2")
+        // 排除传递依赖中的日志相关模块
+        exclude(group = "org.slf4j")
+        exclude(group = "org.apache.logging.log4j")
+    }
     
     testImplementation(kotlin("test"))
     // kotlin.test uses JUnit 5 assertions which require opentest4j

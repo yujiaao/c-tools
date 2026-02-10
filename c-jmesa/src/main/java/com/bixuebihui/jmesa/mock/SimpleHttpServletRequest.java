@@ -9,8 +9,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.util.*;
 
-import jakarta.servlet.*;
-import jakarta.servlet.http.*;
+import javax.servlet.*;
+import javax.servlet.http.*;
 import java.io.*;
 import java.security.Principal;
 import java.text.ParseException;
@@ -19,7 +19,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Mock implementation of the {@link jakarta.servlet.http.HttpServletRequest} interface.
+ * Mock implementation of the {@link javax.servlet.http.HttpServletRequest} interface.
  *
  * <p>The default, preferred {@link Locale} for the <em>server</em> mocked by this request
  * is {@link Locale#ENGLISH}. This value can be changed via {@link #addPreferredLocale}
@@ -224,7 +224,7 @@ public class SimpleHttpServletRequest implements HttpServletRequest {
      * Return the ServletContext that this request is associated with. (Not
      * available in the standard HttpServletRequest interface for some reason.)
      */
-    @Override
+//    @Override
     public ServletContext getServletContext() {
         return this.servletContext;
     }
@@ -356,7 +356,7 @@ public class SimpleHttpServletRequest implements HttpServletRequest {
         return (this.content != null ? this.content.length : -1);
     }
 
-    @Override
+//    @Override
     public long getContentLengthLong() {
         return getContentLength();
     }
@@ -691,7 +691,7 @@ public class SimpleHttpServletRequest implements HttpServletRequest {
      * does <strong>not</strong> take into consideration any locales
      * specified via the {@code Accept-Language} header.
      *
-     * @see jakarta.servlet.ServletRequest#getLocale()
+     * @see javax.servlet.ServletRequest#getLocale()
      * @see #addPreferredLocale(Locale)
      * @see #setPreferredLocales(List)
      */
@@ -750,7 +750,7 @@ public class SimpleHttpServletRequest implements HttpServletRequest {
         return this.servletContext.getRealPath(path);
     }
 
-    @Override
+//    @Override
     public int getRemotePort() {
         return this.remotePort;
     }
@@ -759,7 +759,7 @@ public class SimpleHttpServletRequest implements HttpServletRequest {
         this.remotePort = remotePort;
     }
 
-    @Override
+//    @Override
     public String getLocalName() {
         return this.localName;
     }
@@ -768,7 +768,7 @@ public class SimpleHttpServletRequest implements HttpServletRequest {
         this.localName = localName;
     }
 
-    @Override
+//    @Override
     public String getLocalAddr() {
         return this.localAddr;
     }
@@ -777,7 +777,7 @@ public class SimpleHttpServletRequest implements HttpServletRequest {
         this.localAddr = localAddr;
     }
 
-    @Override
+//    @Override
     public int getLocalPort() {
         return this.localPort;
     }
@@ -786,12 +786,12 @@ public class SimpleHttpServletRequest implements HttpServletRequest {
         this.localPort = localPort;
     }
 
-    @Override
+//    @Override
     public AsyncContext startAsync() {
         return startAsync(this, null);
     }
 
-    @Override
+//    @Override
     public AsyncContext startAsync(ServletRequest request, ServletResponse response) {
         Assert.state(this.asyncSupported, "Async not supported");
         this.asyncStarted = true;
@@ -799,7 +799,7 @@ public class SimpleHttpServletRequest implements HttpServletRequest {
         return this.asyncContext;
     }
 
-    @Override
+//    @Override
     public boolean isAsyncStarted() {
         return this.asyncStarted;
     }
@@ -808,7 +808,7 @@ public class SimpleHttpServletRequest implements HttpServletRequest {
         this.asyncStarted = asyncStarted;
     }
 
-    @Override
+//    @Override
     public boolean isAsyncSupported() {
         return this.asyncSupported;
     }
@@ -817,7 +817,7 @@ public class SimpleHttpServletRequest implements HttpServletRequest {
         this.asyncSupported = asyncSupported;
     }
 
-    @Override
+//    @Override
 
     public AsyncContext getAsyncContext() {
         return this.asyncContext;
@@ -827,7 +827,7 @@ public class SimpleHttpServletRequest implements HttpServletRequest {
         this.asyncContext = asyncContext;
     }
 
-    @Override
+//    @Override
     public DispatcherType getDispatcherType() {
         return this.dispatcherType;
     }
@@ -1145,7 +1145,7 @@ public class SimpleHttpServletRequest implements HttpServletRequest {
      *
      * @since 4.0.3
      */
-    @Override
+//    @Override
     public String changeSessionId() {
         return this.session.getId();
     }
@@ -1182,17 +1182,17 @@ public class SimpleHttpServletRequest implements HttpServletRequest {
         return isRequestedSessionIdFromURL();
     }
 
-    @Override
+//    @Override
     public boolean authenticate(HttpServletResponse response) throws IOException, ServletException {
         throw new UnsupportedOperationException();
     }
 
-    @Override
+//    @Override
     public void login(String username, String password) throws ServletException {
         throw new UnsupportedOperationException();
     }
 
-    @Override
+//    @Override
     public void logout() throws ServletException {
         this.userPrincipal = null;
         this.remoteUser = null;
@@ -1203,13 +1203,13 @@ public class SimpleHttpServletRequest implements HttpServletRequest {
         this.parts.add(part.getName(), part);
     }
 
-    @Override
+//    @Override
 
     public Part getPart(String name) throws IOException, ServletException {
         return this.parts.getFirst(name);
     }
 
-    @Override
+//    @Override
     public Collection<Part> getParts() throws IOException, ServletException {
         List<Part> result = new LinkedList<>();
         for (List<Part> list : this.parts.values()) {
@@ -1218,7 +1218,7 @@ public class SimpleHttpServletRequest implements HttpServletRequest {
         return result;
     }
 
-    @Override
+//    @Override
     public <T extends HttpUpgradeHandler> T upgrade(Class<T> handlerClass) throws IOException, ServletException {
         throw new UnsupportedOperationException();
     }
@@ -1345,17 +1345,17 @@ public class SimpleHttpServletRequest implements HttpServletRequest {
             this.sourceStream.close();
         }
 
-        @Override
+//        @Override
         public boolean isFinished() {
             return this.finished;
         }
 
-        @Override
+//        @Override
         public boolean isReady() {
             return true;
         }
 
-        @Override
+//        @Override
         public void setReadListener(ReadListener readListener) {
             throw new UnsupportedOperationException();
         }

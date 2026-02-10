@@ -22,8 +22,11 @@
     <ul>
         <li>tablegen*.properties / tablegen*.prop</li>
         <li>es*.properties / es*.prop</li>
-    </ul>]]></description>
-  <change-notes><![CDATA[<h3>1.0.0</h3>
+    </ul>
+    ]]></description>
+
+    <change-notes><![CDATA[
+    <h3>1.0.0</h3>
     <ul>
         <li>Initial release</li>
         <li>Code completion for all configuration keys</li>
@@ -72,7 +75,7 @@
         <!-- 文档提供 -->
         <lang.documentationProvider language="TableGear" implementationClass="com.bixuebihui.tablegear.documentation.TableGearDocumentationProvider"/>
         <lang.documentationProvider language="Properties" implementationClass="com.bixuebihui.tablegear.documentation.TableGearDocumentationProvider"/>
-        
+
         <!-- 编辑器通知：提示用户可以使用插件功能 -->
         <editorNotificationProvider implementation="com.bixuebihui.tablegear.notification.TableGearPluginNotificationProvider"/>
     </extensions>

@@ -30,7 +30,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import com.sdadas.spring2ts.annotations.SharedService;
 
-import jakarta.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**

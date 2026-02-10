@@ -910,7 +910,7 @@ public class TableUtils {
                 }
                 if (isNeedNotNullAnnotation(config, cd)) {
                     if (sb.indexOf("@NotNull") < 0) {
-                        if (!sb.isEmpty()) {
+                        if (sb.length() != 0) {
                             sb.append("    ");
                         }
                         sb.append("@NotNull\n");
@@ -919,7 +919,7 @@ public class TableUtils {
             }
 
             if(config.useSwagger && StringUtils.isNotBlank(cd.getComment())){
-                if(!sb.isEmpty()){
+                if(sb.length() != 0){
                     sb.append("    ");
                 }
                 if(config.getSwaggerVersion().equals("2")) {

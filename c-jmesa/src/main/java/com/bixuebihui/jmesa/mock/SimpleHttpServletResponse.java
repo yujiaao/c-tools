@@ -23,10 +23,10 @@ import org.springframework.util.LinkedCaseInsensitiveMap;
 import org.springframework.util.StringUtils;
 import org.springframework.web.util.WebUtils;
 
-import jakarta.servlet.ServletOutputStream;
-import jakarta.servlet.WriteListener;
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletResponse;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.WriteListener;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -34,7 +34,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
- * Mock implementation of the {@link jakarta.servlet.http.HttpServletResponse} interface.
+ * Mock implementation of the {@link javax.servlet.http.HttpServletResponse} interface.
  *
  * <p>As of Spring Framework 5.0, this set of mocks is designed on a Servlet 4.0 baseline.
  *
@@ -139,7 +139,7 @@ public class SimpleHttpServletResponse implements HttpServletResponse {
         return this.characterEncoding;
     }
 
-    @Override
+//    @Override
     public void setCharacterEncoding(String characterEncoding) {
         this.characterEncoding = characterEncoding;
         this.charset = true;
@@ -186,13 +186,13 @@ public class SimpleHttpServletResponse implements HttpServletResponse {
         return this.contentLength;
     }
 
-    @Override
+//    @Override
     public void setContentLengthLong(long contentLength) {
         this.contentLength = contentLength;
         doAddHeaderValue(HttpHeaders.CONTENT_LENGTH, contentLength, true);
     }
 
-    @Override
+//    @Override
 
     public String getContentType() {
         return this.contentType;
@@ -314,9 +314,9 @@ public class SimpleHttpServletResponse implements HttpServletResponse {
         if (cookie.getSecure()) {
             buf.append("; Secure");
         }
-        if (cookie.isHttpOnly()) {
-            buf.append("; HttpOnly");
-        }
+//        if (cookie.isHttpOnly()) {
+//            buf.append("; HttpOnly");
+//        }
 
         return buf.toString();
     }
@@ -347,7 +347,7 @@ public class SimpleHttpServletResponse implements HttpServletResponse {
      *
      * @return the {@code Set} of header name {@code Strings}, or an empty {@code Set} if none
      */
-    @Override
+//    @Override
     public Collection<String> getHeaderNames() {
         return this.headers.keySet();
     }
@@ -362,7 +362,7 @@ public class SimpleHttpServletResponse implements HttpServletResponse {
      * @param name the name of the header
      * @return the associated header value, or {@code null} if none
      */
-    @Override
+//    @Override
 
     public String getHeader(String name) {
         SimpleHttpServletRequest.HeaderValueHolder header = SimpleHttpServletRequest.HeaderValueHolder.getByName(this.headers, name);
@@ -378,7 +378,7 @@ public class SimpleHttpServletResponse implements HttpServletResponse {
      * @param name the name of the header
      * @return the associated header values, or an empty List if none
      */
-    @Override
+//    @Override
     public List<String> getHeaders(String name) {
         SimpleHttpServletRequest.HeaderValueHolder header = SimpleHttpServletRequest.HeaderValueHolder.getByName(this.headers, name);
         if (header != null) {
@@ -583,7 +583,7 @@ public class SimpleHttpServletResponse implements HttpServletResponse {
         }
     }
 
-    @Override
+//    @Override
     public int getStatus() {
         return this.status;
     }
@@ -664,12 +664,12 @@ public class SimpleHttpServletResponse implements HttpServletResponse {
             this.targetStream.close();
         }
 
-        @Override
+//        @Override
         public boolean isReady() {
             return true;
         }
 
-        @Override
+//        @Override
         public void setWriteListener(WriteListener writeListener) {
             throw new UnsupportedOperationException();
         }

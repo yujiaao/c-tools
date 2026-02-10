@@ -1,10 +1,17 @@
 package com.bixuebihui.tablegear.ui
 
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
+import com.intellij.notification.NotificationGroupManager
+import com.intellij.notification.NotificationType
+import com.intellij.notification.Notification
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTextArea
 import com.intellij.util.ui.FormBuilder
+import java.awt.Dimension
 import java.awt.Font
 import javax.swing.*
 
@@ -71,12 +78,27 @@ class TableConfigPanel(
         add(form, java.awt.BorderLayout.CENTER)
     }
     
+    /**
+     * 自动连接数据库（如果配置完整）
+     * @return true 如果配置完整并开始连接，false 如果配置不完整
+     */
+    fun autoConnectIfConfigured(): Boolean {
+        val className = model.getProperty("className")
+        val dburl = model.getProperty("dburl")
+        
+        if (className.isNullOrBlank() || dburl.isNullOrBlank()) {
+            return false
+        }
+        
+        // 配置完整，自动连接
+        connectToDatabase()
+        return true
+    }
+    
     private fun connectToDatabase() {
         // 检查数据库配置是否完整
         val className = model.getProperty("className")
         val dburl = model.getProperty("dburl")
-        val username = model.getProperty("username")
-        val password = model.getProperty("password")
         
         if (className.isNullOrBlank() || dburl.isNullOrBlank()) {
             Messages.showErrorDialog(
@@ -87,45 +109,66 @@ class TableConfigPanel(
             return
         }
         
-        try {
-            connectDbButton.isEnabled = false
-            connectDbButton.text = "连接中..."
-            statusLabel.text = "正在连接..."
-            
-            // 关闭之前的连接
-            dbHelper?.close()
-            
-            // 创建新的连接
-            dbHelper = DatabaseConnectionHelper(model)
-            val success = dbHelper!!.testConnection()
-            
-            if (success) {
-                statusLabel.text = "已连接"
-                selectTablesButton.isEnabled = true
-                Messages.showInfoMessage(
-                    project,
-                    "数据库连接成功！",
-                    "连接成功"
-                )
-            } else {
-                statusLabel.text = "连接失败"
-                Messages.showErrorDialog(
-                    project,
-                    "数据库连接失败，请检查配置信息",
-                    "连接失败"
-                )
+        // 更新UI状态
+        connectDbButton.isEnabled = false
+        connectDbButton.text = "连接中..."
+        statusLabel.text = "正在连接..."
+        
+        // 关闭之前的连接
+        dbHelper?.close()
+        
+        // 在后台线程中执行数据库连接
+        ProgressManager.getInstance().run(object : Task.Backgroundable(project, "连接数据库", false) {
+            override fun run(indicator: ProgressIndicator) {
+                indicator.isIndeterminate = true
+                indicator.text = "正在连接数据库..."
+                
+                try {
+                    // 创建新的连接
+                    indicator.text = "创建数据库连接..."
+                    dbHelper = DatabaseConnectionHelper(model)
+                    
+                    indicator.text = "测试数据库连接..."
+                    dbHelper!!.testConnection() // 如果成功会继续，失败会抛出异常
+                    
+                    indicator.text = "连接成功！"
+                    
+                    // 连接成功，在 UI 线程中更新界面
+                    SwingUtilities.invokeLater {
+                        statusLabel.text = "已连接"
+                        selectTablesButton.isEnabled = true
+                        connectDbButton.isEnabled = true
+                        connectDbButton.text = "连接数据库"
+                        
+                        // 显示 toast 通知而不是弹窗
+                        val notificationGroup = NotificationGroupManager.getInstance()
+                            .getNotificationGroup("TableGear.Notification")
+                        notificationGroup?.createNotification(
+                            "数据库连接成功！",
+                            NotificationType.INFORMATION
+                        )?.notify(project)
+                    }
+                } catch (e: Exception) {
+                    val errorMessage = e.message ?: "未知错误"
+                    
+                    // 在 UI 线程中显示错误
+                    SwingUtilities.invokeLater {
+                        statusLabel.text = "连接失败: ${errorMessage.take(50)}"
+                        connectDbButton.isEnabled = true
+                        connectDbButton.text = "连接数据库"
+                        
+                        // 显示详细错误信息
+                        Messages.showErrorDialog(
+                            project,
+                            errorMessage,
+                            "连接失败"
+                        )
+                    }
+                    
+                    e.printStackTrace()
+                }
             }
-        } catch (e: Exception) {
-            statusLabel.text = "连接失败: ${e.message}"
-            Messages.showErrorDialog(
-                project,
-                "数据库连接失败: ${e.message}",
-                "连接失败"
-            )
-        } finally {
-            connectDbButton.isEnabled = true
-            connectDbButton.text = "连接数据库"
-        }
+        })
     }
     
     private fun selectTables() {
@@ -144,11 +187,13 @@ class TableConfigPanel(
             val tables = helper.getAllTables()
             
             if (tables.isEmpty()) {
-                Messages.showInfoMessage(
-                    project,
+                // 显示 toast 通知而不是弹窗
+                val notificationGroup = NotificationGroupManager.getInstance()
+                    .getNotificationGroup("TableGear.Notification")
+                notificationGroup?.createNotification(
                     "数据库中没有找到表或视图",
-                    "无数据"
-                )
+                    NotificationType.WARNING
+                )?.notify(project)
                 return
             }
             
@@ -180,11 +225,13 @@ class TableConfigPanel(
                 val selectedExcludeTables = dialog.getSelectedExcludeTables()
                 excludeTableListArea.text = selectedExcludeTables.joinToString(",")
                 
-                Messages.showInfoMessage(
-                    project,
+                // 显示 toast 通知而不是弹窗
+                val notificationGroup = NotificationGroupManager.getInstance()
+                    .getNotificationGroup("TableGear.Notification")
+                notificationGroup?.createNotification(
                     "已选择 ${selectedTables.size} 个表，${selectedExcludeTables.size} 个排除表",
-                    "选择完成"
-                )
+                    NotificationType.INFORMATION
+                )?.notify(project)
             }
         } catch (e: Exception) {
             Messages.showErrorDialog(
@@ -207,6 +254,11 @@ class TableConfigPanel(
         model.setProperty("exclude_table_list", excludeTableListArea.text)
         model.setProperty("view_list", viewListArea.text)
     }
+    
+    /**
+     * 获取数据库连接助手
+     */
+    fun getDbHelper(): DatabaseConnectionHelper? = dbHelper
     
     /**
      * 清理资源
