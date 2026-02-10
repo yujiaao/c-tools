@@ -8,3 +8,7 @@ mvn clean deploy -Ppro
 
 
 mvn build-helper:parse-version versions:set -DnewVersion=\${parsedVersion.majorVersion}.\${parsedVersion.nextMinorVersion}.0 versions:commit
+
+@ windows:
+mvn build-helper:parse-version versions:set -D'newVersion=${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.nextIncrementalVersion}.0' versions:commit
+

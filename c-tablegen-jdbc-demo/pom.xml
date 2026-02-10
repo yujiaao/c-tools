@@ -5,11 +5,37 @@
     <parent>
         <artifactId>c-tools-parent</artifactId>
         <groupId>com.github.yujiaao</groupId>
-        <version>1.12.2.3</version>
+        <version>1.12.3.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>c-tablegen-jdbc-demo</artifactId>
+    <name>TableGen JDBC Demo</name>
+    <description>Demo application for TableGen with JDBC</description>
+    <url>https://github.com/yujiaao/c-tools</url>
+
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <developers>
+        <developer>
+            <id>yujiaao</id>
+            <name>Wanxiang Xing</name>
+            <email>yujiaao@msn.com</email>
+            <roles>
+                <role>Developer</role>
+            </roles>
+        </developer>
+    </developers>
+    <scm>
+        <connection>scm:git:git://github.com/yujiaao/c-tools.git</connection>
+        <developerConnection>scm:git:ssh://github.com:yujiaao/c-tools.git</developerConnection>
+        <url>https://github.com/yujiaao/c-tools/tree/master</url>
+    </scm>
 
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>

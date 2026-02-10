@@ -25,85 +25,81 @@ class JavaSourceMergerTest {
     @BeforeEach
     void setUp() {
         // Existing DTO with user-added field
-        existingDtoSource = """
-                package com.example.dto;
-
-                import java.io.Serializable;
-
-                public class UserDto implements Serializable {
-                    private Integer id;
-                    private String name;
-
-                    // User-added field
-                    private String customField;
-
-                    public Integer getId() {
-                        return id;
-                    }
-
-                    public void setId(Integer id) {
-                        this.id = id;
-                    }
-
-                    public String getName() {
-                        return name;
-                    }
-
-                    public void setName(String name) {
-                        this.name = name;
-                    }
-
-                    public String getCustomField() {
-                        return customField;
-                    }
-
-                    public void setCustomField(String customField) {
-                        this.customField = customField;
-                    }
-                }
-                """;
+        existingDtoSource = "package com.example.dto;\n" +
+                "\n" +
+                "import java.io.Serializable;\n" +
+                "\n" +
+                "public class UserDto implements Serializable {\n" +
+                "    private Integer id;\n" +
+                "    private String name;\n" +
+                "\n" +
+                "    // User-added field\n" +
+                "    private String customField;\n" +
+                "\n" +
+                "    public Integer getId() {\n" +
+                "        return id;\n" +
+                "    }\n" +
+                "\n" +
+                "    public void setId(Integer id) {\n" +
+                "        this.id = id;\n" +
+                "    }\n" +
+                "\n" +
+                "    public String getName() {\n" +
+                "        return name;\n" +
+                "    }\n" +
+                "\n" +
+                "    public void setName(String name) {\n" +
+                "        this.name = name;\n" +
+                "    }\n" +
+                "\n" +
+                "    public String getCustomField() {\n" +
+                "        return customField;\n" +
+                "    }\n" +
+                "\n" +
+                "    public void setCustomField(String customField) {\n" +
+                "        this.customField = customField;\n" +
+                "    }\n" +
+                "}\n";
 
         // Generated DTO with updated field type and new field
-        generatedDtoSource = """
-                package com.example.dto;
-
-                import java.io.Serializable;
-                import jakarta.validation.constraints.NotNull;
-
-                public class UserDto implements Serializable {
-                    @NotNull
-                    private Long id;  // Changed from Integer to Long
-
-                    private String name;
-
-                    // New generated field
-                    private String email;
-
-                    public Long getId() {
-                        return id;
-                    }
-
-                    public void setId(Long id) {
-                        this.id = id;
-                    }
-
-                    public String getName() {
-                        return name;
-                    }
-
-                    public void setName(String name) {
-                        this.name = name;
-                    }
-
-                    public String getEmail() {
-                        return email;
-                    }
-
-                    public void setEmail(String email) {
-                        this.email = email;
-                    }
-                }
-                """;
+        generatedDtoSource = "package com.example.dto;\n" +
+                "\n" +
+                "import java.io.Serializable;\n" +
+                "import jakarta.validation.constraints.NotNull;\n" +
+                "\n" +
+                "public class UserDto implements Serializable {\n" +
+                "    @NotNull\n" +
+                "    private Long id;  // Changed from Integer to Long\n" +
+                "\n" +
+                "    private String name;\n" +
+                "\n" +
+                "    // New generated field\n" +
+                "    private String email;\n" +
+                "\n" +
+                "    public Long getId() {\n" +
+                "        return id;\n" +
+                "    }\n" +
+                "\n" +
+                "    public void setId(Long id) {\n" +
+                "        this.id = id;\n" +
+                "    }\n" +
+                "\n" +
+                "    public String getName() {\n" +
+                "        return name;\n" +
+                "    }\n" +
+                "\n" +
+                "    public void setName(String name) {\n" +
+                "        this.name = name;\n" +
+                "    }\n" +
+                "\n" +
+                "    public String getEmail() {\n" +
+                "        return email;\n" +
+                "    }\n" +
+                "\n" +
+                "    public void setEmail(String email) {\n" +
+                "        this.email = email;\n" +
+                "    }\n" +
+                "}\n";
     }
 
     @Test
@@ -187,12 +183,10 @@ class JavaSourceMergerTest {
     void testMergeSource_WithFileContainingOnlyComments() throws IOException {
         // Create file with only comments (no class/interface)
         File commentsOnlyFile = tempDir.resolve("CommentsOnly.java").toFile();
-        Files.writeString(commentsOnlyFile.toPath(), """
-                package com.example.dto;
-                
-                // This is just a comment
-                /* Another comment */
-                """);
+        Files.writeString(commentsOnlyFile.toPath(), "package com.example.dto;\n" +
+                "\n" +
+                "// This is just a comment\n" +
+                "/* Another comment */\n");
 
         String result = JavaSourceMerger.mergeSource(commentsOnlyFile, generatedDtoSource);
 
@@ -203,60 +197,57 @@ class JavaSourceMergerTest {
     @Test
     void testMergeMapper_KeepUserAddedMethod() throws IOException {
         // Existing mapper with user-added method toOptionDto
-        String existingMapperSource = """
-                package com.example.converter;
-                
-                import org.mapstruct.Mapper;
-                import org.mapstruct.Mapping;
-                import org.mapstruct.factory.Mappers;
-                import com.example.dto.XShowPolicyDto;
-                import com.example.dto.OptionDto;
-                import com.example.entity.XShowPolicy;
-                import java.util.List;
-                
-                @Mapper
-                public interface XShowPolicyConverter {
-                    XShowPolicyConverter MAPPER = Mappers.getMapper(XShowPolicyConverter.class);
-                    
-                    XShowPolicyDto toDto(XShowPolicy info);
-                    
-                    XShowPolicy toDao(XShowPolicyDto info);
-                    
-                    List<XShowPolicyDto> toDtoList(List<XShowPolicy> info);
-                    
-                    List<XShowPolicy> toDaoList(List<XShowPolicyDto> info);
-                    
-                    @Mapping(source = "id", target = "value")
-                    @Mapping(source = "ruleName", target = "label")
-                    OptionDto toOptionDto(XShowPolicy xShowPolicy);
-                }
-                """;
+        String existingMapperSource = "package com.example.converter;\n" +
+                "\n" +
+                "import org.mapstruct.Mapper;\n" +
+                "import org.mapstruct.Mapping;\n" +
+                "import org.mapstruct.factory.Mappers;\n" +
+                "import com.example.dto.XShowPolicyDto;\n" +
+                "import com.example.dto.OptionDto;\n" +
+                "import com.example.entity.XShowPolicy;\n" +
+                "import java.util.List;\n" +
+                "\n" +
+                "@Mapper\n" +
+                "public interface XShowPolicyConverter {\n" +
+                "    XShowPolicyConverter MAPPER = Mappers.getMapper(XShowPolicyConverter.class);\n" +
+                "    \n" +
+                "    XShowPolicyDto toDto(XShowPolicy info);\n" +
+                "    \n" +
+                "    XShowPolicy toDao(XShowPolicyDto info);\n" +
+                "    \n" +
+                "    List<XShowPolicyDto> toDtoList(List<XShowPolicy> info);\n" +
+                "    \n" +
+                "    List<XShowPolicy> toDaoList(List<XShowPolicyDto> info);\n" +
+                "    \n" +
+                "    @Mapping(source = \"id\", target = \"value\")\n" +
+                "    @Mapping(source = \"ruleName\", target = \"label\")\n" +
+                "    OptionDto toOptionDto(XShowPolicy xShowPolicy);\n" +
+                "}\n";
 
         // Generated mapper without toOptionDto method
-        String generatedMapperSource = """
-                package com.example.converter;
-                
-                import org.mapstruct.Mapper;
-                import org.mapstruct.factory.Mappers;
-                import com.example.dto.XShowPolicyDto;
-                import com.example.entity.XShowPolicy;
-                import java.util.List;
-                
-                @Mapper
-                public interface XShowPolicyConverter {
-                    XShowPolicyConverter MAPPER = Mappers.getMapper(XShowPolicyConverter.class);
-                    
-                    XShowPolicyDto toDto(XShowPolicy info);
-                    
-                    XShowPolicy toDao(XShowPolicyDto info);
-                    
-                    List<XShowPolicyDto> toDtoList(List<XShowPolicy> info);
-                    
-                    List<XShowPolicy> toDaoList(List<XShowPolicyDto> info);
-                    
-                    //this is new method
-                    int aNewMethod();
-                }""";
+        String generatedMapperSource = "package com.example.converter;\n" +
+                "\n" +
+                "import org.mapstruct.Mapper;\n" +
+                "import org.mapstruct.factory.Mappers;\n" +
+                "import com.example.dto.XShowPolicyDto;\n" +
+                "import com.example.entity.XShowPolicy;\n" +
+                "import java.util.List;\n" +
+                "\n" +
+                "@Mapper\n" +
+                "public interface XShowPolicyConverter {\n" +
+                "    XShowPolicyConverter MAPPER = Mappers.getMapper(XShowPolicyConverter.class);\n" +
+                "    \n" +
+                "    XShowPolicyDto toDto(XShowPolicy info);\n" +
+                "    \n" +
+                "    XShowPolicy toDao(XShowPolicyDto info);\n" +
+                "    \n" +
+                "    List<XShowPolicyDto> toDtoList(List<XShowPolicy> info);\n" +
+                "    \n" +
+                "    List<XShowPolicy> toDaoList(List<XShowPolicyDto> info);\n" +
+                "    \n" +
+                "    //this is new method\n" +
+                "    int aNewMethod();\n" +
+                "}";
 
 
 
@@ -292,47 +283,43 @@ class JavaSourceMergerTest {
     @Test
     void testMergeMapper_KeepExistingMethodWithAnnotations() throws IOException {
         // Existing mapper with method that has annotations
-        String existingMapperSource = """
-                package com.example.converter;
-                
-                import org.mapstruct.Mapper;
-                import org.mapstruct.Mapping;
-                import org.mapstruct.factory.Mappers;
-                import com.example.dto.XShowPolicyDto;
-                import com.example.entity.XShowPolicy;
-                import java.util.List;
-                
-                @Mapper
-                public interface XShowPolicyConverter {
-                    XShowPolicyConverter MAPPER = Mappers.getMapper(XShowPolicyConverter.class);
-                    
-                    @Mapping(source = "id", target = "policyId")
-                    @Mapping(source = "name", target = "policyName")
-                    XShowPolicyDto toDto(XShowPolicy info);
-                    
-                    XShowPolicy toDao(XShowPolicyDto info);
-                }
-                """;
+        String existingMapperSource = "package com.example.converter;\n" +
+                "\n" +
+                "import org.mapstruct.Mapper;\n" +
+                "import org.mapstruct.Mapping;\n" +
+                "import org.mapstruct.factory.Mappers;\n" +
+                "import com.example.dto.XShowPolicyDto;\n" +
+                "import com.example.entity.XShowPolicy;\n" +
+                "import java.util.List;\n" +
+                "\n" +
+                "@Mapper\n" +
+                "public interface XShowPolicyConverter {\n" +
+                "    XShowPolicyConverter MAPPER = Mappers.getMapper(XShowPolicyConverter.class);\n" +
+                "    \n" +
+                "    @Mapping(source = \"id\", target = \"policyId\")\n" +
+                "    @Mapping(source = \"name\", target = \"policyName\")\n" +
+                "    XShowPolicyDto toDto(XShowPolicy info);\n" +
+                "    \n" +
+                "    XShowPolicy toDao(XShowPolicyDto info);\n" +
+                "}\n";
 
         // Generated mapper with same method but without annotations
-        String generatedMapperSource = """
-                package com.example.converter;
-                
-                import org.mapstruct.Mapper;
-                import org.mapstruct.factory.Mappers;
-                import com.example.dto.XShowPolicyDto;
-                import com.example.entity.XShowPolicy;
-                import java.util.List;
-                
-                @Mapper
-                public interface XShowPolicyConverter {
-                    XShowPolicyConverter MAPPER = Mappers.getMapper(XShowPolicyConverter.class);
-                    
-                    XShowPolicyDto toDto(XShowPolicy info);
-                    
-                    XShowPolicy toDao(XShowPolicyDto info);
-                }
-                """;
+        String generatedMapperSource = "package com.example.converter;\n" +
+                "\n" +
+                "import org.mapstruct.Mapper;\n" +
+                "import org.mapstruct.factory.Mappers;\n" +
+                "import com.example.dto.XShowPolicyDto;\n" +
+                "import com.example.entity.XShowPolicy;\n" +
+                "import java.util.List;\n" +
+                "\n" +
+                "@Mapper\n" +
+                "public interface XShowPolicyConverter {\n" +
+                "    XShowPolicyConverter MAPPER = Mappers.getMapper(XShowPolicyConverter.class);\n" +
+                "    \n" +
+                "    XShowPolicyDto toDto(XShowPolicy info);\n" +
+                "    \n" +
+                "    XShowPolicy toDao(XShowPolicyDto info);\n" +
+                "}\n";
 
         // Create existing file
         File existingFile = tempDir.resolve("XShowPolicyConverter.java").toFile();
@@ -354,47 +341,43 @@ class JavaSourceMergerTest {
     @Test
     void testMergeMapper_KeepExistingMethodWithMoreAnnotations() throws IOException {
         // Existing mapper with method that has more annotations
-        String existingMapperSource = """
-                package com.example.converter;
-                
-                import org.mapstruct.Mapper;
-                import org.mapstruct.Mapping;
-                import org.mapstruct.Mappings;
-                import org.mapstruct.factory.Mappers;
-                import com.example.dto.UserDto;
-                import com.example.entity.User;
-                
-                @Mapper
-                public interface UserConverter {
-                    UserConverter MAPPER = Mappers.getMapper(UserConverter.class);
-                    
-                    @Mappings({
-                        @Mapping(source = "id", target = "userId"),
-                        @Mapping(source = "name", target = "userName"),
-                        @Mapping(source = "email", target = "userEmail")
-                    })
-                    UserDto toDto(User user);
-                }
-                """;
+        String existingMapperSource = "package com.example.converter;\n" +
+                "\n" +
+                "import org.mapstruct.Mapper;\n" +
+                "import org.mapstruct.Mapping;\n" +
+                "import org.mapstruct.Mappings;\n" +
+                "import org.mapstruct.factory.Mappers;\n" +
+                "import com.example.dto.UserDto;\n" +
+                "import com.example.entity.User;\n" +
+                "\n" +
+                "@Mapper\n" +
+                "public interface UserConverter {\n" +
+                "    UserConverter MAPPER = Mappers.getMapper(UserConverter.class);\n" +
+                "    \n" +
+                "    @Mappings({\n" +
+                "        @Mapping(source = \"id\", target = \"userId\"),\n" +
+                "        @Mapping(source = \"name\", target = \"userName\"),\n" +
+                "        @Mapping(source = \"email\", target = \"userEmail\")\n" +
+                "    })\n" +
+                "    UserDto toDto(User user);\n" +
+                "}\n";
 
         // Generated mapper with same method but fewer annotations
-        String generatedMapperSource = """
-                package com.example.converter;
-                
-                import org.mapstruct.Mapper;
-                import org.mapstruct.Mapping;
-                import org.mapstruct.factory.Mappers;
-                import com.example.dto.UserDto;
-                import com.example.entity.User;
-                
-                @Mapper
-                public interface UserConverter {
-                    UserConverter MAPPER = Mappers.getMapper(UserConverter.class);
-                    
-                    @Mapping(source = "id", target = "userId")
-                    UserDto toDto(User user);
-                }
-                """;
+        String generatedMapperSource = "package com.example.converter;\n" +
+                "\n" +
+                "import org.mapstruct.Mapper;\n" +
+                "import org.mapstruct.Mapping;\n" +
+                "import org.mapstruct.factory.Mappers;\n" +
+                "import com.example.dto.UserDto;\n" +
+                "import com.example.entity.User;\n" +
+                "\n" +
+                "@Mapper\n" +
+                "public interface UserConverter {\n" +
+                "    UserConverter MAPPER = Mappers.getMapper(UserConverter.class);\n" +
+                "    \n" +
+                "    @Mapping(source = \"id\", target = \"userId\")\n" +
+                "    UserDto toDto(User user);\n" +
+                "}\n";
 
         // Create existing file
         File existingFile = tempDir.resolve("UserConverter.java").toFile();
@@ -414,46 +397,42 @@ class JavaSourceMergerTest {
     @Test
     void testMergeMapper_KeepUserAddedMethodWithCollectionType() throws IOException {
         // Existing mapper with collection return type
-        String existingMapperSource = """
-                package com.example.converter;
-                
-                import org.mapstruct.Mapper;
-                import org.mapstruct.factory.Mappers;
-                import com.example.dto.UserDto;
-                import com.example.entity.User;
-                import java.util.List;
-                
-                @Mapper
-                public interface UserConverter {
-                    UserConverter MAPPER = Mappers.getMapper(UserConverter.class);
-                    
-                    List<UserDto> toDtoList(List<User> users);
-                    
-                    // User-added method with collection return type
-                    List<UserDto> findActiveUsers(List<User> users);
-                }
-                """;
+        String existingMapperSource = "package com.example.converter;\n" +
+                "\n" +
+                "import org.mapstruct.Mapper;\n" +
+                "import org.mapstruct.factory.Mappers;\n" +
+                "import com.example.dto.UserDto;\n" +
+                "import com.example.entity.User;\n" +
+                "import java.util.List;\n" +
+                "\n" +
+                "@Mapper\n" +
+                "public interface UserConverter {\n" +
+                "    UserConverter MAPPER = Mappers.getMapper(UserConverter.class);\n" +
+                "    \n" +
+                "    List<UserDto> toDtoList(List<User> users);\n" +
+                "    \n" +
+                "    // User-added method with collection return type\n" +
+                "    List<UserDto> findActiveUsers(List<User> users);\n" +
+                "}\n";
 
         // Generated mapper with simple return type for findActiveUsers
-        String generatedMapperSource = """
-                package com.example.converter;
-                
-                import org.mapstruct.Mapper;
-                import org.mapstruct.factory.Mappers;
-                import com.example.dto.UserDto;
-                import com.example.entity.User;
-                import java.util.List;
-                
-                @Mapper
-                public interface UserConverter {
-                    UserConverter MAPPER = Mappers.getMapper(UserConverter.class);
-                    
-                    List<UserDto> toDtoList(List<User> users);
-                    
-                    // Generated method with simple return type
-                    UserDto findActiveUsers(User user);
-                }
-                """;
+        String generatedMapperSource = "package com.example.converter;\n" +
+                "\n" +
+                "import org.mapstruct.Mapper;\n" +
+                "import org.mapstruct.factory.Mappers;\n" +
+                "import com.example.dto.UserDto;\n" +
+                "import com.example.entity.User;\n" +
+                "import java.util.List;\n" +
+                "\n" +
+                "@Mapper\n" +
+                "public interface UserConverter {\n" +
+                "    UserConverter MAPPER = Mappers.getMapper(UserConverter.class);\n" +
+                "    \n" +
+                "    List<UserDto> toDtoList(List<User> users);\n" +
+                "    \n" +
+                "    // Generated method with simple return type\n" +
+                "    UserDto findActiveUsers(User user);\n" +
+                "}\n";
 
         // Create existing file
         File existingFile = tempDir.resolve("UserConverter.java").toFile();
@@ -472,47 +451,43 @@ class JavaSourceMergerTest {
     @Test
     void testMergeSearchCmd_KeepSetterWithCollectionParameterType() throws IOException {
         // Existing SearchCmd with collection type parameter in setter
-        String existingSearchCmdSource = """
-                package com.example.cmd;
-                
-                import java.util.List;
-                import jakarta.validation.constraints.NotNull;
-                
-                public class UserSearchCmd {
-                    // User changed field type to List<String> for 'in' query support
-                    @NotNull
-                    protected List<String> name;
-                    
-                    public void setName(List<String> name) {
-                        this.name = name;
-                    }
-                    
-                    public List<String> getName() {
-                        return this.name;
-                    }
-                }
-                """;
+        String existingSearchCmdSource = "package com.example.cmd;\n" +
+                "\n" +
+                "import java.util.List;\n" +
+                "import jakarta.validation.constraints.NotNull;\n" +
+                "\n" +
+                "public class UserSearchCmd {\n" +
+                "    // User changed field type to List<String> for 'in' query support\n" +
+                "    @NotNull\n" +
+                "    protected List<String> name;\n" +
+                "    \n" +
+                "    public void setName(List<String> name) {\n" +
+                "        this.name = name;\n" +
+                "    }\n" +
+                "    \n" +
+                "    public List<String> getName() {\n" +
+                "        return this.name;\n" +
+                "    }\n" +
+                "}\n";
 
         // Generated SearchCmd with simple type parameter in setter
-        String generatedSearchCmdSource = """
-                package com.example.cmd;
-                
-                import jakarta.validation.constraints.NotNull;
-                
-                public class UserSearchCmd {
-                    // Generated with simple type
-                    @NotNull
-                    protected String name;
-                    
-                    public void setName(String name) {
-                        this.name = name;
-                    }
-                    
-                    public String getName() {
-                        return this.name;
-                    }
-                }
-                """;
+        String generatedSearchCmdSource = "package com.example.cmd;\n" +
+                "\n" +
+                "import jakarta.validation.constraints.NotNull;\n" +
+                "\n" +
+                "public class UserSearchCmd {\n" +
+                "    // Generated with simple type\n" +
+                "    @NotNull\n" +
+                "    protected String name;\n" +
+                "    \n" +
+                "    public void setName(String name) {\n" +
+                "        this.name = name;\n" +
+                "    }\n" +
+                "    \n" +
+                "    public String getName() {\n" +
+                "        return this.name;\n" +
+                "    }\n" +
+                "}\n";
 
         // Create existing file
         File existingFile = tempDir.resolve("UserSearchCmd.java").toFile();
@@ -536,47 +511,43 @@ class JavaSourceMergerTest {
     @Test
     void testMergeSearchCmd_KeepSetterWithCollectionParameterType_DifferentSignature() throws IOException {
         // Existing SearchCmd with collection type parameter in setter (different signature)
-        String existingSearchCmdSource = """
-                package com.example.cmd;
-                
-                import java.util.List;
-                import jakarta.validation.constraints.NotNull;
-                
-                public class UserSearchCmd {
-                    // User changed field type to List<Long> for 'in' query support
-                    @NotNull
-                    protected List<Long> id;
-                    
-                    public void setId(List<Long> id) {
-                        this.id = id;
-                    }
-                    
-                    public List<Long> getId() {
-                        return this.id;
-                    }
-                }
-                """;
+        String existingSearchCmdSource = "package com.example.cmd;\n" +
+                "\n" +
+                "import java.util.List;\n" +
+                "import jakarta.validation.constraints.NotNull;\n" +
+                "\n" +
+                "public class UserSearchCmd {\n" +
+                "    // User changed field type to List<Long> for 'in' query support\n" +
+                "    @NotNull\n" +
+                "    protected List<Long> id;\n" +
+                "    \n" +
+                "    public void setId(List<Long> id) {\n" +
+                "        this.id = id;\n" +
+                "    }\n" +
+                "    \n" +
+                "    public List<Long> getId() {\n" +
+                "        return this.id;\n" +
+                "    }\n" +
+                "}\n";
 
         // Generated SearchCmd with simple type parameter in setter
-        String generatedSearchCmdSource = """
-                package com.example.cmd;
-                
-                import jakarta.validation.constraints.NotNull;
-                
-                public class UserSearchCmd {
-                    // Generated with simple type
-                    @NotNull
-                    protected Long id;
-                    
-                    public void setId(Long id) {
-                        this.id = id;
-                    }
-                    
-                    public Long getId() {
-                        return this.id;
-                    }
-                }
-                """;
+        String generatedSearchCmdSource = "package com.example.cmd;\n" +
+                "\n" +
+                "import jakarta.validation.constraints.NotNull;\n" +
+                "\n" +
+                "public class UserSearchCmd {\n" +
+                "    // Generated with simple type\n" +
+                "    @NotNull\n" +
+                "    protected Long id;\n" +
+                "    \n" +
+                "    public void setId(Long id) {\n" +
+                "        this.id = id;\n" +
+                "    }\n" +
+                "    \n" +
+                "    public Long getId() {\n" +
+                "        return this.id;\n" +
+                "    }\n" +
+                "}\n";
 
         // Create existing file
         File existingFile = tempDir.resolve("UserSearchCmd.java").toFile();

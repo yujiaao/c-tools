@@ -36,7 +36,6 @@ public class BasicWebUITest {
         String res = ui.render(request, response);
         System.out.println(res);
         assertTrue(res.indexOf(id) > 0);
-
     }
 
 

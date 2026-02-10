@@ -4,10 +4,36 @@
     <parent>
         <groupId>com.github.yujiaao</groupId>
         <artifactId>c-tools-parent</artifactId>
-        <version>1.12.2.3</version>
+        <version>1.12.3.0</version>
     </parent>
     <artifactId>tablegen-maven-plugin</artifactId>
     <packaging>maven-plugin</packaging>
+    <name>TableGen Maven Plugin</name>
+    <description>Maven plugin for TableGen code generation</description>
+    <url>https://github.com/yujiaao/c-tools</url>
+
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <developers>
+        <developer>
+            <id>yujiaao</id>
+            <name>Wanxiang Xing</name>
+            <email>yujiaao@msn.com</email>
+            <roles>
+                <role>Developer</role>
+            </roles>
+        </developer>
+    </developers>
+    <scm>
+        <connection>scm:git:git://github.com/yujiaao/c-tools.git</connection>
+        <developerConnection>scm:git:ssh://github.com:yujiaao/c-tools.git</developerConnection>
+        <url>https://github.com/yujiaao/c-tools/tree/master</url>
+    </scm>
 
     <build>
         <finalName>tablegen-maven-plugin</finalName>

@@ -5,12 +5,35 @@
     <artifactId>c-jmesa</artifactId>
     <name>jmesa adapter</name>
     <description>tools to use jmesa</description>
-    <url>https://bixuebihui.com/</url>
+    <url>https://github.com/yujiaao/c-tools</url>
     <parent>
         <groupId>com.github.yujiaao</groupId>
         <artifactId>c-tools-parent</artifactId>
-        <version>1.12.2.3</version>
+        <version>1.12.3.0</version>
     </parent>
+
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+    <developers>
+        <developer>
+            <id>yujiaao</id>
+            <name>Wanxiang Xing</name>
+            <email>yujiaao@msn.com</email>
+            <roles>
+                <role>Developer</role>
+            </roles>
+        </developer>
+    </developers>
+    <scm>
+        <connection>scm:git:git://github.com/yujiaao/c-tools.git</connection>
+        <developerConnection>scm:git:ssh://github.com:yujiaao/c-tools.git</developerConnection>
+        <url>https://github.com/yujiaao/c-tools/tree/master</url>
+    </scm>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -164,7 +187,7 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
-            <version>6.0.3</version>
+            <version>5.3.31</version>
             <scope>test</scope>
         </dependency>
 
@@ -257,7 +280,7 @@
         <dependency>
             <groupId>com.github.yujiaao</groupId>
             <artifactId>c-estools</artifactId>
-            <version>1.12.2.3</version>
+            <version>1.12.3.0</version>
         </dependency>
 
 

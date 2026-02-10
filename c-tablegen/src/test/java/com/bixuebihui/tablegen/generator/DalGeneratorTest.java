@@ -187,25 +187,22 @@ class DalGeneratorTest {
 
                     cn.createStatement().execute("DROP TABLE IF EXISTS test_gen_long_dt_key");
                     cn.createStatement().execute(
-                       """
-    create  table test_gen_long_dt_key (
-    id bigint AUTO_INCREMENT not null,
-    dt datetime,
-    name varchar(100),
-    age int,
-    birth datetime,
-    edu_id int,
-    gender varchar(10),
-    sex int,
-    child int,
-    primary key (id, dt)
-); 
-"""
+                       "create  table test_gen_long_dt_key (\n" +
+                       "id bigint AUTO_INCREMENT not null,\n" +
+                       "dt datetime,\n" +
+                       "name varchar(100),\n" +
+                       "age int,\n" +
+                       "birth datetime,\n" +
+                       "edu_id int,\n" +
+                       "gender varchar(10),\n" +
+                       "sex int,\n" +
+                       "child int,\n" +
+                       "primary key (id, dt)\n" +
+                       "); "
                     );
                     cn.createStatement().execute(
-                    """
-insert into test_gen_long_dt_key (id, dt, name, age, birth, edu_id, gender, sex, child) values (1, '2021-01-01', '张三', 18, '2021-01-01', 1, '男', 1, 1);
-                            """);
+                    "insert into test_gen_long_dt_key (id, dt, name, age, birth, edu_id, gender, sex, child) values (1, '2021-01-01', '张三', 18, '2021-01-01', 1, '男', 1, 1);"
+                    );
                     
                    
 
