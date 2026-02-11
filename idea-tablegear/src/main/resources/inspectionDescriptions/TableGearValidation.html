@@ -1,0 +1,25 @@
+<html lang="en">
+<body>
+<p>Validates TableGear configuration files and detects syntax errors, invalid properties, and type mismatches.</p>
+<p>This inspection checks for:</p>
+<ul>
+    <li>Missing or invalid key=value syntax</li>
+    <li>Unrecognized configuration properties</li>
+    <li>Duplicate property definitions</li>
+    <li>Invalid boolean values (must be yes/no or true/false)</li>
+    <li>Invalid enum values for properties with restricted options</li>
+    <li>Line continuation syntax errors</li>
+</ul>
+<p>Supported property types include string, boolean, enum, list, path, and SQL values, with validation rules specific to each configuration mode (database, elasticsearch, json, common).</p>
+<pre><code>
+# Valid configuration examples
+package_name=com.example.demo
+generate_all=yes
+swagger_version=3
+type=elasticsearch_mapping
+url=http://localhost:9200
+</code></pre>
+<!-- tooltip end -->
+<p>Configure inspection severity and enable/disable specific validation rules in the inspection settings.</p>
+</body>
+</html>
