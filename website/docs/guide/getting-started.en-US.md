@@ -128,7 +128,7 @@ Execute the same Maven command, the generated code will use Reactor API (Mono/Fl
 
 You can refer to the following example projects:
 
-- [c-tablegen-jdbc-demo](../c-tablegen-jdbc-demo) - JDBC example
+- [c-tablegen-jdbc-demo](../----------------------------------c-tablegen-jdbc-demo) - JDBC example
 - [c-tablegen-r2dbc-demo](../c-tablegen-r2dbc-demo) - R2DBC example
 
 ## Next Steps

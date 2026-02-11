@@ -1,5 +1,6 @@
 package com.bixuebihui.tablegear.ui
 
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.progress.ProgressIndicator
@@ -258,34 +259,29 @@ class TableGenConfigDialog(
     private fun saveFile(file: VirtualFile) {
         try {
             val props = model.saveToProperties()
-            val outputStream = file.getOutputStream(this)
-            OutputStreamWriter(outputStream, StandardCharsets.UTF_8).use { writer ->
-                // 自定义保存逻辑，避免 Properties.store() 自动转义冒号
-                writer.append("# TableGen Configuration File\n")
-                
-                // 获取配置模式
-                val configMode = model.getConfigMode()
-                
-                // 按分组排序保存配置项
-                val sortedKeys = getSortedPropertyKeys(props, configMode)
-                
+            val configMode = model.getConfigMode()
+            val sortedKeys = getSortedPropertyKeys(props, configMode)
+            val content = buildString {
+                append("# TableGen Configuration File\n")
                 sortedKeys.forEach { key ->
                     var value = props.getProperty(key)
                     if (value != null) {
-                        // 移除 Properties 可能添加的转义反斜杠（如 \: 变为 :）
                         value = value.replace("\\:", ":")
                         value = value.replace("\\=", "=")
                         value = value.replace("\\ ", " ")
                         value = value.replace("\\!", "!")
                         value = value.replace("\\#", "#")
-                        // 但保留真正的反斜杠（\\ 保持不变）
                         value = value.replace("\\\\", "\\")
-                        // 手动写入，确保冒号不被转义
-                        writer.append("$key=$value\n")
+                        append("$key=$value\n")
                     }
                 }
             }
-            // 显示 toast 通知而不是弹窗
+            // 写入 VFS 必须在 runWriteAction 内执行
+            ApplicationManager.getApplication().runWriteAction {
+                OutputStreamWriter(file.getOutputStream(this@TableGenConfigDialog), StandardCharsets.UTF_8).use { writer ->
+                    writer.write(content)
+                }
+            }
             val notificationGroup = NotificationGroupManager.getInstance()
                 .getNotificationGroup("TableGear.Notification")
             notificationGroup?.createNotification(

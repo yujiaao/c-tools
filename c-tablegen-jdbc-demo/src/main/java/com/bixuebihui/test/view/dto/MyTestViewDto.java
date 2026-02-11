@@ -9,65 +9,45 @@ package com.bixuebihui.test.view.dto;
  * Modified by Xing Wanxiang 2008-2023
  * email: xwx@live.cn
  */
-
-
 import java.sql.*;
 import java.io.Serializable;
-
-
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModelProperty;
+import com.sdadas.spring2ts.annotations.SharedModel;
 
+@Api(tags = "my_test_view")
+@SharedModel("")
+public class MyTestViewDto implements Serializable {
 
-@Api(tags="my_test_view")
-
-public class MyTestViewDto  implements Serializable {
-
-
+    public MyTestViewDto() {
+        eduId = 0;
+    }
 
     /**
-     * edu_id 教育程度 
+     * edu_id 教育程度
      */
     @ApiModelProperty("教育程度")
-    protected Integer  eduId;
-
-
-
-
-    
+    protected Integer eduId;
 
     /**
-     * edu_id 教育程度 
+     * edu_id 教育程度
      */
-    public void setEduId(Integer eduId)
-    {
-      this.eduId = eduId;
+    public void setEduId(Integer eduId) {
+        this.eduId = eduId;
     }
+
     /**
-     * edu_id 教育程度 
+     * edu_id 教育程度
      */
-    public Integer getEduId()
-    {
-      return this.eduId;
-    }
-    
-
-
-    
-    public MyTestViewDto()
-    {
- 
-        eduId=0;
-        
+    public Integer getEduId() {
+        return this.eduId;
     }
 
-    public String toXml()
-    {
-        StringBuilder s= new StringBuilder();
+    public String toXml() {
+        StringBuilder s = new StringBuilder();
         String ln = System.getProperty("line.separator");
         s.append("<my_test_view ");
-
-s.append(" eduId=\"").append(this.getEduId()).append("\"");
+        s.append(" eduId=\"").append(this.getEduId()).append("\"");
         s.append(" />");
         s.append(ln);
         return s.toString();

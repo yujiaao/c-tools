@@ -96,7 +96,7 @@ object JdbcDriverDownloadService {
             ?: throw IllegalArgumentException("不支持的驱动类型，无法自动下载: $driverClassName")
 
         val path = "$MAVEN_CENTRAL/${info.groupId.replace('.', '/')}/${info.artifactId}/${info.version}/${info.artifactId}-${info.version}.jar"
-        val url = URL(path)
+        val url = URI.create(path).toURL()
 
         indicator?.text = "正在下载 ${info.displayName}..."
 

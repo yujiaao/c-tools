@@ -9,94 +9,69 @@ package com.bixuebihui.test.dto;
  * Modified by Xing Wanxiang 2008-2023
  * email: xwx@live.cn
  */
-
-
 import java.sql.*;
 import java.io.Serializable;
 import org.apache.commons.text.StringEscapeUtils;
-
-
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModelProperty;
+import com.sdadas.spring2ts.annotations.SharedModel;
 
+@Api(tags = "教育程度")
+@SharedModel("")
+public class TEduDto implements Serializable {
 
-@Api(tags="教育程度")
-public class TEduDto  implements Serializable {
-
-
+    public TEduDto() {
+        id = 0;
+        degree = "";
+    }
 
     /**
-     * id 这里是id! 
+     * id 这里是id!
      */
     @ApiModelProperty("这里是id!")
-    protected Integer  id;
-
+    protected Integer id;
 
     /**
-     * degree 这里是名称！ 
+     * degree 这里是名称！
      */
     @ApiModelProperty("这里是名称！")
-    protected String  degree;
-
-
-
-
-    
+    protected String degree;
 
     /**
-     * id 这里是id! 
+     * id 这里是id!
      */
-    public void setId(Integer id)
-    {
-      this.id = id;
+    public void setId(Integer id) {
+        this.id = id;
     }
-    /**
-     * id 这里是id! 
-     */
-    public Integer getId()
-    {
-      return this.id;
-    }
-    
-
-    
 
     /**
-     * degree 这里是名称！ 
+     * id 这里是id!
      */
-    public void setDegree(String degree)
-    {
-      this.degree = degree;
+    public Integer getId() {
+        return this.id;
     }
+
     /**
-     * degree 这里是名称！ 
+     * degree 这里是名称！
      */
-    public String getDegree()
-    {
-      return this.degree;
-    }
-    
-
-
-    
-    public TEduDto()
-    {
- 
-        id=0;
-         
-        degree="";
-        
+    public void setDegree(String degree) {
+        this.degree = degree;
     }
 
-    public String toXml()
-    {
-        StringBuilder s= new StringBuilder();
+    /**
+     * degree 这里是名称！
+     */
+    public String getDegree() {
+        return this.degree;
+    }
+
+    public String toXml() {
+        StringBuilder s = new StringBuilder();
         String ln = System.getProperty("line.separator");
         s.append("<t_edu ");
-
-s.append(" id=\"").append(this.getId()).append("\"");
-        
-s.append(" degree=\"").append(StringEscapeUtils.escapeXml11(this.getDegree())).append("\"");s.append(" />");
+        s.append(" id=\"").append(this.getId()).append("\"");
+        s.append(" degree=\"").append(StringEscapeUtils.escapeXml11(this.getDegree())).append("\"");
+        s.append(" />");
         s.append(ln);
         return s.toString();
     }
