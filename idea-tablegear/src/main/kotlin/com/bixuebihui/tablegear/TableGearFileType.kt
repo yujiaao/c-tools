@@ -17,13 +17,12 @@ class TableGearFileType : LanguageFileType(TableGearLanguage) {
     companion object {
         @JvmStatic
         val INSTANCE = TableGearFileType()
-        
+
         private val FILE_PATTERN = Regex("^(tablege|es).*\\.(properties|prop)$", RegexOption.IGNORE_CASE)
-        
+
         @JvmStatic
         fun isTableGearFile(fileName: String): Boolean {
             return FILE_PATTERN.matches(fileName)
         }
     }
 }
-

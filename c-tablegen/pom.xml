@@ -60,7 +60,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.13.0</version>
                 <configuration>
-                    <release>17</release>
+                    <!-- Java 11 for compatibility with IntelliJ/idea-tablegear running on JDK 11 (StringBuilder.isEmpty() is Java 15+) -->
+                    <release>11</release>
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>

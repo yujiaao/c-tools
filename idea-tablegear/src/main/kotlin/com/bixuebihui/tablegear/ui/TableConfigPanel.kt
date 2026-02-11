@@ -149,22 +149,63 @@ class TableConfigPanel(
                         )?.notify(project)
                     }
                 } catch (e: Exception) {
+                    val cause = e.cause ?: e
+                    val driverClass = model.getProperty("className")?.trim().orEmpty()
+                    val isDriverNotFound = cause is ClassNotFoundException ||
+                        (e.message?.contains("无法加载JDBC驱动") == true && driverClass.isNotEmpty())
+                    val canDownload = driverClass.isNotBlank() && JdbcDriverDownloadService.isDownloadable(driverClass)
+
+                    if (isDriverNotFound && canDownload) {
+                        val downloadInfo = JdbcDriverDownloadService.getDownloadInfo(driverClass) ?: ""
+                        val dirPath = JdbcDriverDownloadService.getDriversDirPath()
+                        val choiceHolder = intArrayOf(-1)
+                        SwingUtilities.invokeAndWait {
+                            choiceHolder[0] = Messages.showDialog(
+                                project,
+                                "无法加载 JDBC 驱动：$driverClass\n\n" +
+                                "该驱动未打包在插件中。是否下载并安装？\n\n" +
+                                "将下载：$downloadInfo\n\n" +
+                                "保存位置：$dirPath",
+                                "下载 JDBC 驱动",
+                                arrayOf("下载", "取消"),
+                                0,
+                                Messages.getQuestionIcon()
+                            )
+                        }
+                        if (choiceHolder[0] == 0) {
+                            ProgressManager.getInstance().run(object : Task.Backgroundable(project, "下载 JDBC 驱动", true) {
+                                override fun run(indicator: ProgressIndicator) {
+                                    try {
+                                        JdbcDriverDownloadService.downloadDriver(driverClass, indicator)
+                                        SwingUtilities.invokeLater {
+                                            statusLabel.text = "驱动已下载，正在重新连接..."
+                                            connectToDatabase()
+                                        }
+                                    } catch (downloadEx: Exception) {
+                                        SwingUtilities.invokeLater {
+                                            statusLabel.text = "下载失败"
+                                            connectDbButton.isEnabled = true
+                                            connectDbButton.text = "连接数据库"
+                                            Messages.showErrorDialog(
+                                                project,
+                                                "下载驱动失败: ${downloadEx.message}\n\n保存位置: $dirPath",
+                                                "下载失败"
+                                            )
+                                        }
+                                    }
+                                }
+                            })
+                            return@run
+                        }
+                    }
+
                     val errorMessage = e.message ?: "未知错误"
-                    
-                    // 在 UI 线程中显示错误
                     SwingUtilities.invokeLater {
                         statusLabel.text = "连接失败: ${errorMessage.take(50)}"
                         connectDbButton.isEnabled = true
                         connectDbButton.text = "连接数据库"
-                        
-                        // 显示详细错误信息
-                        Messages.showErrorDialog(
-                            project,
-                            errorMessage,
-                            "连接失败"
-                        )
+                        Messages.showErrorDialog(project, errorMessage, "连接失败")
                     }
-                    
                     e.printStackTrace()
                 }
             }

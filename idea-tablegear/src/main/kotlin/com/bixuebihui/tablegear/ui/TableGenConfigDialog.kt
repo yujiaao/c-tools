@@ -2,6 +2,9 @@ package com.bixuebihui.tablegear.ui
 
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptor
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.Messages
@@ -13,6 +16,7 @@ import com.intellij.ui.components.JBTabbedPane
 import com.intellij.util.ui.JBUI
 import com.bixuebihui.tablegear.ConfigMode
 import com.bixuebihui.tablegear.TableGearProperties
+import com.bixuebihui.tablegen.TableGen
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.io.*
@@ -115,6 +119,63 @@ class TableGenConfigDialog(
         }
     }
     
+    override fun createActions(): Array<Action> {
+        val generateCodeAction = object : AbstractAction("生成代码") {
+            override fun actionPerformed(e: java.awt.event.ActionEvent?) {
+                runGenerateCode()
+            }
+        }
+        return arrayOf(generateCodeAction, getOKAction(), getCancelAction())
+    }
+
+    /**
+     * 用当前配置执行代码生成（相当于 Maven tablegen:gen-merge：启用 enable_merge 后执行生成）
+     */
+    private fun runGenerateCode() {
+        // 先同步各面板到模型
+        databasePanel.updateToModel()
+        codeGenPanel.updateToModel()
+        tablePanel.updateToModel()
+        advancedPanel.updateToModel()
+
+        val file = currentFile
+        if (file == null) {
+            Messages.showErrorDialog(project, "请先保存或打开一个 TableGen 配置文件后再生成代码。", "无法生成代码")
+            return
+        }
+
+        // 启用智能合并（与 tablegen:gen-merge 行为一致）
+        model.setProperty("enable_merge", "yes")
+        saveFile(file)
+
+        val configPath = file.path
+        val proj = project
+
+        ProgressManager.getInstance().run(object : Task.Backgroundable(proj, "TableGen 生成代码", true) {
+            override fun run(indicator: ProgressIndicator) {
+                indicator.isIndeterminate = true
+                indicator.text = "正在根据当前配置生成代码..."
+                try {
+                    TableGen().run(configPath)
+                    javax.swing.SwingUtilities.invokeLater {
+                        NotificationGroupManager.getInstance()
+                            .getNotificationGroup("TableGear.Notification")
+                            ?.createNotification("代码生成完成", NotificationType.INFORMATION)
+                            ?.notify(proj)
+                    }
+                } catch (t: Throwable) {
+                    javax.swing.SwingUtilities.invokeLater {
+                        Messages.showErrorDialog(
+                            proj,
+                            "代码生成失败: ${t.message}\n\n${t.stackTraceToString().take(800)}",
+                            "TableGen 生成代码"
+                        )
+                    }
+                }
+            }
+        })
+    }
+
     override fun doOKAction() {
         // 更新模型
         databasePanel.updateToModel()

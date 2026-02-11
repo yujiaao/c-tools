@@ -24,6 +24,11 @@ intellij {
     // localPath.set("C:/Program Files/JetBrains/IntelliJ IDEA Community Edition 2022.1")
 }
 
+// 使用插件声明的依赖优先，避免被 IDE 内置版本覆盖（Gradle 7+ implementation 需此项）
+configurations.all {
+    resolutionStrategy.sortArtifacts(ResolutionStrategy.SortOrder.DEPENDENCY_FIRST)
+}
+
 // 排除 Kotlin stdlib 的运行时依赖，使用 IntelliJ Platform 提供的版本
 // 注意：测试运行时需要 Kotlin stdlib，所以只从主运行时排除
 configurations {
@@ -70,10 +75,13 @@ tasks {
 }
 
 dependencies {
+    // MySQL JDBC 驱动：插件内“测试连接”/连接数据库需要，否则 ClassNotFoundException: com.mysql.cj.jdbc.Driver
+    implementation("com.mysql:mysql-connector-j:8.2.0")
+
     // 依赖 tablegen 模块以使用数据库连接功能
     // 注意：需要先构建 c-tablegen 模块 (mvn install) 才能使用
     // 如果 c-tablegen 已发布到本地 Maven 仓库，使用以下方式：
-    implementation("com.github.yujiaao:tablegen:1.12.3") {
+    implementation("com.github.yujiaao:tablegen:1.12.3.0") {
         // 排除所有日志相关的依赖，避免与 IDEA Platform 的日志系统冲突
         // IDEA Platform 使用自己的日志系统，不需要 log4j
         exclude(group = "org.slf4j", module = "slf4j-log4j12")

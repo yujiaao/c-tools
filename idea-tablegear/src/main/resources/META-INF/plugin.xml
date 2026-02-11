@@ -50,7 +50,9 @@
         <!-- 语言定义 -->
         <lang.parserDefinition language="TableGear" implementationClass="com.bixuebihui.tablegear.parser.TableGearParserDefinition"/>
         
-        <!-- 语法高亮 -->
+        <!-- 语法高亮：内置 Default/Darcula 方案使用好看默认色 -->
+        <additionalTextAttributes scheme="Default" file="colorSchemes/TableGearDefault.xml"/>
+        <additionalTextAttributes scheme="Darcula" file="colorSchemes/TableGearDarcula.xml"/>
         <colorSettingsPage implementation="com.bixuebihui.tablegear.highlight.TableGearColorSettingsPage"/>
         <annotator language="TableGear" implementationClass="com.bixuebihui.tablegear.highlight.TableGearAnnotator"/>
         <annotator language="Properties" implementationClass="com.bixuebihui.tablegear.highlight.TableGearAnnotator"/>

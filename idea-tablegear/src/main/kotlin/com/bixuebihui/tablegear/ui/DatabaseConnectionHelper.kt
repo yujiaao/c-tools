@@ -46,46 +46,55 @@ class DatabaseConnectionHelper(private val model: TableGenConfigModel) {
                 throw IllegalArgumentException("数据库URL(dburl)不能为空")
             }
             
-            // 尝试加载 JDBC 驱动
-            try {
-                Class.forName(className)
+            // 优先用插件 ClassLoader；若未打包则尝试从“已下载驱动”目录加载（见 JdbcDriverDownloadService）
+            val pluginLoader = this.javaClass.classLoader
+            val driverLoader = try {
+                JdbcDriverDownloadService.ensureDriverLoaded(className, pluginLoader)
             } catch (e: ClassNotFoundException) {
+                val downloadHint = if (JdbcDriverDownloadService.isDownloadable(className)) {
+                    "\n\n该驱动支持在插件内一键下载，请在连接失败提示中选择「下载驱动」。"
+                } else ""
                 throw RuntimeException(
                     "无法加载JDBC驱动: $className\n\n" +
                     "请确保:\n" +
                     "1. JDBC驱动jar包已添加到项目依赖中\n" +
                     "2. 驱动类名拼写正确\n" +
-                    "3. 驱动版本与数据库版本兼容",
+                    "3. 驱动版本与数据库版本兼容" + downloadHint,
                     e
                 )
             }
-            
-            val dbConfig = DatabaseConfig.newInstance(props)
-            val helper = TableGen.getDbHelper(dbConfig)
-            
-            // 创建连接
-            connection = helper.getConnection()
-            
-            // 验证连接是否有效
-            if (connection == null) {
-                throw RuntimeException("无法创建数据库连接: 连接对象为null")
-            }
-            
-            if (connection!!.isClosed) {
-                throw RuntimeException("数据库连接已关闭")
-            }
-            
-            // 获取元数据（这会验证连接是否真正可用）
-            metaData = connection!!.metaData
-            
-            // 简单验证：尝试获取数据库产品名称
+            val prevLoader = Thread.currentThread().contextClassLoader
             try {
-                metaData?.databaseProductName
-            } catch (e: Exception) {
-                throw RuntimeException("数据库连接无效: ${e.message}", e)
+                Thread.currentThread().contextClassLoader = driverLoader
+                val dbConfig = DatabaseConfig.newInstance(props)
+                val helper = TableGen.getDbHelper(dbConfig)
+
+                // 创建连接
+                connection = helper.getConnection()
+
+                // 验证连接是否有效
+                if (connection == null) {
+                    throw RuntimeException("无法创建数据库连接: 连接对象为null")
+                }
+
+                if (connection!!.isClosed) {
+                    throw RuntimeException("数据库连接已关闭")
+                }
+
+                // 获取元数据（这会验证连接是否真正可用）
+                metaData = connection!!.metaData
+
+                // 简单验证：尝试获取数据库产品名称
+                try {
+                    metaData?.databaseProductName
+                } catch (e: Exception) {
+                    throw RuntimeException("数据库连接无效: ${e.message}", e)
+                }
+
+                return true
+            } finally {
+                Thread.currentThread().contextClassLoader = prevLoader
             }
-            
-            return true
         } catch (e: UnsupportedClassVersionError) {
             // Java 版本不兼容错误
             val errorMessage = e.message ?: ""

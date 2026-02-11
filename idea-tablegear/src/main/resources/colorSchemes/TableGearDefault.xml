@@ -1,0 +1,83 @@
+<?xml version='1.0'?>
+<list>
+  <option name="TABLEGEAR_KEY">
+    <value>
+      <option name="FOREGROUND" value="F8F8F2"/>
+    </value>
+  </option>
+  <option name="TABLEGEAR_DATABASE_KEY">
+    <value>
+      <option name="FOREGROUND" value="FFD866"/>
+    </value>
+  </option>
+  <option name="TABLEGEAR_PATH_KEY">
+    <value>
+      <option name="FOREGROUND" value="A9DC76"/>
+    </value>
+  </option>
+  <option name="TABLEGEAR_BOOLEAN_KEY">
+    <value>
+      <option name="FOREGROUND" value="FF6188"/>
+      <option name="FONT_TYPE" value="1"/>
+    </value>
+  </option>
+  <option name="TABLEGEAR_LIST_KEY">
+    <value>
+      <option name="FOREGROUND" value="78DCE8"/>
+    </value>
+  </option>
+  <option name="TABLEGEAR_PACKAGE_NAME_KEY">
+    <value>
+      <option name="FOREGROUND" value="7BD88F"/>
+    </value>
+  </option>
+  <option name="TABLEGEAR_VIEW_LIST_KEY">
+    <value>
+      <option name="FOREGROUND" value="55CFE3"/>
+      <option name="FONT_TYPE" value="1"/>
+    </value>
+  </option>
+  <option name="TABLEGEAR_VIEW_SEPARATOR">
+    <value>
+      <option name="FOREGROUND" value="AB9DF2"/>
+      <option name="FONT_TYPE" value="1"/>
+    </value>
+  </option>
+  <option name="TABLEGEAR_ASSIGNMENT">
+    <value>
+      <option name="FOREGROUND" value="AB9DF2"/>
+      <option name="FONT_TYPE" value="1"/>
+    </value>
+  </option>
+  <option name="TABLEGEAR_VIEW_NAME">
+    <value>
+      <option name="FOREGROUND" value="00FFFF"/>
+      <option name="FONT_TYPE" value="1"/>
+    </value>
+  </option>
+  <option name="TABLEGEAR_SQL">
+    <value>
+      <option name="FOREGROUND" value="A6E22E"/>
+    </value>
+  </option>
+  <option name="TABLEGEAR_SENSITIVE_KEY">
+    <value>
+      <option name="FOREGROUND" value="FF9B5E"/>
+    </value>
+  </option>
+  <option name="TABLEGEAR_SENSITIVE_FIELD">
+    <value>
+      <option name="FOREGROUND" value="FFB347"/>
+    </value>
+  </option>
+  <option name="TABLEGEAR_VALUE">
+    <value>
+      <option name="FOREGROUND" value="A6E22E"/>
+    </value>
+  </option>
+  <option name="TABLEGEAR_COMMENT">
+    <value>
+      <option name="FOREGROUND" value="035813"/>
+    </value>
+  </option>
+</list>
