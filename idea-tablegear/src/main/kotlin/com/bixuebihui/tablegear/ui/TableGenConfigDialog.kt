@@ -1,5 +1,10 @@
 package com.bixuebihui.tablegear.ui
 
+import com.bixuebihui.tablegear.ConfigMode
+import com.bixuebihui.tablegear.TableGearProperties
+import com.bixuebihui.tablegen.TableGen
+import com.intellij.notification.NotificationGroupManager
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptor
@@ -9,18 +14,14 @@ import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.Messages
-import com.intellij.notification.NotificationGroupManager
-import com.intellij.notification.NotificationType
-import com.intellij.notification.Notification
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.components.JBTabbedPane
 import com.intellij.util.ui.JBUI
-import com.bixuebihui.tablegear.ConfigMode
-import com.bixuebihui.tablegear.TableGearProperties
-import com.bixuebihui.tablegen.TableGen
 import java.awt.BorderLayout
+import java.awt.CardLayout
 import java.awt.Dimension
-import java.io.*
+import java.io.InputStreamReader
+import java.io.OutputStreamWriter
 import java.nio.charset.StandardCharsets
 import java.util.*
 import javax.swing.*
@@ -38,15 +39,23 @@ class TableGenConfigDialog(
     
     // 配置面板
     private lateinit var databasePanel: DatabaseConfigPanel
+    private lateinit var esPanel: EsConfigPanel
     private lateinit var codeGenPanel: CodeGenConfigPanel
     private lateinit var tablePanel: TableConfigPanel
     private lateinit var advancedPanel: AdvancedConfigPanel
     
     fun getTablePanel(): TableConfigPanel = tablePanel
     
+    // 数据源配置卡片（数据库 / ES 切换）
+    private lateinit var dataSourceCardPanel: JPanel
+    private val DATA_SOURCE_CARD_DB = "database"
+    private val DATA_SOURCE_CARD_ES = "es"
+    
     // UI组件
     private lateinit var tabbedPane: JBTabbedPane
     private lateinit var filePathLabel: JLabel
+    private lateinit var modeCombo: JComboBox<String>
+    private var tableTabIndex: Int = -1  // 表配置标签页索引，ES 模式下会移除
     
     init {
         title = "TableGen 配置编辑器"
@@ -67,14 +76,21 @@ class TableGenConfigDialog(
         topPanel.add(filePathLabel, BorderLayout.WEST)
         
         val buttonPanel = JPanel()
+        modeCombo = JComboBox(arrayOf("数据库", "ES配置"))
+        modeCombo.addActionListener { onConfigModeChanged() }
+        buttonPanel.add(JLabel("配置模式: "))
+        buttonPanel.add(modeCombo)
+        buttonPanel.add(Box.createHorizontalStrut(15))
+        val newDefaultBtn = JButton("生成默认配置...")
+        newDefaultBtn.addActionListener { generateDefaultConfig() }
+        buttonPanel.add(newDefaultBtn)
+        buttonPanel.add(Box.createHorizontalStrut(10))
         val openBtn = JButton("打开文件...")
         openBtn.addActionListener { openFile() }
         buttonPanel.add(openBtn)
-        
         val saveAsBtn = JButton("另存为...")
         saveAsBtn.addActionListener { saveAsFile() }
         buttonPanel.add(saveAsBtn)
-        
         topPanel.add(buttonPanel, BorderLayout.EAST)
         topPanel.border = JBUI.Borders.empty(5)
         
@@ -84,26 +100,121 @@ class TableGenConfigDialog(
         tabbedPane = JBTabbedPane()
         
         databasePanel = DatabaseConfigPanel(model)
+        esPanel = EsConfigPanel(model)
         codeGenPanel = CodeGenConfigPanel(model)
         tablePanel = TableConfigPanel(model, project)
         advancedPanel = AdvancedConfigPanel(model, project, tablePanel)
         
-        tabbedPane.addTab("数据库配置", databasePanel)
-        tabbedPane.addTab("代码生成配置", codeGenPanel)
+        dataSourceCardPanel = JPanel(CardLayout())
+        dataSourceCardPanel.add(databasePanel, DATA_SOURCE_CARD_DB)
+        dataSourceCardPanel.add(esPanel, DATA_SOURCE_CARD_ES)
+        val dataSourceTab = JPanel(BorderLayout())
+        dataSourceTab.add(dataSourceCardPanel, BorderLayout.CENTER)
+        
+        tabbedPane.addTab("数据源配置", dataSourceTab)
+        tableTabIndex = 1
         tabbedPane.addTab("表配置", tablePanel)
+        tabbedPane.addTab("代码生成配置", codeGenPanel)
         tabbedPane.addTab("高级配置", advancedPanel)
         
         mainPanel.add(tabbedPane, BorderLayout.CENTER)
+        refreshModeFromModel()
         
-        // 设置对话框大小
         mainPanel.preferredSize = Dimension(900, 700)
         
-        // 对话框显示后自动连接数据库（如果配置完整）
         javax.swing.SwingUtilities.invokeLater {
             tryAutoConnect()
         }
         
         return mainPanel
+    }
+    
+    private fun refreshModeFromModel() {
+        val isEs = model.getConfigMode() == ConfigMode.ELASTICSEARCH
+        modeCombo.selectedIndex = if (isEs) 1 else 0
+        (dataSourceCardPanel.layout as CardLayout).show(dataSourceCardPanel, if (isEs) DATA_SOURCE_CARD_ES else DATA_SOURCE_CARD_DB)
+        if (isEs) {
+            if (tableTabIndex >= 0 && tableTabIndex < tabbedPane.tabCount && tabbedPane.getTitleAt(tableTabIndex) == "表配置") {
+                tabbedPane.removeTabAt(tableTabIndex)
+                tableTabIndex = -1
+            }
+        } else {
+            if (tableTabIndex < 0) {
+                tableTabIndex = 1
+                tabbedPane.insertTab("表配置", null, tablePanel, null, tableTabIndex)
+            }
+        }
+    }
+    
+    private fun onConfigModeChanged() {
+        val isEs = modeCombo.selectedIndex == 1
+        databasePanel.updateToModel()
+        esPanel.updateToModel()
+        model.setProperty("type", if (isEs) "elasticsearch_mapping" else "database")
+        databasePanel.updateFromModel()
+        esPanel.updateFromModel()
+        (dataSourceCardPanel.layout as CardLayout).show(dataSourceCardPanel, if (isEs) DATA_SOURCE_CARD_ES else DATA_SOURCE_CARD_DB)
+        if (isEs) {
+            if (tableTabIndex >= 0 && tableTabIndex < tabbedPane.tabCount && tabbedPane.getTitleAt(tableTabIndex) == "表配置") {
+                tabbedPane.removeTabAt(tableTabIndex)
+                tableTabIndex = -1
+            }
+        } else {
+            if (tableTabIndex < 0) {
+                tableTabIndex = 1
+                tabbedPane.insertTab("表配置", null, tablePanel, null, tableTabIndex)
+            }
+        }
+    }
+    
+    private fun generateDefaultConfig() {
+        val options = arrayOf("数据库配置", "ES配置", "取消")
+        val choice = Messages.showDialog(
+            project,
+            "选择要生成的默认配置类型：",
+            "生成默认配置",
+            options,
+            0,
+            Messages.getQuestionIcon()
+        )
+        if (choice < 0 || choice == 2) return
+        val isEs = (choice == 1)
+        val descriptor = FileChooserDescriptor(false, true, false, false, false, false)
+            .apply {
+                withFileFilter { it.extension == "properties" || it.extension == "prop" }
+                withTitle(if (isEs) "保存 ES 默认配置文件" else "保存数据库默认配置文件")
+            }
+        FileChooser.chooseFile(descriptor, project, null)?.let { file ->
+            val props = DefaultConfigTemplates.forMode(isEs)
+            val configMode = if (isEs) ConfigMode.ELASTICSEARCH else ConfigMode.DATABASE
+            val sortedKeys = getSortedPropertyKeys(props, configMode)
+            val content = buildString {
+                append(if (isEs) "# TableGear ES Configuration File\n" else "# TableGen Configuration File\n")
+                sortedKeys.forEach { key ->
+                    val value = props.getProperty(key)
+                    if (value != null) {
+                        append("$key=$value\n")
+                    }
+                }
+            }
+            try {
+                ApplicationManager.getApplication().runWriteAction {
+                    OutputStreamWriter(file.getOutputStream(this@TableGenConfigDialog), StandardCharsets.UTF_8).use { writer ->
+                        writer.write(content)
+                    }
+                }
+                NotificationGroupManager.getInstance()
+                    .getNotificationGroup("TableGear.Notification")
+                    ?.createNotification("默认配置文件已生成：${file.path}", NotificationType.INFORMATION)
+                    ?.notify(project)
+                val load = Messages.showYesNoDialog(project, "是否在编辑器中打开该文件？", "默认配置已生成", "打开", "不打开", Messages.getQuestionIcon())
+                if (load == Messages.YES) {
+                    loadFile(file)
+                }
+            } catch (e: Exception) {
+                Messages.showErrorDialog(project, "写入配置文件失败: ${e.message}", "错误")
+            }
+        }
     }
     
     /**
@@ -133,8 +244,8 @@ class TableGenConfigDialog(
      * 用当前配置执行代码生成（相当于 Maven tablegen:gen-merge：启用 enable_merge 后执行生成）
      */
     private fun runGenerateCode() {
-        // 先同步各面板到模型
         databasePanel.updateToModel()
+        esPanel.updateToModel()
         codeGenPanel.updateToModel()
         tablePanel.updateToModel()
         advancedPanel.updateToModel()
@@ -178,8 +289,8 @@ class TableGenConfigDialog(
     }
 
     override fun doOKAction() {
-        // 更新模型
         databasePanel.updateToModel()
+        esPanel.updateToModel()
         codeGenPanel.updateToModel()
         tablePanel.updateToModel()
         advancedPanel.updateToModel()
@@ -228,11 +339,12 @@ class TableGenConfigDialog(
             currentFile = file
             filePathLabel.text = "文件: ${file.path}"
             
-            // 更新所有面板
             databasePanel.updateFromModel()
+            esPanel.updateFromModel()
             codeGenPanel.updateFromModel()
             tablePanel.updateFromModel()
             advancedPanel.updateFromModel()
+            refreshModeFromModel()
             
             // 显示 toast 通知而不是弹窗
             val notificationGroup = NotificationGroupManager.getInstance()
@@ -242,12 +354,6 @@ class TableGenConfigDialog(
                 NotificationType.INFORMATION
             )?.notify(project)
             
-            // 如果配置完整，自动连接数据库
-            javax.swing.SwingUtilities.invokeLater {
-                tryAutoConnect()
-            }
-            
-            // 如果配置完整，自动连接数据库
             javax.swing.SwingUtilities.invokeLater {
                 tryAutoConnect()
             }
@@ -298,13 +404,12 @@ class TableGenConfigDialog(
      */
     private fun getSortedPropertyKeys(props: Properties, configMode: ConfigMode): List<String> {
         val allKeys = props.stringPropertyNames()
-        val propertyMap = TableGearProperties.PROPERTY_MAP
         val usedKeys = mutableSetOf<String>()
         val sortedKeys = mutableListOf<String>()
         
         // 数据库相关配置项
         val databaseKeys = setOf(
-            "className", "dburl", "username", "password", "schema", "table_owner", 
+            "className", "dburl", "username", "password", "schema", "table_owner",
             "catalog", "projectname", "alias", "add_prefix", "remove_prefix"
         )
         
@@ -315,6 +420,16 @@ class TableGenConfigDialog(
         if (allKeys.contains("package_name")) {
             sortedKeys.add("package_name")
             usedKeys.add("package_name")
+        }
+        
+        // 1b. ES 模式时 type/url/index_list 等靠前
+        if (configMode == ConfigMode.ELASTICSEARCH || configMode == ConfigMode.JSON) {
+            listOf("type", "url", "index_list", "primary_key_fields", "alias", "username", "password").forEach { key ->
+                if (allKeys.contains(key) && !usedKeys.contains(key)) {
+                    sortedKeys.add(key)
+                    usedKeys.add(key)
+                }
+            }
         }
         
         // 2. VIEW_LIST_KEY - view_list

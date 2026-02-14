@@ -1,14 +1,14 @@
 package com.bixuebihui.tablegear.ui
 
+import com.bixuebihui.tablegear.TableGearIcons
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 
 /**
  * 打开TableGen配置编辑器的Action
  */
-class OpenTableGenConfigAction : AnAction("打开 TableGen 配置编辑器", "打开 TableGen 配置文件编辑器", null) {
+class OpenTableGenConfigAction : AnAction("打开 TableGen 配置编辑器", "打开 TableGen 配置文件编辑器", TableGearIcons.FILE) {
     
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project
@@ -26,8 +26,10 @@ class OpenTableGenConfigAction : AnAction("打开 TableGen 配置编辑器", "�
     }
     
     override fun update(e: AnActionEvent) {
-        // Action始终可用
         e.presentation.isEnabledAndVisible = true
+        if (e.presentation.icon == null) {
+            e.presentation.icon = TableGearIcons.FILE
+        }
     }
     
     private fun isTableGenFile(file: VirtualFile): Boolean {
