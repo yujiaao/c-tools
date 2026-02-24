@@ -1,11 +1,10 @@
 <idea-plugin>
-    <id>com.bixuebihui.idea-tablegear</id>
-    <name>TableGear Language Support</name>
-    <version>1.0.3</version>
-    <vendor email="yujiaao@mcn.com" url="https://github.com/yujiaao/c-tools">XingWanxiang</vendor>
-
-    <description><![CDATA[
-    <h2>TableGear Language Support for IntelliJ IDEA</h2>
+  <idea-version since-build="221" until-build="255.*" />
+  <id>com.bixuebihui.idea-tablegear</id>
+  <name>TableGear Language Support</name>
+  <version>1.0.4</version>
+  <vendor email="yujiaao@mcn.com" url="https://github.com/yujiaao/c-tools">XingWanxiang</vendor>
+  <description><![CDATA[<h2>TableGear Language Support for IntelliJ IDEA</h2>
     <p>Provides intelligent code completion, syntax highlighting, and validation for tablegen*.properties and es*.properties configuration files.</p>
     
     <h3>Features:</h3>
@@ -42,6 +41,8 @@
     <depends>com.intellij.modules.java</depends>
 
     <extensions defaultExtensionNs="com.intellij">
+        <!-- 通知组 -->
+        <notificationGroup id="TableGear.Notification" displayType="BALLOON" />
         <!-- 文件类型注册 -->
         <fileType name="TableGear Properties" implementationClass="com.bixuebihui.tablegear.TableGearFileType" 
                   fieldName="INSTANCE" language="TableGear" extensions="properties" description="TableGear configuration files"/>
@@ -49,7 +50,9 @@
         <!-- 语言定义 -->
         <lang.parserDefinition language="TableGear" implementationClass="com.bixuebihui.tablegear.parser.TableGearParserDefinition"/>
         
-        <!-- 语法高亮 -->
+        <!-- 语法高亮：内置 Default/Darcula 方案使用好看默认色 -->
+        <additionalTextAttributes scheme="Default" file="colorSchemes/TableGearDefault.xml"/>
+        <additionalTextAttributes scheme="Darcula" file="colorSchemes/TableGearDarcula.xml"/>
         <colorSettingsPage implementation="com.bixuebihui.tablegear.highlight.TableGearColorSettingsPage"/>
         <annotator language="TableGear" implementationClass="com.bixuebihui.tablegear.highlight.TableGearAnnotator"/>
         <annotator language="Properties" implementationClass="com.bixuebihui.tablegear.highlight.TableGearAnnotator"/>
@@ -74,7 +77,7 @@
         <!-- 文档提供 -->
         <lang.documentationProvider language="TableGear" implementationClass="com.bixuebihui.tablegear.documentation.TableGearDocumentationProvider"/>
         <lang.documentationProvider language="Properties" implementationClass="com.bixuebihui.tablegear.documentation.TableGearDocumentationProvider"/>
-        
+
         <!-- 编辑器通知：提示用户可以使用插件功能 -->
         <editorNotificationProvider implementation="com.bixuebihui.tablegear.notification.TableGearPluginNotificationProvider"/>
     </extensions>
@@ -87,6 +90,15 @@
                 description="打开 TableGen 配置文件编辑器">
             <add-to-group group-id="ToolsMenu" anchor="last"/>
             <keyboard-shortcut keymap="$default" first-keystroke="ctrl alt T"/>
+        </action>
+
+        <!-- 文件上下文菜单：用TableGen编辑器打开 -->
+        <action id="TableGear.OpenWithEditor"
+                class="com.bixuebihui.tablegear.ui.OpenWithTableGenEditorAction"
+                text="用 TableGen 编辑器打开"
+                description="使用 TableGen 可视化编辑器打开配置文件">
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="after" relative-to-action="EditSource"/>
+            <add-to-group group-id="EditorPopupMenu" anchor="after" relative-to-action="EditSource"/>
         </action>
     </actions>
     

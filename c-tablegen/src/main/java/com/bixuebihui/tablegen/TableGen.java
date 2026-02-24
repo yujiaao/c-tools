@@ -25,7 +25,6 @@ package com.bixuebihui.tablegen;
 
 import com.bixuebihui.cache.DictionaryCache;
 import com.bixuebihui.cache.DictionaryItem;
-import com.bixuebihui.datasource.BitmechanicDataSource;
 import com.bixuebihui.datasource.HikariCPDataSource;
 import com.bixuebihui.dbcon.DatabaseConfig;
 import com.bixuebihui.generated.tablegen.pojo.T_metacolumn;

@@ -1,13 +1,7 @@
 package com.bixuebihui.test.cmd;
 
-import java.sql.*;
-
-
 
 import io.swagger.annotations.ApiModelProperty;
-
-
-import jakarta.validation.constraints.*;
 
 /*
  *  TEduSearchCmd

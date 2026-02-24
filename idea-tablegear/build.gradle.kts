@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.bixuebihui"
-version = "1.0.4"
+version = "1.0.3"
 
 repositories {
     mavenCentral()
@@ -22,6 +22,11 @@ intellij {
     
     // 可选：如果本地已安装 IDEA，可以指定路径避免下载
     // localPath.set("C:/Program Files/JetBrains/IntelliJ IDEA Community Edition 2022.1")
+}
+
+// 使用插件声明的依赖优先，避免被 IDE 内置版本覆盖（Gradle 7+ implementation 需此项）
+configurations.all {
+    resolutionStrategy.sortArtifacts(ResolutionStrategy.SortOrder.DEPENDENCY_FIRST)
 }
 
 // 排除 Kotlin stdlib 的运行时依赖，使用 IntelliJ Platform 提供的版本
@@ -70,10 +75,26 @@ tasks {
 }
 
 dependencies {
+    // MySQL JDBC 驱动：插件内“测试连接”/连接数据库需要，否则 ClassNotFoundException: com.mysql.cj.jdbc.Driver
+    implementation("com.mysql:mysql-connector-j:8.2.0")
+
     // 依赖 tablegen 模块以使用数据库连接功能
     // 注意：需要先构建 c-tablegen 模块 (mvn install) 才能使用
     // 如果 c-tablegen 已发布到本地 Maven 仓库，使用以下方式：
-    implementation("com.github.yujiaao:tablegen:1.16.2")
+    implementation("com.github.yujiaao:tablegen:1.12.3.0") {
+        // 排除所有日志相关的依赖，避免与 IDEA Platform 的日志系统冲突
+        // IDEA Platform 使用自己的日志系统，不需要 log4j
+        exclude(group = "org.slf4j", module = "slf4j-log4j12")
+        exclude(group = "org.slf4j", module = "log4j-over-slf4j")
+        exclude(group = "org.apache.logging.log4j", module = "log4j-slf4j-impl")
+        exclude(group = "org.apache.logging.log4j", module = "log4j-core")
+        exclude(group = "org.apache.logging.log4j", module = "log4j-api")
+        exclude(group = "org.apache.logging.log4j", module = "log4j-jul")
+        exclude(group = "org.springframework.boot", module = "spring-boot-starter-log4j2")
+        // 排除传递依赖中的日志相关模块
+        exclude(group = "org.slf4j")
+        exclude(group = "org.apache.logging.log4j")
+    }
     
     testImplementation(kotlin("test"))
     // kotlin.test uses JUnit 5 assertions which require opentest4j

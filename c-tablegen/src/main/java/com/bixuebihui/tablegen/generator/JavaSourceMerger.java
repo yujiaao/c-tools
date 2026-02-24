@@ -711,7 +711,7 @@ public class JavaSourceMerger {
         
         // Common annotation packages
         return packageName.equals("jakarta.validation.constraints") ||
-               packageName.equals("javax.validation.constraints") ||
+               packageName.equals("jakarta.validation.constraints") ||
                packageName.equals("jakarta.validation") ||
                packageName.equals("javax.validation") ||
                packageName.equals("org.springframework.stereotype") ||

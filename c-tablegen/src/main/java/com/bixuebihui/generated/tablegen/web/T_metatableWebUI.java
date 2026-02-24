@@ -25,8 +25,6 @@ public class T_metatableWebUI extends AbstractWebUI<T_metatable, Long> {
         return "tid";
     }
 
-    ;
-
     public void setService(T_metatableManager service) {
         this.service = service;
     }

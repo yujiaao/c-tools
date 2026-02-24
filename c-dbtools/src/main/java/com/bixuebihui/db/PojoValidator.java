@@ -63,7 +63,7 @@ public class PojoValidator<T> {
      */
     public void asureValid(T pojo){
         Set<ConstraintViolation<T>> res = validate(pojo);
-        if(res.size()==0) {
+        if(res.isEmpty()) {
             return;
         }
 
