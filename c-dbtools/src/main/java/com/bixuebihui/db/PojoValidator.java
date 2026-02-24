@@ -1,6 +1,6 @@
 package com.bixuebihui.db;
 
-import javax.validation.*;
+import jakarta.validation.*;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.hibernate.validator.messageinterpolation.ParameterMessageInterpolator;
@@ -63,7 +63,7 @@ public class PojoValidator<T> {
      */
     public void asureValid(T pojo){
         Set<ConstraintViolation<T>> res = validate(pojo);
-        if(res.size()==0) {
+        if(res.isEmpty()) {
             return;
         }
 

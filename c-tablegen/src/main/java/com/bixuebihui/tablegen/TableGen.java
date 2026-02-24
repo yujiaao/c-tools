@@ -25,7 +25,6 @@ package com.bixuebihui.tablegen;
 
 import com.bixuebihui.cache.DictionaryCache;
 import com.bixuebihui.cache.DictionaryItem;
-import com.bixuebihui.datasource.BitmechanicDataSource;
 import com.bixuebihui.datasource.HikariCPDataSource;
 import com.bixuebihui.dbcon.DatabaseConfig;
 import com.bixuebihui.generated.tablegen.pojo.T_metacolumn;
@@ -1288,7 +1287,7 @@ public class TableGen implements DiffHandler {
         }
 
         if ("pojo".equals(subPackage) && config.useAnnotation) {
-            out("import javax.validation.constraints.*;");
+            out("import jakarta.validation.constraints.*;");
             out("import org.apache.commons.text.StringEscapeUtils;");
             if (config.useSwagger) {
                 out("import io.swagger.annotations.ApiModel;");

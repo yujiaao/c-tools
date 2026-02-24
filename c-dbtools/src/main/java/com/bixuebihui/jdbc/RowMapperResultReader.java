@@ -1,6 +1,6 @@
 package com.bixuebihui.jdbc;
 
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotNull;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

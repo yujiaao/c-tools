@@ -7,7 +7,7 @@ import java.sql.*;
 import io.swagger.annotations.ApiModelProperty;
 
 
-import javax.validation.constraints.*;
+import jakarta.validation.constraints.*;
 
 /*
  *  InfoAuthorTermDataSearchCmd
