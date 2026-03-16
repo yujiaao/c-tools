@@ -8,12 +8,12 @@ import org.apache.commons.text.StringEscapeUtils;
 
 import javax.annotation.processing.Generated;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.sdadas.spring2ts.annotations.SharedModel;
 
 {{#if config.useSwagger}}
 {{#eq config.swaggerVersion "2" }}
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModelProperty;
-import com.sdadas.spring2ts.annotations.SharedModel;
 
 @Api(tags="{{tableInfo.comment}}")
 {{~else~}}

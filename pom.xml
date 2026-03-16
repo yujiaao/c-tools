@@ -47,7 +47,8 @@
         <module>c-estools</module>
 
         <module>c-jsongen-es-demo</module>
-        <module>c-dbtools-spring</module>
+<!--        <module>c-dbtools-spring</module>-->
+
 
 
     </modules>
