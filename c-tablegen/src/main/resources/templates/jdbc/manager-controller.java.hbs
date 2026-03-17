@@ -100,7 +100,7 @@ public class  {{className}} {
                 .total(p.getLeft())
                 .build();
         sw.stop();
-        result.setTook(sw.getDuration());
+        result.setTook(sw.getDuration().toMillis());
 
         BaseModel<PageModel<{{pojoClassName}}Dto>> res = new BaseModel<>();
         res.setResult(result);
