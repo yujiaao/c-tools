@@ -2,7 +2,7 @@
   <idea-version since-build="221" until-build="255.*" />
   <id>com.bixuebihui.idea-tablegear</id>
   <name>TableGear - Yet Another ORM and ElasticSearch Code Generator</name>
-  <version>1.0.5</version>
+  <version>1.0.6</version>
   <vendor email="yujiaao@mcn.com" url="https://github.com/yujiaao/c-tools">XingWanxiang</vendor>
   <description><![CDATA[<h2>TableGear Language Support for IntelliJ IDEA</h2>
     <p>Provides intelligent code completion, syntax highlighting, and validation for tablegen*.properties and es*.properties configuration files.</p>

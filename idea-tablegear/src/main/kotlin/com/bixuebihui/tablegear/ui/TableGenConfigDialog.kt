@@ -184,7 +184,12 @@ class TableGenConfigDialog(
                 withFileFilter { it.extension == "properties" || it.extension == "prop" }
                 withTitle(if (isEs) "保存 ES 默认配置文件" else "保存数据库默认配置文件")
             }
-        FileChooser.chooseFile(descriptor, project, null)?.let { file ->
+        val defaultFileName = if (isEs) "es-default.properties" else "tablegen-default.properties"
+        FileChooser.chooseFile(descriptor, project, null)?.let { selected ->
+            val file = resolveTargetFile(selected, defaultFileName) ?: run {
+                Messages.showErrorDialog(project, "无法在所选位置创建文件：$selected.path", "错误")
+                return@let
+            }
             val props = DefaultConfigTemplates.forMode(isEs)
             val configMode = if (isEs) ConfigMode.ELASTICSEARCH else ConfigMode.DATABASE
             val sortedKeys = getSortedPropertyKeys(props, configMode)
@@ -505,12 +510,31 @@ class TableGenConfigDialog(
                 withFileFilter { it.extension == "properties" || it.extension == "prop" }
                 withTitle("保存 TableGen 配置文件")
             }
-        
-        FileChooser.chooseFile(descriptor, project, null)?.let { file ->
+        val defaultName = currentFile?.name ?: "tablegen.properties"
+        FileChooser.chooseFile(descriptor, project, null)?.let { selected ->
+            val file = resolveTargetFile(selected, defaultName) ?: run {
+                Messages.showErrorDialog(project, "无法在所选位置创建文件：$selected.path", "错误")
+                return@let
+            }
             saveFile(file)
             currentFile = file
             filePathLabel.text = "文件: ${file.path}"
         }
+    }
+    
+    /**
+     * 若用户选中的是目录，则在该目录下创建/使用指定文件名的文件并返回；
+     * 若选中的已是文件则直接返回。这样可支持“选目录 + 默认文件名”的写入。
+     */
+    private fun resolveTargetFile(selected: VirtualFile, defaultFileName: String): VirtualFile? {
+        if (!selected.isDirectory) return selected
+        var target: VirtualFile? = null
+        ApplicationManager.getApplication().runWriteAction {
+            val existing = selected.findChild(defaultFileName)
+            target = if (existing != null && !existing.isDirectory) existing
+            else selected.createChildData(this@TableGenConfigDialog, defaultFileName)
+        }
+        return target
     }
     
     /**

@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.bixuebihui"
-version = "1.0.5"
+version = "1.0.6"
 
 repositories {
     mavenCentral()
@@ -56,7 +56,7 @@ tasks {
 
     patchPluginXml {
         sinceBuild.set("221") // 从 2022.1 版本开始支持（对应 2022.1，兼容更早版本）
-        untilBuild.set("255.*") // 支持到 255.* 版本
+        untilBuild.set("265.*") // 支持到 265.* 版本
     }
 
     withType<Test> {
