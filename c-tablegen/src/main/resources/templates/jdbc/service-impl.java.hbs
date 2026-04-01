@@ -57,7 +57,7 @@ public class {{className}} implements  {{pojoClassName}}Service{
     {
         {{pojoClassName}} info = {{pojoClassName}}Converter.MAPPER.toDao(dto);
         {{firstLow pojoClassName}}Manager.save(info);
-        return {{pojoClassName}}Converter.MAPPER.Converter.MAPPER.toDto(info);
+        return {{pojoClassName}}Converter.MAPPER.toDto(info);
     }
 {{/unless}}
 
