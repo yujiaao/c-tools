@@ -12,7 +12,7 @@ class TableGearFileType : LanguageFileType(TableGearLanguage) {
     
     override fun getDefaultExtension(): @NlsSafe String = "properties"
     
-    override fun getIcon(): Icon? = null // 可以添加自定义图标
+    override fun getIcon(): Icon? = TableGearIcons.FILE
     
     companion object {
         @JvmStatic
