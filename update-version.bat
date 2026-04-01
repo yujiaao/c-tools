@@ -11,3 +11,5 @@ mvn build-helper:parse-version versions:set -DnewVersion=\${parsedVersion.majorV
 @ windows:
 mvn build-helper:parse-version versions:set -D'newVersion=${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}.1' versions:commit
 
+
+mvn build-helper:parse-version versions:set -D'1.12.3.2' versions:commit
