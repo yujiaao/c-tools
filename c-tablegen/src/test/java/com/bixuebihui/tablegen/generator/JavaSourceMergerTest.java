@@ -65,7 +65,7 @@ class JavaSourceMergerTest {
         generatedDtoSource = "package com.example.dto;\n" +
                 "\n" +
                 "import java.io.Serializable;\n" +
-                "import javax.validation.constraints.NotNull;\n" +
+                "import jakarta.validation.constraints.NotNull;\n" +
                 "\n" +
                 "public class UserDto implements Serializable {\n" +
                 "    @NotNull\n" +
@@ -126,7 +126,7 @@ class JavaSourceMergerTest {
         assertContains(mergedSource, "private String email");
 
         // 4. Merged imports
-        assertContains(mergedSource, "import javax.validation.constraints.NotNull");
+        assertContains(mergedSource, "import jakarta.validation.constraints.NotNull");
 
         // 5. User-added methods preserved
         assertContains(mergedSource, "getCustomField");
@@ -449,7 +449,7 @@ class JavaSourceMergerTest {
         String existingSearchCmdSource = "package com.example.cmd;\n" +
                 "\n" +
                 "import java.util.List;\n" +
-                "import javax.validation.constraints.NotNull;\n" +
+                "import jakarta.validation.constraints.NotNull;\n" +
                 "\n" +
                 "public class UserSearchCmd {\n" +
                 "    // User changed field type to List<String> for 'in' query support\n" +
@@ -468,7 +468,7 @@ class JavaSourceMergerTest {
         // Generated SearchCmd with simple type parameter in setter
         String generatedSearchCmdSource = "package com.example.cmd;\n" +
                 "\n" +
-                "import javax.validation.constraints.NotNull;\n" +
+                "import jakarta.validation.constraints.NotNull;\n" +
                 "\n" +
                 "public class UserSearchCmd {\n" +
                 "    // Generated with simple type\n" +
@@ -509,7 +509,7 @@ class JavaSourceMergerTest {
         String existingSearchCmdSource = "package com.example.cmd;\n" +
                 "\n" +
                 "import java.util.List;\n" +
-                "import javax.validation.constraints.NotNull;\n" +
+                "import jakarta.validation.constraints.NotNull;\n" +
                 "\n" +
                 "public class UserSearchCmd {\n" +
                 "    // User changed field type to List<Long> for 'in' query support\n" +
@@ -528,7 +528,7 @@ class JavaSourceMergerTest {
         // Generated SearchCmd with simple type parameter in setter
         String generatedSearchCmdSource = "package com.example.cmd;\n" +
                 "\n" +
-                "import javax.validation.constraints.NotNull;\n" +
+                "import jakarta.validation.constraints.NotNull;\n" +
                 "\n" +
                 "public class UserSearchCmd {\n" +
                 "    // Generated with simple type\n" +

@@ -11,7 +11,7 @@
     <groupId>com.github.yujiaao</groupId>
     <artifactId>c-tools-parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.16.4.4</version>
+    <version>1.16.4.6</version>
     <name>c-tools-parent</name>
     <licenses>
         <license>
@@ -47,7 +47,8 @@
         <module>c-estools</module>
 
         <module>c-jsongen-es-demo</module>
-        <module>c-dbtools-spring</module>
+<!--        <module>c-dbtools-spring</module>-->
+
 
 
     </modules>
@@ -74,7 +75,7 @@
 
         <servlet.version>5.0.0</servlet.version>
 
-        <spring2ts.version>1.1.12</spring2ts.version>
+        <spring2ts.version>1.1.25</spring2ts.version>
     </properties>
 
     <dependencies>

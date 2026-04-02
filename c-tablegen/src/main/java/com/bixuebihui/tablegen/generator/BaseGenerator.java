@@ -27,6 +27,7 @@ import org.springframework.util.CollectionUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
@@ -348,6 +349,9 @@ public abstract class BaseGenerator implements Generator {
 
     protected Handlebars getHandlebars() {
         TemplateLoader loader = new ClassPathTemplateLoader();
+        // 添加这一行，确保模板加载使用 UTF-8 编码
+        loader.setCharset(Charset.forName(TableGenConfig.FILE_ENCODING));
+
         loader.setPrefix(getTemplateDir());
         loader.setSuffix(".hbs");
 

@@ -37,7 +37,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.web.bind.annotation.RequestBody;
 import com.sdadas.spring2ts.annotations.SharedService;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
@@ -100,7 +100,7 @@ public class  {{className}} {
                 .total(p.getLeft())
                 .build();
         sw.stop();
-        result.setTook(sw.getTime());
+        result.setTook(sw.getDuration().toMillis());
 
         BaseModel<PageModel<{{pojoClassName}}Dto>> res = new BaseModel<>();
         res.setResult(result);
