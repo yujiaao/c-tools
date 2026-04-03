@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.github.yujiaao</groupId>
         <artifactId>c-tools-parent</artifactId>
-        <version>1.16.4.6</version>
+        <version>1.16.4.8</version>
     </parent>
 
     <artifactId>c-dbtools</artifactId>
@@ -176,6 +176,13 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
+            <exclusions>
+                <!-- 与 log4j-slf4j2-impl 同时存在时，Log4j2 API -> SLF4J -> Log4j2 会形成栈溢出 -->
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-to-slf4j</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -329,12 +336,7 @@
             <version>${slf4j.version}</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
-            <version>${slf4j.version}</version>
-            <scope>test</scope>
-        </dependency>
+        <!-- 不与 log4j-slf4j2-impl 同时引入 slf4j-simple，否则 SLF4J 会优先选用 SimpleServiceProvider，MDC 行为与 Log4j2 测试配置不一致 -->
 
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
@@ -348,9 +350,10 @@
             <version>2.19.0</version>
             <scope>test</scope>
         </dependency>
+        <!-- SLF4J 2.x 必须使用 log4j-slf4j2-impl；log4j-slf4j-impl 仅适用于 SLF4J 1.7，会导致 MDC 等 API 不生效 -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-slf4j-impl</artifactId>
+            <artifactId>log4j-slf4j2-impl</artifactId>
             <version>2.19.0</version>
             <scope>test</scope>
         </dependency>
@@ -358,11 +361,17 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-log4j2</artifactId>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.logging.log4j</groupId>
+                    <artifactId>log4j-slf4j-impl</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.github.yujiaao</groupId>
             <artifactId>common-utils</artifactId>
-            <version>1.16.4.6</version>
+            <version>1.16.4.8</version>
             <scope>compile</scope>
         </dependency>
 

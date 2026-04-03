@@ -8,6 +8,7 @@ import org.junit.Test;
 import java.sql.Connection;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class DbHelperAroundAdviceTest {
 
@@ -24,7 +25,7 @@ public class DbHelperAroundAdviceTest {
         EasyMock.replay(methodInvocation);
         Object b = advice.invoke(methodInvocation);
         assertEquals(a, b);
-        if (advice.isDebug())
+        if (DbHelperAroundAdvice.isDebug())
             assertEquals(1, DbHelperAroundAdvice.getSqlStatMap().size());
         else
             assertEquals(0, DbHelperAroundAdvice.getSqlStatMap().size());
@@ -45,7 +46,7 @@ public class DbHelperAroundAdviceTest {
 
         Object b = advice.invoke(methodInvocation);
         assertEquals(a, b);
-        if (advice.isDebug())
+        if (DbHelperAroundAdvice.isDebug())
             assertEquals(1, DbHelperAroundAdvice.getSqlStatMap().size());
         else
             assertEquals(0, DbHelperAroundAdvice.getSqlStatMap().size());
@@ -54,12 +55,11 @@ public class DbHelperAroundAdviceTest {
     @Test
     public void testToString() {
         byte[] x = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 };
-        Object[] args = new Object[] { "select ?, ?", new Object[] { x, "test" } };
-        System.out.println(DbHelperAroundAdvice.toString(x));
-        for (int i = 0; i < args.length; i++) {
-            System.out.println(args[i]);
-            System.out.println(DbHelperAroundAdvice.toString(args[i]));
-        }
+        assertEquals("0x0102030405060708", DbHelperAroundAdvice.toString(x));
+        assertEquals("0x0102030405060708", DbHelperAroundAdvice.toString((Object) x));
+        assertEquals("test", DbHelperAroundAdvice.toString("test"));
+        // null 字面量否则会解析到 toString(byte[])，需指定 Object 重载
+        assertEquals("null", DbHelperAroundAdvice.toString((Object) null));
     }
 
     @Test
@@ -126,21 +126,6 @@ public class DbHelperAroundAdviceTest {
         // 验证第一个块被省略，第二个块保持不变
         assertTrue("First block should be omitted", resultSql.contains("...omit 53"));
         assertTrue("Second block should remain unchanged", resultSql.contains("name IN (?,?"));
-    }
-
-    private void assertTrue(String message, boolean condition) {
-        if (!condition) {
-            throw new AssertionError(message);
-        }
-    }
-
-    private void assertTrue(String message, String content, int index) {
-        if (index == -1) {
-            throw new AssertionError(message);
-        }
-        if (!content.contains("?")) {
-            throw new AssertionError(message);
-        }
     }
 
     @Test

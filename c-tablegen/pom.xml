@@ -9,7 +9,7 @@
     <parent>
         <groupId>com.github.yujiaao</groupId>
         <artifactId>c-tools-parent</artifactId>
-        <version>1.16.4.6</version>
+        <version>1.16.4.8</version>
     </parent>
     <properties>
         <handlebars-version>4.3.1</handlebars-version>
@@ -102,29 +102,12 @@
                 <version>3.1.0</version>
             </plugin>
             <plugin>
-                <artifactId>maven-pmd-plugin</artifactId>
-                <version>3.8</version>
-                <configuration>
-                    <linkXRef>false</linkXRef>
-                </configuration>
-            </plugin>
-            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-report-plugin</artifactId>
                 <version>2.22.2</version>
                 <configuration>
                     <outputDirectory>${basedir}/target/surefire-reports</outputDirectory>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>jdepend-maven-plugin</artifactId>
-                <version>2.0</version>
-            </plugin>
-            <plugin>
-                <groupId>com.github.spotbugs</groupId>
-                <artifactId>spotbugs-maven-plugin</artifactId>
-                <version>4.4.1</version>
             </plugin>
 
         </plugins>

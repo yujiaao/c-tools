@@ -12,7 +12,7 @@ public class SqlStat {
     //0.1s
     static final double SLOW_QUERY = 0.1;
     static final double VERY_SLOW_QUERY = 0.5;
-
+    static final double VERY_VERY_SLOW_QUERY = 5;
     /**
      * <p>Setter for the field <code>count</code>.</p>
      *

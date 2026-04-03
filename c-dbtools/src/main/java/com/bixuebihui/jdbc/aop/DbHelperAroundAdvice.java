@@ -1,6 +1,6 @@
 package com.bixuebihui.jdbc.aop;
 
-import com.bixuebihui.jdbc.IDbHelper;
+import com.bixuebihui.DbException;
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.apache.commons.collections.map.LRUMap;
@@ -9,9 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Method;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Map;
+import java.util.*;
 
 /**
  * <p>DbHelperAroundAdvice class.</p>
@@ -109,7 +107,7 @@ public class DbHelperAroundAdvice implements MethodInterceptor {
             count++;
             totalTime += thisTime;
         }
-        if (LOG.isDebugEnabled()) {
+        if (LOG.isWarnEnabled()) {
             if (ArrayUtils.isNotEmpty(args) && args[0] instanceof String) {
                 String sql = (String) args[0];
                 SqlStat ss;
@@ -124,17 +122,32 @@ public class DbHelperAroundAdvice implements MethodInterceptor {
                 ss.setCount(ss.getCount() + 1);
                 ss.setTotalTime(ss.getTotalTime() + thisTime);
                 sql = reduce(sql);
+                if(thisTime > SqlStat.VERY_VERY_SLOW_QUERY) {
+                    ArrayList<Object> allArgs = new ArrayList<>(Arrays.asList(args));
+                    int index = allArgs.indexOf(sql);
+                    if (index >= 0) {
+                        allArgs.set(index, "[REDACTED]");
+                    } else {
+                        // 如果sql不在args中，直接添加
+                        allArgs.add(sql);
+                    }
+                    allArgs.add(thisTime);
+                    LogContextAdapter.prepareArgs(allArgs.toArray());
+
+                    LOG.error("[AOP] Query is VERY SLOW！", new DbException("SLOW SQL:" + thisTime + "s - " + sql));
+                }
                 if (thisTime > SqlStat.VERY_SLOW_QUERY) {
                     LOG.error("[AOP] Query is VERY SLOW: {} sql={}", thisTime, sql);
                 } else if (thisTime > SqlStat.SLOW_QUERY) {
                     LOG.warn("[AOP] Query is SLOW: {} sql={}", thisTime, sql);
                 }
             }
-
-            // time 保留3位小数
-            LOG.debug("[AOP] Current call time: " + thisTime + "s, Counts: "
-                    + count + " Total sql time: " + totalTime + "s, on average: "
-                    + (count > 0 ? Math.round(totalTime / count * 1000) / 1000.0 : 0));
+            if(LOG.isDebugEnabled()) {
+                // time 保留3位小数
+                LOG.debug("[AOP] Current call time: " + thisTime + "s, Counts: "
+                        + count + " Total sql time: " + totalTime + "s, on average: "
+                        + (count > 0 ? Math.round(totalTime / count * 1000) / 1000.0 : 0));
+            }
         }
     }
 
