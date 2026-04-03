@@ -599,7 +599,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
             return getDateSqlDerby(dt);
         } else if (dbtype == SQLSERVER || dbtype == SQLSERVER_2005_AND_UP || dbtype == SQLSERVER_2010_AND_UP || dbtype == ACCESS) {
             return getDateSqlServer(dt);
-        } else if (dbtype == MYSQL) {
+        } else if (dbtype == MYSQL || dbtype == H2) {
             return getDateSqlMySql(dt);
         } else {
             return getDateSqlOracle(dt);
@@ -638,7 +638,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
             return getDateSqlDerby(dt);
         } else if (dbtype == SQLSERVER || dbtype == SQLSERVER_2005_AND_UP || dbtype == SQLSERVER_2010_AND_UP || dbtype == ACCESS) {
             return getDateSqlServer(dt);
-        } else if (dbtype == MYSQL) {
+        } else if (dbtype == MYSQL || dbtype == H2) {
             return getDateSqlMySql(dt);
         } else if (dbtype == POSTGRESQL) {
             return getDateSqlPostgresql(dt);
@@ -1646,7 +1646,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
             return "select last_insert_id()";
         } else if (dbtype == SQLSERVER || dbtype == SQLSERVER_2005_AND_UP || dbtype == SQLSERVER_2010_AND_UP || dbtype == ACCESS) {
             return "select scope_identity()";
-        } else if (dbtype == MYSQL) {
+        } else if (dbtype == MYSQL || dbtype == H2) {
             return "select last_insert_id()";
         } else {
             throw new DbException("getLastInsertId is not support for current dbtype=" + dbtype);
@@ -1991,7 +1991,7 @@ public abstract class BaseDao<T, ID> implements RowMapper<T>, IBaseListService<T
             throw new DbException("Table " + getTableName() + " has not a primary key for upsert!");
         }
 
-        if (this.getDbType() == MYSQL) {
+        if (this.getDbType() == MYSQL || this.getDbType() == H2) {
             String subquery = this.getUpdateSql();
             subquery = subquery.substring(subquery.indexOf(" set ") + 4, subquery.indexOf(" where "));
             return " ON DUPLICATE KEY UPDATE "

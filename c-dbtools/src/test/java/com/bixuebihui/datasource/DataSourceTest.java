@@ -6,9 +6,7 @@ import com.bixuebihui.jdbc.DbHelper;
 import com.bixuebihui.jdbc.IDbHelper;
 import com.bixuebihui.sequence.SequenceUtils;
 import com.bixuebihui.util.DbUtils;
-import junit.framework.TestCase;
 import org.apache.commons.io.FileUtils;
-import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -252,7 +250,7 @@ public class DataSourceTest {
 	}
 
 	public static DatabaseConfig getConfigDerby() {
-	    String dbName = "/tmp/data/test";
+	    String dbName = new File(System.getProperty("java.io.tmpdir"), "c-tools-derby-" + System.nanoTime()).getAbsolutePath();
 		File file = new File(dbName);
 		try {
 			FileUtils.deleteDirectory(file);
@@ -300,30 +298,49 @@ public class DataSourceTest {
 		cfg.setClassName("org.h2.Driver");
 		cfg.setUsername("sa");
 		cfg.setPassword("sa");
-		cfg.setDburl("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1");
+		cfg.setDburl("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;MODE=MySQL");
 
 		return cfg;
 
 	}
 
-	public static boolean isMysqlAvailable() {
+	private static volatile Boolean mysqlAvailabilityCache;
 
-		if(!cfg.getClassName().contains("mysql")){
+	/**
+	 * 是否连得上本机 MySQL；结果缓存，避免每个测试类反复 TCP 探测拖慢整次 mvn test。
+	 */
+	public static boolean isMysqlAvailable() {
+		Boolean cached = mysqlAvailabilityCache;
+		if (cached != null) {
+			return cached;
+		}
+		synchronized (DataSourceTest.class) {
+			if (mysqlAvailabilityCache != null) {
+				return mysqlAvailabilityCache;
+			}
+			boolean ok = probeMysqlOnce();
+			mysqlAvailabilityCache = ok;
+			return ok;
+		}
+	}
+
+	private static boolean probeMysqlOnce() {
+		if (!cfg.getClassName().contains("mysql")) {
 			return false;
 		}
 
 		try {
-			DriverManager.registerDriver((java.sql.Driver)(Class.forName(cfg.getClassName()).getDeclaredConstructor().newInstance()));
+			DriverManager.registerDriver((java.sql.Driver) (Class.forName(cfg.getClassName()).getDeclaredConstructor().newInstance()));
 		} catch (ClassNotFoundException | NoSuchMethodException | InstantiationException | InvocationTargetException | SQLException | IllegalAccessException e) {
 			e.printStackTrace();
 			throw new RuntimeException("MySQL Driver is not available!");
 		}
 
-		try(Connection con = DriverManager.getConnection(
+		DriverManager.setLoginTimeout(2);
+		try (Connection con = DriverManager.getConnection(
 				cfg.getDburl(), cfg.getUsername(), cfg.getPassword());
-			Statement statement =  con.createStatement();
-			ResultSet resultSet = statement.executeQuery("select 1+1");
-		) {
+			 Statement statement = con.createStatement();
+			 ResultSet resultSet = statement.executeQuery("select 1+1")) {
 			resultSet.next();
 			return resultSet.getInt(1) == 2;
 		} catch (Exception e) {

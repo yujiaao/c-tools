@@ -1,29 +1,17 @@
 package com.bixuebihui.test.converter;
 
-import com.bixuebihui.test.DataAutoConfiguration;
 import com.bixuebihui.test.dto.TestGenDto;
 import com.bixuebihui.test.pojo.TestGen;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.context.annotation.ComponentScan;
 
 import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest(
-        classes = {
-            DataAutoConfiguration.class
-        }
-)
-@EnableAutoConfiguration
-@ComponentScan(
-        basePackages = {
-            "com.bixuebihui.test.**"
-        }
-)
+/**
+ * MapStruct 生成实现类，无需 Spring 容器；避免 @SpringBootTest 拉全量上下文并依赖本机 MySQL。
+ */
 class TestGenConverterTest {
     // 使用 MapStruct 的静态实例
     private final TestGenConverter testGenConverter = TestGenConverter.MAPPER;

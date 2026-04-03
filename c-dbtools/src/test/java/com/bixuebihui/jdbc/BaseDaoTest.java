@@ -1,6 +1,7 @@
 package com.bixuebihui.jdbc;
 
 import com.bixuebihui.DbException;
+import com.bixuebihui.db.Dialect;
 import com.bixuebihui.datasource.DataSourceTest;
 import com.bixuebihui.datasource.DbcpDataSource;
 import com.bixuebihui.db.ActiveRecord;
@@ -20,7 +21,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.bixuebihui.db.Dialect.MYSQL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -256,6 +256,10 @@ public class BaseDaoTest {
         //boolean res = JDBCUtils.tableOrViewExists(null, null, "%", cn);
         try {
             db.executeNoQuery("drop table test", cn);
+        } catch (DbException ex) {
+            // ignore if table did not exist
+        }
+        try {
             db.executeNoQuery("create table test(id int, name varchar(100))",
                     cn);
         } catch (DbException ex) {
@@ -676,7 +680,7 @@ public class BaseDaoTest {
         }
 
         BD bd = new BD((IDbHelper) obj.getProxy());
-        assertEquals(MYSQL, bd.getDbType());
+        assertEquals(Dialect.detectDbType(DataSourceTest.getConfigMaster().getClassName()), bd.getDbType());
         bd.setAfterChangeEventHandler(new LogAfterChangeEventHandler<>(bd));
 
         List<T> objs = bd.selectAll();

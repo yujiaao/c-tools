@@ -8,6 +8,7 @@ import com.bixuebihui.jdbc.aop.DbHelperAroundAdvice;
 import com.bixuebihui.jdbc.entity.CountObject;
 import com.bixuebihui.jdbc.entity.CountValue;
 import org.apache.commons.lang3.tuple.Pair;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.aop.framework.ProxyFactory;
@@ -46,7 +47,7 @@ public class ActiveRecordImplTest {
         }
         try {
             db.executeNoQuery(
-                    "create table test(id int, name varchar(100), value int default 0, createtime timestamp)", cn);
+                    "create table test(id int, name varchar(100), val int default 0, createtime timestamp)", cn);
             db.executeNoQuery(
                     "create table test1(id int, name varchar(100))", cn);
 
@@ -122,9 +123,9 @@ public class ActiveRecordImplTest {
 
     @Test
     public void testInc() {
-        int res = bd.ar().in("id", new Object[]{123, 234}).inc("value");
+        int res = bd.ar().in("id", new Object[]{123, 234}).inc("val");
         assertEquals(2, res);
-        long inc = Long.parseLong(bd.ar().eq("ID", 123).get("value").toString());
+        long inc = Long.parseLong(bd.ar().eq("ID", 123).get("val").toString());
         assertEquals(1, inc);
     }
 
@@ -133,15 +134,15 @@ public class ActiveRecordImplTest {
         StringBuffer res1 = bd.ar().emptyStringAsNullCondition()
                 .eq("name", "")
                 .eq("id", null)
-                .eq("value", "1").getSql().getCondition();
-        assertEquals(" where value = ?", res1.toString());
+                .eq("val", "1").getSql().getCondition();
+        assertEquals(" where val = ?", res1.toString());
 
         StringBuffer res = bd.ar()
                 .eq("name", "")
                 .eq("id", null)
-                .eq("value", "1").getSql().getCondition();
+                .eq("val", "1").getSql().getCondition();
 
-        assertEquals(" where name = ? and value = ?", res.toString());
+        assertEquals(" where name = ? and val = ?", res.toString());
 
 
     }
@@ -150,10 +151,10 @@ public class ActiveRecordImplTest {
     public void testUpdate() {
         int res = bd.ar()
                 .in("id", new Object[]{123, 234})
-                .update(new String[]{"value", "name"},
-                        new Object[]{new SqlString("value+1"), "wow*"});
+                .update(new String[]{"val", "name"},
+                        new Object[]{new SqlString("val+1"), "wow*"});
         assertEquals(2, res);
-        long inc = Long.parseLong(bd.ar().eq("ID", 123).get("value").toString());
+        long inc = Long.parseLong(bd.ar().eq("ID", 123).get("val").toString());
         assertEquals(1, inc);
     }
 
@@ -161,10 +162,10 @@ public class ActiveRecordImplTest {
     public void testUpdateMap() {
         int res = bd.ar()
                 .in("id", new Object[]{123, 234})
-                .update(Map.of("value", new SqlString("value+1"),
+                .update(Map.of("val", new SqlString("val+1"),
                         "name", "wow*"));
         assertEquals(2, res);
-        long inc = Long.parseLong(bd.ar().eq("ID", 123).get("value").toString());
+        long inc = Long.parseLong(bd.ar().eq("ID", 123).get("val").toString());
         assertEquals(1, inc);
     }
 
@@ -434,6 +435,8 @@ public class ActiveRecordImplTest {
 
     @Test
     public void testSql() {
+        Assumptions.assumeTrue(DataSourceTest.isMysqlAvailable(),
+                "JSON_CONTAINS is MySQL-specific; skip when using H2 fallback");
         assertEquals(3, bd.ar().findAll().size());
 
         ActiveRecord<Object> a = bd.ar().eq("id", 456).sql("JSON_CONTAINS(name, '\"李四\"')");

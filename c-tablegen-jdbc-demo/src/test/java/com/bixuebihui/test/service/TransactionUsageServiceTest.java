@@ -5,12 +5,15 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.jdbc.Sql;
+import org.springframework.test.context.jdbc.SqlConfig;
 
 import com.bixuebihui.test.business.TestGenManager;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
+@Sql(scripts = "/schema-test_gen.sql", config = @SqlConfig(dataSource = "test"))
 class TransactionUsageServiceTest {
     @Autowired
     private TransactionUsageService transactionUsageService;

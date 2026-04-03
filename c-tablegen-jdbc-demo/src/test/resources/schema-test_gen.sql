@@ -1,0 +1,10 @@
+CREATE TABLE IF NOT EXISTS test_gen (
+  id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100),
+  age SMALLINT,
+  birth TIMESTAMP,
+  edu_id INT,
+  gender VARCHAR(1),
+  sex BOOLEAN,
+  child BOOLEAN
+);

@@ -21,10 +21,10 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class H2DataSource  {
 	public final JdbcConnectionPool cp = JdbcConnectionPool.
-		    create("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1", "sa", "sa");
+		    create("jdbc:h2:mem:test;DB_CLOSE_DELAY=-1;MODE=MySQL", "sa", "sa");
 
 	public final JdbcConnectionPool cpRO = JdbcConnectionPool.
-		    create("jdbc:h2:mem:test1;DB_CLOSE_DELAY=-1", "sa", "sa");
+		    create("jdbc:h2:mem:test1;DB_CLOSE_DELAY=-1;MODE=MySQL", "sa", "sa");
 
 	public static void main(String[] args) throws SQLException {
 		new H2DataSource().init().close();

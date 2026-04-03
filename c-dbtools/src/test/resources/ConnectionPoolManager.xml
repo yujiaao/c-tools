@@ -1,51 +1,18 @@
 <?xml version="1.0" standalone="yes"?>
   <poolResources>
   <MonitorInterval>60</MonitorInterval>
-  <!--
-  	<TraceFile>c:\temp\sqllog.txt</TraceFile> -->
-
-  <!-- Set up an alias for each db you need to access.
-       Note use of xml rules for character escaping. -->
+  <!-- 默认与 ConnectionPoolManager-h2.xml 相同，供未跑过 Maven probe 的 IDE 直接跑测试。
+       执行 mvn test-compile / test 时由 ConnectionPoolConfigProbe 按探测结果覆盖本文件到 target。 -->
    <Alias
   	name="test1"
-  	driver="com.mysql.cj.jdbc.Driver"
-  	url="jdbc:mysql://localhost/test?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull&amp;noAccessToProcedureBodies=true&amp;useUnicode=true&amp;characterEncoding=utf8&amp;mysqlEncoding=utf8&amp;connectTimeout=100&amp;socketTimeout=500&amp;useSSL=false"
-  	username="test"
-  	password="test123"
+  	driver="org.h2.Driver"
+  	url="jdbc:h2:mem:cm_test;DB_CLOSE_DELAY=-1;MODE=MySQL;DATABASE_TO_LOWER=TRUE;INIT=RUNSCRIPT FROM 'classpath:h2test.sql'"
+  	username="sa"
+  	password="sa"
   	maxConn="6"
   	idleTimeout="200"
   	checkoutTimeout="500"
   	maxCheckout="50"
   />
-<!--	<Alias-->
-<!--			name="test1"-->
-<!--			driver="org.h2.Driver"-->
-<!--			url="jdbc:h2:mem:test"-->
-<!--			username="sa"-->
-<!--			password="sa"-->
-<!--			maxConn="6"-->
-<!--			idleTimeout="2"-->
-<!--			checkoutTimeout="2"-->
-<!--			maxCheckout="50"-->
-<!--	/>-->
 
   </poolResources>
-
-  <!--
-  timeoutSeconds=300
-checkoutSeconds =120
-maxCheckout=30
-
-alias - Name of the pool
-driver - Classname of JDBC driver to use
-url - JDBC URL to connect to
-username - JDBC username to connect as
-password - username's password in the database
-maxConn - Maximum number of connections to open; When this limit is reached, threads requesting a connection are queued until a connection becomes available
-idleTimeout - Maximum number of seconds a Connection can go unused before it is closed
-checkoutTimeout - Maximum number of seconds a Thread can checkout a Connection before it is closed and returned to the pool. This is a protection against the Thread dying and leaving the Connection checked out indefinately
-maxCheckout - If this is greater than 0, the number of times a Connection may be checked out before it is closed. Used as a safeguard against cursor leak, which occurs if you don't call ResultSet.close() and Statement.close()
-rowPrefetch - If your db driver supports a row prefetch size (Oracle does) use this value for row prefetch, -1 for the default
-cacheStatements - If set to true, the PooledConnection will reuse the same Statement object when conn.createStatement() is called. It will also cache PreparedStatements.
-
-   -->
