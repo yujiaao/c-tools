@@ -8,7 +8,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.annotation.Propagation;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -85,18 +84,11 @@ class UserServiceTest {
     
     @Test
     @Order(7)
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    @DisplayName("验证事务回滚后的数据状态")
+    @DisplayName("同一事务内插入后抛 RuntimeException，整笔回滚（勿在测试中单独 catch 后再断言库，会绕过测试事务回滚语义）")
     public void testVerifyRollbackDataState() {
-        Long userId = userService.createUserWithDefaultTx("verifyUser", "verify@example.com");
-        User user = userService.getUserById(userId);
-        assertNotNull(user, "用户应该创建成功");
-        assertEquals("verifyUser", user.getUsername());
-        assertThrows(RuntimeException.class, () -> {
-            userService.methodThatThrowsRuntimeException();
-        });
-        boolean exists = userService.userExists(userId);
-        assertFalse(exists, "verifyUser 用户不应该存在");
+        assertThrows(RuntimeException.class, () ->
+                userService.createUserThenThrowRuntime("verifyUser", "verify@example.com"));
+        assertFalse(userService.userExistsByUsername("verifyUser"), "verifyUser 不应写入库");
     }
     
     @Test
