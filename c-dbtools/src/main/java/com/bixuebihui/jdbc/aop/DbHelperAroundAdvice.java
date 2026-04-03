@@ -132,11 +132,10 @@ public class DbHelperAroundAdvice implements MethodInterceptor {
                         allArgs.add(sql);
                     }
                     allArgs.add(thisTime);
-                    LogContextAdapter.prepareArgs(allArgs.toArray());
 
+                    LogContextAdapter.prepareArgs(allArgs.toArray());
                     LOG.error("[AOP] Query is VERY SLOW！", new DbException("SLOW SQL:" + thisTime + "s - " + sql));
-                }
-                if (thisTime > SqlStat.VERY_SLOW_QUERY) {
+                }else if (thisTime > SqlStat.VERY_SLOW_QUERY) {
                     LOG.error("[AOP] Query is VERY SLOW: {} sql={}", thisTime, sql);
                 } else if (thisTime > SqlStat.SLOW_QUERY) {
                     LOG.warn("[AOP] Query is SLOW: {} sql={}", thisTime, sql);
