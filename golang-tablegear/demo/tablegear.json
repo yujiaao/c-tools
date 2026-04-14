@@ -1,0 +1,14 @@
+{
+  "driver": "mysql",
+  "dsn": "root@tcp(127.0.0.1:3306)/demo?parseTime=true",
+  "schema": "demo",
+  "module": "github.com/yujiaao/golang-tablegear/demo/generated",
+  "out": "./demo/generated",
+  "tables": ["user_account"],
+  "viewsConfig": "./views/views.json",
+  "generateControllers": true,
+  "generateRuntimeScaffold": true,
+  "controllerTemplate": "std",
+  "dryRun": false
+}
+

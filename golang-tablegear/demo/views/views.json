@@ -1,0 +1,13 @@
+{
+  "views": [
+    {
+      "name": "active_user_logic_view",
+      "sqlFile": "active_user_logic_view.sql"
+    },
+    {
+      "name": "user_order_logic_view",
+      "sqlFile": "user_order_logic_view.sql"
+    }
+  ]
+}
+

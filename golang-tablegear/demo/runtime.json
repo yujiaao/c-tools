@@ -1,0 +1,8 @@
+{
+  "adminDsn": "root@tcp(127.0.0.1:3306)/?parseTime=true",
+  "masterDsn": "root@tcp(127.0.0.1:3306)/demo?parseTime=true",
+  "slaveDsns": [
+    "root@tcp(127.0.0.1:3306)/demo?parseTime=true"
+  ]
+}
+
