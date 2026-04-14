@@ -95,7 +95,11 @@ public class UserService {
         jdbcTemplate.update("INSERT INTO audit_log(action) VALUES('nested operation')");
     }
     
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    /**
+     * 使用默认 REQUIRED，便于与外层 {@code @Transactional}（含 Spring 测试事务）同一连接内可见；
+     * 需要“新开事务读已提交数据”时再单独用 REQUIRES_NEW。
+     */
+    @Transactional(propagation = Propagation.REQUIRED)
     public boolean userExists(Long userId) {
         try {
             Integer count = jdbcTemplate.queryForObject(
@@ -112,6 +116,24 @@ public class UserService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void methodThatThrowsRuntimeException() {
         throw new RuntimeException("模拟业务异常，触发回滚");
+    }
+
+    /**
+     * 单事务内插入后抛运行时异常，整笔回滚（用于测试，勿用 REQUIRES_NEW 拆开）。
+     */
+    @Transactional
+    public void createUserThenThrowRuntime(String username, String email) {
+        jdbcTemplate.update("INSERT INTO users(username, email) VALUES(?, ?)", username, email);
+        throw new RuntimeException("rollback entire transaction");
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public boolean userExistsByUsername(String username) {
+        Integer count = jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM users WHERE username = ?",
+                Integer.class,
+                username);
+        return count != null && count > 0;
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)

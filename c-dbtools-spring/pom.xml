@@ -6,116 +6,51 @@
     <parent>
         <groupId>com.github.yujiaao</groupId>
         <artifactId>c-tools-parent</artifactId>
-        <version>1.16.4.4</version>
+        <version>1.16.4.9</version>
     </parent>
 
     <artifactId>c-dbtools-spring</artifactId>
+    <name>c-dbtools-spring</name>
+    <description>Minimal Spring integration for c-dbtools: transactional DataSource wrapper for DbHelper + @Transactional</description>
 
-    <properties>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
-    <licenses>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${springboot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
-        <license>
-            <name>Apache License, Version 2.0</name>
-            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
-            <distribution>repo</distribution>
-        </license>
-    </licenses>
-    <developers>
-        <developer>
-            <id>yujiaao</id>
-            <name>Wanxiang Xing</name> <!-- 必选：开发者姓名 -->
-            <email>yujiaao@msn.com</email>
-            <roles>
-                <role>Developer</role> <!-- 可选：角色描述 -->
-            </roles>
-        </developer>
-    </developers>
     <dependencies>
         <dependency>
             <groupId>com.github.yujiaao</groupId>
             <artifactId>c-dbtools</artifactId>
-            <version>1.16.4.4</version>
-            <scope>compile</scope>
+            <version>${project.version}</version>
         </dependency>
 
-        <!-- Spring核心 -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
-            <version>5.3.23</version>
         </dependency>
 
-        <!-- Spring事务 -->
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-tx</artifactId>
-            <version>5.3.23</version>
-        </dependency>
-
-        <!-- Spring JDBC（可选，但推荐） -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-jdbc</artifactId>
-            <version>5.3.23</version>
         </dependency>
 
-        <!-- AOP支持 -->
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-aop</artifactId>
-            <version>5.3.23</version>
-        </dependency>
-        <dependency>
-            <groupId>org.aspectj</groupId>
-            <artifactId>aspectjweaver</artifactId>
-            <version>1.9.19</version>
-        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
-            <version>2.7.13</version>
             <scope>test</scope>
         </dependency>
 
-        <!-- 显式添加 spring-test 依赖，确保 SpringExtension 可用 -->
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-test</artifactId>
-            <version>5.3.31</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.mybatis</groupId>
-            <artifactId>mybatis</artifactId>
-            <version>3.5.14</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <!-- Pin to a concrete, compatible JUnit Jupiter version -->
-            <version>5.9.3</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- Ensure the JUnit Platform launcher is available to Surefire's forked process -->
-        <dependency>
-            <groupId>org.junit.platform</groupId>
-            <artifactId>junit-platform-launcher</artifactId>
-            <version>1.9.3</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- H2嵌入式数据库用于测试 -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <version>2.1.214</version>
             <scope>test</scope>
         </dependency>
 

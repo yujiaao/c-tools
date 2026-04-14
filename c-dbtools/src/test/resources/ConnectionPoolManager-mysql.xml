@@ -1,0 +1,18 @@
+<?xml version="1.0" standalone="yes"?>
+  <poolResources>
+  <MonitorInterval>60</MonitorInterval>
+
+  <!-- 本机 MySQL（与 connection-pool-probe.properties / DataSourceTest 一致） -->
+   <Alias
+  	name="test1"
+  	driver="com.mysql.cj.jdbc.Driver"
+  	url="jdbc:mysql://localhost/test?autoReconnect=true&amp;zeroDateTimeBehavior=convertToNull&amp;noAccessToProcedureBodies=true&amp;useUnicode=true&amp;characterEncoding=utf8&amp;mysqlEncoding=utf8&amp;connectTimeout=100&amp;socketTimeout=500&amp;useSSL=false"
+  	username="test"
+  	password="test123"
+  	maxConn="6"
+  	idleTimeout="200"
+  	checkoutTimeout="500"
+  	maxCheckout="50"
+  />
+
+  </poolResources>

@@ -29,5 +29,6 @@ jobs:
       run: |
         sudo /etc/init.d/mysql start
         mysql -e "CREATE DATABASE ${{ env.DB_DATABASE }}; CREATE USER 'test'@'%' IDENTIFIED BY 'test123'; GRANT ALL PRIVILEGES ON *.* TO 'test'@'%';" -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }}
+    # c-dbtools：默认本地构建为 h2 且不跑 probe（快）；CI 已起 MySQL，这里用 auto 探测并选用 mysql 模板。
     - name: Build with Maven
-      run: mvn -B package --file pom.xml
+      run: mvn -B package --file pom.xml -Dconnection.pool.profile=auto -Djacoco.skip=false

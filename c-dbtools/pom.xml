@@ -11,6 +11,14 @@
 
     <artifactId>c-dbtools</artifactId>
     <name>Database ORM tools</name>
+
+    <properties>
+        <!-- 默认 h2 + 跳过 probe：避免每次 test-compile 起 JVM 连 MySQL（本地无库时极慢）。需要探测时用：-Dconnection.pool.profile=auto -->
+        <connection.pool.profile>h2</connection.pool.profile>
+        <connection.pool.probe.skip>true</connection.pool.probe.skip>
+        <!-- 默认跳过 JaCoCo：本地单测不必每次插桩/写报告，显著加快。CI 传 -Djacoco.skip=false -->
+        <jacoco.skip>true</jacoco.skip>
+    </properties>
     <description>a fast small database connection pool and a active record flavor mini framework</description>
     <licenses>
 
@@ -60,9 +68,14 @@
                 <version>2.22.2</version>
                 <configuration>
                     <useSystemClassLoader>false</useSystemClassLoader>
-                    <parallelTestsTimeoutForcedInSeconds>20</parallelTestsTimeoutForcedInSeconds>
-                    <forkedProcessTimeoutInSeconds>30</forkedProcessTimeoutInSeconds>
-                    <parallel>classes</parallel>
+                    <!-- 父 POM 为 -Xmx4g，单测 fork 过大、启动慢；本模块覆盖为较小堆（仍保留 @{argLine} 供可选 jacoco） -->
+                    <argLine>@{argLine} -server -ea -Xmx1024m</argLine>
+                    <!-- 原先 20s/30s 过短：并行 + ConnectionManagerTest 等（MySQL 连接重试、多方法累计）
+                         会在用例跑完前触发强杀，报 "There was a timeout or other error in the fork"。 -->
+                    <parallelTestsTimeoutForcedInSeconds>600</parallelTestsTimeoutForcedInSeconds>
+                    <forkedProcessTimeoutInSeconds>600</forkedProcessTimeoutInSeconds>
+                    <!-- 并行多类会共抢同一 H2 mem:test / 静态池，易假死；单模块测试串行更快结束 -->
+                    <parallel>none</parallel>
                 </configuration>
             </plugin>
             <plugin>
@@ -70,10 +83,12 @@
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.8.8</version>
                 <configuration>
+                    <skip>${jacoco.skip}</skip>
                     <includes>com/bixuebihui/**</includes>
                     <includes>io/shardingjdbc/**</includes>
                 </configuration>
                 <executions>
+                    <!-- 仅保留一次 prepare-agent；曾重复绑定 pre-test 导致双重插桩，单测极慢 -->
                     <execution>
                         <id>default-prepare-agent</id>
                         <goals>
@@ -107,24 +122,62 @@
                             </rules>
                         </configuration>
                     </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
                     <execution>
-                        <id>pre-test</id>
+                        <id>select-connection-pool-xml</id>
+                        <phase>test-compile</phase>
                         <goals>
-                            <goal>prepare-agent</goal>
+                            <goal>java</goal>
                         </goals>
-                    </execution>
-                    <execution>
-                        <id>post-test</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>report</goal>
-                        </goals>
+                        <configuration>
+                            <skip>${connection.pool.probe.skip}</skip>
+                            <mainClass>com.bixuebihui.testsupport.ConnectionPoolConfigProbe</mainClass>
+                            <classpathScope>test</classpathScope>
+                            <arguments>
+                                <argument>${project.build.testOutputDirectory}</argument>
+                                <argument>${connection.pool.profile}</argument>
+                            </arguments>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
 
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>connection-pool-probe-auto</id>
+            <activation>
+                <property>
+                    <name>connection.pool.profile</name>
+                    <value>auto</value>
+                </property>
+            </activation>
+            <properties>
+                <connection.pool.probe.skip>false</connection.pool.probe.skip>
+            </properties>
+        </profile>
+        <profile>
+            <id>connection-pool-probe-mysql</id>
+            <activation>
+                <property>
+                    <name>connection.pool.profile</name>
+                    <value>mysql</value>
+                </property>
+            </activation>
+            <properties>
+                <connection.pool.probe.skip>false</connection.pool.probe.skip>
+            </properties>
+        </profile>
+    </profiles>
 
     <reporting>
         <plugins>
