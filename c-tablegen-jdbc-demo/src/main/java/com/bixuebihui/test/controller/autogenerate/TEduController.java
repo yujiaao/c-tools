@@ -12,9 +12,6 @@ import com.bixuebihui.query.Paging;
 import com.bixuebihui.BaseModel;
 import com.bixuebihui.PageModel;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
 
 
 
@@ -39,22 +36,16 @@ import java.util.List;
 @SharedService
 @RestController
 @RequestMapping("/t-edu")
-@Api(tags = "教育程度")
 public class  TEduController {
     @Autowired
     TEduService tEduService;
 
-    @ApiOperation("取t_edu列表")
     @PostMapping(value = "/list", produces = {"application/json;charset=UTF-8"})
     public BaseModel<PageModel<TEduDto>> list(
-    @ApiParam(name = "maxRows", value = "一页大小")
     @RequestParam(value = "maxRows", defaultValue = "10") Long maxRows,
-    @ApiParam(name = "page", value = "页码")
     @RequestParam(value = "page", defaultValue = "1") Long page,
-    @ApiParam(name = "sortBy", value = "排序 sortBy=abc:asc,def:desc")
     @RequestParam(value = "sortBy", defaultValue = "id:desc") String sortBy,
         @Validated
-    @ApiParam(value = "查询条件", required = true)
     TEduSearchCmd  searchCmd,
         HttpServletRequest request) {
 
@@ -82,11 +73,9 @@ public class  TEduController {
         return res;
     }
 
-    @ApiOperation("按主键删除t_edu记录")
     @PostMapping(value = "/del", produces = {"application/json;charset=UTF-8"})
     public BaseModel<Boolean> del(
         @Validated
-    @ApiParam(value = "主键", required = true)
     TEduDelCmd  delCmd,
         HttpServletRequest request) {
 
@@ -97,11 +86,9 @@ public class  TEduController {
         return res;
     }
 
-    @ApiOperation("保存t_edu记录")
     @PostMapping(value = "/save", produces = {"application/json;charset=UTF-8"})
     public BaseModel<TEduDto> save(
         @Validated
-        @ApiParam(value = "t_edu 数据对象", required = true)
         TEduDto  dto, HttpServletRequest request) {
 
         BaseModel<TEduDto> res = new BaseModel<>();

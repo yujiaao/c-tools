@@ -6,8 +6,8 @@ package com.bixuebihui.test.pojo;
  * Notice! Automatically generated file!
  * Do not edit the pojo and dal packages,use `maven tablegen:gen`!
  * Code Generator originally by J.A.Carter
- * Modified by Xing Wanxiang 2008-2021
- * email: www@qsn.so
+ * Modified by Xing Wanxiang 2008-2022
+ * email: xwx@live.cn
  */
 
 
@@ -16,30 +16,24 @@ import java.time.*;
 import java.io.Serializable;
 import jakarta.validation.constraints.*;
 import org.apache.commons.text.StringEscapeUtils;
-
-
-import io.swagger.v3.oas.annotations.media.Schema;
-
 import javax.annotation.processing.Generated;
 
 @Generated("com.github.yujiaao:tablegen")
-@Schema(description ="教育程度")
 public class TEdu  implements Serializable {
 
 
     
     /**
-    * id
+    * id 这里是id! 
     */
-    @Schema(title = "这里是id!")
+    
     protected Integer  id;
 
     
     /**
-    * degree
+    * degree 这里是名称！ 
     */
     @Size(max=100)
-@Schema(title = "这里是名称！")
     protected String  degree;
 
 

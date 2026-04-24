@@ -1290,10 +1290,16 @@ public class TableGen implements DiffHandler {
             out("import jakarta.validation.constraints.*;");
             out("import org.apache.commons.text.StringEscapeUtils;");
             if (config.useSwagger) {
-                out("import io.swagger.annotations.ApiModel;");
-                out("import io.swagger.annotations.ApiModelProperty;");
-                out("\n");
-                out("@ApiModel(description = \"" + table.getComment() + "\")");
+                if ("2".equals(config.getSwaggerVersion())) {
+                    out("import io.swagger.annotations.ApiModel;");
+                    out("import io.swagger.annotations.ApiModelProperty;");
+                    out("\n");
+                    out("@ApiModel(description = \"" + table.getComment() + "\")");
+                } else {
+                    out("import io.swagger.v3.oas.annotations.media.Schema;");
+                    out("\n");
+                    out("@Schema(description = \"" + table.getComment() + "\")");
+                }
             }
         }
 

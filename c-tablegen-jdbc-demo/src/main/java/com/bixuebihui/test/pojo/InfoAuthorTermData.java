@@ -19,12 +19,6 @@ import javax.annotation.processing.Generated;
 
 
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiModelProperty;
-
-@Api(tags="创作者作品消费数据统计明细-周期表")
-
-
 @Generated("com.github.yujiaao:tablegen")
 public class InfoAuthorTermData  implements Serializable {
 
@@ -33,7 +27,6 @@ public class InfoAuthorTermData  implements Serializable {
     /**
     * id 主键，自增 
     */
-    @ApiModelProperty("主键，自增")
     protected Long  id;
 
     
@@ -41,7 +34,6 @@ public class InfoAuthorTermData  implements Serializable {
     * is_del 是否删除；0-未删除，1-已删除，默认0 
     * NotNull, default value: 0
     */
-    @ApiModelProperty("是否删除；0-未删除，1-已删除，默认0")
     protected Byte  isDel;
 
     
@@ -49,7 +41,6 @@ public class InfoAuthorTermData  implements Serializable {
     * created_stime 创建时间 
     * NotNull, default value: current_timestamp()
     */
-    @ApiModelProperty("创建时间")
     protected Timestamp  createdStime;
 
     
@@ -57,7 +48,6 @@ public class InfoAuthorTermData  implements Serializable {
     * modified_stime 修改时间 
     * NotNull, default value: current_timestamp()
     */
-    @ApiModelProperty("修改时间")
     protected Timestamp  modifiedStime;
 
     
@@ -65,7 +55,6 @@ public class InfoAuthorTermData  implements Serializable {
     * dt 日期，如：2023-02-28 
     */
     @NotNull
-    @ApiModelProperty("日期，如：2023-02-28")
     protected Timestamp  dt;
 
     
@@ -73,7 +62,6 @@ public class InfoAuthorTermData  implements Serializable {
     * date_type 周期类型 1：昨天，2：七天，3：30天 
     * NotNull, default value: 0
     */
-    @ApiModelProperty("周期类型 1：昨天，2：七天，3：30天")
     protected Integer  dateType;
 
     
@@ -81,7 +69,6 @@ public class InfoAuthorTermData  implements Serializable {
     * author_id 之家用户ID（作者ID） 
     * NotNull, default value: 0
     */
-    @ApiModelProperty("之家用户ID（作者ID）")
     protected Integer  authorId;
 
     
@@ -90,7 +77,6 @@ public class InfoAuthorTermData  implements Serializable {
     * NotNull, default value: &#x27;0&#x27;
     */
     @Size(max=30)
-    @ApiModelProperty("内容分类--区分图文、视频，可以中文名，亦可以整型数字标识")
     protected String  infoType;
 
     
@@ -98,7 +84,6 @@ public class InfoAuthorTermData  implements Serializable {
     * publish_cnt 发布内容数 
     */
     @NotNull
-    @ApiModelProperty("发布内容数")
     protected Long  publishCnt;
 
     
@@ -106,7 +91,6 @@ public class InfoAuthorTermData  implements Serializable {
     * comment_cnt 评论数 
     */
     @NotNull
-    @ApiModelProperty("评论数")
     protected Long  commentCnt;
 
     
@@ -114,7 +98,6 @@ public class InfoAuthorTermData  implements Serializable {
     * praise_cnt 点赞数 
     */
     @NotNull
-    @ApiModelProperty("点赞数")
     protected Long  praiseCnt;
 
     
@@ -122,7 +105,6 @@ public class InfoAuthorTermData  implements Serializable {
     * pv 图文浏览pvor视频播放vv 
     */
     @NotNull
-    @ApiModelProperty("图文浏览pvor视频播放vv")
     protected Long  pv;
 
 

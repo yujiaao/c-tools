@@ -17,13 +17,9 @@ import java.io.Serializable;
 import jakarta.validation.constraints.*;
 import org.apache.commons.text.StringEscapeUtils;
 
-
-import io.swagger.v3.oas.annotations.media.Schema;
-
 import javax.annotation.processing.Generated;
 
 @Generated("com.github.yujiaao:tablegen")
-@Schema(description ="数据源模板历史记录表")
 public class HistoryHandlebarsTemplate  implements Serializable {
 
 
@@ -39,7 +35,6 @@ public class HistoryHandlebarsTemplate  implements Serializable {
     * template_id
     */
     @NotNull
-@Schema(title = "模板ID")
     protected Integer  templateId;
 
     
@@ -47,7 +42,6 @@ public class HistoryHandlebarsTemplate  implements Serializable {
     * template_code
     */
     @Size(max=32)
-@Schema(title = "模板code,需唯一")
     protected String  templateCode;
 
     
@@ -55,21 +49,18 @@ public class HistoryHandlebarsTemplate  implements Serializable {
     * description
     */
     @Size(max=32)
-@Schema(title = "模板说明")
     protected String  description;
 
     
     /**
     * datasource_id
     */
-    @Schema(title = "json数据源id")
     protected Integer  datasourceId;
 
     
     /**
     * base_template_id
     */
-    @Schema(title = "继承模板id")
     protected Integer  baseTemplateId;
 
     
@@ -77,7 +68,6 @@ public class HistoryHandlebarsTemplate  implements Serializable {
     * template_body
     */
     @Size(max=65535)
-@Schema(title = "模板主体")
     protected String  templateBody;
 
     
@@ -85,7 +75,6 @@ public class HistoryHandlebarsTemplate  implements Serializable {
     * operator_id
     */
     @NotNull
-@Schema(title = "操作用户id")
     protected Integer  operatorId;
 
     
@@ -93,7 +82,6 @@ public class HistoryHandlebarsTemplate  implements Serializable {
     * version * NotNull, but has default value :0
 
     */
-    @Schema(title = "版本号")
     protected Integer  version;
 
     
@@ -101,7 +89,6 @@ public class HistoryHandlebarsTemplate  implements Serializable {
     * is_del * NotNull, but has default value :0
 
     */
-    @Schema(title = "0：未删除；1：已删除")
     protected Integer  isDel;
 
     
@@ -109,7 +96,6 @@ public class HistoryHandlebarsTemplate  implements Serializable {
     * created_stime * NotNull, but has default value :current_timestamp()
 
     */
-    @Schema(title = "数据创建时间")
     protected LocalDateTime  createdStime;
 
     
@@ -117,7 +103,6 @@ public class HistoryHandlebarsTemplate  implements Serializable {
     * modified_stime * NotNull, but has default value :current_timestamp()
 
     */
-    @Schema(title = "数据更新时间")
     protected LocalDateTime  modifiedStime;
 
 

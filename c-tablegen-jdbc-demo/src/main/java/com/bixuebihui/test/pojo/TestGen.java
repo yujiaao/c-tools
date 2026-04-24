@@ -18,13 +18,6 @@ import org.apache.commons.text.StringEscapeUtils;
 import javax.annotation.processing.Generated;
 
 
-
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiModelProperty;
-
-@Api(tags="测试表")
-
-
 @Generated("com.github.yujiaao:tablegen")
 public class TestGen  implements Serializable {
 
@@ -33,7 +26,7 @@ public class TestGen  implements Serializable {
     /**
     * id 这里是id! 
     */
-    @ApiModelProperty("这里是id!")
+    
     protected Integer  id;
 
     
@@ -41,28 +34,27 @@ public class TestGen  implements Serializable {
     * name 这里是名称！ 
     */
     @Size(max=100)
-    @ApiModelProperty("这里是名称！")
     protected String  name;
 
     
     /**
     * age 这里是年龄 
     */
-    @ApiModelProperty("这里是年龄")
+    
     protected Short  age;
 
     
     /**
     * birth 这里是日期！ 
     */
-    @ApiModelProperty("这里是日期！")
+    
     protected Timestamp  birth;
 
     
     /**
     * edu_id 教育程度 
     */
-    @ApiModelProperty("教育程度")
+    
     protected Integer  eduId;
 
     
@@ -70,21 +62,20 @@ public class TestGen  implements Serializable {
     * gender 性别 
     */
     @Size(max=1)
-    @ApiModelProperty("性别")
     protected String  gender;
 
     
     /**
     * sex 性别 
     */
-    @ApiModelProperty("性别")
+    
     protected Boolean  sex;
 
     
     /**
     * child 是否有孩子 
     */
-    @ApiModelProperty("是否有孩子")
+    
     protected Boolean  child;
 
 

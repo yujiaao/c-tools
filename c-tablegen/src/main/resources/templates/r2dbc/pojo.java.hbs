@@ -7,15 +7,13 @@ import java.time.*;
 import java.io.Serializable;
 import jakarta.validation.constraints.*;
 import org.apache.commons.text.StringEscapeUtils;
+import javax.annotation.processing.Generated;
 
 {{#if config.useSwagger}}
 import io.swagger.v3.oas.annotations.media.Schema;
-
-import javax.annotation.processing.Generated;
-
-@Generated("com.github.yujiaao:tablegen")
 @Schema(description ="{{tableInfo.comment}}")
 {{/if~}}
+@Generated("com.github.yujiaao:tablegen")
 public class {{className}} {{interface}} {
 {{! field declaration }}
 {{#each fields as | field index | }}

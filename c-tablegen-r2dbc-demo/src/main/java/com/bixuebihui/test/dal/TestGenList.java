@@ -6,14 +6,16 @@ package com.bixuebihui.test.dal;
  * Notice! Automatically generated file!
  * Do not edit the pojo and dal packages,use `maven tablegen:gen`!
  * Code Generator originally by J.A.Carter
- * Modified by Xing Wanxiang 2008-2021
- * email: www@qsn.so
+ * Modified by Xing Wanxiang 2008-2022
+ * email: xwx@live.cn
  */
 
 
 import java.sql.*;
 import java.time.*;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.Row;
 import io.r2dbc.spi.Connection;
@@ -48,11 +50,20 @@ public class TestGenList  extends BaseList<TestGen, Integer>
         public static final String AGE = "age";
         public static final String BIRTH = "birth";
         public static final String EDU_ID = "edu_id";
+        public static final String GENDER = "gender";
+        public static final String SEX = "sex";
+        public static final String CHILD = "child";
         
         public static String[] getAllFields() {
-            return new String[] { ID, NAME, AGE, BIRTH, EDU_ID };
+            return new String[] { ID, NAME, AGE, BIRTH, EDU_ID, GENDER, SEX, CHILD };
         }
     }
+
+    @Override
+    public List<String> getAllFields(){
+        return Arrays.asList(F.getAllFields());
+    }
+
 
     
     protected String getDeleteSql(){
@@ -61,24 +72,24 @@ public class TestGenList  extends BaseList<TestGen, Integer>
 
    @Override
    protected String getInsertSql(){
-       return "insert into "+this.getTableName()+" ( name ,age ,birth ,edu_id ) values (  ? ,  ? ,  ? ,  ?  )";
+       return "insert into "+this.getTableName()+" ( name ,age ,birth ,edu_id ,gender ,sex ,child ) values (  ? ,  ? ,  ? ,  ? ,  ? ,  ? ,  ?  )";
    }
 
 
     @Override
     protected String getUpdateSql(){
-    return "update "+this.getTableName()+" set   name=?,  age=?,  birth=?,  edu_id=? where id=?";
+    return "update "+this.getTableName()+" set   name=?,  age=?,  birth=?,  edu_id=?,  gender=?,  sex=?,  child=? where id=?";
     }
 
     
    @Override
    protected Object[] getInsertObjs(TestGen info){
-        return new Object[]{ info.getName(),info.getAge(),info.getBirth(),info.getEduId() };
+        return new Object[]{ info.getName(),info.getAge(),info.getBirth(),info.getEduId(),info.getGender(),info.getSex(),info.getChild() };
    }
 
    @Override
    protected Object[] getUpdateObjs(TestGen  info){
-      return new Object[]{ info.getName(),info.getAge(),info.getBirth(),info.getEduId(),info.getId() };
+      return new Object[]{ info.getName(),info.getAge(),info.getBirth(),info.getEduId(),info.getGender(),info.getSex(),info.getChild(),info.getId() };
    }
 
 
@@ -116,6 +127,9 @@ return  "test_gen";
             res.setAge(r.get(F.AGE, Short.class));
             res.setBirth(r.get(F.BIRTH, LocalDateTime.class));
             res.setEduId(r.get(F.EDU_ID, Integer.class));
+            res.setGender(r.get(F.GENDER, String.class));
+            res.setSex(r.get(F.SEX, Boolean.class));
+            res.setChild(r.get(F.CHILD, Boolean.class));
             return res;
       }
 
@@ -186,6 +200,8 @@ return  "test_gen";
         java.util.Random rnd = new java.util.Random();
     
         info.setName(Integer.toString(Math.abs(rnd.nextInt(Integer.MAX_VALUE)), 36));
+    
+        info.setGender(Integer.toString(Math.abs(rnd.nextInt(Integer.MAX_VALUE)), 36));
     
         return getNextKey().flatMap(id -> {
         setId(info, id);

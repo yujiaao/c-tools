@@ -6,14 +6,16 @@ package com.bixuebihui.test.dal;
  * Notice! Automatically generated file!
  * Do not edit the pojo and dal packages,use `maven tablegen:gen`!
  * Code Generator originally by J.A.Carter
- * Modified by Xing Wanxiang 2008-2021
- * email: www@qsn.so
+ * Modified by Xing Wanxiang 2008-2022
+ * email: xwx@live.cn
  */
 
 
 import java.sql.*;
 import java.time.*;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.Row;
 import io.r2dbc.spi.Connection;
@@ -50,6 +52,12 @@ public class TEduList  extends BaseList<TEdu, Integer>
             return new String[] { ID, DEGREE };
         }
     }
+
+    @Override
+    public List<String> getAllFields(){
+        return Arrays.asList(F.getAllFields());
+    }
+
 
     
     protected String getDeleteSql(){

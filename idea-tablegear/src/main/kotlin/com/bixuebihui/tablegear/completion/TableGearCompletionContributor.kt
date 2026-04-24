@@ -1,6 +1,7 @@
 package com.bixuebihui.tablegear.completion
 
 import com.bixuebihui.tablegear.ConfigMode
+import com.bixuebihui.tablegear.TableGearBundle
 import com.bixuebihui.tablegear.TableGearProperties
 import com.bixuebihui.tablegear.ValueType
 import com.intellij.codeInsight.completion.*
@@ -55,7 +56,7 @@ class TableGearCompletionContributor : CompletionContributor() {
                             JDBC_DRIVER_SUGGESTIONS.forEach { suggestion ->
                                 result.addElement(
                                     LookupElementBuilder.create(suggestion.className)
-                                        .withTypeText("JDBC Driver", true)
+                                        .withTypeText(TableGearBundle.message("completion.jdbcDriver"), true)
                                         .withTailText(" — ${suggestion.description}", true)
                                 )
                             }
@@ -101,13 +102,13 @@ class TableGearCompletionContributor : CompletionContributor() {
 
     companion object {
         private val JDBC_DRIVER_SUGGESTIONS = listOf(
-            DriverSuggestion("com.mysql.cj.jdbc.Driver", "MySQL Connector/J 8.0+ (推荐)"),
-            DriverSuggestion("com.mysql.jdbc.Driver", "MySQL Connector/J 5.x (已弃用)"),
+            DriverSuggestion("com.mysql.cj.jdbc.Driver", TableGearBundle.message("completion.driver.mysql8")),
+            DriverSuggestion("com.mysql.jdbc.Driver", TableGearBundle.message("completion.driver.mysql5")),
             DriverSuggestion("org.mariadb.jdbc.Driver", "MariaDB JDBC Driver"),
             DriverSuggestion("org.postgresql.Driver", "PostgreSQL JDBC Driver"),
             DriverSuggestion("com.microsoft.sqlserver.jdbc.SQLServerDriver", "Microsoft SQL Server JDBC Driver"),
             DriverSuggestion("oracle.jdbc.OracleDriver", "Oracle JDBC Driver"),
-            DriverSuggestion("oracle.jdbc.driver.OracleDriver", "Oracle JDBC Driver (旧版)"),
+            DriverSuggestion("oracle.jdbc.driver.OracleDriver", TableGearBundle.message("completion.driver.oracleLegacy")),
             DriverSuggestion("org.h2.Driver", "H2 Database Driver"),
             DriverSuggestion("com.ibm.db2.jcc.DB2Driver", "IBM DB2 JDBC Driver"),
             DriverSuggestion("com.sap.db.jdbc.Driver", "SAP HANA JDBC Driver"),

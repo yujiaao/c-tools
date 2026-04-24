@@ -15,6 +15,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.components.JBTabbedPane
 import com.intellij.util.ui.JBUI
 import com.bixuebihui.tablegear.ConfigMode
+import com.bixuebihui.tablegear.TableGearBundle
 import com.bixuebihui.tablegear.TableGearProperties
 import com.bixuebihui.tablegen.TableGen
 import java.awt.BorderLayout
@@ -48,7 +49,7 @@ class TableGenConfigDialog(
     private lateinit var filePathLabel: JLabel
     
     init {
-        title = "TableGen 配置编辑器"
+        title = TableGearBundle.message("config.dialog.title")
         init()
         
         // 如果提供了初始文件，加载它
@@ -62,15 +63,15 @@ class TableGenConfigDialog(
         
         // 创建文件路径显示和操作按钮
         val topPanel = JPanel(BorderLayout())
-        filePathLabel = JLabel("未选择文件")
+        filePathLabel = JLabel(TableGearBundle.message("dialog.file.notSelected"))
         topPanel.add(filePathLabel, BorderLayout.WEST)
         
         val buttonPanel = JPanel()
-        val openBtn = JButton("打开文件...")
+        val openBtn = JButton(TableGearBundle.message("dialog.button.open"))
         openBtn.addActionListener { openFile() }
         buttonPanel.add(openBtn)
         
-        val saveAsBtn = JButton("另存为...")
+        val saveAsBtn = JButton(TableGearBundle.message("dialog.button.saveAs"))
         saveAsBtn.addActionListener { saveAsFile() }
         buttonPanel.add(saveAsBtn)
         
@@ -87,10 +88,10 @@ class TableGenConfigDialog(
         tablePanel = TableConfigPanel(model, project)
         advancedPanel = AdvancedConfigPanel(model, project, tablePanel)
         
-        tabbedPane.addTab("数据库配置", databasePanel)
-        tabbedPane.addTab("代码生成配置", codeGenPanel)
-        tabbedPane.addTab("表配置", tablePanel)
-        tabbedPane.addTab("高级配置", advancedPanel)
+        tabbedPane.addTab(TableGearBundle.message("dialog.tab.database"), databasePanel)
+        tabbedPane.addTab(TableGearBundle.message("dialog.tab.codegen"), codeGenPanel)
+        tabbedPane.addTab(TableGearBundle.message("dialog.tab.table"), tablePanel)
+        tabbedPane.addTab(TableGearBundle.message("dialog.tab.advanced"), advancedPanel)
         
         mainPanel.add(tabbedPane, BorderLayout.CENTER)
         
@@ -120,7 +121,7 @@ class TableGenConfigDialog(
     }
     
     override fun createActions(): Array<Action> {
-        val generateCodeAction = object : AbstractAction("生成代码") {
+        val generateCodeAction = object : AbstractAction(TableGearBundle.message("dialog.button.generateCode")) {
             override fun actionPerformed(e: java.awt.event.ActionEvent?) {
                 runGenerateCode()
             }
@@ -140,7 +141,11 @@ class TableGenConfigDialog(
 
         val file = currentFile
         if (file == null) {
-            Messages.showErrorDialog(project, "请先保存或打开一个 TableGen 配置文件后再生成代码。", "无法生成代码")
+            Messages.showErrorDialog(
+                project,
+                TableGearBundle.message("notification.generateCode.requireFile"),
+                TableGearBundle.message("notification.generateCode.failed.title")
+            )
             return
         }
 
@@ -151,24 +156,24 @@ class TableGenConfigDialog(
         val configPath = file.path
         val proj = project
 
-        ProgressManager.getInstance().run(object : Task.Backgroundable(proj, "TableGen 生成代码", true) {
+        ProgressManager.getInstance().run(object : Task.Backgroundable(proj, TableGearBundle.message("notification.generateCode.progressTitle"), true) {
             override fun run(indicator: ProgressIndicator) {
                 indicator.isIndeterminate = true
-                indicator.text = "正在根据当前配置生成代码..."
+                indicator.text = TableGearBundle.message("notification.generateCode.running")
                 try {
                     TableGen().run(configPath)
                     javax.swing.SwingUtilities.invokeLater {
                         NotificationGroupManager.getInstance()
                             .getNotificationGroup("TableGear.Notification")
-                            ?.createNotification("代码生成完成", NotificationType.INFORMATION)
+                            ?.createNotification(TableGearBundle.message("notification.generateCode.success"), NotificationType.INFORMATION)
                             ?.notify(proj)
                     }
                 } catch (t: Throwable) {
                     javax.swing.SwingUtilities.invokeLater {
                         Messages.showErrorDialog(
                             proj,
-                            "代码生成失败: ${t.message}\n\n${t.stackTraceToString().take(800)}",
-                            "TableGen 生成代码"
+                            TableGearBundle.message("notification.generateCode.error", t.message ?: "unknown", t.stackTraceToString().take(800)),
+                            TableGearBundle.message("notification.generateCode.progressTitle")
                         )
                     }
                 }
@@ -204,7 +209,7 @@ class TableGenConfigDialog(
         val descriptor = FileChooserDescriptor(true, false, false, false, false, false)
             .apply {
                 withFileFilter { it.extension == "properties" || it.extension == "prop" }
-                withTitle("选择 TableGen 配置文件")
+                withTitle(TableGearBundle.message("dialog.file.chooseTitle"))
             }
         
         FileChooser.chooseFiles(descriptor, project, null) { files ->
@@ -225,7 +230,7 @@ class TableGenConfigDialog(
             
             model.loadFromProperties(props)
             currentFile = file
-            filePathLabel.text = "文件: ${file.path}"
+            filePathLabel.text = TableGearBundle.message("dialog.file.current", file.path)
             
             // 更新所有面板
             databasePanel.updateFromModel()
@@ -237,7 +242,7 @@ class TableGenConfigDialog(
             val notificationGroup = NotificationGroupManager.getInstance()
                 .getNotificationGroup("TableGear.Notification")
             notificationGroup?.createNotification(
-                "配置文件加载成功！",
+                TableGearBundle.message("notification.loadConfig.success"),
                 NotificationType.INFORMATION
             )?.notify(project)
             
@@ -251,7 +256,11 @@ class TableGenConfigDialog(
                 tryAutoConnect()
             }
         } catch (e: Exception) {
-            Messages.showErrorDialog(project, "加载配置文件失败: ${e.message}", "错误")
+            Messages.showErrorDialog(
+                project,
+                TableGearBundle.message("notification.loadConfig.error", e.message ?: "unknown"),
+                TableGearBundle.message("notification.common.errorTitle")
+            )
         }
     }
     
@@ -289,11 +298,15 @@ class TableGenConfigDialog(
             val notificationGroup = NotificationGroupManager.getInstance()
                 .getNotificationGroup("TableGear.Notification")
             notificationGroup?.createNotification(
-                "配置文件保存成功！",
+                TableGearBundle.message("notification.saveConfig.success"),
                 NotificationType.INFORMATION
             )?.notify(project)
         } catch (e: Exception) {
-            Messages.showErrorDialog(project, "保存配置文件失败: ${e.message}", "错误")
+            Messages.showErrorDialog(
+                project,
+                TableGearBundle.message("notification.saveConfig.error", e.message ?: "unknown"),
+                TableGearBundle.message("notification.common.errorTitle")
+            )
         }
     }
     
@@ -392,13 +405,13 @@ class TableGenConfigDialog(
         val descriptor = FileChooserDescriptor(false, true, false, false, false, false)
             .apply {
                 withFileFilter { it.extension == "properties" || it.extension == "prop" }
-                withTitle("保存 TableGen 配置文件")
+                withTitle(TableGearBundle.message("dialog.file.saveTitle"))
             }
         
         FileChooser.chooseFile(descriptor, project, null)?.let { file ->
             saveFile(file)
             currentFile = file
-            filePathLabel.text = "文件: ${file.path}"
+            filePathLabel.text = TableGearBundle.message("dialog.file.current", file.path)
         }
     }
     

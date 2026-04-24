@@ -1,5 +1,6 @@
 package com.bixuebihui.tablegear.ui
 
+import com.bixuebihui.tablegear.TableGearBundle
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.components.fields.ExpandableTextField
@@ -64,17 +65,17 @@ class DatabaseConfigPanel(private val model: TableGenConfigModel) : JPanel() {
         (dburlField as? JTextField)?.preferredSize = java.awt.Dimension(referenceWidth, dburlField.preferredSize.height)
         
         val form = FormBuilder.createFormBuilder()
-            .addLabeledComponent(JBLabel("别名 (alias):"), aliasField)
-            .addTooltip("数据源别名，用于Spring的@Qualifier注解")
-            .addLabeledComponent(JBLabel("驱动类名 (className):"), classNameField)
-            .addTooltip("JDBC驱动类名，可从下拉列表选择常用驱动，也可手动输入")
-            .addLabeledComponent(JBLabel("数据库URL (dburl):"), dburlField)
-            .addTooltip("数据库连接URL")
-            .addLabeledComponent(JBLabel("用户名 (username):"), usernameField)
-            .addLabeledComponent(JBLabel("密码 (password):"), passwordField)
-            .addLabeledComponent(JBLabel("目录 (catalog):"), catalogField)
-            .addLabeledComponent(JBLabel("模式 (schema):"), schemaField)
-            .addLabeledComponent(JBLabel("表所有者 (table_owner):"), tableOwnerField)
+            .addLabeledComponent(JBLabel(TableGearBundle.message("dbConfig.alias")), aliasField)
+            .addTooltip(TableGearBundle.message("dbConfig.alias.tooltip"))
+            .addLabeledComponent(JBLabel(TableGearBundle.message("dbConfig.className")), classNameField)
+            .addTooltip(TableGearBundle.message("dbConfig.className.tooltip"))
+            .addLabeledComponent(JBLabel(TableGearBundle.message("dbConfig.dburl")), dburlField)
+            .addTooltip(TableGearBundle.message("dbConfig.dburl.tooltip"))
+            .addLabeledComponent(JBLabel(TableGearBundle.message("dbConfig.username")), usernameField)
+            .addLabeledComponent(JBLabel(TableGearBundle.message("dbConfig.password")), passwordField)
+            .addLabeledComponent(JBLabel(TableGearBundle.message("dbConfig.catalog")), catalogField)
+            .addLabeledComponent(JBLabel(TableGearBundle.message("dbConfig.schema")), schemaField)
+            .addLabeledComponent(JBLabel(TableGearBundle.message("dbConfig.tableOwner")), tableOwnerField)
             .addComponentFillVertically(JPanel(), 0)
             .panel
         

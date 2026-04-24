@@ -155,6 +155,8 @@ version_col_name=version
 del_col_name=is_del
 # swagger 注解版本
 swagger_version=2
+# API 文档工具：springdoc(默认) 或 swagger
+api_doc_provider=springdoc
 ```
 ---
 

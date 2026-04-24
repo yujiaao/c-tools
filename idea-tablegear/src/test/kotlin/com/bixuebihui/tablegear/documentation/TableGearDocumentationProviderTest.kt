@@ -51,5 +51,22 @@ class TableGearDocumentationProviderTest : LightPlatformCodeInsightFixture4TestC
         val doc = provider.generateDoc(element!!, element)
         assertNotNull(doc, "Continuation lines should resolve to the original key")
     }
+
+    @Test
+    fun testApiDocProviderDocumentationMentionsSpringdocBehavior() {
+        val file = myFixture.configureByText(
+            "tablegen.properties",
+            "api_doc_provider=springdoc\n"
+        )
+        val keyOffset = file.text.indexOf("api_doc_provider") + 2
+        val element = file.findElementAt(keyOffset)
+        val provider = TableGearDocumentationProvider()
+        val doc = provider.generateDoc(element!!, element)
+        assertNotNull(doc, "Hover documentation should be generated for api_doc_provider")
+        assertTrue(
+            doc!!.contains("springdoc"),
+            "Documentation should mention springdoc option"
+        )
+    }
 }
 

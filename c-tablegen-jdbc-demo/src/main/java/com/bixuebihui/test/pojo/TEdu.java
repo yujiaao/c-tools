@@ -18,13 +18,6 @@ import org.apache.commons.text.StringEscapeUtils;
 import javax.annotation.processing.Generated;
 
 
-
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiModelProperty;
-
-@Api(tags="教育程度")
-
-
 @Generated("com.github.yujiaao:tablegen")
 public class TEdu  implements Serializable {
 
@@ -33,7 +26,7 @@ public class TEdu  implements Serializable {
     /**
     * id 这里是id! 
     */
-    @ApiModelProperty("这里是id!")
+    
     protected Integer  id;
 
     
@@ -41,7 +34,6 @@ public class TEdu  implements Serializable {
     * degree 这里是名称！ 
     */
     @Size(max=100)
-    @ApiModelProperty("这里是名称！")
     protected String  degree;
 
 

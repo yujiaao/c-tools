@@ -6,8 +6,8 @@ package com.bixuebihui.test.view.pojo;
  * Notice! Automatically generated file!
  * Do not edit the pojo and dal packages,use `maven tablegen:gen`!
  * Code Generator originally by J.A.Carter
- * Modified by Xing Wanxiang 2008-2021
- * email: www@qsn.so
+ * Modified by Xing Wanxiang 2008-2022
+ * email: xwx@live.cn
  */
 
 
@@ -16,55 +16,71 @@ import java.time.*;
 import java.io.Serializable;
 import jakarta.validation.constraints.*;
 import org.apache.commons.text.StringEscapeUtils;
-
-
-import io.swagger.v3.oas.annotations.media.Schema;
-
 import javax.annotation.processing.Generated;
 
 @Generated("com.github.yujiaao:tablegen")
-@Schema(description =" select test_gen.*, degree from test_gen left join t_edu on test_gen.edu_id&#x3D;t_edu.id")
 public class MyTestView  implements Serializable {
 
 
     
     /**
-    * id
+    * id 这里是id! 
     */
     
     protected Integer  id;
 
     
     /**
-    * name
+    * name 这里是名称！ 
     */
     @Size(max=100)
     protected String  name;
 
     
     /**
-    * age
+    * age 这里是年龄 
     */
     
     protected Short  age;
 
     
     /**
-    * birth
+    * birth 这里是日期！ 
     */
     
     protected LocalDateTime  birth;
 
     
     /**
-    * edu_id
+    * edu_id 教育程度 
     */
     
     protected Integer  eduId;
 
     
     /**
-    * degree
+    * gender 性别 
+    */
+    @Size(max=1)
+    protected String  gender;
+
+    
+    /**
+    * sex 性别 
+    */
+    
+    protected Boolean  sex;
+
+    
+    /**
+    * child 是否有孩子 
+    */
+    
+    protected Boolean  child;
+
+    
+    /**
+    * degree 这里是名称！ 
     */
     @Size(max=100)
     protected String  degree;
@@ -117,6 +133,33 @@ public class MyTestView  implements Serializable {
       return this.eduId;
     }
 
+    public void setGender(String gender)
+    {
+      this.gender = gender;
+    }
+    public String getGender()
+    {
+      return this.gender;
+    }
+
+    public void setSex(Boolean sex)
+    {
+      this.sex = sex;
+    }
+    public Boolean getSex()
+    {
+      return this.sex;
+    }
+
+    public void setChild(Boolean child)
+    {
+      this.child = child;
+    }
+    public Boolean getChild()
+    {
+      return this.child;
+    }
+
     public void setDegree(String degree)
     {
       this.degree = degree;
@@ -141,6 +184,12 @@ public class MyTestView  implements Serializable {
              
             eduId=0;
              
+            gender="";
+             
+            sex=Boolean.FALSE;
+             
+            child=Boolean.FALSE;
+             
             degree="";
             
     }
@@ -159,6 +208,11 @@ public class MyTestView  implements Serializable {
         s.append(" birth=\"").append(this.getBirth()).append("\"");
         
         s.append(" eduId=\"").append(this.getEduId()).append("\"");
+        
+        s.append(" gender=\"").append(StringEscapeUtils.escapeXml11(this.getGender())).append("\"");
+        s.append(" sex=\"").append(this.getSex()).append("\"");
+        
+        s.append(" child=\"").append(this.getChild()).append("\"");
         
         s.append(" degree=\"").append(StringEscapeUtils.escapeXml11(this.getDegree())).append("\"");s.append(" />");
         s.append(ln);

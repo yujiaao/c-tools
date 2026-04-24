@@ -1,5 +1,6 @@
 package com.bixuebihui.tablegear.ui
 
+import com.bixuebihui.tablegear.TableGearBundle
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.ui.components.JBCheckBox
@@ -44,11 +45,12 @@ class FieldSelectionDialog(
     private lateinit var fieldSearchField: JTextField  // 字段搜索框
     private lateinit var treeModel: DefaultTreeModel
     private lateinit var rootNode: DefaultMutableTreeNode
+    private val loadingNodeText = TableGearBundle.message("fieldSelection.loadingNode")
     
     init {
         title = when (fieldType) {
-            FieldType.ENCRYPTED -> "选择加密字段"
-            FieldType.IGNORE -> "选择忽略字段"
+            FieldType.ENCRYPTED -> TableGearBundle.message("fieldSelection.title.encrypted")
+            FieldType.IGNORE -> TableGearBundle.message("fieldSelection.title.ignore")
         }
         init()
         parseCurrentConfig() // 先解析配置，找出已配置的表
@@ -65,7 +67,7 @@ class FieldSelectionDialog(
         
         // 表搜索框
         val tableSearchPanel = JPanel(BorderLayout())
-        tableSearchPanel.add(JBLabel("搜索表:"), BorderLayout.WEST)
+        tableSearchPanel.add(JBLabel(TableGearBundle.message("fieldSelection.searchTable")), BorderLayout.WEST)
         tableSearchField = JTextField()
         tableSearchField.document.addDocumentListener(object : DocumentListener {
             override fun insertUpdate(e: DocumentEvent?) = filterTree()
@@ -76,7 +78,7 @@ class FieldSelectionDialog(
         
         // 字段搜索框
         val fieldSearchPanel = JPanel(BorderLayout())
-        fieldSearchPanel.add(JBLabel("搜索字段:"), BorderLayout.WEST)
+        fieldSearchPanel.add(JBLabel(TableGearBundle.message("fieldSelection.searchField")), BorderLayout.WEST)
         fieldSearchField = JTextField()
         fieldSearchField.document.addDocumentListener(object : DocumentListener {
             override fun insertUpdate(e: DocumentEvent?) = filterTree()
@@ -95,7 +97,7 @@ class FieldSelectionDialog(
         mainPanel.add(searchPanel, BorderLayout.NORTH)
         
         // 树形结构：表 -> 字段
-        rootNode = DefaultMutableTreeNode("数据库表")
+        rootNode = DefaultMutableTreeNode(TableGearBundle.message("fieldSelection.root"))
         treeModel = DefaultTreeModel(rootNode)
         tree = JTree(treeModel)
         tree.isRootVisible = false
@@ -141,7 +143,7 @@ class FieldSelectionDialog(
                     javax.swing.SwingUtilities.invokeLater {
                         // 清除之前的占位节点（如果有）
                         node.removeAllChildren()
-                        val loadingNode = DefaultMutableTreeNode(TableFieldNode("加载中...", false))
+                        val loadingNode = DefaultMutableTreeNode(TableFieldNode(loadingNodeText, false))
                         node.add(loadingNode)
                         treeModel.reload(node)
                     }
@@ -178,7 +180,7 @@ class FieldSelectionDialog(
                             // 如果加载失败，显示错误信息
                             javax.swing.SwingUtilities.invokeLater {
                                 node.removeAllChildren()
-                                val errorNode = DefaultMutableTreeNode(TableFieldNode("加载失败: ${e.message}", false))
+                                val errorNode = DefaultMutableTreeNode(TableFieldNode(TableGearBundle.message("fieldSelection.loadFailed", e.message ?: "unknown"), false))
                                 node.add(errorNode)
                                 treeModel.reload(node)
                             }
@@ -212,9 +214,9 @@ class FieldSelectionDialog(
         
         // 按钮面板
         val buttonPanel = JPanel(FlowLayout(FlowLayout.LEFT))
-        val selectAllBtn = JButton("全选")
+        val selectAllBtn = JButton(TableGearBundle.message("common.selectAll"))
         selectAllBtn.addActionListener { selectAll(true) }
-        val deselectAllBtn = JButton("取消全选")
+        val deselectAllBtn = JButton(TableGearBundle.message("common.deselectAll"))
         deselectAllBtn.addActionListener { selectAll(false) }
         buttonPanel.add(selectAllBtn)
         buttonPanel.add(deselectAllBtn)
@@ -276,8 +278,8 @@ class FieldSelectionDialog(
         } catch (e: Exception) {
             JOptionPane.showMessageDialog(
                 null,
-                "加载表列表失败: ${e.message}",
-                "错误",
+                TableGearBundle.message("fieldSelection.loadTableListFailed", e.message ?: "unknown"),
+                TableGearBundle.message("notification.common.errorTitle"),
                 JOptionPane.ERROR_MESSAGE
             )
         }
@@ -341,7 +343,7 @@ class FieldSelectionDialog(
             // 如果获取字段失败，在EDT中显示错误信息
             javax.swing.SwingUtilities.invokeLater {
                 tableNode.removeAllChildren()
-                val errorNode = DefaultMutableTreeNode(TableFieldNode("加载失败: ${e.message}", false))
+                val errorNode = DefaultMutableTreeNode(TableFieldNode(TableGearBundle.message("fieldSelection.loadFailed", e.message ?: "unknown"), false))
                 tableNode.add(errorNode)
                 treeModel.reload(tableNode)
             }
@@ -442,7 +444,7 @@ class FieldSelectionDialog(
                     for (i in 0 until currentTableNode.childCount) {
                         val childNode = currentTableNode.getChildAt(i) as? DefaultMutableTreeNode ?: continue
                         val fieldUserObject = childNode.userObject as? TableFieldNode ?: continue
-                        if (fieldUserObject.name != "__placeholder__" && fieldUserObject.name != "加载中...") {
+                        if (fieldUserObject.name != "__placeholder__" && fieldUserObject.name != loadingNodeText) {
                             // 克隆字段节点，但保留复选框引用
                             val clonedFieldNode = DefaultMutableTreeNode(fieldUserObject)
                             filteredTableNode.add(clonedFieldNode)
@@ -455,7 +457,7 @@ class FieldSelectionDialog(
                         val fieldUserObject = childNode.userObject as? TableFieldNode ?: continue
                         
                         // 跳过占位节点
-                        if (fieldUserObject.name == "__placeholder__" || fieldUserObject.name == "加载中...") {
+                        if (fieldUserObject.name == "__placeholder__" || fieldUserObject.name == loadingNodeText) {
                             continue
                         }
                         
@@ -659,7 +661,7 @@ class FieldSelectionDialog(
                 
                 val label = JBLabel().apply {
                     // 隐藏占位节点
-                    if (userObject.name == "__placeholder__" || userObject.name == "加载中...") {
+                    if (userObject.name == "__placeholder__" || userObject.name == TableGearBundle.message("fieldSelection.loadingNode")) {
                         text = ""
                     } else {
                         text = "${userObject.name} (${userObject.type})"

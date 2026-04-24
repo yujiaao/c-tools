@@ -48,6 +48,14 @@ const EXTENSION_ID = 'vscode-tablegear.lsp-tablegear';
         assert.ok(diagnostics.some((d) => d.message.includes('未识别的配置项 unknown_key')), '应检测到未知配置项的诊断');
         assert.ok(diagnostics.some((d) => d.message.includes('read_write_separate')), '应检测到布尔值格式错误的诊断');
     });
+    (0, mocha_1.test)('api_doc_provider=springdoc 时提示 swagger 配置会被忽略', async () => {
+        const doc = await openFixtureDocument('tablegen-apidoc-link.properties');
+        await pokeDocument(doc);
+        const diagnostics = await waitForDiagnostics(doc.uri, (entries) => entries.some((d) => d.message.includes('忽略 use_swagger')) &&
+            entries.some((d) => d.message.includes('忽略 swagger_version')));
+        assert.ok(diagnostics.some((d) => d.message.includes('忽略 use_swagger')), '应提示 springdoc 模式下 use_swagger 会被忽略');
+        assert.ok(diagnostics.some((d) => d.message.includes('忽略 swagger_version')), '应提示 springdoc 模式下 swagger_version 会被忽略');
+    });
 });
 async function openFixtureDocument(name) {
     const workspaceFolder = vscode.workspace.workspaceFolders?.[0];

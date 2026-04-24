@@ -61,6 +61,7 @@ const TABLEGEN_PROPERTIES: TablegenPropertyDefinition[] = [
 	{ key: 'enable_merge', description: '是否启用智能合并，启用后会保留用户在 Dto、SearchCmd、Converter 文件中的修改', valueType: 'boolean', mode: 'common' },
 	{ key: 'use_annotation', description: '是否启用 Jakarta Validation/Swagger 注解', valueType: 'boolean', mode: 'common' },
 	{ key: 'use_swagger', description: 'Controller 是否生成 Swagger 注解', valueType: 'boolean', mode: 'common' },
+	{ key: 'api_doc_provider', description: 'API 文档提供者。springdoc 模式下不会生成 Swagger 注解；若未配置则兼容老逻辑（存在 swagger_version 时默认为 swagger，否则为 springdoc）', valueType: 'enum', enumValues: ['swagger', 'springdoc'], mode: 'common' },
 	{ key: 'swagger_version', description: 'Swagger/OpenAPI 版本', valueType: 'enum', enumValues: ['2', '3'], mode: 'common' },
 	{ key: 'ignore_fields', description: '生成时忽略的字段，格式 table:field1,field2 或 field1,field2', valueType: 'list', mode: 'common' },
 	{ key: 'collection_fields', description: '需要生成集合类型的字段', valueType: 'list', mode: 'common' },
@@ -792,6 +793,36 @@ function finalizePendingProperty(
 			source: 'lsp-tablegear'
 		});
 	}
+
+	const apiDocProviderRaw = extractPropertyValue(textDocument.getText(), 'api_doc_provider');
+	const resolvedApiDocProvider = resolveApiDocProvider(textDocument.getText(), apiDocProviderRaw);
+	if (key === 'use_swagger' && resolvedApiDocProvider === 'springdoc' && isTruthy(combinedValue)) {
+		diagnostics.push({
+			severity: DiagnosticSeverity.Warning,
+			range: valueRange,
+			message: 'api_doc_provider=springdoc 时将忽略 use_swagger（不会生成 Swagger 注解）',
+			source: 'lsp-tablegear'
+		});
+	}
+	if (key === 'swagger_version' && resolvedApiDocProvider === 'springdoc' && combinedValue.length > 0) {
+		diagnostics.push({
+			severity: DiagnosticSeverity.Warning,
+			range: valueRange,
+			message: 'api_doc_provider=springdoc 时将忽略 swagger_version',
+			source: 'lsp-tablegear'
+		});
+	}
+	if (key === 'api_doc_provider' && combinedValue.toLowerCase() === 'springdoc') {
+		const useSwaggerRaw = extractPropertyValue(textDocument.getText(), 'use_swagger');
+		if (isTruthy(useSwaggerRaw)) {
+			diagnostics.push({
+				severity: DiagnosticSeverity.Warning,
+				range: valueRange,
+				message: 'springdoc 模式下不会生成 Swagger 注解，可移除 use_swagger 或设为 no',
+				source: 'lsp-tablegear'
+			});
+		}
+	}
 }
 
 function advanceOffset(text: string, currentEnd: number): number {
@@ -941,6 +972,22 @@ function extractPropertyValue(text: string, targetKey: string): string | undefin
 	}
 
 	return capturingTarget ? collectedValue.trim() : undefined;
+}
+
+function resolveApiDocProvider(documentText: string, providerValue?: string): 'swagger' | 'springdoc' {
+	const normalized = providerValue?.trim().toLowerCase();
+	if (normalized === 'swagger' || normalized === 'springdoc') {
+		return normalized;
+	}
+	return extractPropertyValue(documentText, 'swagger_version') ? 'swagger' : 'springdoc';
+}
+
+function isTruthy(value?: string): boolean {
+	if (!value) {
+		return false;
+	}
+	const normalized = value.trim().toLowerCase();
+	return normalized === 'yes' || normalized === 'true';
 }
 
 function highlightViewList(

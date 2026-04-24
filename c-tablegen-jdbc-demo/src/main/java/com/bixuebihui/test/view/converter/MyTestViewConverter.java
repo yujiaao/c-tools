@@ -4,14 +4,14 @@ import com.bixuebihui.test.view.pojo.*;
 import com.bixuebihui.test.view.dto.*;
 import org.mapstruct.Mapper;
 import org.mapstruct.factory.Mappers;
-
 import java.util.List;
 
 /**
-* @author xwx
-*/
+ * @author xwx
+ */
 @Mapper
 public interface MyTestViewConverter {
+
     MyTestViewConverter MAPPER = Mappers.getMapper(MyTestViewConverter.class);
 
     //@Mapping(source = "status", target = "orderStatus")
@@ -22,8 +22,6 @@ public interface MyTestViewConverter {
     List<MyTestViewDto> toDtoList(List<MyTestView> info);
 
     List<MyTestView> toDaoList(List<MyTestViewDto> info);
-
-
     /*
         @AfterMapping
         public void doAfter(ShopDTO shopDTO, @MappingTarget ShopVo shopVo){

@@ -10,9 +10,6 @@ import com.bixuebihui.query.Paging;
 import com.bixuebihui.BaseModel;
 import com.bixuebihui.PageModel;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
 
 
 
@@ -38,22 +35,16 @@ import java.util.List;
 @SharedService
 @RestController
 @RequestMapping("/my-test-view")
-@Api(tags = "my_test_view")
 public class  MyTestViewController {
     @Autowired
     MyTestViewService myTestViewService;
 
-    @ApiOperation("取my_test_view列表")
     @PostMapping(value = "/list", produces = {"application/json;charset=UTF-8"})
     public BaseModel<PageModel<MyTestViewDto>> list(
-    @ApiParam(name = "maxRows", value = "一页大小")
     @RequestParam(value = "maxRows", defaultValue = "10") Long maxRows,
-    @ApiParam(name = "page", value = "页码")
     @RequestParam(value = "page", defaultValue = "1") Long page,
-    @ApiParam(name = "sortBy", value = "排序 sortBy=abc:asc,def:desc")
     @RequestParam(value = "sortBy", defaultValue = "edu_id:desc") String sortBy,
         @Validated
-    @ApiParam(value = "查询条件", required = true)
     MyTestViewSearchCmd  searchCmd,
         HttpServletRequest request) {
 

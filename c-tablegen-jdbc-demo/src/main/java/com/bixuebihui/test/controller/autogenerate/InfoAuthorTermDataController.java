@@ -12,9 +12,6 @@ import com.bixuebihui.query.Paging;
 import com.bixuebihui.BaseModel;
 import com.bixuebihui.PageModel;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
 
 
 
@@ -39,22 +36,16 @@ import java.util.List;
 @SharedService
 @RestController
 @RequestMapping("/info-author-term-data")
-@Api(tags = "创作者作品消费数据统计明细-周期表")
 public class  InfoAuthorTermDataController {
     @Autowired
     InfoAuthorTermDataService infoAuthorTermDataService;
 
-    @ApiOperation("取info_author_term_data列表")
     @PostMapping(value = "/list", produces = {"application/json;charset=UTF-8"})
     public BaseModel<PageModel<InfoAuthorTermDataDto>> list(
-    @ApiParam(name = "maxRows", value = "一页大小")
     @RequestParam(value = "maxRows", defaultValue = "10") Long maxRows,
-    @ApiParam(name = "page", value = "页码")
     @RequestParam(value = "page", defaultValue = "1") Long page,
-    @ApiParam(name = "sortBy", value = "排序 sortBy=abc:asc,def:desc")
     @RequestParam(value = "sortBy", defaultValue = "id,dt:desc") String sortBy,
         @Validated
-    @ApiParam(value = "查询条件", required = true)
     InfoAuthorTermDataSearchCmd  searchCmd,
         HttpServletRequest request) {
 
@@ -82,11 +73,9 @@ public class  InfoAuthorTermDataController {
         return res;
     }
 
-    @ApiOperation("按主键删除info_author_term_data记录")
     @PostMapping(value = "/del", produces = {"application/json;charset=UTF-8"})
     public BaseModel<Boolean> del(
         @Validated
-    @ApiParam(value = "主键", required = true)
     InfoAuthorTermDataDelCmd  delCmd,
         HttpServletRequest request) {
 
@@ -97,11 +86,9 @@ public class  InfoAuthorTermDataController {
         return res;
     }
 
-    @ApiOperation("保存info_author_term_data记录")
     @PostMapping(value = "/save", produces = {"application/json;charset=UTF-8"})
     public BaseModel<InfoAuthorTermDataDto> save(
         @Validated
-        @ApiParam(value = "info_author_term_data 数据对象", required = true)
         InfoAuthorTermDataDto  dto, HttpServletRequest request) {
 
         BaseModel<InfoAuthorTermDataDto> res = new BaseModel<>();

@@ -244,7 +244,8 @@ public class TestGenList  extends BaseList<TestGen, Integer>
     }
 
     /**
-    *22 Deletes from the database for table test_gen */
+    *22 Deletes from the database for table test_gen 
+    */
     @Override
     public boolean deleteByKey(  Integer id )
     {

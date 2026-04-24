@@ -46,6 +46,62 @@ java {
 }
 
 tasks {
+    register("checkI18nHardcodedLiterals") {
+        group = "verification"
+        description = "Scan Kotlin UI code for hardcoded literals."
+
+        doLast {
+            val sourceDir = file("src/main/kotlin")
+            val whitelistFile = file("scripts/i18n-literal-whitelist.txt")
+            val patterns = listOf(
+                "JBLabel literal" to Regex("""JBLabel\(\s*"[^"]+""""),
+                "JButton literal" to Regex("""JButton\(\s*"[^"]+""""),
+                "Messages.show* literal" to Regex("""Messages\.show\w+\([^)]*"[^"]+"""")
+            )
+            val whitelist = if (whitelistFile.exists()) {
+                whitelistFile.readLines()
+                    .map { it.trim() }
+                    .filter { it.isNotEmpty() && !it.startsWith("#") }
+                    .map { it.replace('\\', '/') }
+                    .toSet()
+            } else {
+                emptySet()
+            }
+
+            val issues = mutableListOf<String>()
+            sourceDir.walkTopDown()
+                .filter { it.isFile && it.extension == "kt" }
+                .forEach { file ->
+                    val relativePath = file.relativeTo(projectDir).path.replace('\\', '/')
+                    file.readLines().forEachIndexed { index, rawLine ->
+                        val location = "$relativePath:${index + 1}"
+                        if (location in whitelist) {
+                            return@forEachIndexed
+                        }
+                        val line = rawLine.trim()
+                        if (line.startsWith("//") || rawLine.contains("TableGearBundle.message(") || line == "JBLabel(\"\")" || line == "JButton(\"\")") {
+                            return@forEachIndexed
+                        }
+                        patterns.forEach { (name, regex) ->
+                            if (regex.containsMatchIn(rawLine)) {
+                                issues.add("$location: $name: $line")
+                            }
+                        }
+                    }
+                }
+
+            if (issues.isNotEmpty()) {
+                throw GradleException(
+                    buildString {
+                        appendLine("Found hardcoded UI literals. Use TableGearBundle.message(...):")
+                        issues.forEach { appendLine(it) }
+                    }
+                )
+            }
+            logger.lifecycle("checkI18nHardcodedLiterals passed.")
+        }
+    }
+
     withType<JavaCompile> {
         sourceCompatibility = "11"
         targetCompatibility = "11"
@@ -61,6 +117,10 @@ tasks {
 
     withType<Test> {
         useJUnit()
+    }
+
+    named("check") {
+        dependsOn("checkI18nHardcodedLiterals")
     }
 
     signPlugin {
@@ -94,6 +154,45 @@ dependencies {
         // 排除传递依赖中的日志相关模块
         exclude(group = "org.slf4j")
         exclude(group = "org.apache.logging.log4j")
+
+        // 第一轮瘦身：排除与 IDEA 插件主流程无关的大体积传递依赖
+        // 文档/报表相关
+        exclude(group = "org.apache.poi")
+        exclude(group = "com.itextpdf")
+        exclude(group = "org.ccil.cowan.tagsoup")
+        exclude(group = "net.sourceforge.jexcelapi")
+        exclude(group = "bsf", module = "bsf")
+        exclude(group = "org.mozilla", module = "rhino")
+        exclude(group = "org.joda", module = "joda-time")
+
+        // 缓存/消息/Redis 相关
+        exclude(group = "org.jgroups", module = "jgroups")
+        exclude(group = "redis.clients", module = "jedis")
+        exclude(group = "org.springframework.boot", module = "spring-boot-starter-data-redis")
+        exclude(group = "org.springframework.data", module = "spring-data-redis")
+        exclude(group = "io.lettuce", module = "lettuce-core")
+        exclude(group = "io.netty")
+        exclude(group = "io.projectreactor", module = "reactor-core")
+        exclude(group = "org.reactivestreams", module = "reactive-streams")
+
+        // 其它可按需下载或非核心依赖
+        exclude(group = "com.microsoft.sqlserver", module = "mssql-jdbc")
+        exclude(group = "org.bouncycastle")
+
+        // 第二轮瘦身：按点名目标继续精细排除
+        exclude(group = "org.springframework", module = "spring-webmvc")
+        exclude(group = "com.github.ben-manes.caffeine", module = "caffeine")
+        exclude(group = "joda-time", module = "joda-time")
+
+        // 第三轮瘦身（保留 httpclient）：继续尝试移除非核心传递依赖
+        exclude(group = "org.springframework", module = "spring-web")
+        exclude(group = "org.hibernate.validator", module = "hibernate-validator")
+        exclude(group = "org.apache.commons", module = "commons-configuration2")
+        exclude(group = "com.foundationdb", module = "fdb-sql-parser")
+
+        // 第四轮（低风险优先）
+        exclude(group = "org.springframework", module = "spring-context-support")
+        exclude(group = "javax.mail", module = "javax.mail-api")
     }
     
     testImplementation(kotlin("test"))

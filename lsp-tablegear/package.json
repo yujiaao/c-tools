@@ -3,7 +3,7 @@
 	"description": "A language server for tablegear",
 	"author": "Yujiaao",
 	"license": "MIT",
-	"version": "1.0.2",
+	"version": "1.1.2",
 	"icon": "images/icon.png",
 	"repository": {
 		"type": "git",
@@ -20,9 +20,30 @@
 	"main": "./client/out/extension",
 	"activationEvents": [
 		"onLanguage:properties",
-		"onLanguage:tablegear"
+		"onLanguage:tablegear",
+		"onCommand:tablegear.openConfigEditor"
 	],
 	"contributes": {
+		"commands": [
+			{
+				"command": "tablegear.openConfigEditor",
+				"title": "TableGear: Open Config Editor"
+			}
+		],
+		"menus": {
+			"editor/title": [
+				{
+					"command": "tablegear.openConfigEditor",
+					"when": "resourceFilename =~ /(tablege|es).*\\.(properties|prop)$/i",
+					"group": "navigation"
+				}
+			],
+			"commandPalette": [
+				{
+					"command": "tablegear.openConfigEditor"
+				}
+			]
+		},
 		"configurationDefaults": {
 			"editor.semanticHighlighting.enabled": true,
 			"editor.semanticTokenColorCustomizations": {
@@ -36,7 +57,7 @@
 						"foreground": "#ab9df2",
 						"bold": true
 					},
-					"tablegearViewName":{
+					"tablegearViewName": {
 						"foreground": "#00ffff",
 						"bold": true
 					},
@@ -48,7 +69,6 @@
 					"tablegearComment": "#035813",
 					"tablegearSensitive": {
 						"foreground": "#ff9b5e"
-						
 					},
 					"tablegearSensitiveKey": {
 						"foreground": "#f0c674",
@@ -103,8 +123,10 @@
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
-		"compile": "tsc -b",
-		"watch": "tsc -b -w",
+		"typecheck": "tsc -p client/tsconfig.json --noEmit && tsc -p server/tsconfig.json --noEmit",
+		"bundle": "node ./scripts/build.mjs",
+		"compile": "npm run typecheck && npm run bundle",
+		"watch": "node ./scripts/build.mjs --watch",
 		"test": "node ./scripts/e2e.js"
 	},
 	"devDependencies": {
@@ -118,7 +140,8 @@
 		"eslint": "^7.26.0",
 		"glob": "^10.3.10",
 		"mocha": "^8.3.2",
-		"typescript": "^4.2.3"
+		"typescript": "^4.2.3",
+		"esbuild": "^0.25.11"
 	},
 	"dependencies": {
 		"vscode-languageclient": "^8.1.0",

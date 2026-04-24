@@ -1,0 +1,80 @@
+package {{config.packageName}}{{viewModifier}}.cmd;
+
+import java.sql.*;
+import java.time.*;
+
+{{#if config.useSwagger}}
+{{#eq config.swaggerVersion "2" }}
+import io.swagger.annotations.ApiModelProperty;
+{{else}}
+import io.swagger.v3.oas.annotations.media.Schema;
+{{/eq}}
+{{/if}}
+
+import jakarta.validation.constraints.*;
+
+{{> [header-comment.java]}}
+
+/**
+* @author xwx
+* https://stackoverflow.com/questions/26612404/spring-map-get-request-parameters-to-pojo-automatically/26612778#26612778
+*/
+public class {{className}} {
+
+{{! field declaration }}
+{{#each fields as | field index | }}
+    {{#if (isRangeType javaType) ~}}
+        /**
+        * left range of date/time type: {{columnDescription this tableName}}
+        */
+        protected {{javaType}}  begin_{{firstLow name}};
+
+        /**
+        * right range of date/time type:  {{columnDescription this tableName}}
+        */
+        protected {{javaType}}  end_{{firstLow name}};
+
+    {{else}}
+        /**
+        * {{columnDescription this tableName}}
+        *  change type of {{javaType}} to List<{{javaType}}> will generate 'in' sql condition.
+        */
+        {{{columnAnnotation this tableName}}}
+        protected {{javaType}}  {{firstLow name}};
+    {{/if~}}
+{{/each}}
+{{! setters & getters }}
+{{#each fields as | field index | }}
+{{#if (isRangeType javaType) }}
+    public void setBegin_{{firstLow name}}({{javaType}} {{firstLow name}})
+    {
+        this.begin_{{firstLow name}} = {{firstLow name}};
+    }
+    public {{javaType}} getBegin_{{firstLow name}}()
+    {
+        return this.begin_{{firstLow name}};
+    }
+    public void setEnd_{{firstLow name}}({{javaType}} {{firstLow name}})
+    {
+        this.end_{{firstLow name}} = {{firstLow name}};
+    }
+    public {{javaType}} getEnd_{{firstLow name}}()
+    {
+        return this.end_{{firstLow name}};
+    }
+
+{{else}}
+    public void set{{firstUp name}}({{javaType}} {{firstLow name}})
+    {
+        this.{{firstLow name}} = {{firstLow name}};
+    }
+    public {{javaType}} get{{firstUp name}}()
+    {
+        return this.{{firstLow name}};
+    }
+{{/if~}}
+
+{{!log field level="info" }}
+{{/each}}
+
+}

@@ -18,13 +18,6 @@ import org.apache.commons.text.StringEscapeUtils;
 import javax.annotation.processing.Generated;
 
 
-
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiModelProperty;
-
-@Api(tags="my_test_view")
-
-
 @Generated("com.github.yujiaao:tablegen")
 public class MyTestView  implements Serializable {
 
@@ -33,7 +26,7 @@ public class MyTestView  implements Serializable {
     /**
     * edu_id 教育程度 
     */
-    @ApiModelProperty("教育程度")
+    
     protected Integer  eduId;
 
 

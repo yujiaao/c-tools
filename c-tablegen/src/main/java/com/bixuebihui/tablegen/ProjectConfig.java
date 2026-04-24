@@ -94,6 +94,11 @@ public class ProjectConfig {
      * Swagger Version 2  或 3
      */
     private String swaggerVersion;
+    /**
+     * API doc provider: swagger or springdoc.
+     * springdoc mode does not generate swagger annotations.
+     */
+    private String apiDocProvider = "springdoc";
 
     public static ProjectConfig readFrom(Properties props, String baseDir) {
         ProjectConfig c = new ProjectConfig();
@@ -185,6 +190,17 @@ public class ProjectConfig {
         c.useAnnotation = getBooleanCfg(props, "use_annotation");
 
         c.swaggerVersion = props.getProperty("swagger_version", "2");
+        String apiDocProvider = props.getProperty("api_doc_provider");
+        if (StringUtils.isBlank(apiDocProvider)) {
+            // Keep backward compatibility for old configs that only set swagger_version.
+            apiDocProvider = props.containsKey("swagger_version") ? "swagger" : "springdoc";
+        }
+        c.apiDocProvider = apiDocProvider.trim().toLowerCase(Locale.ROOT);
+        if ("springdoc".equals(c.apiDocProvider)) {
+            c.useSwagger = false;
+        } else {
+            c.useSwagger = !"no".equalsIgnoreCase(props.getProperty("use_swagger", "yes"));
+        }
 
 
         c.useAutoincrement = getBooleanCfg(props, "use_autoincrement");
@@ -274,6 +290,14 @@ public class ProjectConfig {
 
     public void setSwaggerVersion(String swaggerVersion) {
         this.swaggerVersion = swaggerVersion;
+    }
+
+    public String getApiDocProvider() {
+        return apiDocProvider;
+    }
+
+    public void setApiDocProvider(String apiDocProvider) {
+        this.apiDocProvider = apiDocProvider;
     }
 
     public String getDtoDir() {

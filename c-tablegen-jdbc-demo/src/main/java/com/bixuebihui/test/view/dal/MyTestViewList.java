@@ -80,7 +80,9 @@ public class MyTestViewList  extends AbstractViewBaseDao<MyTestView, Integer>
     {
     
     
-        return "select edu_id from test_gen left join t_edu on test_gen.edu_id=t_edu.id";
+        return """
+         select edu_id from test_gen left join t_edu on test_gen.edu_id=t_edu.id
+        """;
     }
 
     protected String getSelectAllFromTable() {

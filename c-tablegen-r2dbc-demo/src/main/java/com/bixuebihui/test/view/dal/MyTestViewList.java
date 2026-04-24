@@ -6,14 +6,16 @@ package com.bixuebihui.test.view.dal;
  * Notice! Automatically generated file!
  * Do not edit the pojo and dal packages,use `maven tablegen:gen`!
  * Code Generator originally by J.A.Carter
- * Modified by Xing Wanxiang 2008-2021
- * email: www@qsn.so
+ * Modified by Xing Wanxiang 2008-2022
+ * email: xwx@live.cn
  */
 
 
 import java.sql.*;
 import java.time.*;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import io.r2dbc.spi.ConnectionFactory;
 import io.r2dbc.spi.Row;
 import io.r2dbc.spi.Connection;
@@ -48,12 +50,21 @@ public class MyTestViewList  extends AbstractViewBaseDao<MyTestView, Integer>
         public static final String AGE = "age";
         public static final String BIRTH = "birth";
         public static final String EDU_ID = "edu_id";
+        public static final String GENDER = "gender";
+        public static final String SEX = "sex";
+        public static final String CHILD = "child";
         public static final String DEGREE = "degree";
         
         public static String[] getAllFields() {
-            return new String[] { ID, NAME, AGE, BIRTH, EDU_ID, DEGREE };
+            return new String[] { ID, NAME, AGE, BIRTH, EDU_ID, GENDER, SEX, CHILD, DEGREE };
         }
     }
+
+    @Override
+    public List<String> getAllFields(){
+        return Arrays.asList(F.getAllFields());
+    }
+
 
 
 
@@ -65,7 +76,9 @@ public class MyTestViewList  extends AbstractViewBaseDao<MyTestView, Integer>
     {
     
     
-        return " select test_gen.*, degree from test_gen left join t_edu on test_gen.edu_id=t_edu.id";
+        return """
+     select test_gen.*, degree from test_gen left join t_edu on test_gen.edu_id=t_edu.id
+    """;
     }
 
     protected String getSelectAllFromTable() {
@@ -105,6 +118,9 @@ public class MyTestViewList  extends AbstractViewBaseDao<MyTestView, Integer>
             res.setAge(r.get(F.AGE, Short.class));
             res.setBirth(r.get(F.BIRTH, LocalDateTime.class));
             res.setEduId(r.get(F.EDU_ID, Integer.class));
+            res.setGender(r.get(F.GENDER, String.class));
+            res.setSex(r.get(F.SEX, Boolean.class));
+            res.setChild(r.get(F.CHILD, Boolean.class));
             res.setDegree(r.get(F.DEGREE, String.class));
             return res;
       }

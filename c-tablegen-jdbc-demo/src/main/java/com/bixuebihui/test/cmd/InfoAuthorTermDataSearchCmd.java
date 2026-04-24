@@ -3,10 +3,6 @@ package com.bixuebihui.test.cmd;
 import java.sql.*;
 
 
-
-import io.swagger.annotations.ApiModelProperty;
-
-
 import jakarta.validation.constraints.*;
 
 /*
@@ -33,7 +29,6 @@ public class InfoAuthorTermDataSearchCmd {
         * id 主键，自增 
         *  change type of Long to List<Long> will generate 'in' sql condition.
         */
-        @ApiModelProperty("主键，自增")
         protected Long  id;
     
     
@@ -42,7 +37,6 @@ public class InfoAuthorTermDataSearchCmd {
     * NotNull, default value: 0
         *  change type of Byte to List<Byte> will generate 'in' sql condition.
         */
-        @ApiModelProperty("是否删除；0-未删除，1-已删除，默认0")
         protected Byte  isDel;
     
     /**
@@ -88,7 +82,6 @@ public class InfoAuthorTermDataSearchCmd {
     * NotNull, default value: 0
         *  change type of Integer to List<Integer> will generate 'in' sql condition.
         */
-        @ApiModelProperty("周期类型 1：昨天，2：七天，3：30天")
         protected Integer  dateType;
     
     
@@ -97,7 +90,6 @@ public class InfoAuthorTermDataSearchCmd {
     * NotNull, default value: 0
         *  change type of Integer to List<Integer> will generate 'in' sql condition.
         */
-        @ApiModelProperty("之家用户ID（作者ID）")
         protected Integer  authorId;
     
     
@@ -106,7 +98,6 @@ public class InfoAuthorTermDataSearchCmd {
     * NotNull, default value: &#x27;0&#x27;
         *  change type of String to List<String> will generate 'in' sql condition.
         */
-        @ApiModelProperty("内容分类--区分图文、视频，可以中文名，亦可以整型数字标识")
         protected String  infoType;
     
     
@@ -114,7 +105,6 @@ public class InfoAuthorTermDataSearchCmd {
         * publish_cnt 发布内容数 
         *  change type of Long to List<Long> will generate 'in' sql condition.
         */
-        @ApiModelProperty("发布内容数")
         protected Long  publishCnt;
     
     
@@ -122,7 +112,6 @@ public class InfoAuthorTermDataSearchCmd {
         * comment_cnt 评论数 
         *  change type of Long to List<Long> will generate 'in' sql condition.
         */
-        @ApiModelProperty("评论数")
         protected Long  commentCnt;
     
     
@@ -130,7 +119,6 @@ public class InfoAuthorTermDataSearchCmd {
         * praise_cnt 点赞数 
         *  change type of Long to List<Long> will generate 'in' sql condition.
         */
-        @ApiModelProperty("点赞数")
         protected Long  praiseCnt;
     
     
@@ -138,7 +126,6 @@ public class InfoAuthorTermDataSearchCmd {
         * pv 图文浏览pvor视频播放vv 
         *  change type of Long to List<Long> will generate 'in' sql condition.
         */
-        @ApiModelProperty("图文浏览pvor视频播放vv")
         protected Long  pv;
     
 

@@ -4,6 +4,7 @@ package {{config.packageName}}{{viewModifier}}.dto;
 
 import java.sql.*;
 import java.io.Serializable;
+import java.time.*;
 import org.apache.commons.text.StringEscapeUtils;
 
 import javax.annotation.processing.Generated;
@@ -21,11 +22,11 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description ="{{tableInfo.comment}}")
 {{/eq}}
+{{/if}}
 {{#if sharedModelGroup}}
 @SharedModel("{{sharedModelGroup}}")
 {{else}}
 @SharedModel
-{{/if}}
 {{/if}}
 {{#if config.useLombok}}
 @Generated("com.github.yujiaao:tablegen")

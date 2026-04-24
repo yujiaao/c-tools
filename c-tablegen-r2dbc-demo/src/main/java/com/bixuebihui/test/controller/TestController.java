@@ -1,7 +1,6 @@
 package com.bixuebihui.test.controller;
 
 import com.bixuebihui.test.business.TestGenManager;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import org.apache.commons.text.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,7 +19,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @RestController
 @RequestMapping("/datasource")
-@Tag(name = "开发人员工具-数据源")
 //@Authorize(permission = "datasource", description = "数据源管理")
 public class TestController {
    static Logger LOG = LoggerFactory.getLogger(TestController.class);
@@ -30,7 +28,6 @@ public class TestController {
 //
 //    @GetMapping
 ////    @Authorize(action = Permission.ACTION_QUERY)
-//    @ApiOperation("获取全部数据源信息")
 //    public ResponseMessage<List<? extends DynamicDataSourceConfig>> getAllConfig() {
 //        return ResponseMessage.ok(repository.findAll());
 //    }

@@ -1,5 +1,6 @@
 package com.bixuebihui.tablegear.ui
 
+import com.bixuebihui.tablegear.TableGearBundle
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
@@ -8,7 +9,11 @@ import com.intellij.openapi.vfs.VirtualFile
 /**
  * 在文件上下文菜单中打开TableGen配置编辑器的Action
  */
-class OpenWithTableGenEditorAction : AnAction("用 TableGen 编辑器打开", "使用 TableGen 可视化编辑器打开配置文件", null) {
+class OpenWithTableGenEditorAction : AnAction(
+    TableGearBundle.message("action.openWithEditor.text"),
+    TableGearBundle.message("action.openWithEditor.description"),
+    null
+) {
     
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project

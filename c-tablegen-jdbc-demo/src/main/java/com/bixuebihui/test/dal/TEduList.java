@@ -202,7 +202,8 @@ public class TEduList  extends BaseList<TEdu, Integer>
     }
 
     /**
-    *22 Deletes from the database for table t_edu */
+    *22 Deletes from the database for table t_edu 
+    */
     @Override
     public boolean deleteByKey(  Integer id )
     {

@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.util.CollectionUtils;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -250,8 +251,18 @@ public abstract class BaseGenerator implements Generator {
     @Override
     public String generate(String tableName, int index) throws IOException {
         Handlebars handlebars = getHandlebars();
-
-        Template template = handlebars.compile(getTemplateFileName(tableName));
+        String templateFileName = getTemplateFileName(tableName);
+        Template template;
+        try {
+            template = handlebars.compile(templateFileName);
+        } catch (FileNotFoundException e) {
+            if (esConfig == null && config.getR2dc()) {
+                LOG.warn("Template {} not found in r2dbc, fallback to jdbc template.", templateFileName);
+                template = getHandlebars(TEMPLATE_ROOT + "/jdbc").compile(templateFileName);
+            } else {
+                throw e;
+            }
+        }
 
         Map<String, Object> v = getContextMap(tableName);
         return template.apply(Context.newBuilder(v).resolver(
@@ -348,11 +359,15 @@ public abstract class BaseGenerator implements Generator {
     }
 
     protected Handlebars getHandlebars() {
+        return getHandlebars(getTemplateDir());
+    }
+
+    protected Handlebars getHandlebars(String templateDir) {
         TemplateLoader loader = new ClassPathTemplateLoader();
         // 添加这一行，确保模板加载使用 UTF-8 编码
         loader.setCharset(Charset.forName(TableGenConfig.FILE_ENCODING));
 
-        loader.setPrefix(getTemplateDir());
+        loader.setPrefix(templateDir);
         loader.setSuffix(".hbs");
 
         Handlebars handlebars = new Handlebars(loader);

@@ -3,11 +3,13 @@ package {{config.packageName}}{{viewModifier}}.cmd;
 import java.sql.*;
 
 
+{{#if config.useSwagger}}
 {{#eq config.swaggerVersion "2" }}
 import io.swagger.annotations.ApiModelProperty;
 {{else}}
 import io.swagger.v3.oas.annotations.media.Schema;
 {{/eq}}
+{{/if}}
 
 import jakarta.validation.constraints.*;
 

@@ -21,12 +21,8 @@ import javax.annotation.processing.Generated;
 
 
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiParam;
-import io.swagger.annotations.ApiModelProperty;
 import com.sdadas.spring2ts.annotations.SharedModel;
 
-@Api(tags="创作者作品消费数据统计明细-周期表")
 @SharedModel("")
 
 public class InfoAuthorTermDataDto  implements Serializable {
@@ -36,7 +32,6 @@ public class InfoAuthorTermDataDto  implements Serializable {
     /**
      * id 主键，自增 
      */
-    @ApiModelProperty("主键，自增")
     protected Long  id;
 
     
@@ -44,7 +39,6 @@ public class InfoAuthorTermDataDto  implements Serializable {
      * is_del 是否删除；0-未删除，1-已删除，默认0 
     * NotNull, default value: 0
      */
-    @ApiModelProperty("是否删除；0-未删除，1-已删除，默认0")
     protected Byte  isDel;
 
     
@@ -52,7 +46,6 @@ public class InfoAuthorTermDataDto  implements Serializable {
      * created_stime 创建时间 
     * NotNull, default value: current_timestamp()
      */
-    @ApiModelProperty("创建时间")
     protected Timestamp  createdStime;
 
     
@@ -60,14 +53,12 @@ public class InfoAuthorTermDataDto  implements Serializable {
      * modified_stime 修改时间 
     * NotNull, default value: current_timestamp()
      */
-    @ApiModelProperty("修改时间")
     protected Timestamp  modifiedStime;
 
     
     /**
      * dt 日期，如：2023-02-28 
      */
-    @ApiModelProperty("日期，如：2023-02-28")
     protected Timestamp  dt;
 
     
@@ -75,7 +66,6 @@ public class InfoAuthorTermDataDto  implements Serializable {
      * date_type 周期类型 1：昨天，2：七天，3：30天 
     * NotNull, default value: 0
      */
-    @ApiModelProperty("周期类型 1：昨天，2：七天，3：30天")
     protected Integer  dateType;
 
     
@@ -83,7 +73,6 @@ public class InfoAuthorTermDataDto  implements Serializable {
      * author_id 之家用户ID（作者ID） 
     * NotNull, default value: 0
      */
-    @ApiModelProperty("之家用户ID（作者ID）")
     protected Integer  authorId;
 
     
@@ -91,35 +80,30 @@ public class InfoAuthorTermDataDto  implements Serializable {
      * info_type 内容分类--区分图文、视频，可以中文名，亦可以整型数字标识 
     * NotNull, default value: &#x27;0&#x27;
      */
-    @ApiModelProperty("内容分类--区分图文、视频，可以中文名，亦可以整型数字标识")
     protected String  infoType;
 
     
     /**
      * publish_cnt 发布内容数 
      */
-    @ApiModelProperty("发布内容数")
     protected Long  publishCnt;
 
     
     /**
      * comment_cnt 评论数 
      */
-    @ApiModelProperty("评论数")
     protected Long  commentCnt;
 
     
     /**
      * praise_cnt 点赞数 
      */
-    @ApiModelProperty("点赞数")
     protected Long  praiseCnt;
 
     
     /**
      * pv 图文浏览pvor视频播放vv 
      */
-    @ApiModelProperty("图文浏览pvor视频播放vv")
     protected Long  pv;
 
 
