@@ -19,19 +19,15 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 
 import org.apache.commons.lang3.time.StopWatch;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import org.springframework.validation.annotation.Validated;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.web.bind.annotation.RequestBody;
 import com.sdadas.spring2ts.annotations.SharedService;
 
-import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
@@ -44,8 +40,11 @@ import java.util.List;
 @Tag(name = "TestGenController", description = "测试表")
 
 public class  TestGenController {
-    @Autowired
-    TestGenService testGenService;
+    private final TestGenService testGenService;
+
+    public TestGenController(TestGenService testGenService) {
+        this.testGenService = testGenService;
+    }
 
     @Operation(summary ="取test_gen列表")
     @PostMapping(value = "/list", produces = {"application/json;charset=UTF-8"})
@@ -58,8 +57,7 @@ public class  TestGenController {
         @RequestParam(value = "sortBy", defaultValue = "id:desc") String sortBy,
         @Validated
     @Parameter(required = true, description = "查询条件")
-        TestGenSearchCmd  searchCmd,
-        HttpServletRequest request) {
+        TestGenSearchCmd  searchCmd) {
 
         Paging<TestGenSearchCmd> searchBean = new Paging<>();
         searchBean.setSearchBean(searchCmd);
@@ -90,8 +88,7 @@ public class  TestGenController {
     public BaseModel<Boolean> del(
         @Validated
     @Parameter(required = true, description = "主键")
-        TestGenDelCmd  delCmd,
-        HttpServletRequest request) {
+        TestGenDelCmd  delCmd) {
 
         BaseModel<Boolean> res = new BaseModel<>();
             res.setResult( testGenService.del(delCmd));
@@ -106,7 +103,7 @@ public class  TestGenController {
         @Validated
         @Parameter(required = true, description = "test_gen 数据对象")
             @RequestBody
-            TestGenDto  dto, HttpServletRequest request) {
+            TestGenDto  dto) {
 
         BaseModel<TestGenDto> res = new BaseModel<>();
             res.setResult( testGenService.save(dto));

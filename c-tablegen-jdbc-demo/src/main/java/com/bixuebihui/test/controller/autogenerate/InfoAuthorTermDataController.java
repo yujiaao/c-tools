@@ -16,18 +16,15 @@ import com.bixuebihui.PageModel;
 
 
 import org.apache.commons.lang3.time.StopWatch;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import org.springframework.validation.annotation.Validated;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.web.bind.annotation.RequestBody;
 import com.sdadas.spring2ts.annotations.SharedService;
 
-import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
@@ -37,8 +34,11 @@ import java.util.List;
 @RestController
 @RequestMapping("/info-author-term-data")
 public class  InfoAuthorTermDataController {
-    @Autowired
-    InfoAuthorTermDataService infoAuthorTermDataService;
+    private final InfoAuthorTermDataService infoAuthorTermDataService;
+
+    public InfoAuthorTermDataController(InfoAuthorTermDataService infoAuthorTermDataService) {
+        this.infoAuthorTermDataService = infoAuthorTermDataService;
+    }
 
     @PostMapping(value = "/list", produces = {"application/json;charset=UTF-8"})
     public BaseModel<PageModel<InfoAuthorTermDataDto>> list(
@@ -46,8 +46,7 @@ public class  InfoAuthorTermDataController {
     @RequestParam(value = "page", defaultValue = "1") Long page,
     @RequestParam(value = "sortBy", defaultValue = "id,dt:desc") String sortBy,
         @Validated
-    InfoAuthorTermDataSearchCmd  searchCmd,
-        HttpServletRequest request) {
+    InfoAuthorTermDataSearchCmd  searchCmd) {
 
         Paging<InfoAuthorTermDataSearchCmd> searchBean = new Paging<>();
         searchBean.setSearchBean(searchCmd);
@@ -76,8 +75,7 @@ public class  InfoAuthorTermDataController {
     @PostMapping(value = "/del", produces = {"application/json;charset=UTF-8"})
     public BaseModel<Boolean> del(
         @Validated
-    InfoAuthorTermDataDelCmd  delCmd,
-        HttpServletRequest request) {
+    InfoAuthorTermDataDelCmd  delCmd) {
 
         BaseModel<Boolean> res = new BaseModel<>();
             res.setResult( infoAuthorTermDataService.del(delCmd));
@@ -89,7 +87,8 @@ public class  InfoAuthorTermDataController {
     @PostMapping(value = "/save", produces = {"application/json;charset=UTF-8"})
     public BaseModel<InfoAuthorTermDataDto> save(
         @Validated
-        InfoAuthorTermDataDto  dto, HttpServletRequest request) {
+        @RequestBody
+        InfoAuthorTermDataDto  dto) {
 
         BaseModel<InfoAuthorTermDataDto> res = new BaseModel<>();
             res.setResult( infoAuthorTermDataService.save(dto));

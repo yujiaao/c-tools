@@ -71,7 +71,6 @@
         <commons-text.version>1.12.0</commons-text.version>
         <commons-lang3.version>3.20.0</commons-lang3.version>
         <sqlserver.version>11.2.2.jre11</sqlserver.version>
-        <mysql.version>8.2.0</mysql.version>
 
         <servlet.version>5.0.0</servlet.version>
 
@@ -172,7 +171,7 @@
                                 <limit implementation="org.jacoco.report.check.Limit">
                                     <counter>COMPLEXITY</counter>
                                     <value>COVEREDRATIO</value>
-                                    <minimum>0.00</minimum>
+                                    <minimum>0.60</minimum>
                                 </limit>
                             </limits>
                         </rule>

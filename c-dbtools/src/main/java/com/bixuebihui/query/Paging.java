@@ -9,6 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.stream.Collectors;
 
 import static com.bixuebihui.jdbc.SqlSort.Sort.ASC;
@@ -284,7 +286,8 @@ public class Paging<S> {
                         // 例如：2023-10-01 00:00:00 和 2023-10-01 23:59:59
                         // 这种情况，实际上是一个范围
                         Date d = (Date) p.getLeft();
-                        if(d.getHours() == 0 && d.getMinutes() == 0 && d.getSeconds() == 0) {
+                        LocalTime t = d.toInstant().atZone(ZoneId.systemDefault()).toLocalTime();
+                        if(t.equals(LocalTime.MIDNIGHT)) {
                             // 如果是00:00:00，表示当天的开始时间
                             Calendar calendar = Calendar.getInstance();
                             calendar.setTime(d);

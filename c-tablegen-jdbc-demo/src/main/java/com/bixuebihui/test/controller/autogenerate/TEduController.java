@@ -19,19 +19,15 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 
 import org.apache.commons.lang3.time.StopWatch;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import org.springframework.validation.annotation.Validated;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.web.bind.annotation.RequestBody;
 import com.sdadas.spring2ts.annotations.SharedService;
 
-import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
@@ -44,8 +40,11 @@ import java.util.List;
 @Tag(name = "TEduController", description = "教育程度")
 
 public class  TEduController {
-    @Autowired
-    TEduService tEduService;
+    private final TEduService tEduService;
+
+    public TEduController(TEduService tEduService) {
+        this.tEduService = tEduService;
+    }
 
     @Operation(summary ="取t_edu列表")
     @PostMapping(value = "/list", produces = {"application/json;charset=UTF-8"})
@@ -58,8 +57,7 @@ public class  TEduController {
         @RequestParam(value = "sortBy", defaultValue = "id:desc") String sortBy,
         @Validated
     @Parameter(required = true, description = "查询条件")
-        TEduSearchCmd  searchCmd,
-        HttpServletRequest request) {
+        TEduSearchCmd  searchCmd) {
 
         Paging<TEduSearchCmd> searchBean = new Paging<>();
         searchBean.setSearchBean(searchCmd);
@@ -90,8 +88,7 @@ public class  TEduController {
     public BaseModel<Boolean> del(
         @Validated
     @Parameter(required = true, description = "主键")
-        TEduDelCmd  delCmd,
-        HttpServletRequest request) {
+        TEduDelCmd  delCmd) {
 
         BaseModel<Boolean> res = new BaseModel<>();
             res.setResult( tEduService.del(delCmd));
@@ -106,7 +103,7 @@ public class  TEduController {
         @Validated
         @Parameter(required = true, description = "t_edu 数据对象")
             @RequestBody
-            TEduDto  dto, HttpServletRequest request) {
+            TEduDto  dto) {
 
         BaseModel<TEduDto> res = new BaseModel<>();
             res.setResult( tEduService.save(dto));

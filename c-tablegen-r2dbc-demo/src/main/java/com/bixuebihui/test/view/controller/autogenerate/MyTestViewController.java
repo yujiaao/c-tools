@@ -17,7 +17,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 
 import org.apache.commons.lang3.time.StopWatch;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -27,7 +26,6 @@ import org.springframework.validation.annotation.Validated;
 
 import com.sdadas.spring2ts.annotations.SharedService;
 
-import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
@@ -40,8 +38,11 @@ import java.util.List;
 @Tag(name = "MyTestViewController", description = "my_test_view")
 
 public class  MyTestViewController {
-    @Autowired
-    MyTestViewService myTestViewService;
+    private final MyTestViewService myTestViewService;
+
+    public MyTestViewController(MyTestViewService myTestViewService) {
+        this.myTestViewService = myTestViewService;
+    }
 
     @Operation(summary ="取my_test_view列表")
     @PostMapping(value = "/list", produces = {"application/json;charset=UTF-8"})
@@ -54,8 +55,7 @@ public class  MyTestViewController {
         @RequestParam(value = "sortBy", defaultValue = "id:desc") String sortBy,
         @Validated
     @Parameter(required = true, description = "查询条件")
-        MyTestViewSearchCmd  searchCmd,
-        HttpServletRequest request) {
+        MyTestViewSearchCmd  searchCmd) {
 
         Paging<MyTestViewSearchCmd> searchBean = new Paging<>();
         searchBean.setSearchBean(searchCmd);
