@@ -15,16 +15,19 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        java: [17, 21]
 
     steps:
     - uses: actions/checkout@v4
-    - name: Set up JDK 17
+    - name: Set up JDK ${{ matrix.java }}
       uses: actions/setup-java@v4
       with:
         distribution: 'temurin'
-        java-version: 17
+        java-version: ${{ matrix.java }}
+        cache: maven
     - name: Set up MySQL    
       run: |
         sudo /etc/init.d/mysql start
@@ -32,3 +35,14 @@ jobs:
     # c-dbtools：默认本地构建为 h2 且不跑 probe（快）；CI 已起 MySQL，这里用 auto 探测并选用 mysql 模板。
     - name: Build with Maven
       run: mvn -B package --file pom.xml -Dconnection.pool.profile=auto -Djacoco.skip=false
+    - name: Static checks (non-blocking)
+      continue-on-error: true
+      run: mvn -B -DskipTests pmd:pmd
+    - name: Upload PMD reports
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: pmd-reports-jdk-${{ matrix.java }}
+        path: |
+          **/target/pmd.xml
+        if-no-files-found: ignore
