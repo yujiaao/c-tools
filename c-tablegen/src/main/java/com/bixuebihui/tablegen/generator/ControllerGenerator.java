@@ -28,7 +28,7 @@ public class ControllerGenerator extends BaseGenerator {
 
     @Override
     public boolean wantToGenerate(String fileName) {
-        return super.wantToGenerate(fileName) && ! new File(fileName).exists();
+        return super.wantToGenerate(fileName);
     }
 
     @Override

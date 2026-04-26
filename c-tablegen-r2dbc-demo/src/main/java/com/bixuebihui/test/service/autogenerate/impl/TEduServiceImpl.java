@@ -39,8 +39,14 @@ public class TEduServiceImpl implements  TEduService{
 
     @Override
     public Pair<Integer, List<TEduDto>> queryList(Paging<TEduSearchCmd> searchCmd) {
-        Pair<Long, List<TEdu>>  infos = tEduManager.ar()
-                    .query(searchCmd).findAllWithCount();
+        int start = searchCmd.getStart() == null ? 0 : searchCmd.getStart().intValue();
+        int count = searchCmd.getCount() == null ? 10 : searchCmd.getCount().intValue();
+        List<TEdu> records = tEduManager.ar().limit(start, count).findAll().block();
+        Integer total = tEduManager.ar().count().block();
+        Pair<Long, List<TEdu>> infos = Pair.of(
+                total == null ? 0L : total.longValue(),
+                records == null ? java.util.Collections.emptyList() : records
+        );
 
         List<TEduDto> collect = TEduConverter.MAPPER.toDtoList(infos.getRight());
 
@@ -52,7 +58,7 @@ public class TEduServiceImpl implements  TEduService{
 
     
         return tEduManager.deleteByKeys(delCmd.getIds()
-                .toArray(new Integer[0]));
+                .toArray(new Integer[0])).block();
     
     }
 

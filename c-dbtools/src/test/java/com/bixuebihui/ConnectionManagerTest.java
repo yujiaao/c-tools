@@ -55,6 +55,12 @@ public class ConnectionManagerTest extends TestCase {
 		final String alias = "test1";
 		final Connection cn = ConnectionManager.getConnection(alias);
 		LOG.info(cn.toString());
+		String dbProduct = cn.getMetaData().getDatabaseProductName();
+		if (dbProduct == null || !dbProduct.toLowerCase().contains("mysql")) {
+			LOG.info("Skip lock-table test on non-MySQL database: {}", dbProduct);
+			DbUtils.closeQuietly(cn);
+			return;
+		}
 
 		Statement s = cn.createStatement();
 		boolean res = s.execute("lock table t_log write");
@@ -85,12 +91,10 @@ public class ConnectionManagerTest extends TestCase {
 				s1.execute("delete from t_log where lid=1");
 
 				LOG.error("YOU CAN NOT SEE THIS");
-				assert false:"There a exception is expected";
+				fail("An exception is expected when writing to a locked table");
 			} catch (SQLException e) {
 				LOG.info(e.getSQLState());
 				//assertEquals("08S01", e.getSQLState());
-
-				assert true:"There a exception is expected";
 			}finally{
 				DbUtils.closeQuietly(cn1);
 			}

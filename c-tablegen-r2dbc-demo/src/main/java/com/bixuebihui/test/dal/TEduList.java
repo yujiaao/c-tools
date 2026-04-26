@@ -53,7 +53,6 @@ public class TEduList  extends BaseList<TEdu, Integer>
         }
     }
 
-    @Override
     public List<String> getAllFields(){
         return Arrays.asList(F.getAllFields());
     }

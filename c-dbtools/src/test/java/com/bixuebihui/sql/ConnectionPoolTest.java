@@ -38,6 +38,11 @@ public class ConnectionPoolTest {
 
 	@Before
 	public void setUp() {
+		try {
+			DriverManager.registerDriver((Driver) Class.forName(ds.getClassName()).getDeclaredConstructor().newInstance());
+		} catch (Exception e) {
+			throw new IllegalStateException("JDBC driver is missing: " + ds.getClassName(), e);
+		}
 		// trace=true 时 getConnection() 内层循环行为异常，易阻塞/空转；日常测试关闭 tracing
 		cp.setTracing(false);
 	}

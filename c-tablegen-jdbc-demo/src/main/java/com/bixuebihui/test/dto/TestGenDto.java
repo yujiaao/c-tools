@@ -13,8 +13,10 @@ import java.sql.*;
 import java.io.Serializable;
 import org.apache.commons.text.StringEscapeUtils;
 import com.sdadas.spring2ts.annotations.SharedModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 @SharedModel("")
+@Schema(description = "测试表")
 public class TestGenDto implements Serializable {
 
     public TestGenDto() {
@@ -31,41 +33,49 @@ public class TestGenDto implements Serializable {
     /**
      * id 这里是id!
      */
+    @Schema(description = "id 这里是id! ")
     protected Integer id;
 
     /**
      * name 这里是名称！
      */
+    @Schema(description = "name 这里是名称！ ")
     protected String name;
 
     /**
      * age 这里是年龄
      */
+    @Schema(description = "age 这里是年龄 ")
     protected Short age;
 
     /**
      * birth 这里是日期！
      */
+    @Schema(description = "birth 这里是日期！ ")
     protected Timestamp birth;
 
     /**
      * edu_id 教育程度
      */
+    @Schema(description = "edu_id 教育程度 ")
     protected Integer eduId;
 
     /**
      * gender 性别
      */
+    @Schema(description = "gender 性别 ")
     protected String gender;
 
     /**
      * sex 性别
      */
+    @Schema(description = "sex 性别 ")
     protected Boolean sex;
 
     /**
      * child 是否有孩子
      */
+    @Schema(description = "child 是否有孩子 ")
     protected Boolean child;
 
     /**

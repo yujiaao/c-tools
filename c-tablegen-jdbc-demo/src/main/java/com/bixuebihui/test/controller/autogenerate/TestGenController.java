@@ -12,17 +12,22 @@ import com.bixuebihui.query.Paging;
 import com.bixuebihui.BaseModel;
 import com.bixuebihui.PageModel;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 
 
 import org.apache.commons.lang3.time.StopWatch;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import org.springframework.validation.annotation.Validated;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.web.bind.annotation.RequestBody;
 import com.sdadas.spring2ts.annotations.SharedService;
 
@@ -35,17 +40,25 @@ import java.util.List;
 @SharedService
 @RestController
 @RequestMapping("/test-gen")
+
+@Tag(name = "TestGenController", description = "测试表")
+
 public class  TestGenController {
     @Autowired
     TestGenService testGenService;
 
+    @Operation(summary ="取test_gen列表")
     @PostMapping(value = "/list", produces = {"application/json;charset=UTF-8"})
     public BaseModel<PageModel<TestGenDto>> list(
-    @RequestParam(value = "maxRows", defaultValue = "10") Long maxRows,
-    @RequestParam(value = "page", defaultValue = "1") Long page,
-    @RequestParam(value = "sortBy", defaultValue = "id:desc") String sortBy,
+    @Parameter(name ="maxRows", description = "一页大小")
+        @RequestParam(value = "maxRows", defaultValue = "10") Long maxRows,
+    @Parameter(name ="page", description = "页码")
+        @RequestParam(value = "page", defaultValue = "1") Long page,
+    @Parameter(name ="sortBy", description = "排序 sortBy=abc:asc,def:desc")
+        @RequestParam(value = "sortBy", defaultValue = "id:desc") String sortBy,
         @Validated
-    TestGenSearchCmd  searchCmd,
+    @Parameter(required = true, description = "查询条件")
+        TestGenSearchCmd  searchCmd,
         HttpServletRequest request) {
 
         Paging<TestGenSearchCmd> searchBean = new Paging<>();
@@ -72,10 +85,12 @@ public class  TestGenController {
         return res;
     }
 
+    @Operation(summary ="按主键删除test_gen记录")
     @PostMapping(value = "/del", produces = {"application/json;charset=UTF-8"})
     public BaseModel<Boolean> del(
         @Validated
-    TestGenDelCmd  delCmd,
+    @Parameter(required = true, description = "主键")
+        TestGenDelCmd  delCmd,
         HttpServletRequest request) {
 
         BaseModel<Boolean> res = new BaseModel<>();
@@ -85,10 +100,12 @@ public class  TestGenController {
         return res;
     }
 
+    @Operation(summary ="保存test_gen记录")
     @PostMapping(value = "/save", produces = {"application/json;charset=UTF-8"})
     public BaseModel<TestGenDto> save(
         @Validated
-        @RequestBody
+        @Parameter(required = true, description = "test_gen 数据对象")
+            @RequestBody
             TestGenDto  dto, HttpServletRequest request) {
 
         BaseModel<TestGenDto> res = new BaseModel<>();

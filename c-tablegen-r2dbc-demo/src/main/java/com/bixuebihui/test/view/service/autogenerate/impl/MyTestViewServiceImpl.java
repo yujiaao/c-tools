@@ -37,8 +37,14 @@ public class MyTestViewServiceImpl implements  MyTestViewService{
 
     @Override
     public Pair<Integer, List<MyTestViewDto>> queryList(Paging<MyTestViewSearchCmd> searchCmd) {
-        Pair<Long, List<MyTestView>>  infos = myTestViewManager.ar()
-                    .query(searchCmd).findAllWithCount();
+        int start = searchCmd.getStart() == null ? 0 : searchCmd.getStart().intValue();
+        int count = searchCmd.getCount() == null ? 10 : searchCmd.getCount().intValue();
+        List<MyTestView> records = myTestViewManager.ar().limit(start, count).findAll().block();
+        Integer total = myTestViewManager.ar().count().block();
+        Pair<Long, List<MyTestView>> infos = Pair.of(
+                total == null ? 0L : total.longValue(),
+                records == null ? java.util.Collections.emptyList() : records
+        );
 
         List<MyTestViewDto> collect = MyTestViewConverter.MAPPER.toDtoList(infos.getRight());
 

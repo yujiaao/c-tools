@@ -39,8 +39,14 @@ public class TestGenServiceImpl implements  TestGenService{
 
     @Override
     public Pair<Integer, List<TestGenDto>> queryList(Paging<TestGenSearchCmd> searchCmd) {
-        Pair<Long, List<TestGen>>  infos = testGenManager.ar()
-                    .query(searchCmd).findAllWithCount();
+        int start = searchCmd.getStart() == null ? 0 : searchCmd.getStart().intValue();
+        int count = searchCmd.getCount() == null ? 10 : searchCmd.getCount().intValue();
+        List<TestGen> records = testGenManager.ar().limit(start, count).findAll().block();
+        Integer total = testGenManager.ar().count().block();
+        Pair<Long, List<TestGen>> infos = Pair.of(
+                total == null ? 0L : total.longValue(),
+                records == null ? java.util.Collections.emptyList() : records
+        );
 
         List<TestGenDto> collect = TestGenConverter.MAPPER.toDtoList(infos.getRight());
 
@@ -52,7 +58,7 @@ public class TestGenServiceImpl implements  TestGenService{
 
     
         return testGenManager.deleteByKeys(delCmd.getIds()
-                .toArray(new Integer[0]));
+                .toArray(new Integer[0])).block();
     
     }
 

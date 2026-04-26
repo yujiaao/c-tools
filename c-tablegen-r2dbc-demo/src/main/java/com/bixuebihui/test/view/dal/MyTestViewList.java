@@ -60,7 +60,6 @@ public class MyTestViewList  extends AbstractViewBaseDao<MyTestView, Integer>
         }
     }
 
-    @Override
     public List<String> getAllFields(){
         return Arrays.asList(F.getAllFields());
     }

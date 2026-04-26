@@ -12,6 +12,9 @@ import com.bixuebihui.query.Paging;
 import com.bixuebihui.BaseModel;
 import com.bixuebihui.PageModel;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 
 
@@ -25,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import org.springframework.validation.annotation.Validated;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.web.bind.annotation.RequestBody;
 import com.sdadas.spring2ts.annotations.SharedService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -36,17 +40,25 @@ import java.util.List;
 @SharedService
 @RestController
 @RequestMapping("/t-edu")
+
+@Tag(name = "TEduController", description = "教育程度")
+
 public class  TEduController {
     @Autowired
     TEduService tEduService;
 
+    @Operation(summary ="取t_edu列表")
     @PostMapping(value = "/list", produces = {"application/json;charset=UTF-8"})
     public BaseModel<PageModel<TEduDto>> list(
-    @RequestParam(value = "maxRows", defaultValue = "10") Long maxRows,
-    @RequestParam(value = "page", defaultValue = "1") Long page,
-    @RequestParam(value = "sortBy", defaultValue = "id:desc") String sortBy,
+    @Parameter(name ="maxRows", description = "一页大小")
+        @RequestParam(value = "maxRows", defaultValue = "10") Long maxRows,
+    @Parameter(name ="page", description = "页码")
+        @RequestParam(value = "page", defaultValue = "1") Long page,
+    @Parameter(name ="sortBy", description = "排序 sortBy=abc:asc,def:desc")
+        @RequestParam(value = "sortBy", defaultValue = "id:desc") String sortBy,
         @Validated
-    TEduSearchCmd  searchCmd,
+    @Parameter(required = true, description = "查询条件")
+        TEduSearchCmd  searchCmd,
         HttpServletRequest request) {
 
         Paging<TEduSearchCmd> searchBean = new Paging<>();
@@ -73,10 +85,12 @@ public class  TEduController {
         return res;
     }
 
+    @Operation(summary ="按主键删除t_edu记录")
     @PostMapping(value = "/del", produces = {"application/json;charset=UTF-8"})
     public BaseModel<Boolean> del(
         @Validated
-    TEduDelCmd  delCmd,
+    @Parameter(required = true, description = "主键")
+        TEduDelCmd  delCmd,
         HttpServletRequest request) {
 
         BaseModel<Boolean> res = new BaseModel<>();
@@ -86,10 +100,13 @@ public class  TEduController {
         return res;
     }
 
+    @Operation(summary ="保存t_edu记录")
     @PostMapping(value = "/save", produces = {"application/json;charset=UTF-8"})
     public BaseModel<TEduDto> save(
         @Validated
-        TEduDto  dto, HttpServletRequest request) {
+        @Parameter(required = true, description = "t_edu 数据对象")
+            @RequestBody
+            TEduDto  dto, HttpServletRequest request) {
 
         BaseModel<TEduDto> res = new BaseModel<>();
             res.setResult( tEduService.save(dto));

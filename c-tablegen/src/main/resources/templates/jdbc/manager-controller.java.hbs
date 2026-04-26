@@ -17,26 +17,28 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 {{else}}
-import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.info.Info;
+import io.swagger.v3.oas.annotations.tags.Tag;
 {{/eq}}
+{{else}}
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 {{/if}}
 
 
 import org.apache.commons.lang3.time.StopWatch;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import org.springframework.validation.annotation.Validated;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+{{#unless tableInfo.isView}}
 import org.springframework.web.bind.annotation.RequestBody;
+{{/unless}}
 import com.sdadas.spring2ts.annotations.SharedService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -52,40 +54,42 @@ import java.util.List;
 {{#eq config.swaggerVersion "2" ~}}
 @Api(tags = "{{tableInfo.comment}}")
 {{else~}}
-@OpenAPIDefinition(info = @Info(description = "{{tableInfo.comment}}"))
+@Tag(name = "{{className}}", description = "{{tableInfo.comment}}")
 {{/eq~}}
+{{else}}
+@Tag(name = "{{className}}", description = "{{tableInfo.comment}}")
 {{/if}}
 public class  {{className}} {
     @Autowired
     {{pojoClassName}}Service {{firstLow pojoClassName}}Service;
 
-    {{#if config.useSwagger}}{{#eq config.swaggerVersion "2" }}@ApiOperation({{else}}@Operation(summary ={{/eq~}}"取{{tableName}}列表"){{/if}}
+    {{#if config.useSwagger}}{{#eq config.swaggerVersion "2" }}@ApiOperation({{else}}@Operation(summary ={{/eq~}}"取{{tableName}}列表"){{else}}@Operation(summary ="取{{tableName}}列表"){{/if}}
     @PostMapping(value = "/list", produces = {"application/json;charset=UTF-8"})
     public BaseModel<PageModel<{{pojoClassName}}Dto>> list(
     {{#if config.useSwagger}}{{#eq config.swaggerVersion "2" ~}}
         @ApiParam(name = "maxRows", value = "一页大小")
     {{else~}}
         @Parameter(name ="maxRows", description = "一页大小")
-    {{/eq~}}{{/if}}
+    {{/eq~}}{{else}}@Parameter(name ="maxRows", description = "一页大小"){{/if}}
         @RequestParam(value = "maxRows", defaultValue = "10") Long maxRows,
     {{#if config.useSwagger}}{{#eq config.swaggerVersion "2" ~}}
         @ApiParam(name = "page", value = "页码")
     {{else~}}
         @Parameter(name ="page", description = "页码")
-    {{/eq~}}{{/if}}
+    {{/eq~}}{{else}}@Parameter(name ="page", description = "页码"){{/if}}
         @RequestParam(value = "page", defaultValue = "1") Long page,
     {{#if config.useSwagger}}{{#eq config.swaggerVersion "2" ~}}
         @ApiParam(name = "sortBy", value = "排序 sortBy=abc:asc,def:desc")
     {{else~}}
         @Parameter(name ="sortBy", description = "排序 sortBy=abc:asc,def:desc")
-    {{/eq~}}{{/if}}
+    {{/eq~}}{{else}}@Parameter(name ="sortBy", description = "排序 sortBy=abc:asc,def:desc"){{/if}}
         @RequestParam(value = "sortBy", defaultValue = "{{firstKeyName}}:desc") String sortBy,
         @Validated
     {{#if config.useSwagger}}{{#eq config.swaggerVersion "2" ~}}
         @ApiParam(value = "查询条件", required = true)
     {{else~}}
-        @Parameter(required ="true", description = "查询条件")
-    {{/eq~}}{{/if}}
+        @Parameter(required = true, description = "查询条件")
+    {{/eq~}}{{else}}@Parameter(required = true, description = "查询条件"){{/if}}
         {{pojoClassName}}SearchCmd  searchCmd,
         HttpServletRequest request) {
 
@@ -104,7 +108,7 @@ public class  {{className}} {
                 .total(p.getLeft())
                 .build();
         sw.stop();
-        result.setTook(sw.getDuration().toMillis());
+        result.setTook(sw.getTime());
 
         BaseModel<PageModel<{{pojoClassName}}Dto>> res = new BaseModel<>();
         res.setResult(result);
@@ -115,15 +119,15 @@ public class  {{className}} {
 {{#unless tableInfo.isView}}
     {{#if config.useSwagger}}{{#eq config.swaggerVersion "2" }}@ApiOperation({{else}}@Operation(summary ={{/eq~}}
     "按主键删除{{tableName}}记录")
-    {{/if}}
+    {{else}}@Operation(summary ="按主键删除{{tableName}}记录"){{/if}}
     @PostMapping(value = "/del", produces = {"application/json;charset=UTF-8"})
     public BaseModel<Boolean> del(
         @Validated
     {{#if config.useSwagger}}{{#eq config.swaggerVersion "2" ~}}
         @ApiParam(value = "主键", required = true)
     {{else~}}
-        @Parameter(required ="true", description = "主键")
-    {{/eq~}}{{/if}}
+        @Parameter(required = true, description = "主键")
+    {{/eq~}}{{else}}@Parameter(required = true, description = "主键"){{/if}}
         {{pojoClassName}}DelCmd  delCmd,
         HttpServletRequest request) {
 
@@ -134,15 +138,15 @@ public class  {{className}} {
         return res;
     }
 
-    {{#if config.useSwagger}}{{#eq config.swaggerVersion "2" }}@ApiOperation({{else}}@Operation(summary ={{/eq~}} "保存{{tableName}}记录"){{/if}}
+    {{#if config.useSwagger}}{{#eq config.swaggerVersion "2" }}@ApiOperation({{else}}@Operation(summary ={{/eq~}} "保存{{tableName}}记录"){{else}}@Operation(summary ="保存{{tableName}}记录"){{/if}}
     @PostMapping(value = "/save", produces = {"application/json;charset=UTF-8"})
     public BaseModel<{{pojoClassName}}Dto> save(
         @Validated
         {{#if config.useSwagger}}{{#eq config.swaggerVersion "2" ~}}
             @ApiParam(value = "{{tableName}} 数据对象", required = true)
         {{else~}}
-            @Parameter(required ="true", description = "{{tableName}} 数据对象")
-        {{/eq~}}{{/if}}
+            @Parameter(required = true, description = "{{tableName}} 数据对象")
+        {{/eq~}}{{else}}@Parameter(required = true, description = "{{tableName}} 数据对象"){{/if}}
             @RequestBody
             {{pojoClassName}}Dto  dto, HttpServletRequest request) {
 

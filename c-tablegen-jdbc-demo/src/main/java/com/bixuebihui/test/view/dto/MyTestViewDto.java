@@ -12,8 +12,10 @@ package com.bixuebihui.test.view.dto;
 import java.sql.*;
 import java.io.Serializable;
 import com.sdadas.spring2ts.annotations.SharedModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 @SharedModel("")
+@Schema(description = "my_test_view")
 public class MyTestViewDto implements Serializable {
 
     public MyTestViewDto() {
@@ -23,6 +25,7 @@ public class MyTestViewDto implements Serializable {
     /**
      * edu_id 教育程度
      */
+    @Schema(description = "edu_id 教育程度 ")
     protected Integer eduId;
 
     /**

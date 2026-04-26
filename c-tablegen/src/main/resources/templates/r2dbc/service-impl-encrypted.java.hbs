@@ -1,0 +1,68 @@
+package {{config.packageName}}{{viewModifier}}.service.autogenerate.impl;
+
+{{> [header-comment.java]}}
+import com.bixuebihui.query.Paging;
+import com.bixuebihui.codec.EncryptDecryptService;
+
+import {{config.packageName}}{{viewModifier}}.business.{{pojoClassName}}Manager;
+import {{config.packageName}}{{viewModifier}}.cmd.{{pojoClassName}}SearchCmd;
+{{#unless tableInfo.isView}}
+import {{config.packageName}}{{viewModifier}}.cmd.{{pojoClassName}}DelCmd;
+{{/unless}}
+import {{config.packageName}}{{viewModifier}}.converter.{{pojoClassName}}Converter;
+import {{config.packageName}}{{viewModifier}}.dto.{{pojoClassName}}Dto;
+import {{config.packageName}}{{viewModifier}}.pojo.{{pojoClassName}};
+import {{config.packageName}}{{viewModifier}}.service.autogenerate.{{pojoClassName}}Service;
+import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.processing.Generated;
+import java.util.Collections;
+import java.util.List;
+
+@Generated("com.github.yujiaao:tablegen")
+@Service
+public class {{className}} implements  {{pojoClassName}}Service{
+    @Autowired
+    {{pojoClassName}}Manager {{firstLow pojoClassName}}Manager;
+
+    @Autowired
+    EncryptDecryptService encryptDecryptService;
+
+    @Override
+    public Pair<Integer, List<{{pojoClassName}}Dto>> queryList(Paging<{{pojoClassName}}SearchCmd> searchCmd) {
+        int start = searchCmd.getStart() == null ? 0 : searchCmd.getStart().intValue();
+        int count = searchCmd.getCount() == null ? 10 : searchCmd.getCount().intValue();
+        List<{{pojoClassName}}> records = {{firstLow pojoClassName}}Manager.ar().limit(start, count).findAll().block();
+        Integer total = {{firstLow pojoClassName}}Manager.ar().count().block();
+
+        List<{{pojoClassName}}> safeRecords = records == null ? Collections.emptyList() : records;
+        List<{{pojoClassName}}Dto> collect = {{pojoClassName}}Converter.MAPPER.toDtoListDec(safeRecords, encryptDecryptService);
+        return Pair.of(total == null ? 0 : total, collect);
+    }
+{{#unless tableInfo.isView}}
+    @Override
+    public Boolean del({{pojoClassName}}DelCmd delCmd) {
+{{#eq keys.size 1}}
+    {{#if hasLogicDelCol}}
+        return {{firstLow pojoClassName}}Manager.logicDeleteByIds(delCmd.get{{firstUp firstKeyName}}s()).block();
+    {{~ else }}
+        return {{firstLow pojoClassName}}Manager.deleteByKeys(delCmd.get{{firstUp firstKeyName}}s()
+                .toArray(new {{{firstKeyType}}}[0])).block();
+    {{/if}}
+{{~ else }}
+    return false;
+{{/eq}}
+    }
+
+    @Override
+    public {{pojoClassName}}Dto save({{pojoClassName}}Dto dto)
+    {
+        {{pojoClassName}} info = {{pojoClassName}}Converter.MAPPER.toDaoEnc(dto, encryptDecryptService);
+        {{firstLow pojoClassName}}Manager.save(info).block();
+        return dto;
+    }
+{{/unless}}
+
+}

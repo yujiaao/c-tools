@@ -22,6 +22,10 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description ="{{tableInfo.comment}}")
 {{/eq}}
+{{else}}
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(description ="{{tableInfo.comment}}")
 {{/if}}
 {{#if sharedModelGroup}}
 @SharedModel("{{sharedModelGroup}}")
@@ -38,6 +42,9 @@ public class {{className}} {{interface}} {
     /**
      * {{columnDescription this tableName}}
      */
+    {{#unless config.useSwagger}}
+    @Schema(description = "{{columnDescription this tableName}}")
+    {{/unless}}
     {{{columnAnnotation this tableName}}}
     {{#eq "Timestamp" type~}}
     @JsonFormat(shape = JsonFormat.Shape.STRING)

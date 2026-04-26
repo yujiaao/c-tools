@@ -13,8 +13,10 @@ import java.sql.*;
 import java.io.Serializable;
 import org.apache.commons.text.StringEscapeUtils;
 import com.sdadas.spring2ts.annotations.SharedModel;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 @SharedModel("")
+@Schema(description = "教育程度")
 public class TEduDto implements Serializable {
 
     public TEduDto() {
@@ -25,11 +27,13 @@ public class TEduDto implements Serializable {
     /**
      * id 这里是id!
      */
+    @Schema(description = "id 这里是id! ")
     protected Integer id;
 
     /**
      * degree 这里是名称！
      */
+    @Schema(description = "degree 这里是名称！ ")
     protected String degree;
 
     /**

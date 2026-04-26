@@ -59,7 +59,6 @@ public class TestGenList  extends BaseList<TestGen, Integer>
         }
     }
 
-    @Override
     public List<String> getAllFields(){
         return Arrays.asList(F.getAllFields());
     }
