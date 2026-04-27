@@ -101,7 +101,8 @@ class TableSelectionDialog(
     private fun filterTables() {
         val searchText = searchField.text.lowercase()
         val currentPanel = if (tabbedPane.selectedIndex == 0) tableListPanel else excludeTableListPanel
-        
+        val currentCheckBoxes = if (tabbedPane.selectedIndex == 0) tableCheckBoxes else excludeTableCheckBoxes
+
         currentPanel.components.forEach { component ->
             if (component is JBCheckBox) {
                 val visible = searchText.isEmpty() || component.text.lowercase().contains(searchText)

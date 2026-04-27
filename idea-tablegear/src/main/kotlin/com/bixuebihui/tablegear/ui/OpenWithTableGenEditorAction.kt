@@ -1,6 +1,7 @@
 package com.bixuebihui.tablegear.ui
 
 import com.bixuebihui.tablegear.TableGearBundle
+import com.bixuebihui.tablegear.TableGearIcons
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
@@ -30,6 +31,9 @@ class OpenWithTableGenEditorAction : AnAction(
         val isEnabled = selectedFile != null && isTableGenFile(selectedFile)
         
         e.presentation.isEnabledAndVisible = isEnabled
+        if (e.presentation.icon == null) {
+            e.presentation.icon = TableGearIcons.FILE
+        }
     }
     
     private fun isTableGenFile(file: VirtualFile): Boolean {

@@ -194,6 +194,11 @@ class TableGearValidationInspection : LocalInspectionTool() {
                 when (prop.valueType) {
                     ValueType.BOOLEAN -> {
                         if (value.isNotEmpty() && !value.matches(Regex("^(yes|no|true|false)$", RegexOption.IGNORE_CASE))) {
+                            val lineStart = document.getLineStartOffset(zeroBasedLine)
+                            val lineEnd = document.getLineEndOffset(zeroBasedLine)
+                            val lineText = document.getText(TextRange(lineStart, lineEnd))
+                            val valueStartInLine = lineText.indexOf('=') + 1
+                            val valueRange = TextRange(lineStart + valueStartInLine, lineEnd)
                             holder.registerProblem(
                                 file,
                                 TableGearBundle.message("inspection.booleanExpected", key),
@@ -204,6 +209,11 @@ class TableGearValidationInspection : LocalInspectionTool() {
                     }
                     ValueType.ENUM -> {
                         if (value.isNotEmpty() && prop.enumValues?.contains(value.lowercase()) == false) {
+                            val lineStart = document.getLineStartOffset(zeroBasedLine)
+                            val lineEnd = document.getLineEndOffset(zeroBasedLine)
+                            val lineText = document.getText(TextRange(lineStart, lineEnd))
+                            val valueStartInLine = lineText.indexOf('=') + 1
+                            val valueRange = TextRange(lineStart + valueStartInLine, lineEnd)
                             holder.registerProblem(
                                 file,
                                 TableGearBundle.message("inspection.enumExpected", key, prop.enumValues.joinToString(", ")),

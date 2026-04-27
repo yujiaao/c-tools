@@ -245,6 +245,7 @@ class DatabaseConnectionHelper(private val model: TableGenConfigModel) {
             
             while (rs.next()) {
                 val columnName = rs.getString("COLUMN_NAME")
+                val dataType = rs.getInt("DATA_TYPE")
                 val typeName = rs.getString("TYPE_NAME")
                 val nullable = rs.getInt("NULLABLE") == java.sql.DatabaseMetaData.columnNullable
                 val isAutoIncrement = rs.getString("IS_AUTOINCREMENT")?.equals("YES", ignoreCase = true) ?: false
