@@ -1,27 +1,40 @@
 package com.bixuebihui.tablegen;
 
-import com.bixuebihui.cache.DictionaryCache;
-import com.bixuebihui.cache.DictionaryItem;
-import com.bixuebihui.db.Dialect;
-import com.bixuebihui.db.KeywordsUtils;
-import com.bixuebihui.generated.tablegen.pojo.T_metacolumn;
-import com.bixuebihui.jdbc.*;
-import com.bixuebihui.tablegen.entry.ColumnData;
-import com.bixuebihui.tablegen.entry.TableInfo;
-import com.bixuebihui.tablegen.entry.TableSetInfo;
-import com.bixuebihui.util.DbUtils;
-import org.apache.commons.text.StringEscapeUtils;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StopWatch;
 
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.*;
-
-import static com.bixuebihui.db.Dialect.*;
+import com.bixuebihui.cache.DictionaryCache;
+import com.bixuebihui.cache.DictionaryItem;
+import com.bixuebihui.db.Dialect;
+import static com.bixuebihui.db.Dialect.ACCESS;
+import static com.bixuebihui.db.Dialect.MYSQL;
+import static com.bixuebihui.db.Dialect.SQLSERVER;
+import static com.bixuebihui.db.Dialect.SQLSERVER_2005_AND_UP;
+import static com.bixuebihui.db.Dialect.SQLSERVER_2010_AND_UP;
+import static com.bixuebihui.db.Dialect.detectDbType;
+import com.bixuebihui.db.KeywordsUtils;
+import com.bixuebihui.generated.tablegen.pojo.T_metacolumn;
+import com.bixuebihui.jdbc.DbHelper;
+import com.bixuebihui.jdbc.IDbHelper;
+import com.bixuebihui.jdbc.RowMapper;
+import com.bixuebihui.jdbc.RowMapperResultReader;
+import com.bixuebihui.tablegen.entry.ColumnData;
+import com.bixuebihui.tablegen.entry.TableInfo;
+import com.bixuebihui.tablegen.entry.TableSetInfo;
+import com.bixuebihui.util.DbUtils;
 
 /**
  * @author xwx
@@ -853,9 +866,8 @@ public class TableUtils {
 
         if (col.getDefaultValue() != null) {
             if (!res.contains("NotNull")) {
-                res += "\n    * NotNull, default value: "+  col.getDefaultValue();
+                return escape(res) + "\n    * NotNull, default value: "+  col.getDefaultValue();
             }
-
         }
         return escape(res);
     }
