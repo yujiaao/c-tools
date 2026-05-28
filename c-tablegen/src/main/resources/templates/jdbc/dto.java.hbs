@@ -42,14 +42,10 @@ public class {{className}} {{interface}} {
     /**
      * {{columnDescription this tableName}}
      */
-    {{#unless config.useSwagger}}
-    @Schema(description = "{{columnDescription this tableName}}")
-    {{/unless}}
-    {{{columnAnnotation this tableName}}}
-    {{#eq "Timestamp" type~}}
+{{#unless config.useSwagger}}    @Schema(description = "{{columnDescription this tableName}}")
+{{/unless~}}{{{columnAnnotationBlock this tableName}}}{{#eq "Timestamp" type~}}
     @JsonFormat(shape = JsonFormat.Shape.STRING)
-    {{/eq~}}
-    protected {{javaType}}  {{firstLow name}};
+{{/eq~}}    protected {{javaType}}  {{firstLow name}};
 {{/each}}
 
 {{! setters & getters }}

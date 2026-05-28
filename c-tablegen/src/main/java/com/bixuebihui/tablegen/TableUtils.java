@@ -908,7 +908,10 @@ public class TableUtils {
                     Map<String, T_metacolumn> cols = setInfo.getTableDataExt().get(tableName).getColumns();
                     if (cols != null && cols.get(cd.getName()) != null) {
                         T_metacolumn col = cols.get(cd.getName());
-                        sb.append(col.getAnnotation() == null ? "" : col.getAnnotation() + "\n");
+                        String customAnn = col.getAnnotation();
+                        if (StringUtils.isNotBlank(customAnn)) {
+                            sb.append(customAnn.trim()).append("\n");
+                        }
                     } else {
                         LOG.info("There NO settings for table columns:" + tableName);
                     }
@@ -944,7 +947,29 @@ public class TableUtils {
             }
         }
 
-        return org.apache.commons.lang3.StringUtils.stripEnd(sb.toString(), "\n");
+        return StringUtils.strip(sb.toString());
+    }
+
+    /**
+     * 模板输出用：每行 4 空格缩进，末尾单个换行，无首尾空行。
+     */
+    public static String getColumnAnnotationBlock(ProjectConfig config, TableSetInfo setInfo,
+            String tableName, ColumnData cd, boolean genConstraint) {
+        String ann = getColumnAnnotation(config, setInfo, tableName, cd, genConstraint);
+        if (StringUtils.isBlank(ann)) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (String line : ann.split("\\r?\\n")) {
+            String trimmed = line.trim();
+            if (StringUtils.isNotEmpty(trimmed)) {
+                if (sb.length() > 0) {
+                    sb.append('\n');
+                }
+                sb.append("    ").append(trimmed);
+            }
+        }
+        return sb.length() == 0 ? "" : sb.append('\n').toString();
     }
 
     private static boolean isNeedNotNullAnnotation(ProjectConfig config, ColumnData cd) {

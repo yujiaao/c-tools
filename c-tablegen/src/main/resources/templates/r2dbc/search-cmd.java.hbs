@@ -39,8 +39,7 @@ public class {{className}} {
         * {{columnDescription this tableName}}
         *  change type of {{javaType}} to List<{{javaType}}> will generate 'in' sql condition.
         */
-        {{{columnAnnotation this tableName}}}
-        protected {{javaType}}  {{firstLow name}};
+{{{columnAnnotationBlock this tableName}}}        protected {{javaType}}  {{firstLow name}};
     {{/if~}}
 {{/each}}
 {{! setters & getters }}

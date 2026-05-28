@@ -110,6 +110,11 @@ public class DtoGenerator extends BaseGenerator {
     }
 
     @Override
+    protected boolean columnAnnotationWithConstraints() {
+        return false;
+    }
+
+    @Override
     protected void additionalSetting(Handlebars handlebars) {
         super.additionalSetting(handlebars);
         // usage: {{type tableName colName}}
@@ -124,11 +129,6 @@ public class DtoGenerator extends BaseGenerator {
             return TableGen.createPreparedWhereClause(this.setInfo.getTableKeys((String) tableName), like,
                     this.setInfo.getTableCols((String) tableName));
         });
-
-        boolean isView = this instanceof IView;
-
-        handlebars.registerHelper("columnAnnotation", (col, options) -> TableUtils.getColumnAnnotation(config, setInfo,
-                options.param(0), (ColumnData) col, false));
 
     }
 

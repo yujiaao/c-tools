@@ -84,12 +84,13 @@ public class SearchCmdGenerator extends BaseGenerator {
     }
 
     @Override
+    protected boolean columnAnnotationWithConstraints() {
+        return false;
+    }
+
+    @Override
     protected void additionalSetting(Handlebars handlebars) {
         super.additionalSetting(handlebars);
-
-        handlebars.registerHelper("columnAnnotation", (col, options) -> TableUtils.getColumnAnnotation(config, setInfo,
-                options.param(0), (ColumnData) col, false));
-
     }
 
 }

@@ -16,7 +16,7 @@ import com.bixuebihui.tablegen.entry.ColumnData;
 import com.bixuebihui.tablegen.entry.TableInfo;
 
 import java.util.HashMap;
-import java.util.Map;
+import java.util.regex.Pattern;
 
 class PojoGeneratorTest {
 
@@ -95,6 +95,28 @@ class PojoGeneratorTest {
         assertFalse(res.contains("&#x3D;"), "生成代码中不应出现 &#x3D;");
         assertTrue(res.contains("1=个人"), "表注释中的等号应原样保留");
         assertTrue(res.contains("0=禁用") || res.contains("1=启用"), "字段注释中的等号应原样保留");
+    }
+
+    @Test
+    void generatedPojoNoExtraBlankLinesAroundFieldAnnotations() throws IOException {
+        PojoGenerator gen = new PojoGenerator();
+        gen.init(this.getClass().getResource("/tablegen.properties").getPath());
+        Map<String, Object> ctx = gen.getContextMap("test_gen");
+        @SuppressWarnings("unchecked")
+        List<ColumnData> fields = (List<ColumnData>) ctx.get("fields");
+        assertNotNull(fields);
+        for (ColumnData field : fields) {
+            if ("name".equals(field.getName())) {
+                field.setComment("创建时间");
+                field.setDefaultValue("CURRENT_TIMESTAMP");
+                break;
+            }
+        }
+        String res = gen.getHandlebars().compile("pojo.java").apply(Context.newBuilder(ctx).build());
+        assertFalse(Pattern.compile("\\*/\\s*\\n\\s*\\n\\s*@Schema").matcher(res).find(),
+                "Javadoc 结束与 @Schema 之间不应有空行");
+        assertFalse(Pattern.compile("@Schema\\([^\\n]+\\)\\s*\\n\\s*\\n\\s*protected").matcher(res).find(),
+                "@Schema 与字段声明之间不应有空行");
     }
 
     @Test

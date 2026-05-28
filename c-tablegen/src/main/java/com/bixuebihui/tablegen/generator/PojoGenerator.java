@@ -3,10 +3,7 @@ package com.bixuebihui.tablegen.generator;
 import org.apache.commons.lang3.StringUtils;
 
 import com.bixuebihui.generated.tablegen.pojo.T_metatable;
-import com.bixuebihui.tablegen.TableUtils;
-import com.bixuebihui.tablegen.entry.ColumnData;
 import com.bixuebihui.tablegen.entry.TableSetInfo;
-import com.github.jknack.handlebars.Handlebars;
 
 /**
  * @author xwx
@@ -67,15 +64,6 @@ public class PojoGenerator extends BaseGenerator{
     @Override
     public String getClassName(String tableName) {
       return getPojoClassName(tableName);
-    }
-
-    @Override
-    protected void additionalSetting(Handlebars handlebars) {
-        super.additionalSetting(handlebars);
-        // usage: {{columnAnnotation aColumnData tableName}}
-        handlebars.registerHelper("columnAnnotation", (col, options) ->
-                TableUtils.getColumnAnnotation(config, setInfo, options.param(0),(ColumnData) col, true));
-
     }
 
     @Override

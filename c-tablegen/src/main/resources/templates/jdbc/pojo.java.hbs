@@ -28,8 +28,7 @@ public class {{className}} {{interface}} {
     /**
     * {{columnDescription this tableName}}
     */
-    {{{columnAnnotation this tableName}}}
-    protected {{javaType}}  {{firstLow name}};
+{{{columnAnnotationBlock this tableName}}}    protected {{javaType}}  {{firstLow name}};
 {{/each}}
 
 {{! setters & getters }}

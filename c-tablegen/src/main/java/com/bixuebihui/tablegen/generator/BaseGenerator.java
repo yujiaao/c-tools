@@ -246,6 +246,10 @@ public abstract class BaseGenerator implements Generator {
         return "";
     }
 
+    protected boolean columnAnnotationWithConstraints() {
+        return true;
+    }
+
     protected void additionalSetting(Handlebars handlebars) {
         // SafeString: avoid Handlebars HTML-escaping '=' to &#x3D; in Java comments/annotations
         handlebars.registerHelper("columnDescription", (col, options) -> new Handlebars.SafeString(
@@ -253,6 +257,9 @@ public abstract class BaseGenerator implements Generator {
                         options.param(0), (ColumnData) col)));
         handlebars.registerHelper("tableComment", (context, options) ->
                 new Handlebars.SafeString(resolveTableComment(options)));
+        handlebars.registerHelper("columnAnnotationBlock", (col, options) -> new Handlebars.SafeString(
+                TableUtils.getColumnAnnotationBlock(config, setInfo, options.param(0), (ColumnData) col,
+                        columnAnnotationWithConstraints())));
     }
 
     private static String resolveTableComment(Options options) {
