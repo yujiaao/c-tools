@@ -13,11 +13,11 @@ import javax.annotation.processing.Generated;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModelProperty;
 
-@Api(tags="{{tableInfo.comment}}")
+@Api(tags="{{tableComment}}")
 {{else}}
 import io.swagger.v3.oas.annotations.media.Schema;
 
-@Schema(description ="{{tableInfo.comment}}")
+@Schema(description ="{{tableComment}}")
 {{/eq}}
 {{/if}}
 @Generated("com.github.yujiaao:tablegen")

@@ -11,7 +11,7 @@ import javax.annotation.processing.Generated;
 
 {{#if config.useSwagger}}
 import io.swagger.v3.oas.annotations.media.Schema;
-@Schema(description ="{{tableInfo.comment}}")
+@Schema(description ="{{tableComment}}")
 {{/if~}}
 @Generated("com.github.yujiaao:tablegen")
 public class {{className}} {{interface}} {

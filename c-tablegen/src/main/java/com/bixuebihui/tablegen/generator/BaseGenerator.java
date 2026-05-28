@@ -10,6 +10,7 @@ import com.bixuebihui.tablegen.entry.TableInfo;
 import com.bixuebihui.tablegen.entry.TableSetInfo;
 import com.github.jknack.handlebars.Context;
 import com.github.jknack.handlebars.Handlebars;
+import com.github.jknack.handlebars.Options;
 import com.github.jknack.handlebars.Template;
 import com.github.jknack.handlebars.context.FieldValueResolver;
 import com.github.jknack.handlebars.context.JavaBeanValueResolver;
@@ -246,6 +247,21 @@ public abstract class BaseGenerator implements Generator {
     }
 
     protected void additionalSetting(Handlebars handlebars) {
+        // SafeString: avoid Handlebars HTML-escaping '=' to &#x3D; in Java comments/annotations
+        handlebars.registerHelper("columnDescription", (col, options) -> new Handlebars.SafeString(
+                TableUtils.getColumnDescription(config, setInfo.getColumnsExtInfo(options.param(0)),
+                        options.param(0), (ColumnData) col)));
+        handlebars.registerHelper("tableComment", (context, options) ->
+                new Handlebars.SafeString(resolveTableComment(options)));
+    }
+
+    private static String resolveTableComment(Options options) {
+        Object tableInfo = options.context.get("tableInfo");
+        if (tableInfo instanceof TableInfo) {
+            String comment = ((TableInfo) tableInfo).getComment();
+            return comment != null ? comment : "";
+        }
+        return "";
     }
 
     @Override

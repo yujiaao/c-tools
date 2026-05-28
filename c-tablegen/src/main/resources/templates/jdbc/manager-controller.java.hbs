@@ -50,12 +50,12 @@ import java.util.List;
 @RequestMapping("/{{snakeCase pojoClassName}}")
 {{#if config.useSwagger}}
 {{#eq config.swaggerVersion "2" ~}}
-@Api(tags = "{{tableInfo.comment}}")
+@Api(tags = "{{tableComment}}")
 {{else~}}
-@Tag(name = "{{className}}", description = "{{tableInfo.comment}}")
+@Tag(name = "{{className}}", description = "{{tableComment}}")
 {{/eq~}}
 {{else}}
-@Tag(name = "{{className}}", description = "{{tableInfo.comment}}")
+@Tag(name = "{{className}}", description = "{{tableComment}}")
 {{/if}}
 public class  {{className}} {
     private final {{pojoClassName}}Service {{firstLow pojoClassName}}Service;

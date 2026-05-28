@@ -13,6 +13,10 @@ import java.util.Map;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import com.bixuebihui.tablegen.entry.ColumnData;
+import com.bixuebihui.tablegen.entry.TableInfo;
+
+import java.util.HashMap;
+import java.util.Map;
 
 class PojoGeneratorTest {
 
@@ -53,6 +57,58 @@ class PojoGeneratorTest {
 
     }
 
+
+    @Test
+    void tableCommentDoesNotEscapeEquals() throws IOException {
+        PojoGenerator gen = new PojoGenerator();
+        gen.init(this.getClass().getResource("/tablegen.properties").getPath());
+        Handlebars h = gen.getHandlebars();
+        TableInfo tableInfo = new TableInfo("user");
+        tableInfo.setComment("类型: 1=个人 2=企业");
+        Map<String, Object> ctx = new HashMap<>();
+        ctx.put("tableInfo", tableInfo);
+        Template temp = h.compileInline("@Schema(description =\"{{tableComment}}\")");
+        String res = temp.apply(Context.newBuilder(ctx).build());
+        assertFalse(res.contains("&#x3D;"), "表注释中的等号不应被 HTML 转义");
+        assertTrue(res.contains("1=个人"), "表注释中的等号应原样输出");
+    }
+
+    @Test
+    void generatedPojoPreservesEqualsInComments() throws IOException {
+        PojoGenerator gen = new PojoGenerator();
+        gen.init(this.getClass().getResource("/tablegen.properties").getPath());
+        Map<String, Object> ctx = gen.getContextMap("test_gen");
+        TableInfo tableInfo = (TableInfo) ctx.get("tableInfo");
+        assertNotNull(tableInfo, "测试表 tableInfo 应存在");
+        tableInfo.setComment("类型: 1=个人 2=企业");
+        @SuppressWarnings("unchecked")
+        List<ColumnData> fields = (List<ColumnData>) ctx.get("fields");
+        assertNotNull(fields, "字段列表不应为空");
+        for (ColumnData field : fields) {
+            if ("name".equals(field.getName())) {
+                field.setComment("状态: 0=禁用 1=启用");
+                break;
+            }
+        }
+        Handlebars h = gen.getHandlebars();
+        String res = h.compile("pojo.java").apply(Context.newBuilder(ctx).build());
+        assertFalse(res.contains("&#x3D;"), "生成代码中不应出现 &#x3D;");
+        assertTrue(res.contains("1=个人"), "表注释中的等号应原样保留");
+        assertTrue(res.contains("0=禁用") || res.contains("1=启用"), "字段注释中的等号应原样保留");
+    }
+
+    @Test
+    void columnDescriptionDoesNotEscapeEquals() throws IOException {
+        PojoGenerator gen = new PojoGenerator();
+        gen.init(this.getClass().getResource("/tablegen.properties").getPath());
+        Handlebars h = gen.getHandlebars();
+        ColumnData col = new ColumnData("status", "int", 10, true);
+        col.setComment("0=关闭 1=开启");
+        Template temp = h.compileInline("* {{columnDescription this 'test'}}");
+        String res = temp.apply(Context.newContext(col));
+        assertFalse(res.contains("&#x3D;"), "等号不应被 HTML 转义");
+        assertTrue(res.contains("0=关闭"), "注释中的等号应原样输出");
+    }
 
     @Test
     void mapLookup() throws IOException {
