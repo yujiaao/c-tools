@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.github.yujiaao</groupId>
         <artifactId>c-tools-parent</artifactId>
-        <version>1.17.1.1</version>
+        <version>1.17.1.2</version>
     </parent>
 
     <artifactId>c-dbtools-spring</artifactId>

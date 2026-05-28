@@ -5,7 +5,7 @@
     <parent>
         <artifactId>c-tools-parent</artifactId>
         <groupId>com.github.yujiaao</groupId>
-        <version>1.17.1.1</version>
+        <version>1.17.1.2</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>c-tablegen-jdbc-demo</artifactId>

@@ -1,11 +1,12 @@
 package com.bixuebihui.tablegen.generator;
 
+import org.apache.commons.lang3.StringUtils;
+
 import com.bixuebihui.generated.tablegen.pojo.T_metatable;
 import com.bixuebihui.tablegen.TableUtils;
 import com.bixuebihui.tablegen.entry.ColumnData;
 import com.bixuebihui.tablegen.entry.TableSetInfo;
 import com.github.jknack.handlebars.Handlebars;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author xwx

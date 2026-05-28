@@ -866,7 +866,7 @@ public class TableUtils {
 
         if (col.getDefaultValue() != null) {
             if (!res.contains("NotNull")) {
-                return escape(res) + "\n    * NotNull, default value: "+  col.getDefaultValue();
+                res +=  ", NotNull, default: "+  col.getDefaultValue();
             }
         }
         return escape(res);

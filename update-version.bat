@@ -13,7 +13,7 @@ mvn build-helper:parse-version versions:set -DnewVersion=\${parsedVersion.majorV
 
 widows:
 mvn build-helper:parse-version versions:set -DnewVersion='${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.nextIncrementalVersion}' versions:commit
-mvn build-helper:parse-version versions:set -DnewVersion='1.17.1.1' versions:commit
+mvn build-helper:parse-version versions:set -DnewVersion='1.17.1.2' versions:commit
 mvn -DskipTests=true clean deploy -Pauto -D'maven.test.skip=true'
 mvn -DskipTests=true clean install -Pauto -D'maven.test.skip=true'
 
