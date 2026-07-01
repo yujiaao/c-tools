@@ -3,10 +3,7 @@ marp: true
 theme: gaia
 footer: "c-tools"
 paginate: true
-style: |
-  section a {
-      font-size: 40px;
-  }
+style: "section a { font-size: 40px; }"
 ---
 <!--
 _class: lead gaia
@@ -15,7 +12,7 @@ _backgroundColor: black
 -->
 
 ## c-tools / c-tablegen 代码生成指引
-![invert opacity:.9 w:400](docs/assets/logo.png)
+![invert opacity:.9 w:400](./assets/logo.svg)
 #### xwx@live.cn
 2025-11-26
 
@@ -218,4 +215,4 @@ collection_fields=play_url
 ---
 # Q & A
 
-![bg contain](docs/assets/logo.png)
+![bg contain](./assets/logo.svg)
