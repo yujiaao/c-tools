@@ -1,6 +1,10 @@
 # 配置说明
 
-本文档介绍 `tablegen.properties` 配置文件中的各项配置选项。
+`tablegen.properties` 是 TableGear 的单一配置入口：连接哪张库、生成哪些表、产出哪些层、是否增量/加密/读写分离，都在这里声明。
+
+**建议阅读顺序**：先完成 [快速开始](./getting-started) 跑通最小配置，再按需查阅本文。从 Hibernate / MyBatis 迁移的用户可对照 [概念指南](./from-orm) 理解各配置项的设计意图。
+
+---
 
 ## 数据源配置
 

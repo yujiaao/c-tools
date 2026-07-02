@@ -8,6 +8,12 @@
     "platform": "github"
   },
   "scripts": {
+    "sync-versions": "node scripts/sync-versions.mjs",
+    "sync-versions:check": "node scripts/sync-versions.mjs --check",
+    "restore-version-placeholders": "node scripts/restore-version-placeholders.mjs",
+    "prestart": "npm run sync-versions",
+    "prebuild": "npm run sync-versions",
+    "postbuild": "npm run restore-version-placeholders",
     "start": "dumi dev",
     "build": "dumi build",
     "translateAll": "node translateAll.js",

@@ -2,6 +2,8 @@
 
 C-Tools is a lightweight Java ORM code generator based on JDBC/R2DBC standards. It can automatically generate layered code including POJO, DAL, Service, Controller, etc. from database tables.
 
+> Maven versions are synced from the root `pom.xml` before `npm run build` (currently **{{CTOOLS_VERSION}}**). See [Features](./features).
+
 ## Prerequisites
 
 - JDK 17+
@@ -11,21 +13,30 @@ C-Tools is a lightweight Java ORM code generator based on JDBC/R2DBC standards. 
 
 ## Installation
 
-### Maven Dependency
-
-Add the following dependency to your project's `pom.xml`:
+### Recommended: BOM
 
 ```xml
-<dependency>
-    <groupId>com.github.yujiaao</groupId>
-    <artifactId>c-dbtools</artifactId>
-    <version>1.16.3</version>
-</dependency>
+<dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>com.github.yujiaao</groupId>
+            <artifactId>c-tools-bom</artifactId>
+            <version>{{CTOOLS_VERSION}}</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+    </dependencies>
+</dependencyManagement>
+
+<dependencies>
+    <dependency>
+        <groupId>com.github.yujiaao</groupId>
+        <artifactId>c-dbtools</artifactId>
+    </dependency>
+</dependencies>
 ```
 
 ### Maven Plugin
-
-Add the code generation plugin:
 
 ```xml
 <build>
@@ -33,7 +44,7 @@ Add the code generation plugin:
         <plugin>
             <groupId>com.github.yujiaao</groupId>
             <artifactId>tablegen-maven-plugin</artifactId>
-            <version>1.16.3</version>
+            <version>{{CTOOLS_VERSION}}</version>
             <executions>
                 <execution>
                     <id>first-execution</id>
@@ -70,16 +81,14 @@ table_list=test_gen,t_edu
 
 ### 2. Run Code Generation
 
-Execute the following command to generate code:
-
 ```bash
 mvn tablegen:gen
 ```
 
-Or:
+Or with explicit plugin coordinates:
 
 ```bash
-mvn com.github.yujiaao:tablegen-maven-plugin:1.16.3:gen -DpropPath=tablegen.properties
+mvn com.github.yujiaao:tablegen-maven-plugin:{{CTOOLS_VERSION}}:gen -DpropPath=tablegen.properties
 ```
 
 ### 3. View Generated Code
@@ -88,51 +97,20 @@ The generated code will be located in the `src/main/java` directory, including:
 
 - `pojo/` - POJO entity classes
 - `dal/` - Data access layer
-- `service/` - Service layer
-- `controller/` - Controller layer (if enabled)
+- `business/` - Manager for custom extensions
+- `service/`, `controller/` - Optional REST layers
 
 ## Quick Start - R2DBC {#r2dbc}
 
-### 1. Create Configuration File
+Add `r2dbc=yes` and switch the driver/URL to the R2DBC protocol. Generated APIs use `Mono` / `Flux`. See [Features](./features).
 
-Create a `tablegen.properties` file in the project root, add `r2dbc=yes`:
+## Sample Projects
 
-```properties
-alias=test
-r2dbc=yes
-className=io.r2dbc.mysql.MySqlConnectionFactoryProvider
-dburl=r2dbc:mysql://127.0.0.1:3306/test
-username=test
-password=test123
-schema=test
-package_name=com.example.test
-src_dir=/src/main/java
-table_list=test_gen,t_edu
-```
-
-### 2. Add R2DBC Dependency
-
-```xml
-<dependency>
-    <groupId>io.r2dbc</groupId>
-    <artifactId>r2dbc-mysql</artifactId>
-    <version>0.8.0.RELEASE</version>
-</dependency>
-```
-
-### 3. Run Code Generation
-
-Execute the same Maven command, the generated code will use Reactor API (Mono/Flux).
-
-## Example Projects
-
-You can refer to the following example projects:
-
-- [c-tablegen-jdbc-demo](../c-tablegen-jdbc-demo) - JDBC example
-- [c-tablegen-r2dbc-demo](../c-tablegen-r2dbc-demo) - R2DBC example
+- [c-tablegen-jdbc-demo](https://github.com/yujiaao/c-tools/tree/main/c-tablegen-jdbc-demo)
+- [c-tablegen-r2dbc-demo](https://github.com/yujiaao/c-tools/tree/main/c-tablegen-r2dbc-demo)
 
 ## Next Steps
 
-- Check [Configuration Guide](./configuration) for detailed configuration options
-- Check [FAQ](./faq) to resolve issues
-
+- [Features](./features)
+- [Configuration](./configuration)
+- [FAQ](./faq)
