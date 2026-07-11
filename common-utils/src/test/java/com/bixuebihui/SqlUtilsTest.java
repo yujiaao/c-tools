@@ -16,4 +16,33 @@ public class SqlUtilsTest extends TestCase {
 
                 ));
     }
+
+    public void testFormGroupQueryWithoutGroupBy() {
+        assertEquals("select count(amount) gv_cnt, SUM(amount) gv_sm  from orders where status = 1  ",
+                SqlUtils.formGroupQuery("orders", "", "amount", "SUM", "where status = 1", null, null));
+    }
+
+    public void testBatchUpdateByPrimaryKey() {
+        assertEquals(0, SqlUtils.batchUpdateByPrimaryKey(0, (start, end) -> 0, msg -> {
+        }));
+
+        final int[] updated = {0};
+        int total = SqlUtils.batchUpdateByPrimaryKey(3, (start, end) -> {
+            updated[0] += (int) (end - start + 1);
+            return (int) (end - start + 1);
+        }, msg -> {
+        });
+
+        assertEquals(3, total);
+        assertEquals(3, updated[0]);
+    }
+
+    public void testBatchUpdateByPrimaryKeyStopsOnException() {
+        int total = SqlUtils.batchUpdateByPrimaryKey(10_000, (start, end) -> {
+            throw new RuntimeException("boom");
+        }, msg -> {
+        });
+
+        assertEquals(0, total);
+    }
 }

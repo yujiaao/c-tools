@@ -38,6 +38,14 @@
                     <target>17</target>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <configuration>
+                    <skip>${jacoco.skip}</skip>
+                    <includes>com/bixuebihui/**</includes>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
@@ -48,6 +56,8 @@
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
+        <!-- 默认跳过 JaCoCo：ES 模块单测覆盖率低，本地 verify 不必每次插桩/校验。CI 传 -Djacoco.skip=false -->
+        <jacoco.skip>true</jacoco.skip>
     </properties>
 
     <dependencies>
