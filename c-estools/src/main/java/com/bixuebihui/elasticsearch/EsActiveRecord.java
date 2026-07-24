@@ -48,6 +48,10 @@ public interface EsActiveRecord<T> extends ActiveRecord<T> {
 
     EsActiveRecord<T> setFilter(ElasticSearchFilter filter);
 
+    EsActiveRecord<T> filterScript(String scriptSource, Map<String, Object> params, String lang);
+
+    EsActiveRecord<T> filterScript(String scriptSource);
+
     EsActiveRecord<T> searchAfter(List<Object> lastOrderFieldsValue);
 
     List<CountObj> dateHistCountList(String dateField, String interval, String[] groupByFields, GroupFunction fun);

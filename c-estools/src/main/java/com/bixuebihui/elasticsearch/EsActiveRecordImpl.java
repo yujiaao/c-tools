@@ -25,6 +25,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static java.util.Collections.emptyMap;
 import static java.util.Collections.emptySet;
 
 public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
@@ -203,7 +204,7 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     }
 
     @Override
-    public ActiveRecord<T> gt(String field, Object value) {
+    public EsActiveRecord<T> gt(String field, Object value) {
         return greaterThan(field, value);
     }
 
@@ -215,12 +216,36 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     }
 
     @Override
-    public ActiveRecord<T> sql(String field, Object... value) {
+    public EsActiveRecord<T> sql(String field, Object... value) {
         throw new NotImplementedException();
     }
 
     @Override
-    public ActiveRecord<T> lt(String field, Object value) {
+    public EsActiveRecord<T> filterScript(String scriptSource, Map<String, Object> params, String lang) {
+
+        if(StringUtils.isEmpty(lang)){
+            lang = "painless";
+        }
+        if(params==null){
+            params = emptyMap();
+        }
+        Map<String, Object> map = new LinkedHashMap<>();
+        map.put("params", params);
+        map.put("lang", lang);
+
+        filterStack.addFilter("", SqlFilter.Comparison.SCRIPT,
+                List.of(scriptSource), map);
+        return this;
+    }
+
+    @Override
+    public EsActiveRecord<T> filterScript(String scriptSource) {
+        return filterScript(scriptSource, emptyMap(), null);
+    }
+
+
+    @Override
+    public EsActiveRecord<T> lt(String field, Object value) {
         return smallerThan(field, value);
     }
 
@@ -256,7 +281,7 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
     }
 
     @Override
-    public ActiveRecord<T> le(String field, Object value) {
+    public EsActiveRecord<T> le(String field, Object value) {
         return smallerOrEqualThan(field, value);
     }
 
@@ -557,7 +582,7 @@ public class EsActiveRecordImpl<T, V> implements EsActiveRecord<T> {
      * {@inheritDoc}
      */
     @Override
-    public ActiveRecord<T> fields(String... fields) {
+    public EsActiveRecord<T> fields(String... fields) {
         this.resultFields = fields.length==1 ? fields[0] : String.join(",", fields);
         return this;
     }
