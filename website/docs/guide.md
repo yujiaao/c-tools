@@ -28,31 +28,23 @@ _backgroundColor: black
 
 ---
 # 项目概览
-## 什么是 c-tablegen？
+## 什么是 TableGear？
 
-* c-tools 家族的核心代码生成器，负责 JDBC/R2DBC/ES 多种目标代码产出
-* 通过数据库元信息生成 pojo、dal、service、controller 等分层代码
-* 结合缓存与差异比对支持增量生成，避免覆盖手写逻辑
-* 与 family 中的 c-cache、c-dbtools、c-estools 等模块协作，生成后的代码可直接调用这些运行时库
+* **表结构驱动**：从数据库元信息生成 POJO、DAL、Manager、Service、Controller
+* **轻量运行时**：`c-dbtools` 提供链式 JDBC，无 Hibernate Session、无 MyBatis XML 引擎
+* **为 ORM 熟手设计**：概念上对应 Entity/Mapper/Service，扩展点集中在 `*Manager`
+* **增量演进**：schema diff 后只重生变更表，手写业务不被覆盖
+
+👉 详细对照见文档 [从 Hibernate / MyBatis 而来](/guide/from-orm)
 
 ---
 # 核心能力
 
-* **多协议**：同一套属性配置即可生成 JDBC、Project Reactor (R2DBC) 以及 ElasticSearch 访问层
-* **分层模板**：`Generator[]` 以数组形式串联 pojo/dal/business/dto/service/controller 输出，单次配置即可全栈产出
-* **增量 & 缓存**：`generate_all=no` 时自动读取 `target/gen_table_data.cache`，仅对比发生变化的表
-* **虚拟视图**：`view_list` 支持 SQL 片段，适合未在数据库落表的场景
-* **读写分离与加解密**：通过 `read_write_separate` 和 `encrypted_fields` 实现拓展
-* **ElasticSearch Schema**：当检测到 ES 配置时，会转向索引级模板批量生成 JSON 映射
-
----
-# 架构速览
-
-1. **配置解析**：`ProjectConfig.readFrom` 解析 `tablegen.properties`，注册路径、命名、接口扩展等参数
-2. **元数据收集**：`TableGen` 连接数据库（HikariCP/BitmechanicDataSource），抓取表、列、索引、外键
-3. **生成调度**：`GenerateAll` 将 `Generator` 分为按表、按视图、按索引及一次性生成四类流水线
-4. **增量比对**：若未全量生成，则通过 `DbDiff` 对比缓存与当前 schema，只对差异表触发生成器
-5. **产物落地**：模板存放于 `src/main/resources/templates/{jdbc,r2dbc,es}`，按需输出 Java/JSON 文件
+* **多协议**：同一配置切换 JDBC、R2DBC、ElasticSearch
+* **分层模板**：pojo → dal → business → dto → service → controller 一次产出
+* **ActiveRecord**：`Manager.ar()` 链式条件，替代 XML `<if>` 与 HQL 拼接
+* **view_list**：SQL 片段定义虚拟视图，无需落库
+* **企业扩展**：读写分离、字段加解密、Swagger 注解
 
 ---
 # 先决条件
@@ -67,7 +59,7 @@ _backgroundColor: black
 
 1. 复制 `c-tablegen-jdbc-demo`
 2. 配置 `tablegen.properties`
-3. 运行 `mvn com.github.yujiaao:tablegen-maven-plugin:1.15.12.7:gen -DpropPath=tablegen.properties`
+3. 运行 `mvn com.github.yujiaao:tablegen-maven-plugin:{{CTOOLS_VERSION}}:gen -DpropPath=tablegen.properties`
 4. 查看 `src/main/java` 下生成的 pojo、dal、service、controller 目录
 5. 若需要 REST 骨架，可结合 `c-tablegen-mojo` 自定义方法或在 `templates/jdbc` 中拓展
 

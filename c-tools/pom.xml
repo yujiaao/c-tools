@@ -11,6 +11,10 @@
     <artifactId>c-tools</artifactId>
     <name>common tools</name>
     <description>common tools for web development</description>
+    <properties>
+        <!-- 默认跳过 JaCoCo：legacy 模块单测覆盖率低，本地 verify 不必每次插桩/校验。CI 传 -Djacoco.skip=false -->
+        <jacoco.skip>true</jacoco.skip>
+    </properties>
     <licenses>
 
         <license>
@@ -68,6 +72,7 @@
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.8.8</version>
                 <configuration>
+                    <skip>${jacoco.skip}</skip>
                     <includes>com/bixuebihui/**</includes>
                 </configuration>
                 <executions>
@@ -99,7 +104,7 @@
                                         <limit implementation="org.jacoco.report.check.Limit">
                                             <counter>COMPLEXITY</counter>
                                             <value>COVEREDRATIO</value>
-<!--                                            <minimum>0.30</minimum>-->
+                                            <minimum>0.60</minimum>
                                         </limit>
                                     </limits>
                                 </rule>

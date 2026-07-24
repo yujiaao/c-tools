@@ -1,146 +1,105 @@
 # 常见问题
 
-## 如何重新生成但保留手写逻辑？
+## 从 Hibernate 迁移，Session 和懒加载怎么处理？
 
-**A:** 关闭 `over_write_all` 并在自定义子类中扩展，生成器会只更新 `Base` 层代码。
+TableGear **没有 Session 与实体代理**。每次查询通过 JDBC 得到 detached POJO，行为与 MyBatis 一致。需要关联数据时：
 
-例如：
+- 单表：用 `Manager.ar()` 链式查询
+- 多表 JOIN：用 `view_list` 生成只读视图，或在 Manager 里组合多次查询
+- 避免 N+1：在 Manager 层显式 batch 查询，不依赖 ORM 自动 fetch
 
-```java
-// 生成的 Base 类（会被覆盖）
-public class TestGenBase {
-    // ...
-}
+## 从 MyBatis 迁移，原来的 XML 怎么办？
 
-// 自定义子类（不会被覆盖）
-public class TestGen extends TestGenBase {
-    // 你的自定义逻辑
-}
-```
+建议分阶段：
 
-## 如何支持多数据库？
+1. **单表 CRUD** — 删除 XML，改用生成的 DAL + Manager
+2. **动态条件** — 用 `ar().eq().in().ignoreBlank()` 替代 `<if>` 片段
+3. **复杂报表 SQL** — 暂保留 XML 或迁入 `view_list`，逐步收拢到 Manager
 
-**A:** 在 `propPath` 中使用逗号分隔多个属性文件：
+`over_write_all=no` 保证你手写代码不被生成器覆盖。
 
-```bash
-mvn tablegen:gen -DpropPath=mysql.properties,postgres.properties
-```
+## 和 MyBatis Generator 比，生成范围差在哪？
 
-插件会按顺序执行每个配置文件。
+MyBatis Generator 通常只产出 Entity + Mapper + XML。TableGear 额外生成 **Manager（扩展点）、DTO、Converter、Service、Controller**，并内置分页与 Swagger 注解，更接近「可运行的垂直切片」。
 
-## 生成失败如何定位？
+## 和 Hibernate 比，事务怎么用？
 
-**A:** 按以下步骤排查：
-
-1. 查看 `target/gen_table_data.cache` 文件，检查缓存状态
-2. 查看 `logs` 目录下的日志文件
-3. 开启 Maven 详细日志：`mvn tablegen:gen -X`
-4. 检查数据库连接权限和表结构
-
-## 如何自定义生成的代码？
-
-**A:** 有以下几种方式：
-
-1. **模板扩展**：在 `src/main/resources/templates/jdbc` 或 `templates/r2dbc` 目录下放置自定义模板文件（`.hbs` 格式），同名文件会覆盖默认模板
-
-2. **继承扩展**：关闭 `over_write_all`，在子类中添加自定义方法
-
-3. **Maven 插件扩展**：使用 `c-tablegen-mojo` 中的 `AddSourceMethodMojo` 自动向指定类添加方法
-
-## 增量生成不工作怎么办？
-
-**A:** 检查以下几点：
-
-1. 确认 `generate_all=no` 已设置
-2. 检查 `target/gen_table_data.cache` 文件是否存在
-3. 如果缓存损坏，删除缓存文件重新生成
-4. 确保数据库连接正常，可以读取表结构
-
-## 如何支持 Spring 事务管理？
-
-**A:** 如果使用 JDBC 连接，需要从 Spring 的 `DataSourceUtils` 获取连接：
+使用 Spring 声明式事务即可。JDBC 模式下请确保从 Spring 管理的 `DataSource` 取连接：
 
 ```java
 Connection conn = DataSourceUtils.getConnection(dataSource);
 ```
 
-并配置事务管理器：
+配置 `DataSourceTransactionManager` 后，Manager 内的多个 DAL 操作可处于同一事务。
 
-```xml
-<bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
-    <property name="dataSource" ref="dataSource"/>
-</bean>
+---
+
+## 如何重新生成但保留手写逻辑？
+
+关闭 `over_write_all`，业务写在 `business/*Manager` 或自定义 Service 子类：
+
+```java
+@Repository
+public class TEduManager extends TEduList {
+    // 生成器不会删除此类中的自定义方法
+    public List<TEdu> myCustomQuery() { ... }
+}
 ```
 
-## 生成的代码使用了哪些依赖？
+配合 `generate_all=no` 可只对 schema 变更的表重新生成。
 
-**A:** 最小依赖包括：
+## 如何支持多数据库？
 
-- `c-dbtools` - 核心工具库
-- 数据库驱动（如 `mysql-connector-java`）
-- 可选：`hibernate-validator`（如果启用注解）
-- 可选：`swagger-annotations`（如果启用 Swagger）
+`propPath` 逗号分隔多个属性文件：
+
+```bash
+mvn tablegen:gen -DpropPath=mysql.properties,postgres.properties
+```
+
+每个文件用不同 `alias` 区分数据源。
+
+## 生成失败如何定位？
+
+1. 检查 `target/gen_table_data.cache`
+2. 查看 Maven 日志：`mvn tablegen:gen -X`
+3. 确认数据库账号有读表结构权限
+
+## 如何自定义生成的代码？
+
+1. **模板覆盖**：在 `src/main/resources/templates/jdbc` 放置同名 `.hbs`
+2. **Manager 扩展**：推荐，业务逻辑集中在此
+3. **c-tablegen-mojo**：`AddSourceMethodMojo` 用 JavaParser 向类追加方法
+
+## 增量生成不工作怎么办？
+
+确认 `generate_all=no`，且 `target/gen_table_data.cache` 存在。缓存损坏时删除后全量重生。
+
+## 生成的代码依赖什么？
+
+- **必需**：`c-dbtools`、数据库驱动
+- **可选**：`hibernate-validator`（`use_annotation=yes`）、SpringDoc（`use_swagger=yes`）、MapStruct（DTO 转换）
 
 ## 支持哪些数据库？
 
-**A:** 目前支持：
+MySQL、PostgreSQL、H2、Derby、SQL Server、Access；Oracle 部分支持。
 
-- ✅ MySQL
-- ✅ PostgreSQL
-- ✅ H2
-- ✅ Derby
-- ✅ SQL Server
-- ⚠️ Oracle（部分支持）
-- ✅ Access
+## 虚拟视图 view_list 是什么？
 
-## 如何生成 ElasticSearch 映射？
-
-**A:** 配置 `type=elasticsearch_mapping` 并设置 ES 相关配置：
+不建 DB 视图，用 SQL 片段声明只读模型并生成完整分层代码：
 
 ```properties
-type=elasticsearch_mapping
-url=http://localhost:9200
-index_list=my-index-000001
-primary_key_fields=biz_id
+view_list=order_summary: select o.id, u.name from orders o join users u on o.user_id=u.id;
 ```
 
-## 虚拟视图如何使用？
-
-**A:** 使用 `view_list` 配置，格式为 `视图名: SQL语句`：
+## 字段加密与读写分离？
 
 ```properties
-view_list=my_view: select id, name from test_table where status = 1;
+encrypted_fields=user:phone,id_card
+read_write_separate=yes
 ```
 
-这样可以在不创建数据库视图的情况下生成对应的代码。
+详见 [核心特性](./features)。
 
-## 如何配置字段加密？
+---
 
-**A:** 使用 `encrypted_fields` 配置，格式为 `表名:字段1,字段2`：
-
-```properties
-encrypted_fields=t_encrypt_test:personal_id,phone_number
-```
-
-生成的代码会自动处理这些字段的加密/解密。
-
-## 读写分离如何配置？
-
-**A:** 设置 `read_write_separate=yes`，并在 Spring 配置中提供读/写两个数据源：
-
-```java
-@Bean
-@Qualifier("test_read")
-public DataSource readDataSource() {
-    // 读数据源配置
-}
-
-@Bean
-@Qualifier("test_write")
-public DataSource writeDataSource() {
-    // 写数据源配置
-}
-```
-
-生成的 Manager 类会自动使用对应的数据源。
-
+更多概念说明：[从 Hibernate / MyBatis 而来](./from-orm) · [配置说明](./configuration)

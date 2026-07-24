@@ -2,6 +2,7 @@ import { defineConfig } from 'dumi';
 
 export default defineConfig({
   mode: 'site',
+  hash: true,
   base: '/tablegear/',
   publicPath: '/tablegear/',
   locales: [
@@ -155,6 +156,14 @@ export default defineConfig({
         path: '/guide/getting-started',
       },
       {
+        title: '从 Hibernate/MyBatis 而来',
+        path: '/guide/from-orm',
+      },
+      {
+        title: '核心特性',
+        path: '/guide/features',
+      },
+      {
         title: '配置说明',
         path: '/guide/configuration',
       },
@@ -167,6 +176,14 @@ export default defineConfig({
       {
         title: 'Quick start',
         path: '/en-US/guide/getting-started',
+      },
+      {
+        title: 'From Hibernate/MyBatis',
+        path: '/en-US/guide/from-orm',
+      },
+      {
+        title: 'Features',
+        path: '/en-US/guide/features',
       },
       {
         title: 'Configuration',
