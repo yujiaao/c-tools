@@ -679,6 +679,11 @@ public class SqlFilter {
          * es more_like_this query, use tf-idf to calculate the score &amp; sort by score
          */
         MORE_LIKE_THIS,
+
+        /**
+         * es script query, placed into the bool.filter clause (filter context, non-scoring)
+         */
+        SCRIPT,
     }
 
     public static class Filter {

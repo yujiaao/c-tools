@@ -167,6 +167,8 @@ public class ElasticSearchFilter extends SqlFilter {
         List<Query> queryFilters = new ArrayList<>(upOperator != Operator.NOT ? addOnFilters : Collections.emptyList());
         List<Query> queryNotFilters = new ArrayList<>(
                 upOperator == Operator.NOT ? addOnFilters : Collections.emptyList());
+        // script filters are always placed into the bool.filter clause (filter context)
+        List<Query> queryScriptFilters = new ArrayList<>();
 
         if (filters != null) {
             filters.forEach(filter -> {
@@ -260,6 +262,10 @@ public class ElasticSearchFilter extends SqlFilter {
                         queryFilter = getMoreLikeThis(filter);
                         queryFilters.add(queryFilter);
                         break;
+                    case SCRIPT:
+                        queryFilter = getScript(filter);
+                        queryScriptFilters.add(queryFilter);
+                        break;
                     default:
                         break;
                 }
@@ -272,6 +278,10 @@ public class ElasticSearchFilter extends SqlFilter {
             queryFilters.add(notCriteria);
         }
         addFilter(criteria, queryFilters, upOperator);
+
+        if (!queryScriptFilters.isEmpty()) {
+            queryScriptFilters.forEach(criteria::addFilter);
+        }
     }
 
 
@@ -326,6 +336,21 @@ public class ElasticSearchFilter extends SqlFilter {
                 .setBoostTerms(boostTerms)
                 .setMinimumShouldMatch(minimumShouldMatch);
         return queryFilter;
+    }
+
+    private Query getScript(Filter filter) {
+        String source = filter.getValue()[0].toString();
+        Map<String, Object> params = Collections.emptyMap();
+        String lang = null;
+        if (filter.getOtherParams() != null) {
+            if (filter.getOtherParams().containsKey("params")) {
+                params = (Map<String, Object>) filter.getOtherParams().get("params");
+            }
+            if (filter.getOtherParams().containsKey("lang")) {
+                lang = filter.getOtherParams().get("lang").toString();
+            }
+        }
+        return Query.script(source, params, lang);
     }
 
     private void buildEsObject(Bool criteria, Filter filter, Operator upOperator) {
@@ -410,6 +435,10 @@ public class ElasticSearchFilter extends SqlFilter {
                 // 处理MORE_LIKE_THIS类型
                 queryFilter = getMoreLikeThis(filter);
                 addFilter(criteria, queryFilter, upOperator);
+                break;
+            case SCRIPT:
+                queryFilter = getScript(filter);
+                criteria.addFilter(queryFilter);
                 break;
             default:
                 break;
