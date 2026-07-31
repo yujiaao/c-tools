@@ -26,7 +26,11 @@ public class ServiceGenerator extends BaseGenerator {
 
     @Override
     public boolean wantToGenerate(String fileName) {
-        return super.wantToGenerate(fileName) && ! new File(fileName).exists();
+        // 在 gen-with-merge (enableMerge=true) 模式下，service 类不覆盖已存在的文件，保留用户修改
+        if (config.isEnableMerge()) {
+            return !new File(fileName).exists();
+        }
+        return super.wantToGenerate(fileName) && !new File(fileName).exists();
     }
 
     @Override

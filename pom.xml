@@ -10,7 +10,7 @@
     <groupId>com.github.yujiaao</groupId>
     <artifactId>c-tools-parent</artifactId>
     <packaging>pom</packaging>
-    <version>1.17.1.4</version>
+    <version>1.17.1.5</version>
     <name>c-tools-parent</name>
     <licenses>
         <license>

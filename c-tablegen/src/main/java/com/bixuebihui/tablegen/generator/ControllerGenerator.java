@@ -28,6 +28,10 @@ public class ControllerGenerator extends BaseGenerator {
 
     @Override
     public boolean wantToGenerate(String fileName) {
+        // 在 gen-with-merge (enableMerge=true) 模式下，controller 类不覆盖已存在的文件，保留用户修改
+        if (config.isEnableMerge()) {
+            return !new File(fileName).exists();
+        }
         return super.wantToGenerate(fileName);
     }
 
