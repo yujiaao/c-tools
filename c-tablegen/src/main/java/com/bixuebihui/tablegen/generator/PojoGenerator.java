@@ -5,6 +5,9 @@ import org.apache.commons.lang3.StringUtils;
 import com.bixuebihui.generated.tablegen.pojo.T_metatable;
 import com.bixuebihui.tablegen.entry.TableSetInfo;
 
+import java.io.File;
+import java.io.IOException;
+
 /**
  * @author xwx
  */
@@ -69,6 +72,40 @@ public class PojoGenerator extends BaseGenerator{
     @Override
     protected String getExtendsClasses(String tableName) {
       return getExtendsClasses(setInfo, tableName);
+    }
+
+    @Override
+    public boolean wantToGenerate(String fileName) {
+        // 如果 enableMerge 为 false，只生成不存在的文件，不修改已存在的文件
+        if (!config.isEnableMerge()) {
+            return !new File(fileName).exists();
+        }
+        // enableMerge 为 true 时，正常生成并智能合并
+        return super.wantToGenerate(fileName);
+    }
+
+    @Override
+    public String generate(String tableName, int index) throws IOException {
+        // Generate the new source code using the template
+        String generatedSource = super.generate(tableName, index);
+
+        // Check if merge is enabled via ProjectConfig
+        if (!config.isEnableMerge()) {
+            // Merge disabled, return generated source as-is
+            return generatedSource;
+        }
+
+        // Get the target file path
+        String targetFileName = getTargetFileName(tableName);
+        File targetFile = new File(targetFileName);
+
+        // If file exists, merge with existing content (保留用户修改，如自定义 setter 逻辑)
+        if (targetFile.exists()) {
+            LOG.info("Merging generated Pojo with existing file: {}", targetFileName);
+            return JavaSourceMerger.mergeSource(targetFile, generatedSource);
+        }
+
+        return generatedSource;
     }
 
 }
