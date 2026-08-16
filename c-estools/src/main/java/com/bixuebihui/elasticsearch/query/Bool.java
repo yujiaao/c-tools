@@ -66,7 +66,7 @@ public class Bool extends Query {
      * @return this
      */
     public Bool addFilter(Query filter) {
-        return (Bool) this.addParam("filter", filter);
+        return (Bool) this.addParam("filter", filter.toArray());
     }
 
     /**

@@ -431,6 +431,32 @@ public class Query extends Params {
     }
 
     /**
+     * script query.
+     * <p>
+     * https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-script-query.html
+     *
+     * @param source script source
+     * @return Script
+     */
+    public static Script script(String source) {
+        return new Script(source);
+    }
+
+    /**
+     * script query with params and lang.
+     * <p>
+     * https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-script-query.html
+     *
+     * @param source script source
+     * @param params script params
+     * @param lang   script lang, e.g. painless
+     * @return Script
+     */
+    public static Script script(String source, Map<String, Object> params, String lang) {
+        return new Script(source, params, lang);
+    }
+
+    /**
      * percolate query.
      * <p>
      * https://www.elastic.co/guide/en/elasticsearch/reference/5.0/query-dsl-percolate-query.html

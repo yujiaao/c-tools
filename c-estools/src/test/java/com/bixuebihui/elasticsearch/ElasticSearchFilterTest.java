@@ -6,6 +6,7 @@ import com.bixuebihui.elasticsearch.aggregation.EsAggregationBuilder;
 import com.bixuebihui.elasticsearch.aggregation.Terms;
 import com.bixuebihui.elasticsearch.query.Query;
 import com.bixuebihui.jdbc.SqlFilter;
+import com.bixuebihui.elasticsearch.EsActiveRecordImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -457,4 +458,193 @@ class ElasticSearchFilterTest {
         assertTrue(json.contains("\"term\""));
         assertTrue(json.contains("\"minimum_should_match\":1"));
     }
+
+
+    /**
+     *  需求增加对 filter + script 的支持， 类似以下的写法
+     * GET cms-content/_search
+     *
+     * {
+     *     "size": 10000,
+     *     "query": {
+     *         "bool": {
+     *             "must": [
+     *                 {
+     *                     "term": {
+     *                         "is_del": {
+     *                             "boost": 1,
+     *                             "value": false
+     *                         }
+     *                     }
+     *                 },
+     *                 {
+     *                     "term": {
+     *                         "is_publish": {
+     *                             "boost": 1,
+     *                             "value": true
+     *                         }
+     *                     }
+     *                 },
+     *                 {
+     *                     "term": {
+     *                         "status": {
+     *                             "boost": 1,
+     *                             "value": 8
+     *                         }
+     *                     }
+     *                 },
+     *                 {
+     *                     "term": {
+     *                         "biz_type": {
+     *                             "boost": 1,
+     *                             "value": 0
+     *                         }
+     *                     }
+     *                 },
+     *                 {
+     *                     "terms": {
+     *                         "series_ids": [
+     *                             8721
+     *                         ]
+     *                     }
+     *                 },
+     *                 {
+     *                     "terms": {
+     *                         "tag_ids": [
+     *                             1
+     *                         ]
+     *                     }
+     *                 },
+     *                 {
+     *                     "terms": {
+     *                         "secondary_ids": [
+     *                             101
+     *                         ]
+     *                     }
+     *                 },
+     *                 {
+     *                     "terms": {
+     *                         "new_car_label": [
+     *                             "新车谍照",
+     *                             "新车效果图",
+     *                             "新车申报图/专利图",
+     *                             "新车发布预告",
+     *                             "新车发布",
+     *                             "新车预售预告",
+     *                             "新车预售",
+     *                             "新车上市预告",
+     *                             "上市前体验",
+     *                             "新车上市",
+     *                             "上市后体验",
+     *                             "技术解析",
+     *                             "购车分享"
+     *                         ]
+     *                     }
+     *                 },
+     *                 {
+     *                     "range": {
+     *                         "publish_time": {
+     *                             "from": "2026-05-23 00:00:00",
+     *                             "to": "2026-07-25 13:50:22"
+     *                         }
+     *                     }
+     *                 }
+     *             ],
+     *             "filter": [
+     *                 {
+     *                     "script": {
+     *                         "script": {
+     *                             "source": "doc['new_car_series_names'].size() == 0"
+     *                         }
+     *                     }
+     *                 }
+     *             ]
+     *         }
+     *     },
+     *     "sort": {
+     *         "publish_time": "desc"
+     *     }
+     * }
+      */
+    @Test
+    void testBoolMustWithFilterScript() throws Exception {
+        ElasticSearchFilter filter = new ElasticSearchFilter();
+        filter.addFilter("is_del", SqlFilter.Comparison.IS, new Object[]{false});
+        filter.addFilter("is_publish", SqlFilter.Comparison.IS, new Object[]{true});
+        filter.addFilter("status", SqlFilter.Comparison.IS, new Object[]{8});
+        filter.addFilter("biz_type", SqlFilter.Comparison.IS, new Object[]{0});
+        filter.addFilter("series_ids", SqlFilter.Comparison.IN, new Object[]{8721});
+        filter.addFilter("tag_ids", SqlFilter.Comparison.IN, new Object[]{1});
+        filter.addFilter("secondary_ids", SqlFilter.Comparison.IN, new Object[]{101});
+        filter.addFilter("new_car_label", SqlFilter.Comparison.IN, new String[]{
+                "新车谍照", "新车效果图", "新车申报图/专利图", "新车发布预告", "新车发布",
+                "新车预售预告", "新车预售", "新车上市预告", "上市前体验", "新车上市",
+                "上市后体验", "技术解析", "购车分享"});
+        filter.addFilter("publish_time", SqlFilter.Comparison.BETWEEN,
+                new String[]{"2026-05-23 00:00:00", "2026-07-25 13:50:22"});
+        filter.addFilter("new_car_series_names", SqlFilter.Comparison.SCRIPT,
+                new Object[]{"doc['new_car_series_names'].size() == 0"});
+
+        Query query = filter.toQuery();
+        String res = filter.toEsObject(query, 0, 10000, emptySet(), emptySet(),
+                null, null, emptyMap(), null, emptyList());
+
+        System.out.println(res);
+
+        assertTrue(res.contains("\"must\""));
+        assertTrue(res.contains("\"filter\""));
+        assertTrue(res.contains("\"script\""));
+        assertTrue(res.contains("\"source\":\"doc['new_car_series_names'].size() == 0\""));
+    }
+
+    /**
+     * 测试 EsActiveRecord#filterScript 方法能够生成 bool.filter 下的 script 查询
+     */
+    @Test
+    void filterScript() throws Exception {
+        ElasticSearchFilter filter = new ElasticSearchFilter();
+        EsActiveRecordImpl<Object, Long> record = new EsActiveRecordImpl<>();
+        record.setFilter(filter);
+
+        record.filterScript("doc['new_car_series_names'].size() == 0");
+
+        Query query = filter.toQuery();
+        String res = filter.toEsObject(query, 0, 10, emptySet(), emptySet(),
+                null, null, emptyMap(), null, emptyList());
+        System.out.println(res);
+
+        assertTrue(res.contains("\"filter\""));
+        assertTrue(res.contains("\"script\""));
+        assertTrue(res.contains("\"source\":\"doc['new_car_series_names'].size() == 0\""));
+        // 未指定 lang 时默认 painless
+        assertTrue(res.contains("\"lang\":\"painless\""));
+    }
+
+    /**
+     * 测试 EsActiveRecord#filterScript 方法带 params 与 lang 的场景
+     */
+    @Test
+    void filterScriptWithParams() throws Exception {
+        ElasticSearchFilter filter = new ElasticSearchFilter();
+        EsActiveRecordImpl<Object, Long> record = new EsActiveRecordImpl<>();
+        record.setFilter(filter);
+
+        Map<String, Object> params = Map.of("min", 1, "max", 5);
+        record.filterScript(
+                "doc['price'].value >= params.min && doc['price'].value <= params.max",
+                params, "painless");
+
+        Query query = filter.toQuery();
+        String res = filter.toEsObject(query, 0, 10, emptySet(), emptySet(),
+                null, null, emptyMap(), null, emptyList());
+        System.out.println(res);
+
+        assertTrue(res.contains("\"filter\""));
+        assertTrue(res.contains("\"source\":\"doc['price'].value >= params.min && doc['price'].value <= params.max\""));
+        assertTrue(res.contains("\"params\":"));
+        assertTrue(res.contains("\"min\":1"));
+        assertTrue(res.contains("\"max\":5"));
+        assertTrue(res.contains("\"lang\":\"painless\""));
+    }
+
 }
