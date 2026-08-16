@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <!-- Background -->
+  <rect x="0" y="0" width="200" height="200" fill="#ffffff"/>
+  
+  <!-- Table Grid -->
+  <rect x="40" y="40" width="120" height="120" rx="10" fill="#f0f4f8" stroke="#2563eb" stroke-width="8"/>
+  <line x1="40" y1="80" x2="160" y2="80" stroke="#2563eb" stroke-width="4"/>
+  <line x1="40" y1="120" x2="160" y2="120" stroke="#2563eb" stroke-width="4"/>
+  <line x1="100" y1="40" x2="100" y2="160" stroke="#2563eb" stroke-width="4"/>
+  
+  <!-- Gear Icon Overlay -->
+  <g transform="translate(140, 140)">
+    <circle r="45" fill="#ffffff"/> <!-- Masking background for gear -->
+    <path d="M0 -35 L8 -35 L12 -25 L22 -22 L30 -12 L40 -8 L40 8 L30 12 L22 22 L12 25 L8 35 L-8 35 L-12 25 L-22 22 L-30 12 L-40 8 L-40 -8 L-30 -12 L-22 -22 L-12 -25 L-8 -35 Z" fill="#2563eb" transform="rotate(15)"/>
+    <circle r="12" fill="#ffffff"/>
+  </g>
+</svg>
