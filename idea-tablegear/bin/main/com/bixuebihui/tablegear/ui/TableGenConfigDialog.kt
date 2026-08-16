@@ -1,12 +1,5 @@
 package com.bixuebihui.tablegear.ui
 
-import com.bixuebihui.tablegear.ConfigMode
-import com.bixuebihui.tablegear.TableGearBundle
-import com.bixuebihui.tablegear.TableGearProperties
-import com.bixuebihui.tablegen.TableGen
-import com.intellij.notification.NotificationGroupManager
-import com.intellij.notification.NotificationType
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.progress.ProgressIndicator
@@ -15,14 +8,18 @@ import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.Messages
+import com.intellij.notification.NotificationGroupManager
+import com.intellij.notification.NotificationType
+import com.intellij.notification.Notification
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.components.JBTabbedPane
 import com.intellij.util.ui.JBUI
+import com.bixuebihui.tablegear.ConfigMode
+import com.bixuebihui.tablegear.TableGearProperties
+import com.bixuebihui.tablegen.TableGen
 import java.awt.BorderLayout
-import java.awt.CardLayout
 import java.awt.Dimension
-import java.io.InputStreamReader
-import java.io.OutputStreamWriter
+import java.io.*
 import java.nio.charset.StandardCharsets
 import java.util.*
 import javax.swing.*
@@ -40,26 +37,18 @@ class TableGenConfigDialog(
     
     // 配置面板
     private lateinit var databasePanel: DatabaseConfigPanel
-    private lateinit var esPanel: EsConfigPanel
     private lateinit var codeGenPanel: CodeGenConfigPanel
     private lateinit var tablePanel: TableConfigPanel
     private lateinit var advancedPanel: AdvancedConfigPanel
     
     fun getTablePanel(): TableConfigPanel = tablePanel
     
-    // 数据源配置卡片（数据库 / ES 切换）
-    private lateinit var dataSourceCardPanel: JPanel
-    private val DATA_SOURCE_CARD_DB = "database"
-    private val DATA_SOURCE_CARD_ES = "es"
-
     // UI组件
     private lateinit var tabbedPane: JBTabbedPane
     private lateinit var filePathLabel: JLabel
-    private lateinit var modeCombo: JComboBox<String>
-    private var tableTabIndex: Int = -1  // 表配置标签页索引，ES 模式下会移除
-
+    
     init {
-        title = TableGearBundle.message("config.dialog.title")
+        title = "TableGen 配置编辑器"
         init()
         
         // 如果提供了初始文件，加载它
@@ -73,29 +62,15 @@ class TableGenConfigDialog(
         
         // 创建文件路径显示和操作按钮
         val topPanel = JPanel(BorderLayout())
-        filePathLabel = JLabel(TableGearBundle.message("dialog.file.notSelected"))
+        filePathLabel = JLabel("未选择文件")
         topPanel.add(filePathLabel, BorderLayout.WEST)
         
         val buttonPanel = JPanel()
-        modeCombo = JComboBox(
-            arrayOf(
-                TableGearBundle.message("dialog.mode.database"),
-                TableGearBundle.message("dialog.mode.es")
-            )
-        )
-        modeCombo.addActionListener { onConfigModeChanged() }
-        buttonPanel.add(JLabel(TableGearBundle.message("dialog.mode.label")))
-        buttonPanel.add(modeCombo)
-        buttonPanel.add(Box.createHorizontalStrut(15))
-        val newDefaultBtn = JButton(TableGearBundle.message("dialog.button.generateDefault"))
-        newDefaultBtn.addActionListener { generateDefaultConfig() }
-        buttonPanel.add(newDefaultBtn)
-        buttonPanel.add(Box.createHorizontalStrut(10))
-        val openBtn = JButton(TableGearBundle.message("dialog.button.open"))
+        val openBtn = JButton("打开文件...")
         openBtn.addActionListener { openFile() }
         buttonPanel.add(openBtn)
         
-        val saveAsBtn = JButton(TableGearBundle.message("dialog.button.saveAs"))
+        val saveAsBtn = JButton("另存为...")
         saveAsBtn.addActionListener { saveAsFile() }
         buttonPanel.add(saveAsBtn)
         
@@ -108,26 +83,17 @@ class TableGenConfigDialog(
         tabbedPane = JBTabbedPane()
         
         databasePanel = DatabaseConfigPanel(model)
-        esPanel = EsConfigPanel(model)
         codeGenPanel = CodeGenConfigPanel(model)
         tablePanel = TableConfigPanel(model, project)
         advancedPanel = AdvancedConfigPanel(model, project, tablePanel)
         
-        dataSourceCardPanel = JPanel(CardLayout())
-        dataSourceCardPanel.add(databasePanel, DATA_SOURCE_CARD_DB)
-        dataSourceCardPanel.add(esPanel, DATA_SOURCE_CARD_ES)
-        val dataSourceTab = JPanel(BorderLayout())
-        dataSourceTab.add(dataSourceCardPanel, BorderLayout.CENTER)
-
-        tabbedPane.addTab(TableGearBundle.message("dialog.tab.dataSource"), dataSourceTab)
-        tableTabIndex = 1
-        tabbedPane.addTab(TableGearBundle.message("dialog.tab.table"), tablePanel)
-        tabbedPane.addTab(TableGearBundle.message("dialog.tab.codegen"), codeGenPanel)
-        tabbedPane.addTab(TableGearBundle.message("dialog.tab.advanced"), advancedPanel)
+        tabbedPane.addTab("数据库配置", databasePanel)
+        tabbedPane.addTab("代码生成配置", codeGenPanel)
+        tabbedPane.addTab("表配置", tablePanel)
+        tabbedPane.addTab("高级配置", advancedPanel)
         
         mainPanel.add(tabbedPane, BorderLayout.CENTER)
-        refreshModeFromModel()
-
+        
         // 设置对话框大小
         mainPanel.preferredSize = Dimension(900, 700)
         
@@ -139,129 +105,6 @@ class TableGenConfigDialog(
         return mainPanel
     }
     
-    private fun refreshModeFromModel() {
-        val isEs = model.getConfigMode() == ConfigMode.ELASTICSEARCH
-        modeCombo.selectedIndex = if (isEs) 1 else 0
-        (dataSourceCardPanel.layout as CardLayout).show(dataSourceCardPanel, if (isEs) DATA_SOURCE_CARD_ES else DATA_SOURCE_CARD_DB)
-        if (isEs) {
-            if (tableTabIndex >= 0 && tableTabIndex < tabbedPane.tabCount && tabbedPane.getTitleAt(tableTabIndex) == TableGearBundle.message("dialog.tab.table")) {
-                tabbedPane.removeTabAt(tableTabIndex)
-                tableTabIndex = -1
-            }
-        } else {
-            if (tableTabIndex < 0) {
-                tableTabIndex = 1
-                tabbedPane.insertTab(TableGearBundle.message("dialog.tab.table"), null, tablePanel, null, tableTabIndex)
-            }
-        }
-    }
-
-    private fun onConfigModeChanged() {
-        val isEs = modeCombo.selectedIndex == 1
-        databasePanel.updateToModel()
-        esPanel.updateToModel()
-        model.setProperty("type", if (isEs) "elasticsearch_mapping" else "database")
-        databasePanel.updateFromModel()
-        esPanel.updateFromModel()
-        (dataSourceCardPanel.layout as CardLayout).show(dataSourceCardPanel, if (isEs) DATA_SOURCE_CARD_ES else DATA_SOURCE_CARD_DB)
-        if (isEs) {
-            if (tableTabIndex >= 0 && tableTabIndex < tabbedPane.tabCount && tabbedPane.getTitleAt(tableTabIndex) == TableGearBundle.message("dialog.tab.table")) {
-                tabbedPane.removeTabAt(tableTabIndex)
-                tableTabIndex = -1
-            }
-        } else {
-            if (tableTabIndex < 0) {
-                tableTabIndex = 1
-                tabbedPane.insertTab(TableGearBundle.message("dialog.tab.table"), null, tablePanel, null, tableTabIndex)
-            }
-        }
-    }
-
-    private fun generateDefaultConfig() {
-        val options = arrayOf(
-            TableGearBundle.message("dialog.defaultConfig.option.database"),
-            TableGearBundle.message("dialog.defaultConfig.option.es"),
-            TableGearBundle.message("dialog.defaultConfig.option.cancel")
-        )
-        val choice = Messages.showDialog(
-            project,
-            TableGearBundle.message("dialog.defaultConfig.selectType.message"),
-            TableGearBundle.message("dialog.defaultConfig.selectType.title"),
-            options,
-            0,
-            Messages.getQuestionIcon()
-        )
-        if (choice < 0 || choice == 2) return
-        val isEs = (choice == 1)
-        val descriptor = FileChooserDescriptor(false, true, false, false, false, false)
-            .apply {
-                withFileFilter { it.extension == "properties" || it.extension == "prop" }
-                withTitle(
-                    if (isEs) TableGearBundle.message("dialog.defaultConfig.saveTitle.es")
-                    else TableGearBundle.message("dialog.defaultConfig.saveTitle.db")
-                )
-            }
-        val defaultFileName = if (isEs) TableGearBundle.message("dialog.defaultConfig.defaultFileName.es")
-        else TableGearBundle.message("dialog.defaultConfig.defaultFileName.db")
-        FileChooser.chooseFile(descriptor, project, null)?.let { selected ->
-            val file = resolveTargetFile(selected, defaultFileName) ?: run {
-                Messages.showErrorDialog(
-                    project,
-                    TableGearBundle.message("dialog.defaultConfig.createFailed", selected.path),
-                    TableGearBundle.message("notification.common.errorTitle")
-                )
-                return@let
-            }
-            val props = DefaultConfigTemplates.forMode(isEs)
-            val configMode = if (isEs) ConfigMode.ELASTICSEARCH else ConfigMode.DATABASE
-            val sortedKeys = getSortedPropertyKeys(props, configMode)
-            val content = buildString {
-                append(
-                    if (isEs) TableGearBundle.message("dialog.file.header.comment.es")
-                    else TableGearBundle.message("dialog.file.header.comment.db")
-                )
-                append("\n")
-                sortedKeys.forEach { key ->
-                    val value = props.getProperty(key)
-                    if (value != null) {
-                        append("$key=$value\n")
-                    }
-                }
-            }
-            try {
-                ApplicationManager.getApplication().runWriteAction {
-                    OutputStreamWriter(file.getOutputStream(this@TableGenConfigDialog), StandardCharsets.UTF_8).use { writer ->
-                        writer.write(content)
-                    }
-                }
-                NotificationGroupManager.getInstance()
-                    .getNotificationGroup("TableGear.Notification")
-                    ?.createNotification(
-                        TableGearBundle.message("dialog.defaultConfig.generated", file.path),
-                        NotificationType.INFORMATION
-                    )
-                    ?.notify(project)
-                val load = Messages.showYesNoDialog(
-                    project,
-                    TableGearBundle.message("dialog.defaultConfig.openPrompt"),
-                    TableGearBundle.message("dialog.defaultConfig.openPrompt.title"),
-                    TableGearBundle.message("dialog.defaultConfig.openPrompt.open"),
-                    TableGearBundle.message("dialog.defaultConfig.openPrompt.skip"),
-                    Messages.getQuestionIcon()
-                )
-                if (load == Messages.YES) {
-                    loadFile(file)
-                }
-            } catch (e: Exception) {
-                Messages.showErrorDialog(
-                    project,
-                    TableGearBundle.message("dialog.defaultConfig.writeFailed", e.message ?: "unknown"),
-                    TableGearBundle.message("notification.common.errorTitle")
-                )
-            }
-        }
-    }
-
     /**
      * 尝试自动连接数据库（如果配置完整）
      */
@@ -277,7 +120,7 @@ class TableGenConfigDialog(
     }
     
     override fun createActions(): Array<Action> {
-        val generateCodeAction = object : AbstractAction(TableGearBundle.message("dialog.button.generateCode")) {
+        val generateCodeAction = object : AbstractAction("生成代码") {
             override fun actionPerformed(e: java.awt.event.ActionEvent?) {
                 runGenerateCode()
             }
@@ -291,18 +134,13 @@ class TableGenConfigDialog(
     private fun runGenerateCode() {
         // 先同步各面板到模型
         databasePanel.updateToModel()
-        esPanel.updateToModel()
         codeGenPanel.updateToModel()
         tablePanel.updateToModel()
         advancedPanel.updateToModel()
 
         val file = currentFile
         if (file == null) {
-            Messages.showErrorDialog(
-                project,
-                TableGearBundle.message("notification.generateCode.requireFile"),
-                TableGearBundle.message("notification.generateCode.failed.title")
-            )
+            Messages.showErrorDialog(project, "请先保存或打开一个 TableGen 配置文件后再生成代码。", "无法生成代码")
             return
         }
 
@@ -313,24 +151,24 @@ class TableGenConfigDialog(
         val configPath = file.path
         val proj = project
 
-        ProgressManager.getInstance().run(object : Task.Backgroundable(proj, TableGearBundle.message("notification.generateCode.progressTitle"), true) {
+        ProgressManager.getInstance().run(object : Task.Backgroundable(proj, "TableGen 生成代码", true) {
             override fun run(indicator: ProgressIndicator) {
                 indicator.isIndeterminate = true
-                indicator.text = TableGearBundle.message("notification.generateCode.running")
+                indicator.text = "正在根据当前配置生成代码..."
                 try {
                     TableGen().run(configPath)
                     javax.swing.SwingUtilities.invokeLater {
                         NotificationGroupManager.getInstance()
                             .getNotificationGroup("TableGear.Notification")
-                            ?.createNotification(TableGearBundle.message("notification.generateCode.success"), NotificationType.INFORMATION)
+                            ?.createNotification("代码生成完成", NotificationType.INFORMATION)
                             ?.notify(proj)
                     }
                 } catch (t: Throwable) {
                     javax.swing.SwingUtilities.invokeLater {
                         Messages.showErrorDialog(
                             proj,
-                            TableGearBundle.message("notification.generateCode.error", t.message ?: "unknown", t.stackTraceToString().take(800)),
-                            TableGearBundle.message("notification.generateCode.progressTitle")
+                            "代码生成失败: ${t.message}\n\n${t.stackTraceToString().take(800)}",
+                            "TableGen 生成代码"
                         )
                     }
                 }
@@ -341,7 +179,6 @@ class TableGenConfigDialog(
     override fun doOKAction() {
         // 更新模型
         databasePanel.updateToModel()
-        esPanel.updateToModel()
         codeGenPanel.updateToModel()
         tablePanel.updateToModel()
         advancedPanel.updateToModel()
@@ -367,7 +204,7 @@ class TableGenConfigDialog(
         val descriptor = FileChooserDescriptor(true, false, false, false, false, false)
             .apply {
                 withFileFilter { it.extension == "properties" || it.extension == "prop" }
-                withTitle(TableGearBundle.message("dialog.file.chooseTitle"))
+                withTitle("选择 TableGen 配置文件")
             }
         
         FileChooser.chooseFiles(descriptor, project, null) { files ->
@@ -388,21 +225,19 @@ class TableGenConfigDialog(
             
             model.loadFromProperties(props)
             currentFile = file
-            filePathLabel.text = TableGearBundle.message("dialog.file.current", file.path)
+            filePathLabel.text = "文件: ${file.path}"
             
             // 更新所有面板
             databasePanel.updateFromModel()
-            esPanel.updateFromModel()
             codeGenPanel.updateFromModel()
             tablePanel.updateFromModel()
             advancedPanel.updateFromModel()
-            refreshModeFromModel()
-
+            
             // 显示 toast 通知而不是弹窗
             val notificationGroup = NotificationGroupManager.getInstance()
                 .getNotificationGroup("TableGear.Notification")
             notificationGroup?.createNotification(
-                TableGearBundle.message("notification.loadConfig.success"),
+                "配置文件加载成功！",
                 NotificationType.INFORMATION
             )?.notify(project)
             
@@ -416,11 +251,7 @@ class TableGenConfigDialog(
                 tryAutoConnect()
             }
         } catch (e: Exception) {
-            Messages.showErrorDialog(
-                project,
-                TableGearBundle.message("notification.loadConfig.error", e.message ?: "unknown"),
-                TableGearBundle.message("notification.common.errorTitle")
-            )
+            Messages.showErrorDialog(project, "加载配置文件失败: ${e.message}", "错误")
         }
     }
     
@@ -430,8 +261,7 @@ class TableGenConfigDialog(
             val outputStream = file.getOutputStream(this)
             OutputStreamWriter(outputStream, StandardCharsets.UTF_8).use { writer ->
                 // 自定义保存逻辑，避免 Properties.store() 自动转义冒号
-                writer.append(TableGearBundle.message("dialog.file.header.comment.db"))
-                writer.append("\n")
+                writer.append("# TableGen Configuration File\n")
                 
                 // 获取配置模式
                 val configMode = model.getConfigMode()
@@ -455,18 +285,15 @@ class TableGenConfigDialog(
                     }
                 }
             }
+            // 显示 toast 通知而不是弹窗
             val notificationGroup = NotificationGroupManager.getInstance()
                 .getNotificationGroup("TableGear.Notification")
             notificationGroup?.createNotification(
-                TableGearBundle.message("notification.saveConfig.success"),
+                "配置文件保存成功！",
                 NotificationType.INFORMATION
             )?.notify(project)
         } catch (e: Exception) {
-            Messages.showErrorDialog(
-                project,
-                TableGearBundle.message("notification.saveConfig.error", e.message ?: "unknown"),
-                TableGearBundle.message("notification.common.errorTitle")
-            )
+            Messages.showErrorDialog(project, "保存配置文件失败: ${e.message}", "错误")
         }
     }
     
@@ -494,16 +321,6 @@ class TableGenConfigDialog(
             usedKeys.add("package_name")
         }
         
-        // 1b. ES 模式时 type/url/index_list 等靠前
-        if (configMode == ConfigMode.ELASTICSEARCH || configMode == ConfigMode.JSON) {
-            listOf("type", "url", "index_list", "primary_key_fields", "alias", "username", "password").forEach { key ->
-                if (allKeys.contains(key) && !usedKeys.contains(key)) {
-                    sortedKeys.add(key)
-                    usedKeys.add(key)
-                }
-            }
-        }
-
         // 2. VIEW_LIST_KEY - view_list
         if (allKeys.contains("view_list")) {
             sortedKeys.add("view_list")
@@ -575,39 +392,16 @@ class TableGenConfigDialog(
         val descriptor = FileChooserDescriptor(false, true, false, false, false, false)
             .apply {
                 withFileFilter { it.extension == "properties" || it.extension == "prop" }
-                withTitle(TableGearBundle.message("dialog.file.saveTitle"))
+                withTitle("保存 TableGen 配置文件")
             }
-        val defaultName = currentFile?.name ?: "tablegen.properties"
-        FileChooser.chooseFile(descriptor, project, null)?.let { selected ->
-            val file = resolveTargetFile(selected, defaultName) ?: run {
-                Messages.showErrorDialog(
-                    project,
-                    TableGearBundle.message("dialog.defaultConfig.createFailed", selected.path),
-                    TableGearBundle.message("notification.common.errorTitle")
-                )
-                return@let
-            }
+        
+        FileChooser.chooseFile(descriptor, project, null)?.let { file ->
             saveFile(file)
             currentFile = file
-            filePathLabel.text = TableGearBundle.message("dialog.file.current", file.path)
+            filePathLabel.text = "文件: ${file.path}"
         }
     }
-
-    /**
-     * 若用户选中的是目录，则在该目录下创建/使用指定文件名的文件并返回；
-     * 若选中的已是文件则直接返回。这样可支持“选目录 + 默认文件名”的写入。
-     */
-    private fun resolveTargetFile(selected: VirtualFile, defaultFileName: String): VirtualFile? {
-        if (!selected.isDirectory) return selected
-        var target: VirtualFile? = null
-        ApplicationManager.getApplication().runWriteAction {
-            val existing = selected.findChild(defaultFileName)
-            target = if (existing != null && !existing.isDirectory) existing
-            else selected.createChildData(this@TableGenConfigDialog, defaultFileName)
-        }
-        return target
-    }
-
+    
     /**
      * 获取当前配置模型（用于外部访问）
      */

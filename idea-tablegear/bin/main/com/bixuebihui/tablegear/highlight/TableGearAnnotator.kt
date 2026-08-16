@@ -1,6 +1,5 @@
 package com.bixuebihui.tablegear.highlight
 
-import com.bixuebihui.tablegear.TableGearBundle
 import com.bixuebihui.tablegear.TableGearProperties
 import com.bixuebihui.tablegear.ValueType
 import com.bixuebihui.tablegear.extractPropertyKey
@@ -28,7 +27,7 @@ class TableGearAnnotator : Annotator {
                 val prop = TableGearProperties.PROPERTY_MAP[keyText]
                 if (prop == null) {
                     val display = element.text.trim()
-                    holder.newAnnotation(HighlightSeverity.WARNING, TableGearBundle.message("inspection.unknownKey", display))
+                    holder.newAnnotation(HighlightSeverity.WARNING, "未识别的配置项: $display")
                         .create()
                 } else {
                     // 根据配置项类型应用不同的颜色

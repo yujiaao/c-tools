@@ -1,6 +1,5 @@
 package com.bixuebihui.tablegear.ui
 
-import com.bixuebihui.tablegear.TableGearBundle
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.progress.Task
@@ -49,14 +48,14 @@ class TableConfigPanel(
         viewListArea.font = Font(Font.MONOSPACED, Font.PLAIN, 12)
         
         // 数据库连接按钮
-        connectDbButton = JButton(TableGearBundle.message("tableConfig.connectDb"))
+        connectDbButton = JButton("连接数据库")
         connectDbButton.addActionListener { connectToDatabase() }
         
-        selectTablesButton = JButton(TableGearBundle.message("tableConfig.selectTables"))
+        selectTablesButton = JButton("选择表...")
         selectTablesButton.isEnabled = false
         selectTablesButton.addActionListener { selectTables() }
         
-        statusLabel = JBLabel(TableGearBundle.message("tableConfig.status.disconnected"))
+        statusLabel = JBLabel("未连接")
         statusLabel.font = statusLabel.font.deriveFont(Font.ITALIC, 11f)
         
         val buttonPanel = JPanel()
@@ -66,12 +65,12 @@ class TableConfigPanel(
         
         val form = FormBuilder.createFormBuilder()
             .addComponent(buttonPanel)
-            .addLabeledComponent(JBLabel(TableGearBundle.message("tableConfig.label.tableList")), JScrollPane(tableListArea))
-            .addTooltip(TableGearBundle.message("tableConfig.tooltip.tableList"))
-            .addLabeledComponent(JBLabel(TableGearBundle.message("tableConfig.label.excludeTableList")), JScrollPane(excludeTableListArea))
-            .addTooltip(TableGearBundle.message("tableConfig.tooltip.excludeTableList"))
-            .addLabeledComponent(JBLabel(TableGearBundle.message("tableConfig.label.viewList")), JScrollPane(viewListArea))
-            .addTooltip(TableGearBundle.message("tableConfig.tooltip.viewList"))
+            .addLabeledComponent(JBLabel("表列表 (table_list):"), JScrollPane(tableListArea))
+            .addTooltip("要生成的表列表，多个表用逗号分隔，支持正则表达式\n例如: table1,table2,test(\\w+)")
+            .addLabeledComponent(JBLabel("排除表列表 (exclude_table_list):"), JScrollPane(excludeTableListArea))
+            .addTooltip("要排除的表列表，多个表用逗号分隔\n例如: PLAN_TABLE,T_SESSION,T_SEQUENCE")
+            .addLabeledComponent(JBLabel("视图列表 (view_list):"), JScrollPane(viewListArea))
+            .addTooltip("视图列表，用分号(;)分隔，格式为 view_name: select sql\n例如: my_view: select id, name from table1;")
             .addComponentFillVertically(JPanel(), 0)
             .panel
         
@@ -104,48 +103,48 @@ class TableConfigPanel(
         if (className.isNullOrBlank() || dburl.isNullOrBlank()) {
             Messages.showErrorDialog(
                 project,
-                TableGearBundle.message("tableConfig.incomplete.message"),
-                TableGearBundle.message("tableConfig.incomplete.title")
+                "请先配置数据库连接信息（驱动类名和数据库URL）",
+                "配置不完整"
             )
             return
         }
         
         // 更新UI状态
         connectDbButton.isEnabled = false
-        connectDbButton.text = TableGearBundle.message("tableConfig.connecting")
-        statusLabel.text = TableGearBundle.message("tableConfig.status.connecting")
+        connectDbButton.text = "连接中..."
+        statusLabel.text = "正在连接..."
         
         // 关闭之前的连接
         dbHelper?.close()
         
         // 在后台线程中执行数据库连接
-        ProgressManager.getInstance().run(object : Task.Backgroundable(project, TableGearBundle.message("tableConfig.task.connect"), false) {
+        ProgressManager.getInstance().run(object : Task.Backgroundable(project, "连接数据库", false) {
             override fun run(indicator: ProgressIndicator) {
                 indicator.isIndeterminate = true
-                indicator.text = TableGearBundle.message("tableConfig.status.connecting")
+                indicator.text = "正在连接数据库..."
                 
                 try {
                     // 创建新的连接
-                    indicator.text = TableGearBundle.message("tableConfig.status.creatingConnection")
+                    indicator.text = "创建数据库连接..."
                     dbHelper = DatabaseConnectionHelper(model)
                     
-                    indicator.text = TableGearBundle.message("tableConfig.status.testingConnection")
+                    indicator.text = "测试数据库连接..."
                     dbHelper!!.testConnection() // 如果成功会继续，失败会抛出异常
                     
-                    indicator.text = TableGearBundle.message("tableConfig.status.connected")
+                    indicator.text = "连接成功！"
                     
                     // 连接成功，在 UI 线程中更新界面
                     SwingUtilities.invokeLater {
-                        statusLabel.text = TableGearBundle.message("tableConfig.status.connected")
+                        statusLabel.text = "已连接"
                         selectTablesButton.isEnabled = true
                         connectDbButton.isEnabled = true
-                        connectDbButton.text = TableGearBundle.message("tableConfig.connectDb")
+                        connectDbButton.text = "连接数据库"
                         
                         // 显示 toast 通知而不是弹窗
                         val notificationGroup = NotificationGroupManager.getInstance()
                             .getNotificationGroup("TableGear.Notification")
                         notificationGroup?.createNotification(
-                            TableGearBundle.message("tableConfig.notification.connectSuccess"),
+                            "数据库连接成功！",
                             NotificationType.INFORMATION
                         )?.notify(project)
                     }
@@ -153,7 +152,7 @@ class TableConfigPanel(
                     val cause = e.cause ?: e
                     val driverClass = model.getProperty("className")?.trim().orEmpty()
                     val isDriverNotFound = cause is ClassNotFoundException ||
-                        (e.message?.contains(TableGearBundle.message("dbHelper.driverLoadFailedPrefix")) == true && driverClass.isNotEmpty())
+                        (e.message?.contains("无法加载JDBC驱动") == true && driverClass.isNotEmpty())
                     val canDownload = driverClass.isNotBlank() && JdbcDriverDownloadService.isDownloadable(driverClass)
 
                     if (isDriverNotFound && canDownload) {
@@ -163,31 +162,34 @@ class TableConfigPanel(
                         SwingUtilities.invokeAndWait {
                             choiceHolder[0] = Messages.showDialog(
                                 project,
-                                TableGearBundle.message("tableConfig.driverNotFoundPrompt", driverClass, downloadInfo, dirPath),
-                                TableGearBundle.message("tableConfig.driverDownloadTitle"),
-                                arrayOf(TableGearBundle.message("common.download"), TableGearBundle.message("common.cancel")),
+                                "无法加载 JDBC 驱动：$driverClass\n\n" +
+                                "该驱动未打包在插件中。是否下载并安装？\n\n" +
+                                "将下载：$downloadInfo\n\n" +
+                                "保存位置：$dirPath",
+                                "下载 JDBC 驱动",
+                                arrayOf("下载", "取消"),
                                 0,
                                 Messages.getQuestionIcon()
                             )
                         }
                         if (choiceHolder[0] == 0) {
-                            ProgressManager.getInstance().run(object : Task.Backgroundable(project, TableGearBundle.message("tableConfig.driverDownloading"), true) {
+                            ProgressManager.getInstance().run(object : Task.Backgroundable(project, "下载 JDBC 驱动", true) {
                                 override fun run(indicator: ProgressIndicator) {
                                     try {
                                         JdbcDriverDownloadService.downloadDriver(driverClass, indicator)
                                         SwingUtilities.invokeLater {
-                                            statusLabel.text = TableGearBundle.message("tableConfig.status.driverDownloaded")
+                                            statusLabel.text = "驱动已下载，正在重新连接..."
                                             connectToDatabase()
                                         }
                                     } catch (downloadEx: Exception) {
                                         SwingUtilities.invokeLater {
-                                            statusLabel.text = TableGearBundle.message("tableConfig.status.downloadFailed")
+                                            statusLabel.text = "下载失败"
                                             connectDbButton.isEnabled = true
-                                            connectDbButton.text = TableGearBundle.message("tableConfig.connectDb")
+                                            connectDbButton.text = "连接数据库"
                                             Messages.showErrorDialog(
                                                 project,
-                                                TableGearBundle.message("tableConfig.driverDownloadFailed", downloadEx.message ?: "unknown", dirPath),
-                                                TableGearBundle.message("tableConfig.driverDownloadFailedTitle")
+                                                "下载驱动失败: ${downloadEx.message}\n\n保存位置: $dirPath",
+                                                "下载失败"
                                             )
                                         }
                                     }
@@ -197,12 +199,12 @@ class TableConfigPanel(
                         }
                     }
 
-                    val errorMessage = e.message ?: TableGearBundle.message("common.unknown")
+                    val errorMessage = e.message ?: "未知错误"
                     SwingUtilities.invokeLater {
-                        statusLabel.text = TableGearBundle.message("tableConfig.status.connectFailed", errorMessage.take(50))
+                        statusLabel.text = "连接失败: ${errorMessage.take(50)}"
                         connectDbButton.isEnabled = true
-                        connectDbButton.text = TableGearBundle.message("tableConfig.connectDb")
-                        Messages.showErrorDialog(project, errorMessage, TableGearBundle.message("tableConfig.connectFailedTitle"))
+                        connectDbButton.text = "连接数据库"
+                        Messages.showErrorDialog(project, errorMessage, "连接失败")
                     }
                     e.printStackTrace()
                 }
@@ -215,8 +217,8 @@ class TableConfigPanel(
         if (helper == null) {
             Messages.showErrorDialog(
                 project,
-                TableGearBundle.message("tableConfig.requireConnect.message"),
-                TableGearBundle.message("tableConfig.requireConnect.title")
+                "请先连接数据库",
+                "未连接"
             )
             return
         }
@@ -230,7 +232,7 @@ class TableConfigPanel(
                 val notificationGroup = NotificationGroupManager.getInstance()
                     .getNotificationGroup("TableGear.Notification")
                 notificationGroup?.createNotification(
-                    TableGearBundle.message("tableConfig.notification.noTablesFound"),
+                    "数据库中没有找到表或视图",
                     NotificationType.WARNING
                 )?.notify(project)
                 return
@@ -268,15 +270,15 @@ class TableConfigPanel(
                 val notificationGroup = NotificationGroupManager.getInstance()
                     .getNotificationGroup("TableGear.Notification")
                 notificationGroup?.createNotification(
-                    TableGearBundle.message("tableConfig.notification.tablesSelected", selectedTables.size, selectedExcludeTables.size),
+                    "已选择 ${selectedTables.size} 个表，${selectedExcludeTables.size} 个排除表",
                     NotificationType.INFORMATION
                 )?.notify(project)
             }
         } catch (e: Exception) {
             Messages.showErrorDialog(
                 project,
-                TableGearBundle.message("tableConfig.loadTablesFailed", e.message ?: "unknown"),
-                TableGearBundle.message("notification.common.errorTitle")
+                "获取表列表失败: ${e.message}",
+                "错误"
             )
             e.printStackTrace()
         }

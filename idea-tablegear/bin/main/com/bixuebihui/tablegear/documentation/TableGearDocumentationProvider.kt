@@ -1,6 +1,5 @@
 package com.bixuebihui.tablegear.documentation
 
-import com.bixuebihui.tablegear.TableGearBundle
 import com.bixuebihui.tablegear.TableGearProperties
 import com.bixuebihui.tablegear.ValueType
 import com.bixuebihui.tablegear.extractPropertyKey
@@ -41,13 +40,13 @@ class TableGearDocumentationProvider : DocumentationProvider {
         builder.append("<i>${prop.valueType.name.lowercase()}</i><br/><br/>")
         builder.append(prop.description)
 
-        builder.append("<br/><br/>${TableGearBundle.message("doc.typeLabel")}<code>${prop.valueType.name.lowercase()}</code>")
+        builder.append("<br/><br/>类型：<code>${prop.valueType.name.lowercase()}</code>")
 
         when (prop.valueType) {
-            ValueType.BOOLEAN -> builder.append("<br/>${TableGearBundle.message("doc.validValues")}<code>yes</code> / <code>no</code> / <code>true</code> / <code>false</code>")
+            ValueType.BOOLEAN -> builder.append("<br/>有效值：<code>yes</code> / <code>no</code> / <code>true</code> / <code>false</code>")
             ValueType.ENUM -> {
                 if (!prop.enumValues.isNullOrEmpty()) {
-                    builder.append("<br/>${TableGearBundle.message("doc.enumValues")}")
+                    builder.append("<br/>可选值：")
                     builder.append(prop.enumValues.joinToString("、") { "<code>$it</code>" })
                 }
             }

@@ -1,6 +1,5 @@
 package com.bixuebihui.tablegear.ui
 
-import com.bixuebihui.tablegear.TableGearBundle
 import com.intellij.openapi.application.PathManager
 import com.intellij.openapi.progress.ProgressIndicator
 import java.io.File
@@ -94,12 +93,12 @@ object JdbcDriverDownloadService {
      */
     fun downloadDriver(driverClassName: String, indicator: ProgressIndicator? = null): File {
         val info = DRIVER_MAVEN[driverClassName.trim()]
-            ?: throw IllegalArgumentException(TableGearBundle.message("jdbcDownload.unsupportedDriver", driverClassName))
+            ?: throw IllegalArgumentException("不支持的驱动类型，无法自动下载: $driverClassName")
 
         val path = "$MAVEN_CENTRAL/${info.groupId.replace('.', '/')}/${info.artifactId}/${info.version}/${info.artifactId}-${info.version}.jar"
         val url = URL(path)
 
-        indicator?.text = TableGearBundle.message("jdbcDownload.downloading", info.displayName)
+        indicator?.text = "正在下载 ${info.displayName}..."
 
         val conn = url.openConnection() as HttpURLConnection
         conn.connectTimeout = 15000
@@ -111,14 +110,14 @@ object JdbcDriverDownloadService {
         if (code != HttpURLConnection.HTTP_OK) {
             // 尝试无分类器的 jar（部分 artifact 可能不带 version 后缀）
             conn.disconnect()
-            throw RuntimeException(TableGearBundle.message("jdbcDownload.httpFailed", code, path))
+            throw RuntimeException("下载失败: HTTP $code - $path")
         }
 
         val dir = getDriversDir()
         val jarFile = File(dir, "${info.artifactId}-${info.version}.jar")
 
         conn.inputStream.use { input ->
-            indicator?.text = TableGearBundle.message("jdbcDownload.saving", jarFile.name)
+            indicator?.text = "保存到 ${jarFile.name}..."
             FileOutputStream(jarFile).use { output ->
                 val buf = ByteArray(8192)
                 var total = 0L

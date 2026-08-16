@@ -1,6 +1,5 @@
 package com.bixuebihui.tablegear.ui
 
-import com.bixuebihui.tablegear.TableGearBundle
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBTextField
@@ -38,7 +37,6 @@ class CodeGenConfigPanel(private val model: TableGenConfigModel) : JPanel() {
     private lateinit var overWriteAllCheckBox: JBCheckBox
     private lateinit var enableMergeCheckBox: JBCheckBox
     
-    private lateinit var apiDocProviderCombo: JComboBox<String>
     private lateinit var swaggerVersionField: JTextComponent
     
     init {
@@ -57,37 +55,33 @@ class CodeGenConfigPanel(private val model: TableGenConfigModel) : JPanel() {
         dtoDirField = JBTextField()
         cmdDirField = JBTextField()
         
-        indexesCheckBox = JBCheckBox(TableGearBundle.message("config.checkbox.indexes"))
-        foreignKeysCheckBox = JBCheckBox(TableGearBundle.message("config.checkbox.foreignKeys"))
-        r2dbcCheckBox = JBCheckBox(TableGearBundle.message("config.checkbox.r2dbc"))
-        readWriteSeparateCheckBox = JBCheckBox(TableGearBundle.message("config.checkbox.readWriteSeparate"))
-        useCustomMetaTableCheckBox = JBCheckBox(TableGearBundle.message("config.checkbox.useCustomMetaTable"))
-        useAnnotationCheckBox = JBCheckBox(TableGearBundle.message("config.checkbox.useAnnotation"))
-        useSwaggerCheckBox = JBCheckBox(TableGearBundle.message("config.checkbox.useSwagger"))
-        useAutoincrementCheckBox = JBCheckBox(TableGearBundle.message("config.checkbox.useAutoincrement"))
-        generateProceduresCheckBox = JBCheckBox(TableGearBundle.message("config.checkbox.generateProcedures"))
-        generateAllCheckBox = JBCheckBox(TableGearBundle.message("config.checkbox.generateAll"))
-        overWriteAllCheckBox = JBCheckBox(TableGearBundle.message("config.checkbox.overwriteAll"))
-        enableMergeCheckBox = JBCheckBox(TableGearBundle.message("config.checkbox.enableMerge"))
+        indexesCheckBox = JBCheckBox("生成索引方法 (indexes)")
+        foreignKeysCheckBox = JBCheckBox("生成外键方法 (foreign_keys)")
+        r2dbcCheckBox = JBCheckBox("使用R2DBC (r2dbc)")
+        readWriteSeparateCheckBox = JBCheckBox("读写分离 (read_write_separate)")
+        useCustomMetaTableCheckBox = JBCheckBox("使用自定义元表 (use_custom_meta_table)")
+        useAnnotationCheckBox = JBCheckBox("使用注解 (use_annotation)")
+        useSwaggerCheckBox = JBCheckBox("生成Swagger注解 (use_swagger)")
+        useAutoincrementCheckBox = JBCheckBox("使用自增主键 (use_autoincrement)")
+        generateProceduresCheckBox = JBCheckBox("生成存储过程代码 (generate_procedures)")
+        generateAllCheckBox = JBCheckBox("全量生成 (generate_all)")
+        overWriteAllCheckBox = JBCheckBox("覆盖所有文件 (over_write_all)")
+        enableMergeCheckBox = JBCheckBox("启用智能合并 (enable_merge)")
         
-        apiDocProviderCombo = JComboBox(arrayOf("springdoc", "swagger"))
         swaggerVersionField = JBTextField()
-        apiDocProviderCombo.addActionListener {
-            updateApiDocDependentState()
-        }
         
         val form = FormBuilder.createFormBuilder()
-            .addComponent(JBLabel(TableGearBundle.message("config.section.options")).apply { font = font.deriveFont(java.awt.Font.BOLD) })
-            .addLabeledComponent(JBLabel(TableGearBundle.message("config.label.packageName")), packageNameField)
-            .addLabeledComponent(JBLabel(TableGearBundle.message("config.label.srcDir")), srcDirField)
-            .addLabeledComponent(JBLabel(TableGearBundle.message("config.label.testDir")), testDirField)
-            .addLabeledComponent(JBLabel(TableGearBundle.message("config.label.resourceDir")), resourceDirField)
-            .addLabeledComponent(JBLabel(TableGearBundle.message("config.label.jspDir")), jspDirField)
-            .addLabeledComponent(JBLabel(TableGearBundle.message("config.label.serviceDir")), serviceDirField)
-            .addLabeledComponent(JBLabel(TableGearBundle.message("config.label.controllerDir")), controllerDirField)
-            .addLabeledComponent(JBLabel(TableGearBundle.message("config.label.dtoDir")), dtoDirField)
-            .addLabeledComponent(JBLabel(TableGearBundle.message("config.label.cmdDir")), cmdDirField)
-            .addComponent(JBLabel(TableGearBundle.message("config.section.codegen")).apply { font = font.deriveFont(java.awt.Font.BOLD) })
+            .addComponent(JBLabel("包名和目录配置:").apply { font = font.deriveFont(java.awt.Font.BOLD) })
+            .addLabeledComponent(JBLabel("包名 (package_name):"), packageNameField)
+            .addLabeledComponent(JBLabel("源码目录 (src_dir):"), srcDirField)
+            .addLabeledComponent(JBLabel("测试目录 (test_dir):"), testDirField)
+            .addLabeledComponent(JBLabel("资源目录 (resource_dir):"), resourceDirField)
+            .addLabeledComponent(JBLabel("JSP目录 (jsp_dir):"), jspDirField)
+            .addLabeledComponent(JBLabel("Service目录 (service_dir):"), serviceDirField)
+            .addLabeledComponent(JBLabel("Controller目录 (controller_dir):"), controllerDirField)
+            .addLabeledComponent(JBLabel("DTO目录 (dto_dir):"), dtoDirField)
+            .addLabeledComponent(JBLabel("CMD目录 (cmd_dir):"), cmdDirField)
+            .addComponent(JBLabel("功能选项:").apply { font = font.deriveFont(java.awt.Font.BOLD) })
             .addComponent(indexesCheckBox)
             .addComponent(foreignKeysCheckBox)
             .addComponent(r2dbcCheckBox)
@@ -100,8 +94,7 @@ class CodeGenConfigPanel(private val model: TableGenConfigModel) : JPanel() {
             .addComponent(generateAllCheckBox)
             .addComponent(overWriteAllCheckBox)
             .addComponent(enableMergeCheckBox)
-            .addLabeledComponent(JBLabel(TableGearBundle.message("config.label.apiDocProvider")), apiDocProviderCombo)
-            .addLabeledComponent(JBLabel(TableGearBundle.message("config.label.swaggerVersion")), swaggerVersionField)
+            .addLabeledComponent(JBLabel("Swagger版本 (swagger_version):"), swaggerVersionField)
             .addComponentFillVertically(JPanel(), 0)
             .panel
         
@@ -132,9 +125,8 @@ class CodeGenConfigPanel(private val model: TableGenConfigModel) : JPanel() {
         generateAllCheckBox.isSelected = model.getBooleanProperty("generate_all")
         overWriteAllCheckBox.isSelected = model.getBooleanProperty("over_write_all")
         enableMergeCheckBox.isSelected = model.getBooleanProperty("enable_merge")
-        apiDocProviderCombo.setSelectedItem(model.getProperty("api_doc_provider") ?: "springdoc")
+        
         swaggerVersionField.text = model.getProperty("swagger_version") ?: "2"
-        updateApiDocDependentState()
     }
     
     fun updateToModel() {
@@ -160,18 +152,8 @@ class CodeGenConfigPanel(private val model: TableGenConfigModel) : JPanel() {
         model.setBooleanProperty("generate_all", generateAllCheckBox.isSelected)
         model.setBooleanProperty("over_write_all", overWriteAllCheckBox.isSelected)
         model.setBooleanProperty("enable_merge", enableMergeCheckBox.isSelected)
-        model.setProperty("api_doc_provider", apiDocProviderCombo.selectedItem?.toString())
+        
         model.setProperty("swagger_version", swaggerVersionField.text)
-    }
-
-    private fun updateApiDocDependentState() {
-        val provider = apiDocProviderCombo.selectedItem?.toString() ?: "springdoc"
-        val useSwaggerControls = provider == "swagger"
-        useSwaggerCheckBox.isEnabled = useSwaggerControls
-        swaggerVersionField.isEnabled = useSwaggerControls
-        if (!useSwaggerControls) {
-            useSwaggerCheckBox.isSelected = false
-        }
     }
 }
 

@@ -8,7 +8,6 @@ import com.intellij.ui.HyperlinkLabel
 import com.intellij.ui.components.JBLabel
 import com.intellij.util.ui.JBUI
 import com.intellij.ui.JBColor
-import com.bixuebihui.tablegear.TableGearBundle
 import com.bixuebihui.tablegear.TableGearFileType
 import java.util.function.Function
 import javax.swing.BoxLayout
@@ -46,11 +45,11 @@ class TableGearPluginNotificationProvider : EditorNotificationProvider {
             background = JBColor.background()
         }
         
-        val messageLabel = JBLabel(TableGearBundle.message("editorNotification.detected")).apply {
+        val messageLabel = JBLabel("检测到您正在编辑 TABLEGEAR 配置文件。").apply {
             foreground = JBColor.foreground()
         }
         
-        val linkLabel = HyperlinkLabel(TableGearBundle.message("editorNotification.openHint")).apply {
+        val linkLabel = HyperlinkLabel("点击打开 TABLEGEAR 配置编辑器，或使用 CTRL+ALT+T 快捷键").apply {
             addHyperlinkListener {
                 // 打开配置编辑器
                 openConfigEditor(project, file)

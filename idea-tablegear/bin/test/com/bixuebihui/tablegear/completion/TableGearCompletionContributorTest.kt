@@ -64,23 +64,5 @@ class TableGearCompletionContributorTest : LightPlatformCodeInsightFixture4TestC
             )
         }
     }
-
-    @Test
-    fun testApiDocProviderSuggestions() {
-        myFixture.configureByText(
-            "tablegen.properties",
-            "api_doc_provider=<caret>"
-        )
-
-        val lookups = myFixture.completeBasic()
-        assertNotNull(lookups, "api_doc_provider 应该提供枚举补全")
-        val lookupStrings = lookups.map { it.lookupString }.toSet()
-        listOf("swagger", "springdoc").forEach { value ->
-            assertTrue(
-                lookupStrings.contains(value),
-                "api_doc_provider 补全缺少 $value"
-            )
-        }
-    }
 }
 

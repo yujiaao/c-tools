@@ -1,6 +1,5 @@
 package com.bixuebihui.tablegear.ui
 
-import com.bixuebihui.tablegear.TableGearBundle
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import com.intellij.ui.components.JBLabel
@@ -51,13 +50,13 @@ class AdvancedConfigPanel(
         val tabbedPane = JBTabbedPane()
         
         // 基本高级配置
-        tabbedPane.addTab(TableGearBundle.message("advanced.tab.basic"), createBasicConfigPanel())
+        tabbedPane.addTab("基本配置", createBasicConfigPanel())
         
         // 字段配置
-        tabbedPane.addTab(TableGearBundle.message("advanced.tab.fields"), createFieldConfigPanel())
+        tabbedPane.addTab("字段配置", createFieldConfigPanel())
         
         // 扩展接口配置
-        tabbedPane.addTab(TableGearBundle.message("advanced.tab.interfaces"), createInterfaceConfigPanel())
+        tabbedPane.addTab("扩展接口", createInterfaceConfigPanel())
         
         layout = java.awt.BorderLayout()
         add(tabbedPane, java.awt.BorderLayout.CENTER)
@@ -72,12 +71,12 @@ class AdvancedConfigPanel(
         extraSettingField = JBTextField()
         
         val form = FormBuilder.createFormBuilder()
-            .addLabeledComponent(JBLabel(TableGearBundle.message("advanced.label.addPrefix")), addPrefixField)
-            .addLabeledComponent(JBLabel(TableGearBundle.message("advanced.label.removePrefix")), removePrefixField)
-            .addLabeledComponent(JBLabel(TableGearBundle.message("advanced.label.versionCol")), versionColNameField)
-            .addLabeledComponent(JBLabel(TableGearBundle.message("advanced.label.delCol")), delColNameField)
-            .addLabeledComponent(JBLabel(TableGearBundle.message("advanced.label.sharedModelGroup")), sharedModelGroupField)
-            .addLabeledComponent(JBLabel(TableGearBundle.message("advanced.label.extraSetting")), extraSettingField)
+            .addLabeledComponent(JBLabel("添加生成类名前缀 (add_prefix):"), addPrefixField)
+            .addLabeledComponent(JBLabel("移除表名前缀 (remove_prefix):"), removePrefixField)
+            .addLabeledComponent(JBLabel("版本列名 (version_col_name):"), versionColNameField)
+            .addLabeledComponent(JBLabel("删除列名 (del_col_name):"), delColNameField)
+            .addLabeledComponent(JBLabel("共享模型组 (shared_model_group):"), sharedModelGroupField)
+            .addLabeledComponent(JBLabel("额外设置 (extra_setting):"), extraSettingField)
             .addComponentFillVertically(JPanel(), 0)
             .panel
         
@@ -93,23 +92,23 @@ class AdvancedConfigPanel(
         
         // 加密字段选择按钮
         val encryptedFieldsButtonPanel = JPanel(FlowLayout(FlowLayout.LEFT))
-        val selectEncryptedFieldsBtn = JButton(TableGearBundle.message("advanced.button.selectEncrypted"))
+        val selectEncryptedFieldsBtn = JButton("选择加密字段...")
         selectEncryptedFieldsBtn.addActionListener { selectFields(FieldSelectionDialog.FieldType.ENCRYPTED, encryptedFieldsArea) }
         encryptedFieldsButtonPanel.add(selectEncryptedFieldsBtn as java.awt.Component)
         
         // 忽略字段选择按钮
         val ignoreFieldsButtonPanel = JPanel(FlowLayout(FlowLayout.LEFT))
-        val selectIgnoreFieldsBtn = JButton(TableGearBundle.message("advanced.button.selectIgnore"))
+        val selectIgnoreFieldsBtn = JButton("选择忽略字段...")
         selectIgnoreFieldsBtn.addActionListener { selectFields(FieldSelectionDialog.FieldType.IGNORE, ignoreFieldsArea) }
         ignoreFieldsButtonPanel.add(selectIgnoreFieldsBtn as java.awt.Component)
         
         val form = FormBuilder.createFormBuilder()
-            .addLabeledComponent(JBLabel(TableGearBundle.message("advanced.label.encryptedFields")), encryptedFieldsButtonPanel)
+            .addLabeledComponent(JBLabel("加密字段 (encrypted_fields):"), encryptedFieldsButtonPanel)
             .addLabeledComponent(JBLabel(""), JScrollPane(encryptedFieldsArea))
-            .addTooltip(TableGearBundle.message("advanced.tooltip.fieldFormat"))
-            .addLabeledComponent(JBLabel(TableGearBundle.message("advanced.label.ignoreFields")), ignoreFieldsButtonPanel)
+            .addTooltip("格式为 table1:field1,field2;table2:field3")
+            .addLabeledComponent(JBLabel("忽略字段 (ignore_fields):"), ignoreFieldsButtonPanel)
             .addLabeledComponent(JBLabel(""), JScrollPane(ignoreFieldsArea))
-            .addTooltip(TableGearBundle.message("advanced.tooltip.fieldFormat"))
+            .addTooltip("格式为 table1:field1,field2;table2:field3")
             .addComponentFillVertically(JPanel(), 0)
             .panel
         
@@ -124,8 +123,8 @@ class AdvancedConfigPanel(
         if (dbHelper == null) {
             Messages.showErrorDialog(
                 project,
-                TableGearBundle.message("advanced.dbNotConnected.message"),
-                TableGearBundle.message("advanced.dbNotConnected.title")
+                "请先连接数据库！\n\n请在【表配置】标签页中点击\"连接数据库\"按钮。",
+                "数据库未连接"
             )
             return
         }
@@ -147,8 +146,8 @@ class AdvancedConfigPanel(
                     .getNotificationGroup("TableGear.Notification")
                 notificationGroup?.createNotification(
                     when (fieldType) {
-                        FieldSelectionDialog.FieldType.ENCRYPTED -> TableGearBundle.message("advanced.notification.encryptedSelected")
-                        FieldSelectionDialog.FieldType.IGNORE -> TableGearBundle.message("advanced.notification.ignoreSelected")
+                        FieldSelectionDialog.FieldType.ENCRYPTED -> "已选择加密字段"
+                        FieldSelectionDialog.FieldType.IGNORE -> "已选择忽略字段"
                     },
                     com.intellij.notification.NotificationType.INFORMATION
                 )?.notify(project)
@@ -156,8 +155,8 @@ class AdvancedConfigPanel(
         } catch (e: Exception) {
             Messages.showErrorDialog(
                 project,
-                TableGearBundle.message("advanced.selectFieldsFailed", e.message ?: "unknown"),
-                TableGearBundle.message("notification.common.errorTitle")
+                "选择字段失败: ${e.message}",
+                "错误"
             )
             e.printStackTrace()
         }
@@ -216,16 +215,16 @@ class AdvancedConfigPanel(
         pojoModifyDateInterfaceListField = JBTextField()
         
         val form = FormBuilder.createFormBuilder()
-            .addLabeledComponent(JBLabel(TableGearBundle.message("advanced.label.pojoNodeInterface")), pojoNodeInterfaceField)
-            .addLabeledComponent(JBLabel(TableGearBundle.message("advanced.label.pojoNodeInterfaceList")), pojoNodeInterfaceListField)
-            .addLabeledComponent(JBLabel(TableGearBundle.message("advanced.label.pojoVersionInterface")), pojoVersionInterfaceField)
-            .addLabeledComponent(JBLabel(TableGearBundle.message("advanced.label.pojoVersionInterfaceList")), pojoVersionInterfaceListField)
-            .addLabeledComponent(JBLabel(TableGearBundle.message("advanced.label.pojoStateInterface")), pojoStateInterfaceField)
-            .addLabeledComponent(JBLabel(TableGearBundle.message("advanced.label.pojoStateInterfaceList")), pojoStateInterfaceListField)
-            .addLabeledComponent(JBLabel(TableGearBundle.message("advanced.label.pojoUuidInterface")), pojoUuidInterfaceField)
-            .addLabeledComponent(JBLabel(TableGearBundle.message("advanced.label.pojoUuidInterfaceList")), pojoUuidInterfaceListField)
-            .addLabeledComponent(JBLabel(TableGearBundle.message("advanced.label.pojoModifyDateInterface")), pojoModifyDateInterfaceField)
-            .addLabeledComponent(JBLabel(TableGearBundle.message("advanced.label.pojoModifyDateInterfaceList")), pojoModifyDateInterfaceListField)
+            .addLabeledComponent(JBLabel("节点接口 (pojo_node_interface):"), pojoNodeInterfaceField)
+            .addLabeledComponent(JBLabel("节点接口列表 (pojo_node_interface_list):"), pojoNodeInterfaceListField)
+            .addLabeledComponent(JBLabel("版本接口 (pojo_version_interface):"), pojoVersionInterfaceField)
+            .addLabeledComponent(JBLabel("版本接口列表 (pojo_version_interface_list):"), pojoVersionInterfaceListField)
+            .addLabeledComponent(JBLabel("状态接口 (pojo_state_interface):"), pojoStateInterfaceField)
+            .addLabeledComponent(JBLabel("状态接口列表 (pojo_state_interface_list):"), pojoStateInterfaceListField)
+            .addLabeledComponent(JBLabel("UUID接口 (pojo_uuid_interface):"), pojoUuidInterfaceField)
+            .addLabeledComponent(JBLabel("UUID接口列表 (pojo_uuid_interface_list):"), pojoUuidInterfaceListField)
+            .addLabeledComponent(JBLabel("修改日期接口 (pojo_modifydate_interface):"), pojoModifyDateInterfaceField)
+            .addLabeledComponent(JBLabel("修改日期接口列表 (pojo_modifydate_interface_list):"), pojoModifyDateInterfaceListField)
             .addComponentFillVertically(JPanel(), 0)
             .panel
         

@@ -1,6 +1,5 @@
 package com.bixuebihui.tablegear.inspection
 
-import com.bixuebihui.tablegear.TableGearBundle
 import com.bixuebihui.tablegear.TableGearProperties
 import com.bixuebihui.tablegear.ValueType
 import com.bixuebihui.tablegear.isInTableGearFile
@@ -126,7 +125,7 @@ class TableGearValidationInspection : LocalInspectionTool() {
                 val lineEnd = document.getLineEndOffset(zeroBasedLine)
                 holder.registerProblem(
                     file,
-                    TableGearBundle.message("inspection.invalidFormat", zeroBasedLine + 1),
+                    "第 ${zeroBasedLine + 1} 行：配置项必须使用 key=value 形式",
                     ProblemHighlightType.ERROR,
                     TextRange(lineStart, lineEnd)
                 )
@@ -145,8 +144,6 @@ class TableGearValidationInspection : LocalInspectionTool() {
             val lineStart = document.getLineStartOffset(zeroBasedLine)
             val lineEnd = document.getLineEndOffset(zeroBasedLine)
             val lineText = document.getText(TextRange(lineStart, lineEnd))
-            val valueStartInLine = lineText.indexOf('=').let { if (it >= 0) it + 1 else lineText.length }
-            val valueRange = TextRange(lineStart + valueStartInLine, lineEnd)
         
             // 找到 key 在原始行中的位置（考虑前导空格）
             val trimmedLine = lineText.trimStart()
@@ -164,7 +161,7 @@ class TableGearValidationInspection : LocalInspectionTool() {
                     LOG.info("Found duplicate key: $key at line ${zeroBasedLine + 1} (first at line ${previousLine + 1})")
                     holder.registerProblem(
                         file,
-                        TableGearBundle.message("inspection.duplicateKey", key, previousLine + 1),
+                        "重复定义的配置项: $key（第 ${previousLine + 1} 行已定义）",
                         ProblemHighlightType.ERROR,
                         keyRange
                     )
@@ -184,7 +181,7 @@ class TableGearValidationInspection : LocalInspectionTool() {
                     val keyRange = TextRange(lineStart + keyStartInLine, lineStart + keyEndInLine)
                     holder.registerProblem(
                         file,
-                        TableGearBundle.message("inspection.unknownKey", key),
+                        "未识别的配置项: $key",
                         ProblemHighlightType.WARNING,
                         keyRange
                     )
@@ -201,7 +198,7 @@ class TableGearValidationInspection : LocalInspectionTool() {
                             val valueRange = TextRange(lineStart + valueStartInLine, lineEnd)
                             holder.registerProblem(
                                 file,
-                                TableGearBundle.message("inspection.booleanExpected", key),
+                                "$key 需要 yes/no（或 true/false）",
                                 ProblemHighlightType.ERROR,
                                 valueRange
                             )
@@ -216,43 +213,13 @@ class TableGearValidationInspection : LocalInspectionTool() {
                             val valueRange = TextRange(lineStart + valueStartInLine, lineEnd)
                             holder.registerProblem(
                                 file,
-                                TableGearBundle.message("inspection.enumExpected", key, prop.enumValues.joinToString(", ")),
+                                "$key 仅支持 ${prop.enumValues.joinToString(", ")}",
                                 ProblemHighlightType.ERROR,
                                 valueRange
                             )
                         }
                     }
                     else -> {}
-                }
-
-                val allText = file.text
-                val resolvedApiDocProvider = resolveApiDocProvider(allText)
-                if (key == "use_swagger" && resolvedApiDocProvider == "springdoc" && isTruthy(value)) {
-                    holder.registerProblem(
-                        file,
-                        TableGearBundle.message("inspection.springdocIgnoreUseSwagger"),
-                        ProblemHighlightType.WARNING,
-                        valueRange
-                    )
-                }
-                if (key == "swagger_version" && resolvedApiDocProvider == "springdoc" && value.isNotEmpty()) {
-                    holder.registerProblem(
-                        file,
-                        TableGearBundle.message("inspection.springdocIgnoreSwaggerVersion"),
-                        ProblemHighlightType.WARNING,
-                        valueRange
-                    )
-                }
-                if (key == "api_doc_provider" && value.equals("springdoc", ignoreCase = true)) {
-                    val useSwagger = extractPropertyValue(allText, "use_swagger")
-                    if (isTruthy(useSwagger)) {
-                        holder.registerProblem(
-                            file,
-                            TableGearBundle.message("inspection.springdocSuggestion"),
-                            ProblemHighlightType.WARNING,
-                            valueRange
-                        )
-                    }
                 }
             }
         } catch (e: Exception) {
@@ -282,41 +249,6 @@ class TableGearValidationInspection : LocalInspectionTool() {
             index--
         }
         return backslashCount % 2 == 1
-    }
-
-    private fun extractPropertyValue(text: String, targetKey: String): String? {
-        val lines = text.split("\n")
-        for (line in lines) {
-            val trimmed = line.trim()
-            if (trimmed.isEmpty() || trimmed.startsWith("#")) {
-                continue
-            }
-            val equalsIndex = trimmed.indexOf('=')
-            if (equalsIndex <= 0) {
-                continue
-            }
-            val key = trimmed.substring(0, equalsIndex).trim()
-            if (key == targetKey) {
-                return trimmed.substring(equalsIndex + 1).trim()
-            }
-        }
-        return null
-    }
-
-    private fun resolveApiDocProvider(text: String): String {
-        val explicit = extractPropertyValue(text, "api_doc_provider")?.lowercase()
-        if (explicit == "swagger" || explicit == "springdoc") {
-            return explicit
-        }
-        val hasSwaggerVersion = !extractPropertyValue(text, "swagger_version").isNullOrBlank()
-        return if (hasSwaggerVersion) "swagger" else "springdoc"
-    }
-
-    private fun isTruthy(value: String?): Boolean {
-        if (value.isNullOrBlank()) {
-            return false
-        }
-        return value.equals("yes", ignoreCase = true) || value.equals("true", ignoreCase = true)
     }
 }
 

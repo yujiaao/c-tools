@@ -1,6 +1,5 @@
 package com.bixuebihui.tablegear.ui
 
-import com.bixuebihui.tablegear.TableGearBundle
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.ui.components.JBCheckBox
@@ -33,7 +32,7 @@ class TableSelectionDialog(
     private lateinit var tabbedPane: JTabbedPane
     
     init {
-        title = TableGearBundle.message("tableSelection.title")
+        title = "选择表和视图"
         init()
     }
     
@@ -43,7 +42,7 @@ class TableSelectionDialog(
         // 搜索框
         val searchPanel = JPanel(BorderLayout())
         searchPanel.border = JBUI.Borders.empty(5)
-        searchPanel.add(JBLabel(TableGearBundle.message("tableSelection.search")), BorderLayout.WEST)
+        searchPanel.add(JBLabel("搜索:"), BorderLayout.WEST)
         searchField = JTextField()
         searchField.document.addDocumentListener(object : DocumentListener {
             override fun insertUpdate(e: DocumentEvent?) = filterTables()
@@ -58,19 +57,19 @@ class TableSelectionDialog(
         
         // 包含表标签页
         tableListPanel = createTableListPanel(tables, selectedTables, tableCheckBoxes)
-        tabbedPane.addTab(TableGearBundle.message("tableSelection.tab.include"), JScrollPane(tableListPanel))
+        tabbedPane.addTab("包含的表", JScrollPane(tableListPanel))
         
         // 排除表标签页
         excludeTableListPanel = createTableListPanel(tables, selectedExcludeTables, excludeTableCheckBoxes)
-        tabbedPane.addTab(TableGearBundle.message("tableSelection.tab.exclude"), JScrollPane(excludeTableListPanel))
+        tabbedPane.addTab("排除的表", JScrollPane(excludeTableListPanel))
         
         mainPanel.add(tabbedPane, BorderLayout.CENTER)
         
         // 全选/取消全选按钮
         val buttonPanel = JPanel(FlowLayout(FlowLayout.LEFT))
-        val selectAllBtn = JButton(TableGearBundle.message("common.selectAll"))
+        val selectAllBtn = JButton("全选")
         selectAllBtn.addActionListener { selectAll(true) }
-        val deselectAllBtn = JButton(TableGearBundle.message("common.deselectAll"))
+        val deselectAllBtn = JButton("取消全选")
         deselectAllBtn.addActionListener { selectAll(false) }
         buttonPanel.add(selectAllBtn)
         buttonPanel.add(deselectAllBtn)
@@ -89,7 +88,7 @@ class TableSelectionDialog(
         panel.layout = BoxLayout(panel, BoxLayout.Y_AXIS)
         
         tables.forEach { tableInfo ->
-            val checkBox = JBCheckBox(tableInfo.name + if (tableInfo.isView) " ${TableGearBundle.message("common.viewSuffix")}" else "")
+            val checkBox = JBCheckBox(tableInfo.name + if (tableInfo.isView) " (视图)" else "")
             checkBox.isSelected = selected.contains(tableInfo.name)
             checkBoxMap[tableInfo.name] = checkBox
             panel.add(checkBox)
@@ -102,7 +101,7 @@ class TableSelectionDialog(
         val searchText = searchField.text.lowercase()
         val currentPanel = if (tabbedPane.selectedIndex == 0) tableListPanel else excludeTableListPanel
         val currentCheckBoxes = if (tabbedPane.selectedIndex == 0) tableCheckBoxes else excludeTableCheckBoxes
-
+        
         currentPanel.components.forEach { component ->
             if (component is JBCheckBox) {
                 val visible = searchText.isEmpty() || component.text.lowercase().contains(searchText)

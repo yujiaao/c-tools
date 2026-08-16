@@ -1,12 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40">
-  <!-- TableGear �rHh<Q< + nM�r IDE ;� -->
-  <rect x="2" y="2" width="36" height="36" rx="2" fill="#374151" stroke="#60a5fa" stroke-width="1.5"/>
-  <line x1="2" y1="14" x2="38" y2="14" stroke="#60a5fa" stroke-width="1"/>
-  <line x1="2" y1="26" x2="38" y2="26" stroke="#60a5fa" stroke-width="1"/>
-  <line x1="20" y1="2" x2="20" y2="38" stroke="#60a5fa" stroke-width="1"/>
-  <g transform="translate(28, 28) scale(0.22)">
-    <circle r="45" fill="#374151"/>
-    <path d="M0 -35 L8 -35 L12 -25 L22 -22 L30 -12 L40 -8 L40 8 L30 12 L22 22 L12 25 L8 35 L-8 35 L-12 25 L-22 22 L-30 12 L-40 8 L-40 -8 L-30 -12 L-22 -22 L-12 -25 L-8 -35 Z" fill="#60a5fa" transform="rotate(15)"/>
-    <circle r="12" fill="#374151"/>
-  </g>
-</svg>

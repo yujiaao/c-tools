@@ -93,37 +93,5 @@ class TableGearValidationInspectionTest : LightPlatformCodeInsightFixture4TestCa
             "Should report error because 'database # comment' is invalid enum value. Problems: ${problems.map { it.descriptionTemplate }}"
         )
     }
-
-    @Test
-    fun testSpringdocModeWarnsSwaggerSettings() {
-        myFixture.enableInspections(TableGearValidationInspection())
-
-        myFixture.configureByText(
-            "tablegen.properties",
-            """
-            api_doc_provider=springdoc
-            use_swagger=yes
-            swagger_version=2
-            enable_merge=yes
-            """.trimIndent()
-        )
-
-        val inspection = TableGearValidationInspection()
-        val file = myFixture.file
-        val manager = InspectionManager.getInstance(myFixture.project)
-        val holder = ProblemsHolder(manager, file, false)
-        val visitor = inspection.buildVisitor(holder, true)
-        visitor.visitFile(file)
-
-        val problems = holder.results.mapNotNull { it.descriptionTemplate }
-        assertTrue(
-            problems.any { it.contains("忽略 use_swagger") },
-            "应提示 springdoc 模式下会忽略 use_swagger，实际问题: $problems"
-        )
-        assertTrue(
-            problems.any { it.contains("忽略 swagger_version") },
-            "应提示 springdoc 模式下会忽略 swagger_version，实际问题: $problems"
-        )
-    }
 }
 
