@@ -10,8 +10,26 @@ public class User {
 
     Timestamp begin_ModifiedTime;
     Timestamp end_ModifiedTime;
+    java.sql.Date begin_AuditDate;
+    java.sql.Date end_AuditDate;
     Integer begin_age;
     Integer end_age;
+
+    public java.sql.Date getBegin_AuditDate() {
+        return begin_AuditDate;
+    }
+
+    public void setBegin_AuditDate(java.sql.Date begin_AuditDate) {
+        this.begin_AuditDate = begin_AuditDate;
+    }
+
+    public java.sql.Date getEnd_AuditDate() {
+        return end_AuditDate;
+    }
+
+    public void setEnd_AuditDate(java.sql.Date end_AuditDate) {
+        this.end_AuditDate = end_AuditDate;
+    }
 
     public String getBegin_name() {
         return begin_name;

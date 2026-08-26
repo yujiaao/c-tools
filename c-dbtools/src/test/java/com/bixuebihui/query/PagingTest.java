@@ -204,6 +204,26 @@ public class PagingTest  {
     }
 
     @Test
+    void sqlDateRangeWhenDateOnly() throws SQLException {
+        Paging<User> p = new Paging<>();
+        p.searchBean = new User();
+        p.searchBean.setBegin_AuditDate(java.sql.Date.valueOf("2026-08-26"));
+        p.searchBean.setEnd_AuditDate(java.sql.Date.valueOf("2026-08-26"));
+
+        H2DataSource db = new H2DataSource().init();
+        ActiveRecordImpl<User, Integer> ar = new ActiveRecordImpl<>(new MyAr(db.cp));
+        Set<String> fields = Stream.of("id", "name", "age", "auditDate").map(String::toLowerCase).collect(Collectors.toSet());
+
+        ar = applyPaging(p, ar, fields);
+        SqlPocket condition = ar.getCondStack().toCondition();
+
+        assertEquals(" where auditdate >= ? and auditdate < ?", condition.getCondition().toString());
+        assertEquals(2, condition.getParams().size());
+        assertEquals(p.searchBean.getBegin_AuditDate().getTime(), ((Date) condition.getParams().get(0)).getTime());
+        assertEquals(java.sql.Date.valueOf("2026-08-27").getTime(), ((Date) condition.getParams().get(1)).getTime());
+    }
+
+    @Test
     void sameDateTimeNotMidnightShouldUseBetween() throws SQLException {
         Paging<User> p = new Paging<>();
         p.searchBean = new User();
