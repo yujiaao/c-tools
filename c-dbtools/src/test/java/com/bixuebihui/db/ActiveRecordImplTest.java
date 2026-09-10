@@ -19,6 +19,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.*;
 
+import static com.bixuebihui.db.Dialect.*;
 import static com.bixuebihui.jdbc.BaseDao.sql;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -510,6 +511,88 @@ public class ActiveRecordImplTest {
         public String getTableName() {
             return "test";
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private ActiveRecordImpl<Object, Long> newArWithDbType(int dbType) {
+        BaseDao<Object, Long> mockOp = mock(BaseDao.class);
+        when(mockOp.getDbType()).thenReturn(dbType);
+        when(mockOp.getTableName()).thenReturn("test");
+        when(mockOp.getKeyName()).thenReturn("id");
+        return new ActiveRecordImpl<>(mockOp);
+    }
+
+    @Test
+    public void testApplyDmlLimitMysql() {
+        ActiveRecordImpl<Object, Long> ar = newArWithDbType(MYSQL);
+        ar.limit(0, 5).desc("id");
+        assertEquals(" where status=? order by id desc LIMIT 5",
+                ar.applyDmlLimit(" where status=?"));
+    }
+
+    @Test
+    public void testApplyDmlLimitH2() {
+        ActiveRecordImpl<Object, Long> ar = newArWithDbType(H2);
+        ar.limit(0, 3);
+        assertEquals(" where status=? LIMIT 3",
+                ar.applyDmlLimit(" where status=?"));
+    }
+
+    @Test
+    public void testApplyDmlLimitPostgresql() {
+        ActiveRecordImpl<Object, Long> ar = newArWithDbType(POSTGRESQL);
+        ar.limit(0, 5).asc("id");
+        assertEquals(" where id in (select id from test where status=? order by id asc LIMIT 5)",
+                ar.applyDmlLimit(" where status=?"));
+    }
+
+    @Test
+    public void testApplyDmlLimitPostgresqlWithoutPkUsesCtid() {
+        BaseDao<Object, Long> mockOp = mock(BaseDao.class);
+        when(mockOp.getDbType()).thenReturn(POSTGRESQL);
+        when(mockOp.getTableName()).thenReturn("test");
+        when(mockOp.getKeyName()).thenReturn(null);
+        ActiveRecordImpl<Object, Long> ar = new ActiveRecordImpl<>(mockOp);
+        ar.limit(0, 2);
+        assertEquals(" where ctid in (select ctid from test where status=? LIMIT 2)",
+                ar.applyDmlLimit(" where status=?"));
+    }
+
+    @Test
+    public void testApplyDmlLimitSqlServer() {
+        ActiveRecordImpl<Object, Long> ar = newArWithDbType(SQLSERVER_2010_AND_UP);
+        ar.limit(0, 5).desc("id");
+        assertEquals(" where id in (select TOP (5) id from test where status=? order by id desc)",
+                ar.applyDmlLimit(" where status=?"));
+    }
+
+    @Test
+    public void testApplyDmlLimitOracle() {
+        ActiveRecordImpl<Object, Long> ar = newArWithDbType(ORACLE);
+        ar.limit(0, 5);
+        assertEquals(" where id in (select id from (select id from test where status=?) where ROWNUM <= 5)",
+                ar.applyDmlLimit(" where status=?"));
+    }
+
+    @Test
+    public void testApplyDmlLimitDerby() {
+        ActiveRecordImpl<Object, Long> ar = newArWithDbType(DERBY);
+        ar.limit(0, 5);
+        assertEquals(" where id in (select id from test where status=? FETCH FIRST 5 ROWS ONLY)",
+                ar.applyDmlLimit(" where status=?"));
+    }
+
+    @Test
+    public void testApplyDmlLimitIgnoredWhenDefaultMax() {
+        ActiveRecordImpl<Object, Long> ar = newArWithDbType(MYSQL);
+        assertEquals(" where status=?", ar.applyDmlLimit(" where status=?"));
+    }
+
+    @Test
+    public void testApplyDmlLimitRejectsOffset() {
+        ActiveRecordImpl<Object, Long> ar = newArWithDbType(MYSQL);
+        ar.limit(10, 5);
+        assertThrows(IllegalArgumentException.class, () -> ar.applyDmlLimit(" where status=?"));
     }
 
 }

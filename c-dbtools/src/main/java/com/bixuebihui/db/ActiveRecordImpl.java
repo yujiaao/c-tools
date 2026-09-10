@@ -566,9 +566,8 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
 
             ensureNotEmptyWhere(whereClause);
 
-            if (limit != null && limit.getBegin() == 0 && limit.getEnd() > 0) {
-                LOG.info("DELETE table " + operator.getTableName() + " operation with a limit(" + limit + "), please make sure this is correct:\n" + whereClause);
-            }
+            whereClause = applyDmlLimit(whereClause);
+
             return operator.delete(whereClause, list.toArray(), cn);
         } finally {
             clear();
@@ -951,6 +950,113 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
     }
 
     /**
+     * Whether current limit is the default unbounded placeholder ({@link SqlLimit#LIMIT_MAX}).
+     */
+    private boolean isDefaultMaxLimit() {
+        return limit == null
+                || (limit.getBegin() == SqlLimit.LIMIT_MAX.getBegin()
+                && limit.getNum() == SqlLimit.LIMIT_MAX.getNum());
+    }
+
+    /**
+     * Apply LIMIT for DELETE/UPDATE according to database dialect.
+     * <ul>
+     *   <li>MySQL / H2: {@code ... ORDER BY ... LIMIT n}</li>
+     *   <li>PostgreSQL: {@code WHERE pk IN (SELECT pk FROM t WHERE ... LIMIT n)}；无主键时用 ctid</li>
+     *   <li>SQL Server: {@code WHERE pk IN (SELECT TOP (n) pk FROM t WHERE ...)}</li>
+     *   <li>Oracle: {@code WHERE pk IN (SELECT pk FROM (SELECT pk FROM t WHERE ...) WHERE ROWNUM <= n)}；无主键时用 ROWID</li>
+     *   <li>Derby: {@code WHERE pk IN (SELECT pk FROM t WHERE ... FETCH FIRST n ROWS ONLY)}</li>
+     * </ul>
+     * Only applied when {@link #limit(int, int)} was called explicitly (not {@link SqlLimit#LIMIT_MAX}).
+     * Offset ({@code begin > 0}) is not supported for DELETE/UPDATE.
+     *
+     * @param whereClause where (and optional join alias prefix for delete path)
+     * @return where clause with dialect-specific limit applied, or original if no explicit limit
+     */
+    protected String applyDmlLimit(String whereClause) {
+        if (isDefaultMaxLimit()) {
+            return whereClause;
+        }
+        if (limit.getBegin() != 0) {
+            throw new IllegalArgumentException(
+                    "DELETE/UPDATE 的 limit 不支持 offset，begin 必须为 0，当前 begin=" + limit.getBegin());
+        }
+        if (limit.getNum() <= 0) {
+            return whereClause;
+        }
+
+        LOG.info("DML table {} operation with a limit({}), please make sure this is correct:\n{}",
+                operator.getTableName(), limit, whereClause);
+
+        int num = limit.getNum();
+        String order = parseOrder();
+        int dbType = operator.getDbType();
+
+        switch (dbType) {
+            case MYSQL:
+            case H2:
+                return whereClause + order + " LIMIT " + num;
+            case POSTGRESQL:
+                return buildPkOrPseudoIdInSubqueryWhere(whereClause, order, " LIMIT " + num, "", "ctid");
+            case SQLSERVER:
+            case SQLSERVER_2005_AND_UP:
+            case SQLSERVER_2010_AND_UP:
+                return buildPkInSubqueryWhere(whereClause, order, "", "TOP (" + num + ") ");
+            case ORACLE:
+                return buildOracleLimitedWhere(whereClause, order, num);
+            case DERBY:
+                return buildPkInSubqueryWhere(whereClause, order, " FETCH FIRST " + num + " ROWS ONLY", "");
+            default:
+                throw new NotImplementedException(
+                        "DELETE/UPDATE LIMIT not supported for dbType=" + dbType);
+        }
+    }
+
+    /**
+     * Wrap where as {@code WHERE id_col IN (SELECT [TOP n] id_col FROM table WHERE ... [LIMIT/FETCH])}
+     */
+    private String buildPkInSubqueryWhere(String whereClause, String order, String limitSuffix, String selectPrefix) {
+        String key = operator.getKeyName();
+        if (StringUtils.isBlank(key)) {
+            throw new DbException("当前数据库类型的 DELETE/UPDATE LIMIT 需要主键字段 getKeyName()");
+        }
+        return buildInSubqueryWhere(key, whereClause, order, limitSuffix, selectPrefix);
+    }
+
+    /**
+     * Like {@link #buildPkInSubqueryWhere} but falls back to a physical row id column (e.g. ctid).
+     */
+    private String buildPkOrPseudoIdInSubqueryWhere(String whereClause, String order,
+                                                    String limitSuffix, String selectPrefix,
+                                                    String pseudoIdColumn) {
+        String key = operator.getKeyName();
+        if (StringUtils.isBlank(key)) {
+            key = pseudoIdColumn;
+        }
+        return buildInSubqueryWhere(key, whereClause, order, limitSuffix, selectPrefix);
+    }
+
+    private String buildInSubqueryWhere(String idColumn, String whereClause, String order,
+                                        String limitSuffix, String selectPrefix) {
+        String table = getTableName();
+        return " where " + idColumn + " in (select " + selectPrefix + idColumn
+                + " from " + table + whereClause + order + limitSuffix + ")";
+    }
+
+    /**
+     * Oracle: nested subquery so ORDER BY works with ROWNUM.
+     */
+    private String buildOracleLimitedWhere(String whereClause, String order, int num) {
+        String key = operator.getKeyName();
+        if (StringUtils.isBlank(key)) {
+            key = "ROWID";
+        }
+        String table = getTableName();
+        return " where " + key + " in (select " + key + " from (select " + key
+                + " from " + table + whereClause + order + ") where ROWNUM <= " + num + ")";
+    }
+
+    /**
      * {@inheritDoc}
      */
     @Override
@@ -964,6 +1070,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
             Pair<String, String>   whereClause = formJoinAndWherePair();
             ensureNotEmptyWhere(whereClause.getRight());
 
+            whereClause = Pair.of(whereClause.getLeft(), applyDmlLimit(whereClause.getRight()));
             return operator.update(fields, values, whereClause, getParams().toArray(), cn);
         } finally {
             clear();
@@ -987,6 +1094,7 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
                 values[i] = keyValuePairs.get(fields[i]);
             }
 
+            whereClause = Pair.of(whereClause.getLeft(), applyDmlLimit(whereClause.getRight()));
             return operator.update(fields, values, whereClause, getParams().toArray(), cn);
         } finally {
             clear();
