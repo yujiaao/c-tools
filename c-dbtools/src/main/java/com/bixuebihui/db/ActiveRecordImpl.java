@@ -416,6 +416,12 @@ public class ActiveRecordImpl<T, V> implements ActiveRecord<T> {
      */
     @Override
     public ActiveRecord<T> limit(int begin, int num) {
+        if(begin<0){
+            throw new IllegalArgumentException("limit begin is less than 0: "+begin);
+        }
+        if(num<=0){
+            throw new IllegalArgumentException("limit num is less than 0: "+num);
+        }
         limit = new SqlLimit(begin, num);
         return this;
     }
