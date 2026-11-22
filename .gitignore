@@ -33,7 +33,10 @@ target
 build/
 .vscode/
 .settings/
-.github/
+# 允许提交 GitHub Actions；其余 .github 内容仍可本地忽略
+.github/*
+!.github/workflows/
+!.github/workflows/**
 node_modules/
 .settings/
 .vscode/

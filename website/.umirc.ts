@@ -3,8 +3,9 @@ import { defineConfig } from 'dumi';
 export default defineConfig({
   mode: 'site',
   hash: true,
-  base: '/tablegear/',
-  publicPath: '/tablegear/',
+  // GitHub project pages：https://yujiaao.github.io/c-tools/
+  base: '/c-tools/',
+  publicPath: '/c-tools/',
   locales: [
     ['zh-CN', '中文'],
     ['en-US', 'English'],
@@ -117,7 +118,9 @@ export default defineConfig({
     }',
   ],
   scripts: [
-    // 数据统计
+    {
+      content: `(function(){if(window.__bxAutoAds)return;window.__bxAutoAds=1;fetch("/api/public/adsense",{credentials:"omit"}).then(function(res){return res.ok?res.json():null}).then(function(body){var data=body&&body.data;if(!data||!data.enabled||!/^ca-pub-\\d{10,20}$/.test(data.clientId||""))return;var nav=navigator;if(nav.globalPrivacyControl===true||/(?:^|;\\s*)ems_ads_npa=1(?:;|$)/.test(document.cookie)){window.adsbygoogle=window.adsbygoogle||[];window.adsbygoogle.requestNonPersonalizedAds=1}if(document.querySelector('script[src*="pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"]'))return;var script=document.createElement("script");script.async=true;script.src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client="+encodeURIComponent(data.clientId);script.crossOrigin="anonymous";document.head.appendChild(script)}).catch(function(){})})();`,
+    },
     {
       src: 'https://s9.cnzz.com/z_stat.php?id=1279786237&web_id=1279786237',
       defer: true,
